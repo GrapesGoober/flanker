@@ -1,2 +1,3 @@
-# find-fix-finish
-Webapp strategy game inpired by Arty Concliffe's "Crossfire"
+# Find, Fix, Finish
+
+Web app strategy game inpired by Arty Concliffe's "Crossfire".
