@@ -1,7 +1,7 @@
 from typing import Type
 from dataclasses import dataclass
 from typing import Any, Callable
-from entity import Component, GameState
+from ecs import Component, GameState
 
 
 @dataclass
