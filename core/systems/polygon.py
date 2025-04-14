@@ -5,7 +5,7 @@ Polygon System for 2D polygons & computing intersections.
 from dataclasses import dataclass
 from typing import Iterator
 from itertools import pairwise
-from entity import Component
+from entity import Component, GameState
 from vec2 import Vec2
 
 
@@ -16,13 +16,15 @@ class Polygon(Component):
     vertices: list[Vec2]
     flag: int = -1
 
-    def on_add(self) -> None:
-        if self not in PolygonSpace.polygons:
-            PolygonSpace.polygons.append(self)
+    def on_add(self, gs: GameState) -> None:
+        space = gs.system(PolygonSpace)
+        if self not in space.polygons:
+            space.polygons.append(self)
 
-    def on_remove(self) -> None:
-        if self in PolygonSpace.polygons:
-            PolygonSpace.polygons.remove(self)
+    def on_remove(self, gs: GameState) -> None:
+        space = gs.system(PolygonSpace)
+        if self in space.polygons:
+            space.polygons.remove(self)
 
 
 @dataclass
@@ -36,7 +38,8 @@ class Intersection:
 class PolygonSpace:
     """System pool for Polygons, for checking polygon intersections."""
 
-    polygons: list[Polygon] = []
+    def __init__(self) -> None:
+        self.polygons: list[Polygon] = []
 
     @staticmethod
     def _get_intersect(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2) -> Vec2 | None:
@@ -52,12 +55,11 @@ class PolygonSpace:
             return a1 + da * t  # Offset p1 point by ua to get final point
         return None  # Intersection is outside the segments
 
-    @staticmethod
     def get_intersects(
-        start: Vec2, end: Vec2, mask: int = -1
+        self, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterator[Intersection]:
         """Returns iterator of intersection points between the line segment and features."""
-        for feature in PolygonSpace.polygons:
+        for feature in self.polygons:
             if feature.flag & mask:
                 for b1, b2 in pairwise(feature.vertices):
                     if (
