@@ -4,6 +4,7 @@ which are just dataclass for systems to run algorithms on. Component's lifecycle
 determined by its parent Entity.
 """
 
+import random
 from typing import Any, Type
 
 
@@ -24,8 +25,12 @@ class Entity:
     entity classes. Entities don't interact directly with each other, only through events.
     """
 
-    def __init__(self, *components: Component) -> None:
+    def __init__(self, gs: "GameState", *components: Component) -> None:
+        self.gs = gs
         self._components: list[Component] = list(components)
+
+    def __hash__(self) -> int:
+        return int.from_bytes(random.randbytes(8))
 
     @property
     def components(self) -> list[Component]:
@@ -43,20 +48,22 @@ class GameState:
             self.register(sys)
 
     def add(self, *entities: Entity) -> None:
-        """Adds a new entity to the game. Has no effect if entity is already added."""
-        for entity in entities:
-            if entity not in self._entities:
-                self._entities.add(entity)
-                for component in entity.components:
-                    component.on_add(self)
-
-    def remove(self, *entities: Entity) -> None:
-        """Removes an entity from the game. Has no effect if entity is not present."""
+        """Adds a new entity to the game."""
         for entity in entities:
             if entity in self._entities:
-                self._entities.remove(entity)
-                for component in entity.components:
-                    component.on_remove(self)
+                raise Exception(f"Entity {entity} is already added.")
+            self._entities.add(entity)
+            for component in entity.components:
+                component.on_add(self)
+
+    def remove(self, *entities: Entity) -> None:
+        """Removes an entity from the game."""
+        for entity in entities:
+            if entity not in self._entities:
+                raise Exception(f"Entity {entity} doesn't exist.")
+            self._entities.remove(entity)
+            for component in entity.components:
+                component.on_remove(self)
 
     def register(self, sys: Any) -> None:
         """Registers a new system. System can be any object."""
