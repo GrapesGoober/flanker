@@ -1,3 +1,4 @@
+from typing import Type
 from dataclasses import dataclass
 from typing import Any, Callable
 from entity import Component
@@ -27,12 +28,16 @@ class EventSystem:
     listeners: dict[type, list[Listener]] = {}
 
     @staticmethod
-    def emit(event: Any) -> list[Any]:
-        """Emit a new event. Notifies any listener that subscribes to this topic."""
-        responses: list[Any] = []
+    def emit[T](event: Any, response_type: Type[T] = type(None)) -> list[T]:
+        """
+        Emit a new event. Notifies any listener that subscribes to this topic.
+        If `response_type` is provided, return a list of type-guarded responses.
+        If
+        """
+        responses: list[T] = []
         if type(event) in EventSystem.listeners:
             for listener in EventSystem.listeners[type(event)]:
                 response = listener.callback(event)
-                if response is not None:
+                if isinstance(response, response_type) and response != None:
                     responses.append(response)
         return responses
