@@ -1,7 +1,6 @@
-from typing import Type
+from typing import Type, Any, Callable
 from dataclasses import dataclass
-from typing import Any, Callable
-from ecs import Component, GameState
+from systems.ecs import Component, GameState
 
 
 @dataclass

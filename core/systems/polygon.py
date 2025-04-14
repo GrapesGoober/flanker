@@ -5,8 +5,8 @@ Polygon System for 2D polygons & computing intersections.
 from dataclasses import dataclass
 from typing import Iterator
 from itertools import pairwise
-from ecs import Component, GameState
-from vec2 import Vec2
+from systems.ecs import Component, GameState
+from systems.vec2 import Vec2
 
 
 @dataclass
