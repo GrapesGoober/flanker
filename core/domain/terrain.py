@@ -1,10 +1,9 @@
 from enum import IntFlag, auto
-from event import GameState
-from rifle_squad import Listener
-from systems.ecs import Entity
+from systems.ecs import Entity, GameState
+from systems.event import Listener
 from systems.polygon import Polygon
 from systems.vec2 import Vec2
-from interface import TerrainType, TerrainFeatureGetInput
+from domain.interface import TerrainType, TerrainFeatureGetInput
 
 
 class TerrainFlag(IntFlag):
