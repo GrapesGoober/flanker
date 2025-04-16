@@ -1,77 +1,84 @@
+import pytest
 from typing import Callable
-from unittest import TestCase
-
 from systems.ecs import Entity, GameState
 from systems.event import EventSystem, Listener
 from systems.polygon import PolygonSpace
 
 
-class SingleGameState(TestCase):
+@pytest.fixture
+def single_game_state() -> GameState:
+    gs = GameState(EventSystem(), PolygonSpace())
 
-    def setUp(self) -> None:
-        self.gs = GameState(EventSystem(), PolygonSpace())
+    int_callback: Callable[[int], int] = lambda x: x + 10
+    str_callback: Callable[[str], str] = lambda x: x + "defg"
 
-        int_callback: Callable[[int], int] = lambda x: x + 10
-        str_callback: Callable[[str], str] = lambda x: x + "defg"
-
-        self.gs.add(
-            Entity(self.gs, Listener(int, int_callback)),
-            Entity(self.gs, Listener(str, str_callback)),
-            Entity(self.gs, Listener(str, str_callback)),
-            Entity(self.gs, Listener(int, int_callback)),
-        )
-
-    def test_untyped_emit(self) -> None:
-        res = self.gs.system(EventSystem).emit(3)
-        self.assertEqual(res, [], "Untyped emit expects no response")
-        res = self.gs.system(EventSystem).emit("str")
-        self.assertEqual(res, [], "Untyped emit expects no response")
-        res = self.gs.system(EventSystem).emit("str", int)
-        self.assertEqual(res, [], "Mistyped emit expects no response")
-
-    def test_typed_emit(self) -> None:
-        res = self.gs.system(EventSystem).emit(3, int)
-        self.assertEqual(res, [13, 13], "Typed emit expects responses")
-
-        res = self.gs.system(EventSystem).emit("abc", str)
-        self.assertEqual(res, ["abcdefg"] * 2, "Typed emit expects responses")
+    gs.add(
+        Entity(gs, Listener(int, int_callback)),
+        Entity(gs, Listener(str, str_callback)),
+        Entity(gs, Listener(str, str_callback)),
+        Entity(gs, Listener(int, int_callback)),
+    )
+    return gs
 
 
-class MultiGameState(TestCase):
+def test_untyped_emit_single(single_game_state: GameState) -> None:
+    gs = single_game_state
+    res = gs.system(EventSystem).emit(3)
+    assert res == [], "Untyped emit expects no response"
+    res = gs.system(EventSystem).emit("str")
+    assert res == [], "Untyped emit expects no response"
+    res = gs.system(EventSystem).emit("str", int)
+    assert res == [], "Mistyped emit expects no response"
 
-    def setUp(self) -> None:
-        self.gs1 = GameState(EventSystem(), PolygonSpace())
-        self.gs2 = GameState(EventSystem(), PolygonSpace())
 
-        int_callback: Callable[[int], int] = lambda x: x + 10
-        str_callback: Callable[[str], str] = lambda x: x + "defg"
+def test_typed_emit_single(single_game_state: GameState) -> None:
+    gs = single_game_state
+    res = gs.system(EventSystem).emit(3, int)
+    assert res == [13, 13], "Typed emit expects responses"
 
-        self.gs1.add(
-            Entity(self.gs1, Listener(int, int_callback)),
-            Entity(self.gs1, Listener(int, int_callback)),
-        )
-        self.gs2.add(
-            Entity(self.gs1, Listener(str, str_callback)),
-            Entity(self.gs1, Listener(str, str_callback)),
-        )
+    res = gs.system(EventSystem).emit("abc", str)
+    assert res == ["abcdefg"] * 2, "Typed emit expects responses"
 
-    def test_untyped_emit(self) -> None:
 
-        res = self.gs1.system(EventSystem).emit(3)
-        self.assertEqual(res, [], "Untyped emit expects no response")
-        res = self.gs1.system(EventSystem).emit("str")
-        self.assertEqual(res, [], "Untyped emit expects no response")
-        res = self.gs1.system(EventSystem).emit("str", int)
-        self.assertEqual(res, [], "Mistyped emit expects no response")
+@pytest.fixture
+def multi_game_state() -> tuple[GameState, GameState]:
+    gs1 = GameState(EventSystem(), PolygonSpace())
+    gs2 = GameState(EventSystem(), PolygonSpace())
 
-    def test_multi_gs(self) -> None:
+    int_callback: Callable[[int], int] = lambda x: x + 10
+    str_callback: Callable[[str], str] = lambda x: x + "defg"
 
-        res = self.gs1.system(EventSystem).emit(3, int)
-        self.assertEqual(res, [13, 13], "Typed emit expects responses")
-        res = self.gs1.system(EventSystem).emit("abc", str)
-        self.assertEqual(res, [], "Expects no listeners")
+    gs1.add(
+        Entity(gs1, Listener(int, int_callback)),
+        Entity(gs1, Listener(int, int_callback)),
+    )
+    gs2.add(
+        Entity(gs2, Listener(str, str_callback)),
+        Entity(gs2, Listener(str, str_callback)),
+    )
+    return gs1, gs2
 
-        res = self.gs2.system(EventSystem).emit("abc", str)
-        self.assertEqual(res, ["abcdefg"] * 2, "Typed emit expects responses")
-        res = self.gs2.system(EventSystem).emit(3, int)
-        self.assertEqual(res, [], "Expects no listeners")
+
+def test_untyped_emit_multi(multi_game_state: tuple[GameState, GameState]) -> None:
+    gs1, _ = multi_game_state
+
+    res = gs1.system(EventSystem).emit(3)
+    assert res == [], "Untyped emit expects no response"
+    res = gs1.system(EventSystem).emit("str")
+    assert res == [], "Untyped emit expects no response"
+    res = gs1.system(EventSystem).emit("str", int)
+    assert res == [], "Mistyped emit expects no response"
+
+
+def test_multi_gs(multi_game_state: tuple[GameState, GameState]) -> None:
+    gs1, gs2 = multi_game_state
+
+    res = gs1.system(EventSystem).emit(3, int)
+    assert res == [13, 13], "Typed emit expects responses"
+    res = gs1.system(EventSystem).emit("abc", str)
+    assert res == [], "Expects no listeners"
+
+    res = gs2.system(EventSystem).emit("abc", str)
+    assert res == ["abcdefg"] * 2, "Typed emit expects responses"
+    res = gs2.system(EventSystem).emit(3, int)
+    assert res == [], "Expects no listeners"
