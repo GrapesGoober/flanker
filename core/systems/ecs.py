@@ -27,10 +27,11 @@ class Entity:
 
     def __init__(self, gs: "GameState", *components: Component) -> None:
         self.gs = gs
+        self.uid = int.from_bytes(random.randbytes(8))
         self._components: list[Component] = list(components)
 
     def __hash__(self) -> int:
-        return int.from_bytes(random.randbytes(8))
+        return self.uid
 
     @property
     def components(self) -> list[Component]:
