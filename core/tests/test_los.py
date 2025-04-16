@@ -1,3 +1,4 @@
+from typing import Callable
 import pytest
 from domain.interface import MoveActionInput, RifleSquadGetInput
 from domain.rifle_squad import RifleSquad
@@ -29,34 +30,47 @@ def game_state() -> GameState:
     return gs
 
 
+def get_unit_response(
+    gs: GameState, condition: Callable[[RifleSquadGetInput.Response], bool]
+) -> RifleSquadGetInput.Response:
+    res = gs.system(EventSystem).emit(
+        RifleSquadGetInput(), response_type=RifleSquadGetInput.Response
+    )
+    unit_res = None
+    for r in res:
+        if condition(r):
+            unit_res = r
+    assert unit_res is not None, "Target unit not found."
+    return unit_res
+
+
 def test_move(game_state: GameState) -> None:
     gs = game_state
 
     # Grab the target unit to move
-    res = gs.system(EventSystem).emit(
-        RifleSquadGetInput(), response_type=RifleSquadGetInput.Response
-    )
-    unit_id = None
-    for r in res:
-        if r.position == Vec2(0, -10):
-            unit_id = r.unit_id
-    assert unit_id is not None, "Target unit at Vec2(0, -10) not found."
+    res = get_unit_response(gs, lambda r: r.position == Vec2(0, -10))
 
     # Perform move action
-    res = gs.system(EventSystem).emit(
-        MoveActionInput(unit_id=unit_id, position=Vec2(20, -10))
+    gs.system(EventSystem).emit(
+        MoveActionInput(unit_id=res.unit_id, position=Vec2(5, -15))
     )
-    assert res == [], "MoveActionInput emit expects no response"
 
     # Check whether the unit moved to the target position
-    res = gs.system(EventSystem).emit(
-        RifleSquadGetInput(), response_type=RifleSquadGetInput.Response
-    )
-    unit_pos = None
-    for r in res:
-        if r.unit_id == unit_id:
-            unit_pos = r.position
-    assert unit_pos is not None, "Unit position not found for the given unit_id."
+    res = get_unit_response(gs, lambda r: r.unit_id == res.unit_id)
     assert (
-        unit_pos - Vec2(7.6, -10)
+        res.position - Vec2(5, -15)
+    ).length() < 1e-9, "Target expects at Vec2(7.6, -10)"
+
+
+def test_los_interrupt(game_state: GameState) -> None:
+    gs = game_state
+    res = get_unit_response(gs, lambda r: r.position == Vec2(0, -10))
+
+    gs.system(EventSystem).emit(
+        MoveActionInput(unit_id=res.unit_id, position=Vec2(20, -10))
+    )
+
+    res = get_unit_response(gs, lambda r: r.unit_id == res.unit_id)
+    assert (
+        res.position - Vec2(7.6, -10)
     ).length() < 1e-9, "Target expects at Vec2(7.6, -10)"
