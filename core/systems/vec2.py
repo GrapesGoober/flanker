@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from math import sqrt
+from math import sqrt, isclose
 
 
 @dataclass
@@ -34,3 +34,8 @@ class Vec2:
     def normalized(self) -> "Vec2":
         length = self.length()
         return self / length if length else Vec2(0, 0)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vec2):
+            return NotImplemented
+        return isclose(self.x, other.x) and isclose(self.y, other.y)

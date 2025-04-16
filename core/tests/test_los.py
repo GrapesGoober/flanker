@@ -1,6 +1,6 @@
 from typing import Callable
 import pytest
-from domain.interface import MoveActionInput, RifleSquadGetInput
+from domain.interface import MoveActionInput, RifleSquadGetInput, UnitState
 from domain.rifle_squad import RifleSquad
 from systems.ecs import Entity, GameState
 from systems.event import EventSystem
@@ -57,9 +57,7 @@ def test_move(game_state: GameState) -> None:
 
     # Check whether the unit moved to the target position
     res = get_unit_response(gs, lambda r: r.unit_id == res.unit_id)
-    assert (
-        res.position - Vec2(5, -15)
-    ).length() < 1e-9, "Target expects at Vec2(7.6, -10)"
+    assert res.position == Vec2(5, -15), "Target expects at Vec2(5, -15)"
 
 
 def test_los_interrupt(game_state: GameState) -> None:
@@ -71,6 +69,5 @@ def test_los_interrupt(game_state: GameState) -> None:
     )
 
     res = get_unit_response(gs, lambda r: r.unit_id == res.unit_id)
-    assert (
-        res.position - Vec2(7.6, -10)
-    ).length() < 1e-9, "Target expects at Vec2(7.6, -10)"
+    assert res.position == Vec2(7.6, -10), "Target expects at Vec2(7.6, -10)"
+    assert res.state == UnitState.SUPPRESSED, "Target expects to be suppressed"
