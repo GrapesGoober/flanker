@@ -2,8 +2,8 @@ from systems.event import EventSystem, Listener
 from systems.ecs import Entity, GameState
 from systems.polygon import PolygonSpace
 from systems.vec2 import Vec2
-from terrain import TerrainFlag
-from interface import (
+from domain.terrain import TerrainFlag
+from domain.interface import (
     UnitState,
     MoveActionInput,
     RifleSquadGetInput,
@@ -25,21 +25,21 @@ class RifleSquad(Entity):
 
     def on_get(self, e: RifleSquadGetInput) -> RifleSquadGetInput.Response:
         return RifleSquadGetInput.Response(
-            unit_id=id(self), position=self.position, state=self.state
+            unit_id=hash(self), position=self.position, state=self.state
         )
 
     def on_get_los(self, event: LosCheckEvent) -> LosCheckEvent.Response | None:
-        if event.parent_id == id(self):
+        if event.parent_id == hash(self):
             return
         intersects = self.gs.system(PolygonSpace).get_intersects(
             start=event.position, end=self.position, mask=TerrainFlag.OPAQUE
         )
         if list(intersects) == []:
-            return LosCheckEvent.Response(parent_id=id(self))
+            return LosCheckEvent.Response(parent_id=hash(self))
         return None
 
     def on_move(self, e: MoveActionInput) -> None:
-        if e.unit_id != id(self):
+        if e.unit_id != hash(self):
             return
         if self.state != UnitState.ACTIVE:
             return
@@ -57,7 +57,7 @@ class RifleSquad(Entity):
         for i in range(int(length / STEP_SIZE) + 1):
             point = self.position + direction * (STEP_SIZE * i)
             los: list[LosCheckEvent.Response] = self.gs.system(EventSystem).emit(
-                LosCheckEvent(parent_id=id(self), position=point),
+                LosCheckEvent(parent_id=hash(self), position=point),
                 response_type=LosCheckEvent.Response,
             )
             if los:  # Spotted, stop right there
