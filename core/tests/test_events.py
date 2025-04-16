@@ -2,12 +2,11 @@ import pytest
 from typing import Callable
 from systems.ecs import Entity, GameState
 from systems.event import EventSystem, Listener
-from systems.polygon import PolygonSpace
 
 
 @pytest.fixture
 def single_game_state() -> GameState:
-    gs = GameState(EventSystem(), PolygonSpace())
+    gs = GameState(EventSystem())
 
     int_callback: Callable[[int], int] = lambda x: x + 10
     str_callback: Callable[[str], str] = lambda x: x + "defg"
@@ -42,8 +41,8 @@ def test_typed_emit_single(single_game_state: GameState) -> None:
 
 @pytest.fixture
 def multi_game_state() -> tuple[GameState, GameState]:
-    gs1 = GameState(EventSystem(), PolygonSpace())
-    gs2 = GameState(EventSystem(), PolygonSpace())
+    gs1 = GameState(EventSystem())
+    gs2 = GameState(EventSystem())
 
     int_callback: Callable[[int], int] = lambda x: x + 10
     str_callback: Callable[[str], str] = lambda x: x + "defg"
