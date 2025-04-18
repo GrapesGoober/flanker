@@ -1,1 +1,2 @@
-pytest
+pytest~=8.0
+esper~=3.0

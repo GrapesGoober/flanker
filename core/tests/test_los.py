@@ -1,73 +1,57 @@
-from typing import Callable
 import pytest
-from domain.interface import MoveActionInput, RifleSquadGetInput, UnitState
-from domain.rifle_squad import RifleSquad
-from systems.ecs import Entity, GameState
-from systems.event import EventSystem
-from systems.polygon import Polygon, PolygonSpace
-from systems.vec2 import Vec2
+import esper
+
+from components import MovementControls, TerrainFeature, Transform, UnitCondition
+from move_controls import MoveControls
+from terrain_types import TerrainType, to_flags
+from vec2 import Vec2
+
+
+def create_rifle_squad(pos: Vec2) -> int:
+    return esper.create_entity(
+        Transform(position=pos), MovementControls(), UnitCondition()
+    )
 
 
 @pytest.fixture
-def game_state() -> GameState:
-    gs = GameState(EventSystem(), PolygonSpace())
-    gs.add(
-        Entity(
-            gs,
-            Polygon(
-                [
-                    Vec2(0, 0),
-                    Vec2(10, 0),
-                    Vec2(10, 10),
-                    Vec2(0, 10),
-                    Vec2(0, 0),
-                ]
-            ),
+def game_state() -> tuple[int, Transform, UnitCondition]:
+    # Rifle Squads
+    esper.create_entity(
+        Transform(position=Vec2(15, 20)), MovementControls(), UnitCondition()
+    )
+    id = esper.create_entity(
+        unit_pos := Transform(position=Vec2(0, -10)),
+        MovementControls(),
+        unit_cond := UnitCondition(),
+    )
+    # 10x10 opaque box
+    esper.create_entity(
+        Transform(position=Vec2(0, 0)),
+        TerrainFeature(
+            vertices=[
+                Vec2(0, 0),
+                Vec2(10, 0),
+                Vec2(10, 10),
+                Vec2(0, 10),
+                Vec2(0, 0),
+            ],
+            flag=to_flags(TerrainType.FOREST),
         ),
-        RifleSquad(gs, Vec2(0, -10)),
-        RifleSquad(gs, Vec2(15, 20)),
-    )
-    return gs
-
-
-def get_unit_response(
-    gs: GameState, condition: Callable[[RifleSquadGetInput.Response], bool]
-) -> RifleSquadGetInput.Response:
-    res = gs.system(EventSystem).emit(
-        RifleSquadGetInput(), response_type=RifleSquadGetInput.Response
-    )
-    unit_res = None
-    for r in res:
-        if condition(r):
-            unit_res = r
-    assert unit_res is not None, "Target unit not found."
-    return unit_res
-
-
-def test_move(game_state: GameState) -> None:
-    gs = game_state
-
-    # Grab the target unit to move
-    res = get_unit_response(gs, lambda r: r.position == Vec2(0, -10))
-
-    # Perform move action
-    gs.system(EventSystem).emit(
-        MoveActionInput(unit_id=res.unit_id, position=Vec2(5, -15))
     )
 
-    # Check whether the unit moved to the target position
-    res = get_unit_response(gs, lambda r: r.unit_id == res.unit_id)
-    assert res.position == Vec2(5, -15), "Target expects at Vec2(5, -15)"
+    return id, unit_pos, unit_cond
 
 
-def test_los_interrupt(game_state: GameState) -> None:
-    gs = game_state
-    res = get_unit_response(gs, lambda r: r.position == Vec2(0, -10))
+def test_move(game_state: tuple[int, Transform, UnitCondition]) -> None:
+    id, unit_pos, _ = game_state
+    MoveControls.move(id, Vec2(5, -15))
+    assert unit_pos == Vec2(5, -15), "Target expects at Vec2(5, -15)"
 
-    gs.system(EventSystem).emit(
-        MoveActionInput(unit_id=res.unit_id, position=Vec2(20, -10))
-    )
 
-    res = get_unit_response(gs, lambda r: r.unit_id == res.unit_id)
-    assert res.position == Vec2(7.6, -10), "Target expects at Vec2(7.6, -10)"
-    assert res.state == UnitState.SUPPRESSED, "Target expects to be suppressed"
+def test_los_interrupt(game_state: tuple[int, Transform, UnitCondition]) -> None:
+    id, unit_pos, unit_cond = game_state
+    MoveControls.move(id, Vec2(20, -10))
+    assert unit_pos == Vec2(7.6, -10), "Target expects at Vec2(7.6, -10)"
+    assert (
+        unit_cond.status == UnitCondition.status.SUPPRESSED
+    ), "Target expects to be suppressed"
