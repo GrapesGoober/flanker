@@ -9,20 +9,15 @@ _MOVE_COMPONENTS = Transform, MovementControls, UnitCondition
 _MOVE_COMPONENTS_T = tuple[Transform, MovementControls, UnitCondition]
 
 
-def get_components(unit_id: int) -> _MOVE_COMPONENTS_T | None:
-    return esper.try_components(unit_id, *_MOVE_COMPONENTS)
-
-
 class MoveControls:
+    """A static utility class for handling movement logic of combat units."""
+
     @staticmethod
     def move(unit_id: int, to: Vec2) -> None:
-
-        # Check component dependency
-        if not (comps := get_components(unit_id)):
-            return
-        transform, _, cond = comps
+        """Actively moves a unit to a positon. Susceptible to reactive fire."""
 
         # Check move action is valid
+        transform, _, cond = MoveControls._get_components(unit_id)
         if cond.status != UnitCondition.Status.ACTIVE:
             return
         for intersect in Intersects.get(transform.position, to):
@@ -40,3 +35,12 @@ class MoveControls:
             if is_spotted:  # Spotted, stop right there
                 cond.status = UnitCondition.status.SUPPRESSED
                 return
+
+    @staticmethod
+    def _get_components(unit_id: int) -> _MOVE_COMPONENTS_T:
+        """Get requires components for move action."""
+        if not (comps := esper.try_components(unit_id, *_MOVE_COMPONENTS)):
+            raise ValueError(
+                f"Move operation for {unit_id=} requires {_MOVE_COMPONENTS}"
+            )
+        return comps
