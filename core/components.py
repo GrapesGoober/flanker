@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from core.terrain_types import TerrainType
 from core.vec2 import Vec2
 
 
@@ -32,5 +33,5 @@ class MovementControls:
 class TerrainFeature:
     """Component for terrain feature polygon."""
 
-    vertices: list[Vec2]
-    flag: int = -1
+    points: list[Vec2]
+    terrain_type: TerrainType

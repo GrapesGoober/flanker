@@ -6,7 +6,7 @@ from core.components import (
     UnitCondition,
 )
 from core.vec2 import Vec2
-from core.terrain_types import TerrainType, to_flags
+from core.terrain_types import TerrainType
 from fastapi import FastAPI
 import esper
 
@@ -19,14 +19,14 @@ def add_terrain() -> None:
     esper.create_entity(
         Transform(Vec2(0, 0)),
         TerrainFeature(
-            vertices=[  # a 10x10 box
+            points=[  # a 10x10 box
                 Vec2(0, 0),
                 Vec2(150, 0),
                 Vec2(150, 50),
                 Vec2(0, 50),
                 Vec2(0, 0),
             ],
-            flag=to_flags(TerrainType.FOREST),
+            terrain_type=TerrainType.FOREST,
         ),
     )
 
@@ -48,6 +48,7 @@ class RifleSquadModel:
 @dataclass
 class TerrainFeatureModel:
     feature_id: int
+    terrain_type: TerrainType
     position: Vec2
     vertices: list[Vec2]
 
@@ -70,7 +71,10 @@ async def get_terrain() -> list[TerrainFeatureModel]:
     for ent, (transform, feat) in esper.get_components(Transform, TerrainFeature):
         response.append(
             TerrainFeatureModel(
-                feature_id=ent, position=transform.position, vertices=feat.vertices
+                feature_id=ent,
+                terrain_type=feat.terrain_type,
+                position=transform.position,
+                vertices=feat.points,
             )
         )
     return response
