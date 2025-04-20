@@ -9,15 +9,15 @@ _MOVE_COMPONENTS = Transform, MovementControls, UnitCondition
 _MOVE_COMPONENTS_T = tuple[Transform, MovementControls, UnitCondition]
 
 
-class MoveControls:
-    """A static utility class for handling movement logic of combat units."""
+class MoveAction:
+    """A static utility class for handling movement action of combat units."""
 
     @staticmethod
     def move(unit_id: int, to: Vec2) -> None:
         """Actively moves a unit to a positon. Susceptible to reactive fire."""
 
         # Check move action is valid
-        transform, _, cond = MoveControls._get_components(unit_id)
+        transform, _, cond = MoveAction._get_components(unit_id)
         if cond.status != UnitCondition.Status.ACTIVE:
             return
         for intersect in Intersects.get(transform.position, to):

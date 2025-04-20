@@ -5,11 +5,14 @@ from vec2 import Vec2
 
 @dataclass
 class Transform:
+    """Component for a transformation of an entity."""
+
     position: Vec2
 
 
 @dataclass
 class UnitCondition:
+    """Component for combat unit status conditions."""
 
     class Status(Enum):
         ACTIVE = "ACTIVE"
@@ -19,10 +22,15 @@ class UnitCondition:
 
 
 @dataclass
-class MovementControls: ...
+class MovementControls:
+    """Component for movement controls configurations."""
+
+    ...
 
 
 @dataclass
 class TerrainFeature:
+    """Component for terrain feature polygon."""
+
     vertices: list[Vec2]
     flag: int = -1

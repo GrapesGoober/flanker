@@ -2,6 +2,8 @@ from enum import Enum, IntFlag, auto
 
 
 class TerrainType(Enum):
+    """Supported terrain types."""
+
     FOREST = "FOREST"
     ROAD = "ROAD"
     FIELD = "FIELD"
