@@ -33,12 +33,10 @@ class MoveControls:
         STEP_SIZE = 0.1
         length = (to - transform.position).length()
         direction = (to - transform.position).normalized()
-        for _ in range(int(length / STEP_SIZE) + 1):
-            transform.position += direction * STEP_SIZE
+        for i in range(0, int(length / STEP_SIZE) + 1):
+            step = min(STEP_SIZE, length - i * STEP_SIZE)
+            transform.position += direction * step
             is_spotted = LosChecker.is_spotted(unit_id)
             if is_spotted:  # Spotted, stop right there
                 cond.status = UnitCondition.status.SUPPRESSED
                 return
-
-        # # Not spotted, move to destination
-        transform.position = to
