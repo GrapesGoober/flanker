@@ -1,10 +1,10 @@
 import pytest
 import esper
 
-from components import MovementControls, TerrainFeature, Transform, UnitCondition
-from move_action import MoveAction
-from terrain_types import TerrainType, to_flags
-from vec2 import Vec2
+from core.components import MovementControls, TerrainFeature, Transform, UnitCondition
+from core.move_action import MoveAction
+from core.terrain_types import TerrainType, to_flags
+from core.vec2 import Vec2
 
 
 @pytest.fixture

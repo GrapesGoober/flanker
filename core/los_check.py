@@ -1,7 +1,7 @@
 import esper
-from components import Transform
-from intersects import Intersects
-from terrain_types import TerrainFlag
+from core.components import Transform
+from core.intersects import Intersects
+from core.terrain_types import TerrainFlag
 
 
 # TODO: check components for LosControls and UnitCondition

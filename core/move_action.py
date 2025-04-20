@@ -1,9 +1,9 @@
 import esper
-from components import MovementControls, Transform, UnitCondition
-from intersects import Intersects
-from los_check import LosChecker
-from terrain_types import TerrainFlag
-from vec2 import Vec2
+from core.components import MovementControls, Transform, UnitCondition
+from core.intersects import Intersects
+from core.los_check import LosChecker
+from core.terrain_types import TerrainFlag
+from core.vec2 import Vec2
 
 _MOVE_COMPONENTS = Transform, MovementControls, UnitCondition
 _MOVE_COMPONENTS_T = tuple[Transform, MovementControls, UnitCondition]

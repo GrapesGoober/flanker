@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from vec2 import Vec2
+from core.vec2 import Vec2
 
 
 @dataclass

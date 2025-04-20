@@ -1,9 +1,9 @@
+import esper
 from dataclasses import dataclass
 from itertools import pairwise
 from typing import Iterable
-from components import Transform, TerrainFeature
-from vec2 import Vec2
-import esper
+from core.components import Transform, TerrainFeature
+from core.vec2 import Vec2
 
 
 @dataclass
