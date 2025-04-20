@@ -10,7 +10,7 @@ _MOVE_COMPONENTS_T = tuple[Transform, MovementControls, UnitCondition]
 
 
 class MoveAction:
-    """A static utility class for handling movement action of combat units."""
+    """Static class for handling movement action of combat units."""
 
     @staticmethod
     def move(unit_id: int, to: Vec2) -> None:

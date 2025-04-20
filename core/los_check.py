@@ -6,6 +6,7 @@ from terrain_types import TerrainFlag
 
 # TODO: check components for LosControls and UnitCondition
 class LosChecker:
+    """Utility for checking Line-of-Sight (LOS) for combat units."""
 
     @staticmethod
     def is_spotted(target_id: int) -> bool:

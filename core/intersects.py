@@ -15,6 +15,8 @@ class Intersection:
 
 
 class Intersects:
+    """Utility for finding intersections between line segments and terrain features."""
+
     @staticmethod
     def get(start: Vec2, end: Vec2, mask: int = -1) -> Iterable[Intersection]:
         """Returns iterable of intersection points between the line segment and features."""
