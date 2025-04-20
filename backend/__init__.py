@@ -1,0 +1,57 @@
+from dataclasses import dataclass
+from core.components import (
+    MovementControls,
+    TerrainFeature,
+    Transform,
+    UnitCondition,
+)
+from core.vec2 import Vec2
+from core.terrain_types import TerrainType, to_flags
+from fastapi import FastAPI
+import esper
+
+
+def add_rifle_squad(pos: Vec2) -> None:
+    esper.create_entity(Transform(position=pos), MovementControls(), UnitCondition())
+
+
+def add_terrain() -> None:
+    esper.create_entity(
+        Transform(Vec2(0, 0)),
+        TerrainFeature(
+            vertices=[  # a 10x10 box
+                Vec2(0, 0),
+                Vec2(150, 0),
+                Vec2(150, 50),
+                Vec2(0, 50),
+                Vec2(0, 0),
+            ],
+            flag=to_flags(TerrainType.FOREST),
+        ),
+    )
+
+
+add_rifle_squad(Vec2(0, -50))
+add_rifle_squad(Vec2(120, 60))
+add_terrain()
+
+app = FastAPI()
+
+
+@dataclass
+class RifleSquad:
+    unit_id: int
+    position: Vec2
+    status: UnitCondition.Status
+
+
+@app.get("/api/rifle-squad")
+async def get_rifle_squads() -> list[RifleSquad]:
+    response: list[RifleSquad] = []
+    for ent, (transform, condition) in esper.get_components(Transform, UnitCondition):
+        response.append(
+            RifleSquad(
+                unit_id=ent, position=transform.position, status=condition.status
+            )
+        )
+    return response
