@@ -11,11 +11,14 @@ from fastapi import FastAPI
 import esper
 
 
-def add_rifle_squad(pos: Vec2) -> None:
-    esper.create_entity(Transform(position=pos), MovementControls(), UnitCondition())
+def setup_game_state() -> None:
+    esper.create_entity(
+        Transform(position=Vec2(0, -50)), MovementControls(), UnitCondition()
+    )
+    esper.create_entity(
+        Transform(position=Vec2(120, 60)), MovementControls(), UnitCondition()
+    )
 
-
-def add_terrain() -> None:
     esper.create_entity(
         Transform(Vec2(0, 0)),
         TerrainFeature(
@@ -27,13 +30,10 @@ def add_terrain() -> None:
                 Vec2(0, 0),
             ],
             flag=to_flags(TerrainType.FOREST),
+            terrain_type=TerrainType.FOREST,
         ),
     )
 
-
-add_rifle_squad(Vec2(0, -50))
-add_rifle_squad(Vec2(120, 60))
-add_terrain()
 
 app = FastAPI()
 
@@ -50,6 +50,7 @@ class TerrainFeatureModel:
     feature_id: int
     position: Vec2
     vertices: list[Vec2]
+    terrain_type: TerrainType
 
 
 @app.get("/api/rifle-squad")
@@ -70,7 +71,10 @@ async def get_terrain() -> list[TerrainFeatureModel]:
     for ent, (transform, feat) in esper.get_components(Transform, TerrainFeature):
         response.append(
             TerrainFeatureModel(
-                feature_id=ent, position=transform.position, vertices=feat.vertices
+                feature_id=ent,
+                position=transform.position,
+                vertices=feat.vertices,
+                terrain_type=feat.terrain_type,
             )
         )
     return response
