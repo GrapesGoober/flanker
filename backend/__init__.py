@@ -35,6 +35,7 @@ def setup_game_state() -> None:
     )
 
 
+setup_game_state()
 app = FastAPI()
 
 
