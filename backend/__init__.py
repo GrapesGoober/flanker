@@ -39,19 +39,38 @@ app = FastAPI()
 
 
 @dataclass
-class RifleSquad:
+class RifleSquadModel:
     unit_id: int
     position: Vec2
     status: UnitCondition.Status
 
 
+@dataclass
+class TerrainFeatureModel:
+    feature_id: int
+    position: Vec2
+    vertices: list[Vec2]
+
+
 @app.get("/api/rifle-squad")
-async def get_rifle_squads() -> list[RifleSquad]:
-    response: list[RifleSquad] = []
+async def get_rifle_squads() -> list[RifleSquadModel]:
+    response: list[RifleSquadModel] = []
     for ent, (transform, condition) in esper.get_components(Transform, UnitCondition):
         response.append(
-            RifleSquad(
+            RifleSquadModel(
                 unit_id=ent, position=transform.position, status=condition.status
+            )
+        )
+    return response
+
+
+@app.get("/api/terrain")
+async def get_terrain() -> list[TerrainFeatureModel]:
+    response: list[TerrainFeatureModel] = []
+    for ent, (transform, feat) in esper.get_components(Transform, TerrainFeature):
+        response.append(
+            TerrainFeatureModel(
+                feature_id=ent, position=transform.position, vertices=feat.vertices
             )
         )
     return response
