@@ -3,7 +3,7 @@ import esper
 
 from core.components import MovementControls, TerrainFeature, Transform, UnitCondition
 from core.move_action import MoveAction
-from core.terrain_types import TerrainType
+from core.terrain_types import TerrainType, to_flags
 from core.vec2 import Vec2
 
 
@@ -23,14 +23,14 @@ def game_state() -> tuple[int, Transform, UnitCondition]:
     esper.create_entity(
         Transform(position=Vec2(0, 0)),
         TerrainFeature(
-            points=[
+            vertices=[
                 Vec2(0, 0),
                 Vec2(10, 0),
                 Vec2(10, 10),
                 Vec2(0, 10),
                 Vec2(0, 0),
             ],
-            terrain_type=TerrainType.FOREST,
+            flag=to_flags(TerrainType.FOREST),
         ),
     )
 
