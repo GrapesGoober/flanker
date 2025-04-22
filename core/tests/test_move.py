@@ -30,6 +30,7 @@ def game_state() -> tuple[int, Transform, UnitCondition]:
                 Vec2(0, 10),
                 Vec2(0, 0),
             ],
+            terrain_type=TerrainType.FOREST,
             flag=to_flags(TerrainType.FOREST),
         ),
     )
