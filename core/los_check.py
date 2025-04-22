@@ -1,7 +1,6 @@
 import esper
-from core.components import Transform
+from core.components import Transform, TerrainFeature
 from core.intersects import Intersects
-from core.terrain_types import TerrainFlag
 
 
 # TODO: check components for LosControls and UnitCondition
@@ -33,6 +32,6 @@ class LosChecker:
         intersects = Intersects.get(
             start=source_transform.position,
             end=target_transform.position,
-            mask=TerrainFlag.OPAQUE,
+            mask=TerrainFeature.Flag.OPAQUE,
         )
         return not any(intersects)

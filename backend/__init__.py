@@ -1,65 +1,30 @@
-from dataclasses import dataclass
-from core.components import (
-    MovementControls,
-    TerrainFeature,
-    Transform,
-    UnitCondition,
-)
-from core.vec2 import Vec2
-from core.terrain_types import TerrainType, to_flags
 from fastapi import FastAPI
 import esper
 
+from core.vec2 import Vec2
+from core.components import TerrainFeature, Transform, UnitCondition
+from backend.domain import SquadModel, TerrainModel, add_forest, add_squad
 
-def setup_game_state() -> None:
-    esper.create_entity(
-        Transform(position=Vec2(0, -50)), MovementControls(), UnitCondition()
-    )
-    esper.create_entity(
-        Transform(position=Vec2(120, 60)), MovementControls(), UnitCondition()
-    )
-
-    esper.create_entity(
-        Transform(Vec2(0, 0)),
-        TerrainFeature(
-            vertices=[  # a 10x10 box
-                Vec2(0, 0),
-                Vec2(150, 0),
-                Vec2(150, 50),
-                Vec2(0, 50),
-                Vec2(0, 0),
-            ],
-            flag=to_flags(TerrainType.FOREST),
-            terrain_type=TerrainType.FOREST,
-        ),
-    )
-
-
-setup_game_state()
+add_squad(Vec2(0, -50))
+add_squad(Vec2(120, 60))
+add_forest(  # a 10x10 box
+    [
+        Vec2(0, 0),
+        Vec2(150, 0),
+        Vec2(150, 50),
+        Vec2(0, 50),
+        Vec2(0, 0),
+    ]
+)
 app = FastAPI()
 
 
-@dataclass
-class RifleSquadModel:
-    unit_id: int
-    position: Vec2
-    status: UnitCondition.Status
-
-
-@dataclass
-class TerrainFeatureModel:
-    feature_id: int
-    position: Vec2
-    vertices: list[Vec2]
-    terrain_type: TerrainType
-
-
 @app.get("/api/rifle-squad")
-async def get_rifle_squads() -> list[RifleSquadModel]:
-    response: list[RifleSquadModel] = []
+async def get_rifle_squads() -> list[SquadModel]:
+    response: list[SquadModel] = []
     for ent, (transform, condition) in esper.get_components(Transform, UnitCondition):
         response.append(
-            RifleSquadModel(
+            SquadModel(
                 unit_id=ent, position=transform.position, status=condition.status
             )
         )
@@ -67,15 +32,15 @@ async def get_rifle_squads() -> list[RifleSquadModel]:
 
 
 @app.get("/api/terrain")
-async def get_terrain() -> list[TerrainFeatureModel]:
-    response: list[TerrainFeatureModel] = []
+async def get_terrain() -> list[TerrainModel]:
+    response: list[TerrainModel] = []
     for ent, (transform, feat) in esper.get_components(Transform, TerrainFeature):
         response.append(
-            TerrainFeatureModel(
+            TerrainModel(
                 feature_id=ent,
                 position=transform.position,
                 vertices=feat.vertices,
-                terrain_type=feat.terrain_type,
+                terrain_type=TerrainModel.Types.FOREST,
             )
         )
     return response

@@ -1,8 +1,7 @@
 import esper
-from core.components import MovementControls, Transform, UnitCondition
+from core.components import MovementControls, Transform, UnitCondition, TerrainFeature
 from core.intersects import Intersects
 from core.los_check import LosChecker
-from core.terrain_types import TerrainFlag
 from core.vec2 import Vec2
 
 _MOVE_COMPONENTS = Transform, MovementControls, UnitCondition
@@ -21,7 +20,7 @@ class MoveAction:
         if cond.status != UnitCondition.Status.ACTIVE:
             return
         for intersect in Intersects.get(transform.position, to):
-            if not (intersect.feature.flag & TerrainFlag.WALKABLE):
+            if not (intersect.feature.flag & TerrainFeature.Flag.WALKABLE):
                 return
 
         # For each subdivision step of move line, check LoS

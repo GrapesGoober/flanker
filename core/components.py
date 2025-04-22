@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum
-from core.terrain_types import TerrainType
+from enum import Enum, IntFlag, auto
 from core.vec2 import Vec2
 
 
@@ -34,5 +33,14 @@ class TerrainFeature:
     """Component for terrain feature polygon."""
 
     vertices: list[Vec2]
-    terrain_type: TerrainType
     flag: int = -1
+
+    class Flag(IntFlag):
+        """Bit flags for allowable terrain feature properties."""
+
+        NONE = 0  # Important: Start with 0 for no flags
+        OPAQUE = auto()
+        WALKABLE = auto()
+        DRIVABLE = auto()
+        WATER = auto()
+        HILL = auto()
