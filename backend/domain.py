@@ -27,6 +27,7 @@ class TerrainModel:
         FOREST = "FOREST"
         ROAD = "ROAD"
         FIELD = "FIELD"
+        WATER = "WATER"
 
 
 # Mapping table for TerrainType to TerrainFlag and vice versa
@@ -36,6 +37,7 @@ TERRAIN_FLAGS: dict[TerrainModel.Types, TerrainFeature.Flag] = {
     TerrainModel.Types.ROAD: TerrainFeature.Flag.WALKABLE
     | TerrainFeature.Flag.DRIVABLE,
     TerrainModel.Types.FIELD: TerrainFeature.Flag.WALKABLE,
+    TerrainModel.Types.WATER: TerrainFeature.Flag.WATER,
 }
 
 
@@ -45,11 +47,11 @@ def add_squad(pos: Vec2) -> None:
 
 
 @staticmethod
-def add_forest(vertices: list[Vec2]) -> None:
+def add_terrain(vertices: list[Vec2], terrain_type: TerrainModel.Types) -> None:
     esper.create_entity(
         Transform(Vec2(0, 0)),
         TerrainFeature(
             vertices=vertices,
-            flag=TERRAIN_FLAGS[TerrainModel.Types.FOREST],
+            flag=TERRAIN_FLAGS[terrain_type],
         ),
     )

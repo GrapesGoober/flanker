@@ -1,21 +1,11 @@
 from fastapi import FastAPI
 import esper
 
-from core.vec2 import Vec2
+from backend.scene import create_scene
 from core.components import TerrainFeature, Transform, UnitCondition
-from backend.domain import SquadModel, TerrainModel, add_forest, add_squad
+from backend.domain import SquadModel, TerrainModel
 
-add_squad(Vec2(0, -50))
-add_squad(Vec2(120, 60))
-add_forest(  # a 10x10 box
-    [
-        Vec2(0, 0),
-        Vec2(150, 0),
-        Vec2(150, 50),
-        Vec2(0, 50),
-        Vec2(0, 0),
-    ]
-)
+create_scene()
 app = FastAPI()
 
 
