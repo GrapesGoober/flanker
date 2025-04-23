@@ -33,6 +33,12 @@
 		const point = d3.pointer(event, svgLayer); // Get click coords in SVG space
 		const inverted = transform.invert(point); // Adjust for zoom/pan
 		markers.push(inverted);
+		PrettyPrintMarkers();
+	}
+
+	function PrettyPrintMarkers() {
+		const pythonSyntax = markers.map(([x, y]) => `Vec2(${Math.round(x)}, ${Math.round(y)})`).join(', ');
+		console.log(`[${pythonSyntax}]`);
 	}
 </script>
 
