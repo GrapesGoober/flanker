@@ -20,8 +20,8 @@
 <style lang="less">
 	@stroke-width: 2;
 	.forest {
-		fill: lightgreen;
-		stroke: green;
+		fill: #90ac6d;
+		stroke: #82A755;
 		stroke-width: @stroke-width;
 	}
 	.road {
