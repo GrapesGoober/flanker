@@ -13,20 +13,28 @@
 	<polyline points={ToString(featureData.coordinates)} class="road" />
 {:else if featureData.terrain_type == TerrainType.Field}
 	<polygon points={ToString(featureData.coordinates)} class="field" />
+{:else if featureData.terrain_type == TerrainType.Water}
+	<polygon points={ToString(featureData.coordinates)} class="water" />
 {:else}
 	<polygon points={ToString(featureData.coordinates)} fill="pink" stroke="red" stroke-width="2" />
 {/if}
 
 <style lang="less">
 	@stroke-width: 2;
+	@road-width: 4;
 	.forest {
-		fill: #90ac6d;
-		stroke: #82A755;
+		fill: #ccd5ae;
+		stroke: #c2cca0;
 		stroke-width: @stroke-width;
 	}
 	.road {
 		fill: none;
-		stroke: grey;
+		stroke: #d3c1b0;
+		stroke-width: @road-width;
+	}
+	.water {
+		fill: #c6e3fd;
+		stroke: #a2d2ff;
 		stroke-width: @stroke-width;
 	}
 	.field {

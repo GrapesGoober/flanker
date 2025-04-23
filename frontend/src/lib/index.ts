@@ -2,6 +2,7 @@ export enum TerrainType {
 	Forest = 'FOREST',
 	Road = 'ROAD',
 	Field = 'FIELD',
+	Water = 'WATER',
 	Undefined = 0
 }
 

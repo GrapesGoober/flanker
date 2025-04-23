@@ -3,7 +3,7 @@ import esper
 
 from backend.scene import create_scene
 from core.components import TerrainFeature, Transform, UnitCondition
-from backend.domain import SquadModel, TerrainModel
+from backend.domain import SquadModel, TerrainModel, get_terrain_type
 
 create_scene()
 app = FastAPI()
@@ -30,7 +30,7 @@ async def get_terrain() -> list[TerrainModel]:
                 feature_id=ent,
                 position=transform.position,
                 vertices=feat.vertices,
-                terrain_type=TerrainModel.Types.FOREST,
+                terrain_type=get_terrain_type(feat.flag),
             )
         )
     return response

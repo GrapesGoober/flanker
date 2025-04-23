@@ -94,3 +94,43 @@ def create_scene() -> None:
         ],
         terrain_type=TerrainModel.Types.WATER,
     )
+
+    add_terrain(
+        [
+            Vec2(101, -160),
+            Vec2(92, 16),
+            Vec2(106, 27),
+            Vec2(197, 35),
+            Vec2(250, 43),
+            Vec2(262, 53),
+            Vec2(269, 256),
+            Vec2(284, 370),
+            Vec2(307, 499),
+            Vec2(320, 507),
+            Vec2(485, 503),
+            Vec2(501, 502),
+            Vec2(606, 519),
+            Vec2(618, 527),
+            Vec2(773, 633),
+        ],
+        terrain_type=TerrainModel.Types.ROAD,
+    )
+
+    add_terrain(
+        [Vec2(92, 16), Vec2(41, -19), Vec2(-45, -38), Vec2(-205, -70)],
+        terrain_type=TerrainModel.Types.ROAD,
+    )
+
+    add_terrain(
+        [
+            Vec2(308, 499),
+            Vec2(277, 487),
+            Vec2(117, 465),
+            Vec2(-85, 436),
+            Vec2(-100, 418),
+            Vec2(-142, 236),
+            Vec2(-190, 121),
+            Vec2(-262, -157),
+        ],
+        terrain_type=TerrainModel.Types.ROAD,
+    )

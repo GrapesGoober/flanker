@@ -30,15 +30,31 @@ class TerrainModel:
         WATER = "WATER"
 
 
-# Mapping table for TerrainType to TerrainFlag and vice versa
-TERRAIN_FLAGS: dict[TerrainModel.Types, TerrainFeature.Flag] = {
-    TerrainModel.Types.FOREST: TerrainFeature.Flag.OPAQUE
-    | TerrainFeature.Flag.WALKABLE,
-    TerrainModel.Types.ROAD: TerrainFeature.Flag.WALKABLE
-    | TerrainFeature.Flag.DRIVABLE,
-    TerrainModel.Types.FIELD: TerrainFeature.Flag.WALKABLE,
-    TerrainModel.Types.WATER: TerrainFeature.Flag.WATER,
-}
+def get_terrain_flags(terrain_type: TerrainModel.Types) -> TerrainFeature.Flag:
+    match terrain_type:
+        case TerrainModel.Types.FOREST:
+            return TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE
+        case TerrainModel.Types.ROAD:
+            return TerrainFeature.Flag.WALKABLE | TerrainFeature.Flag.DRIVABLE
+        case TerrainModel.Types.FIELD:
+            return TerrainFeature.Flag.WALKABLE
+        case TerrainModel.Types.WATER:
+            return TerrainFeature.Flag.WATER
+        case _:
+            raise ValueError(f"Unknown terrain type: {terrain_type}")
+
+
+def get_terrain_type(flags: int) -> TerrainModel.Types:
+    if flags == (TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE):
+        return TerrainModel.Types.FOREST
+    elif flags == (TerrainFeature.Flag.WALKABLE | TerrainFeature.Flag.DRIVABLE):
+        return TerrainModel.Types.ROAD
+    elif flags == TerrainFeature.Flag.WALKABLE:
+        return TerrainModel.Types.FIELD
+    elif flags == TerrainFeature.Flag.WATER:
+        return TerrainModel.Types.WATER
+    else:
+        raise ValueError(f"Unknown terrain flags: {flags}")
 
 
 @staticmethod
@@ -52,6 +68,6 @@ def add_terrain(vertices: list[Vec2], terrain_type: TerrainModel.Types) -> None:
         Transform(Vec2(0, 0)),
         TerrainFeature(
             vertices=vertices,
-            flag=TERRAIN_FLAGS[terrain_type],
+            flag=get_terrain_flags(terrain_type),
         ),
     )
