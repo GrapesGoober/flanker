@@ -3,7 +3,7 @@ import esper
 
 from backend.scene import create_scene
 from core.components import TerrainFeature, Transform, UnitCondition
-from backend.domain import SquadModel, TerrainModel, get_terrain_type
+from backend.assets import SquadModel, TerrainModel, get_terrain_type
 
 create_scene()
 app = FastAPI()

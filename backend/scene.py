@@ -1,4 +1,4 @@
-from backend.domain import TerrainModel, add_terrain, add_squad
+from backend.assets import TerrainModel, add_terrain, add_squad
 from core.vec2 import Vec2
 
 
