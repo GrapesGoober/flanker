@@ -1,10 +1,9 @@
 import pytest
 import esper
 
-from components import MovementControls, TerrainFeature, Transform, UnitCondition
-from move_action import MoveAction
-from terrain_types import TerrainType, to_flags
-from vec2 import Vec2
+from core.components import MovementControls, TerrainFeature, Transform, UnitCondition
+from core.move_action import MoveAction
+from core.vec2 import Vec2
 
 
 @pytest.fixture
@@ -30,7 +29,7 @@ def game_state() -> tuple[int, Transform, UnitCondition]:
                 Vec2(0, 10),
                 Vec2(0, 0),
             ],
-            flag=to_flags(TerrainType.FOREST),
+            flag=TerrainFeature.Flag.OPAQUE,
         ),
     )
 
