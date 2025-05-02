@@ -11,7 +11,7 @@ from core.vec2 import Vec2
 class Fixture:
     gs: GameState
     unit_id: int
-    unit_state: CombatUnit
+    unit: CombatUnit
 
 
 @pytest.fixture
@@ -42,14 +42,12 @@ def fixture() -> Fixture:
 
 def test_move(fixture: Fixture) -> None:
     MoveAction.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
-    assert fixture.unit_state.position == Vec2(5, -15), "Target expects at Vec2(5, -15)"
+    assert fixture.unit.position == Vec2(5, -15), "Target expects at Vec2(5, -15)"
 
 
 def test_los_interrupt(fixture: Fixture) -> None:
     MoveAction.move(fixture.gs, fixture.unit_id, Vec2(20, -10))
-    assert fixture.unit_state.position == Vec2(
-        7.6, -10
-    ), "Target expects at Vec2(7.6, -10)"
+    assert fixture.unit.position == Vec2(7.6, -10), "Target expects at Vec2(7.6, -10)"
     assert (
-        fixture.unit_state.status == CombatUnit.status.SUPPRESSED
+        fixture.unit.status == CombatUnit.status.SUPPRESSED
     ), "Target expects to be suppressed"

@@ -10,9 +10,9 @@ app = FastAPI()
 @app.get("/api/rifle-squad")
 async def get_rifle_squads() -> list[SquadModel]:
     response: list[SquadModel] = []
-    for ent, state in gs.get_entities(CombatUnit):
+    for ent, unit in gs.get_entities(CombatUnit):
         response.append(
-            SquadModel(unit_id=ent, position=state.position, status=state.status)
+            SquadModel(unit_id=ent, position=unit.position, status=unit.status)
         )
     return response
 
