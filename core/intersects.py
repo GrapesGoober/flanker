@@ -1,8 +1,8 @@
-import esper
 from dataclasses import dataclass
 from itertools import pairwise
 from typing import Iterable
 from core.components import Transform, TerrainFeature
+from core.ecs import World
 from core.vec2 import Vec2
 
 
@@ -18,9 +18,13 @@ class Intersects:
     """Utility for finding intersections between line segments and terrain features."""
 
     @staticmethod
-    def get(start: Vec2, end: Vec2, mask: int = -1) -> Iterable[Intersection]:
+    def get(
+        world: World, start: Vec2, end: Vec2, mask: int = -1
+    ) -> Iterable[Intersection]:
         """Returns iterable of intersection points between the line segment and features."""
-        for _, (pos, feature) in esper.get_components(Transform, TerrainFeature):
+        for id, feature in world.get_entities(TerrainFeature):
+            if not (pos := world.get_component(id, Transform)):
+                continue
             adjusted_vertices = [v + pos.position for v in feature.vertices]
             if feature.flag & mask:
                 for b1, b2 in pairwise(adjusted_vertices):

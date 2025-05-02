@@ -1,5 +1,5 @@
-import esper
 from core.components import Transform, TerrainFeature
+from core.ecs import World
 from core.intersects import Intersects
 
 
@@ -8,28 +8,30 @@ class LosChecker:
     """Utility for checking Line-of-Sight (LOS) for combat units."""
 
     @staticmethod
-    def is_spotted(target_id: int) -> bool:
+    def is_spotted(world: World, target_id: int) -> bool:
         """Returns `True` if entity can be spotted by any other entities"""
-        if not esper.has_components(target_id, Transform):
+        if not world.get_component(target_id, Transform):
             return False
-        for source_id, _ in esper.get_component(Transform):
-            if source_id == target_id:
+
+        for source_ent, _ in world.get_entities(Transform):
+            if source_ent == target_id:
                 continue
-            is_seen = LosChecker.can_see(source_id, target_id)
+            is_seen = LosChecker.can_see(world, source_ent, target_id)
             if is_seen:
                 return True
         return False
 
     @staticmethod
-    def can_see(source_id: int, target_id: int) -> bool:
+    def can_see(world: World, source_ent: int, target_ent: int) -> bool:
         """Returns `True` if entity `source_id` can see entity `target_id`"""
-        if not (source_transform := esper.try_component(source_id, Transform)):
+        if not (source_transform := world.get_component(source_ent, Transform)):
             return False
-        if not (target_transform := esper.try_component(target_id, Transform)):
+        if not (target_transform := world.get_component(target_ent, Transform)):
             return False
 
         # If any OPAQUE terrain exists in the way, return False
         intersects = Intersects.get(
+            world=world,
             start=source_transform.position,
             end=target_transform.position,
             mask=TerrainFeature.Flag.OPAQUE,
