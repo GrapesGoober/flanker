@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from itertools import pairwise
 from typing import Iterable
 from core.components import Transform, TerrainFeature
-from core.ecs import World
+from core.world import World
 from core.vec2 import Vec2
 
 

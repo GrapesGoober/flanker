@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import pytest
 
 from core.components import MovementControls, TerrainFeature, Transform, UnitCondition
-from core.ecs import World
+from core.world import World
 from core.move_action import MoveAction
 from core.vec2 import Vec2
 

@@ -1,5 +1,5 @@
 from core.components import MovementControls, Transform, UnitCondition, TerrainFeature
-from core.ecs import World
+from core.world import World
 from core.intersects import Intersects
 from core.los_check import LosChecker
 from core.vec2 import Vec2

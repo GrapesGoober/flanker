@@ -1,5 +1,5 @@
 from core.components import Transform, TerrainFeature
-from core.ecs import World
+from core.world import World
 from core.intersects import Intersects
 
 
