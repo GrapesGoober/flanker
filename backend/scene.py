@@ -1,12 +1,19 @@
-from backend.assets import TerrainModel, add_terrain, add_squad
+from backend.assets import TerrainModel, add_squad, add_terrain
 from core.vec2 import Vec2
+from core.world import World
 
 
-def create_scene() -> None:
-    add_squad(Vec2(120, 160))
-    add_squad(Vec2(180, 260))
+def create_world() -> World:
+    """Initialize and return a World instance with predefined entities."""
+    world = World()
 
+    # Add squads
+    add_squad(world, Vec2(120, 160))
+    add_squad(world, Vec2(180, 260))
+
+    # Add terrains
     add_terrain(
+        world,
         [
             Vec2(100, 100),
             Vec2(130, 70),
@@ -21,6 +28,7 @@ def create_scene() -> None:
         terrain_type=TerrainModel.Types.FOREST,
     )
     add_terrain(
+        world,
         [
             Vec2(308, 95),
             Vec2(313, 135),
@@ -44,93 +52,4 @@ def create_scene() -> None:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    add_terrain(
-        [
-            Vec2(-47, 159),
-            Vec2(-21, 188),
-            Vec2(-2, 229),
-            Vec2(19, 276),
-            Vec2(60, 307),
-            Vec2(106, 322),
-            Vec2(161, 326),
-            Vec2(221, 312),
-            Vec2(280, 289),
-            Vec2(349, 254),
-            Vec2(398, 262),
-            Vec2(440, 283),
-            Vec2(486, 319),
-            Vec2(528, 351),
-            Vec2(573, 388),
-            Vec2(610, 434),
-            Vec2(673, 475),
-            Vec2(737, 480),
-            Vec2(794, 475),
-            Vec2(848, 448),
-            Vec2(907, 418),
-            Vec2(910, 459),
-            Vec2(854, 485),
-            Vec2(798, 507),
-            Vec2(732, 517),
-            Vec2(658, 508),
-            Vec2(576, 467),
-            Vec2(534, 415),
-            Vec2(498, 386),
-            Vec2(456, 362),
-            Vec2(416, 341),
-            Vec2(354, 328),
-            Vec2(291, 349),
-            Vec2(219, 365),
-            Vec2(136, 371),
-            Vec2(64, 361),
-            Vec2(-12, 339),
-            Vec2(-76, 287),
-            Vec2(-108, 205),
-            Vec2(-146, 120),
-            Vec2(-161, 63),
-            Vec2(-183, -15),
-            Vec2(-135, -38),
-            Vec2(-109, 20),
-            Vec2(-82, 91),
-        ],
-        terrain_type=TerrainModel.Types.WATER,
-    )
-
-    add_terrain(
-        [
-            Vec2(101, -160),
-            Vec2(92, 16),
-            Vec2(106, 27),
-            Vec2(197, 35),
-            Vec2(250, 43),
-            Vec2(262, 53),
-            Vec2(269, 256),
-            Vec2(284, 370),
-            Vec2(307, 499),
-            Vec2(320, 507),
-            Vec2(485, 503),
-            Vec2(501, 502),
-            Vec2(606, 519),
-            Vec2(618, 527),
-            Vec2(773, 633),
-        ],
-        terrain_type=TerrainModel.Types.ROAD,
-    )
-
-    add_terrain(
-        [Vec2(92, 16), Vec2(41, -19), Vec2(-45, -38), Vec2(-205, -70)],
-        terrain_type=TerrainModel.Types.ROAD,
-    )
-
-    add_terrain(
-        [
-            Vec2(308, 499),
-            Vec2(277, 487),
-            Vec2(117, 465),
-            Vec2(-85, 436),
-            Vec2(-100, 418),
-            Vec2(-142, 236),
-            Vec2(-190, 121),
-            Vec2(-262, -157),
-        ],
-        terrain_type=TerrainModel.Types.ROAD,
-    )
+    return world

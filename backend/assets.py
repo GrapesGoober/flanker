@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
-
-import esper
-
 from core.components import MovementControls, TerrainFeature, Transform, UnitCondition
 from core.vec2 import Vec2
+from core.world import World
 
 
 @dataclass
@@ -58,13 +56,15 @@ def get_terrain_type(flags: int) -> TerrainModel.Types:
 
 
 @staticmethod
-def add_squad(pos: Vec2) -> None:
-    esper.create_entity(Transform(position=pos), MovementControls(), UnitCondition())
+def add_squad(world: World, pos: Vec2) -> None:
+    world.add_entity(Transform(position=pos), MovementControls(), UnitCondition())
 
 
 @staticmethod
-def add_terrain(vertices: list[Vec2], terrain_type: TerrainModel.Types) -> None:
-    esper.create_entity(
+def add_terrain(
+    world: World, vertices: list[Vec2], terrain_type: TerrainModel.Types
+) -> None:
+    world.add_entity(
         Transform(Vec2(0, 0)),
         TerrainFeature(
             vertices=vertices,
