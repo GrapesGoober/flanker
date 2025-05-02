@@ -14,39 +14,37 @@ export type TerrainFeatureData = {
 };
 
 export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
-    const res = await fetch('/api/terrain');
-    if (!res.ok) throw new Error('Failed to fetch terrain');
+	const res = await fetch('/api/terrain');
+	if (!res.ok) throw new Error('Failed to fetch terrain');
 
-    const resData: {
-        feature_id: number;
-        position: Vec2;
-        vertices: Vec2[];
-        terrain_type: TerrainType;
-    }[] = await res.json();
+	const resData: {
+		feature_id: number;
+		vertices: Vec2[];
+		terrain_type: TerrainType;
+	}[] = await res.json();
 
-    resData.forEach((data) => {
-        const err = new Error('Terrain response data invalid');
-        if (
-            typeof data !== 'object' ||
-            data === null ||
-            typeof data.feature_id !== 'number' ||
-            typeof data.position !== 'object' ||
-            !Array.isArray(data.vertices) ||
-            typeof data.terrain_type !== 'string'
-        ) {
-            throw err;
-        }
-    });
+	resData.forEach((data) => {
+		const err = new Error('Terrain response data invalid');
+		if (
+			typeof data !== 'object' ||
+			data === null ||
+			typeof data.feature_id !== 'number' ||
+			!Array.isArray(data.vertices) ||
+			typeof data.terrain_type !== 'string'
+		) {
+			throw err;
+		}
+	});
 
-    const terrainData: TerrainFeatureData[] = resData.map((data) => ({
-        terrain_type: data.terrain_type,
-        coordinates: data.vertices.map((v) => ({
-            x: v.x + data.position.x,
-            y: v.y + data.position.y
-        }))
-    }));
+	const terrainData: TerrainFeatureData[] = resData.map((data) => ({
+		terrain_type: data.terrain_type,
+		coordinates: data.vertices.map((v) => ({
+			x: v.x,
+			y: v.y
+		}))
+	}));
 
-    return terrainData;
+	return terrainData;
 }
 
 export enum UnitState {
@@ -61,33 +59,33 @@ export type RifleSquadData = {
 };
 
 export async function GetRifleSquadsData(): Promise<RifleSquadData[]> {
-    const res = await fetch('/api/rifle-squad');
-    if (!res.ok) throw new Error('Failed to fetch rifle squads');
+	const res = await fetch('/api/rifle-squad');
+	if (!res.ok) throw new Error('Failed to fetch rifle squads');
 
-    const resData: {
-        unit_id: number;
-        position: Vec2;
-        status: UnitState;
-    }[] = await res.json();
+	const resData: {
+		unit_id: number;
+		position: Vec2;
+		status: UnitState;
+	}[] = await res.json();
 
-    resData.forEach((data) => {
-        const err = new Error('Units response data invalid');
-        if (
-            typeof data !== 'object' ||
-            data === null ||
-            typeof data.unit_id !== 'number' ||
-            typeof data.position !== 'object' ||
-            typeof data.status !== 'string'
-        ) {
-            throw err;
-        }
-    });
+	resData.forEach((data) => {
+		const err = new Error('Units response data invalid');
+		if (
+			typeof data !== 'object' ||
+			data === null ||
+			typeof data.unit_id !== 'number' ||
+			typeof data.position !== 'object' ||
+			typeof data.status !== 'string'
+		) {
+			throw err;
+		}
+	});
 
-    const units: RifleSquadData[] = resData.map((data) => ({
-        unit_id: data.unit_id,
-        position: data.position,
-        state: data.status
-    }));
+	const units: RifleSquadData[] = resData.map((data) => ({
+		unit_id: data.unit_id,
+		position: data.position,
+		state: data.status
+	}));
 
-    return units;
+	return units;
 }

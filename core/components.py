@@ -4,20 +4,14 @@ from core.vec2 import Vec2
 
 
 @dataclass
-class Transform:
-    """Component for a transformation of an entity."""
-
-    position: Vec2
-
-
-@dataclass
-class UnitCondition:
+class CombatUnit:
     """Component for combat unit status conditions."""
 
     class Status(Enum):
         ACTIVE = "ACTIVE"
         SUPPRESSED = "SUPPRESSED"
 
+    position: Vec2
     status: Status = Status.ACTIVE
 
 

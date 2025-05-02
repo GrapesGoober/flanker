@@ -1,22 +1,18 @@
 from fastapi import FastAPI
-import esper
-
-from backend.scene import create_scene
-from core.components import TerrainFeature, Transform, UnitCondition
+from backend.scene import create_gamestate
+from core.components import TerrainFeature, CombatUnit
 from backend.assets import SquadModel, TerrainModel, get_terrain_type
 
-create_scene()
+gs = create_gamestate()
 app = FastAPI()
 
 
 @app.get("/api/rifle-squad")
 async def get_rifle_squads() -> list[SquadModel]:
     response: list[SquadModel] = []
-    for ent, (transform, condition) in esper.get_components(Transform, UnitCondition):
+    for ent, unit in gs.get_entities(CombatUnit):
         response.append(
-            SquadModel(
-                unit_id=ent, position=transform.position, status=condition.status
-            )
+            SquadModel(unit_id=ent, position=unit.position, status=unit.status)
         )
     return response
 
@@ -24,11 +20,10 @@ async def get_rifle_squads() -> list[SquadModel]:
 @app.get("/api/terrain")
 async def get_terrain() -> list[TerrainModel]:
     response: list[TerrainModel] = []
-    for ent, (transform, feat) in esper.get_components(Transform, TerrainFeature):
+    for ent, feat in gs.get_entities(TerrainFeature):
         response.append(
             TerrainModel(
                 feature_id=ent,
-                position=transform.position,
                 vertices=feat.vertices,
                 terrain_type=get_terrain_type(feat.flag),
             )
