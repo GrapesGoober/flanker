@@ -1,19 +1,19 @@
 from backend.assets import TerrainModel, add_squad, add_terrain
 from core.vec2 import Vec2
-from core.world import World
+from core.gamestate import GameState
 
 
-def create_world() -> World:
-    """Initialize and return a World instance with predefined entities."""
-    world = World()
+def create_gamestate() -> GameState:
+    """Initialize and return a `GameState` instance with predefined entities."""
+    gs = GameState()
 
     # Add squads
-    add_squad(world, Vec2(120, 160))
-    add_squad(world, Vec2(180, 260))
+    add_squad(gs, Vec2(120, 160))
+    add_squad(gs, Vec2(180, 260))
 
     # Add terrains
     add_terrain(
-        world,
+        gs,
         [
             Vec2(100, 100),
             Vec2(130, 70),
@@ -28,7 +28,7 @@ def create_world() -> World:
         terrain_type=TerrainModel.Types.FOREST,
     )
     add_terrain(
-        world,
+        gs,
         [
             Vec2(308, 95),
             Vec2(313, 135),
@@ -52,4 +52,4 @@ def create_world() -> World:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    return world
+    return gs

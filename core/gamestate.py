@@ -1,7 +1,7 @@
 from typing import Any, Iterable
 
 
-class World:
+class GameState:
     def __init__(self) -> None:
         self._id_counter: int = 0
         self._entities: dict[int, dict[type[Any], Any]] = {}

@@ -1,5 +1,5 @@
 from core.components import MovementControls, CombatUnit, TerrainFeature
-from core.world import World
+from core.gamestate import GameState
 from core.intersects import Intersects
 from core.los_check import LosChecker
 from core.vec2 import Vec2
@@ -9,17 +9,17 @@ class MoveAction:
     """Static class for handling movement action of combat units."""
 
     @staticmethod
-    def move(world: World, unit_id: int, to: Vec2) -> None:
+    def move(gs: GameState, unit_id: int, to: Vec2) -> None:
         """Actively moves a unit to a positon. Susceptible to reactive fire."""
 
         # Check move action is valid
-        if not (unit := world.get_component(unit_id, CombatUnit)):
+        if not (unit := gs.get_component(unit_id, CombatUnit)):
             return
         if unit.status != CombatUnit.Status.ACTIVE:
             return
-        if not world.get_component(unit_id, MovementControls):
+        if not gs.get_component(unit_id, MovementControls):
             return
-        for intersect in Intersects.get(world, unit.position, to):
+        for intersect in Intersects.get(gs, unit.position, to):
             if not (intersect.feature.flag & TerrainFeature.Flag.WALKABLE):
                 return
 
@@ -30,7 +30,7 @@ class MoveAction:
         for i in range(0, int(length / STEP_SIZE) + 1):
             step = min(STEP_SIZE, length - i * STEP_SIZE)
             unit.position += direction * step
-            is_spotted = LosChecker.is_spotted(world, unit_id)
+            is_spotted = LosChecker.is_spotted(gs, unit_id)
             if is_spotted:  # Spotted, stop right there
                 unit.status = CombatUnit.status.SUPPRESSED
                 return
