@@ -1,4 +1,4 @@
-from core.components import MovementControls, Transform, UnitCondition, TerrainFeature
+from core.components import MovementControls, CombatUnit, TerrainFeature
 from core.world import World
 from core.intersects import Intersects
 from core.los_check import LosChecker
@@ -13,26 +13,24 @@ class MoveAction:
         """Actively moves a unit to a positon. Susceptible to reactive fire."""
 
         # Check move action is valid
-        if not (cond := world.get_component(unit_id, UnitCondition)):
+        if not (unit := world.get_component(unit_id, CombatUnit)):
             return
-        if cond.status != UnitCondition.Status.ACTIVE:
+        if unit.status != CombatUnit.Status.ACTIVE:
             return
         if not world.get_component(unit_id, MovementControls):
             return
-        if not (transform := world.get_component(unit_id, Transform)):
-            return
-        for intersect in Intersects.get(world, transform.position, to):
+        for intersect in Intersects.get(world, unit.position, to):
             if not (intersect.feature.flag & TerrainFeature.Flag.WALKABLE):
                 return
 
         # For each subdivision step of move line, check LoS
         STEP_SIZE = 0.1
-        length = (to - transform.position).length()
-        direction = (to - transform.position).normalized()
+        length = (to - unit.position).length()
+        direction = (to - unit.position).normalized()
         for i in range(0, int(length / STEP_SIZE) + 1):
             step = min(STEP_SIZE, length - i * STEP_SIZE)
-            transform.position += direction * step
+            unit.position += direction * step
             is_spotted = LosChecker.is_spotted(world, unit_id)
             if is_spotted:  # Spotted, stop right there
-                cond.status = UnitCondition.status.SUPPRESSED
+                unit.status = CombatUnit.status.SUPPRESSED
                 return
