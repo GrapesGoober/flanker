@@ -19,7 +19,7 @@ class FireAction:
             return
 
         # Check if target is in line of sight
-        if not LosChecker.can_see(gs, attacker_id, target_id):
+        if not LosChecker.check(gs, attacker_id, target_id):
             return
 
         # Suppress the target if it survives

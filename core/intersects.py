@@ -22,7 +22,7 @@ class Intersects:
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
         """Returns iterable of intersection points between the line segment and features."""
-        for _, feature in gs.get_entities(TerrainFeature):
+        for _, feature in gs.query(TerrainFeature):
             if feature.flag & mask:
                 for b1, b2 in pairwise(feature.vertices):
                     if (intsct := Intersects._get(start, end, b1, b2)) is not None:

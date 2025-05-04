@@ -27,7 +27,7 @@ class GameState:
         """Get an entity's component. None if entity or component not found."""
         return self._entities.get(entity_id, {}).get(component_type)
 
-    def get_entities[T](self, component_type: type[T]) -> Iterable[tuple[int, T]]:
+    def query[T](self, component_type: type[T]) -> Iterable[tuple[int, T]]:
         """Yields all entities with a specific component type."""
         if component_type in self._cache:
             yield from self._cache[component_type]
