@@ -2,15 +2,23 @@
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
 	import RifleSquad from './rifle-squad.svelte';
-	import { GetTerrainData, GetRifleSquadsData, type RifleSquadData, type TerrainFeatureData } from '$lib';
+	import {
+		GetTerrainData,
+		GetRifleSquadsData,
+		MoveRifleSquad,
+		type RifleSquadData,
+		type TerrainFeatureData,
+		type Vec2
+	} from '$lib';
 	import TerrainFeature from './terrain-feature.svelte';
 
 	let svgLayer: SVGSVGElement | null = $state(null);
 	let zoomLayer: SVGGElement | null = $state(null);
 	let transform: d3.ZoomTransform = $state(d3.zoomIdentity);
-	let markers: [number, number][] = $state([]);
+	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let unitData: RifleSquadData[] = $state([]);
+	let selectedUnit: number | null = $state(null);
 
 	onMount(async () => {
 		terrainData = await GetTerrainData();
@@ -29,16 +37,39 @@
 		svg.call(zoom as any);
 	});
 
-	function AddMarker(event: MouseEvent) {
+	function OnMapClick(event: MouseEvent) {
+		// Convert click event to world position vector
 		const point = d3.pointer(event, svgLayer); // Get click coords in SVG space
-		const inverted = transform.invert(point); // Adjust for zoom/pan
-		markers.push(inverted);
-		PrettyPrintMarkers();
+		const inverted = transform.invert(point); // Adjust for zoom/pan to world space
+		const worldPos: Vec2 = { x: inverted[0], y: inverted[1] };
+
+		ApplyMarker(worldPos);
 	}
 
-	function PrettyPrintMarkers() {
-		const pythonSyntax = markers.map(([x, y]) => `Vec2(${Math.round(x)}, ${Math.round(y)})`).join(', ');
-		console.log(`[${pythonSyntax}]`);
+	async function ApplyMarker(worldPos: Vec2) {
+		// Only add a new marker for selected squad
+		if (selectedUnit === null) {
+			return;
+		}
+
+		// Only add a new marker when existing one doesn't exist
+		if (marker == null) {
+			marker = worldPos;
+			return;
+		}
+		// If existing one exists, interpret the click as either
+		// - confirming the marker if clicked close enough (bounding box)
+		// - or, cancelling the marker if clicked too far
+		const distance = Math.abs(worldPos.x - marker.x) + Math.abs(worldPos.y - marker.y);
+		const threshold = 10;
+		// Cancelling marker
+		if (distance >= threshold) {
+			marker = null;
+		}
+		// Confirming marker. Mutate the unit data
+		else {
+			unitData = await MoveRifleSquad(selectedUnit, marker);
+		}
 	}
 </script>
 
@@ -50,7 +81,7 @@
 	width="100%"
 	height="90vh"
 	style="border: 1px solid #ccc"
-	onclick={AddMarker}
+	onclick={OnMapClick}
 >
 	<g bind:this={zoomLayer}>
 		{#each terrainData as terrainFeatureData}
@@ -58,12 +89,14 @@
 		{/each}
 
 		{#each unitData as unit}
-			<RifleSquad position={unit.position} />
+			<g onclick={() => (selectedUnit = unit.unit_id)}>
+				<RifleSquad position={unit.position} isSelected={selectedUnit === unit.unit_id} />
+			</g>
 		{/each}
 
-		{#each markers as [x, y]}
-			<circle cx={x} cy={y} r="10" fill="red" />
-		{/each}
+		{#if marker}
+			<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
+		{/if}
 	</g>
 </svg>
 
