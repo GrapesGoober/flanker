@@ -15,6 +15,12 @@ class SquadModel:
 
 
 @dataclass
+class MoveActionRequest:
+    unit_id: int
+    to: Vec2
+
+
+@dataclass
 class TerrainModel:
     feature_id: int
     position: Vec2

@@ -3,7 +3,8 @@ import esper
 
 from backend.scene import create_scene
 from core.components import TerrainFeature, Transform, UnitCondition
-from backend.assets import SquadModel, TerrainModel, get_terrain_type
+from backend.assets import MoveActionRequest, SquadModel, TerrainModel, get_terrain_type
+from core.move_action import MoveAction
 
 create_scene()
 app = FastAPI()
@@ -19,6 +20,12 @@ async def get_rifle_squads() -> list[SquadModel]:
             )
         )
     return response
+
+
+@app.post("/api/move")
+async def action_move(body: MoveActionRequest) -> list[SquadModel]:
+    MoveAction.move(body.unit_id, body.to)
+    return await get_rifle_squads()
 
 
 @app.get("/api/terrain")
