@@ -1,18 +1,17 @@
 import esper
-from core.components import Transform, TerrainFeature
+from core.components import Transform, TerrainFeature, UnitCondition
 from core.intersects import Intersects
 
 
-# TODO: check components for LosControls and UnitCondition
 class LosChecker:
     """Utility for checking Line-of-Sight (LOS) for combat units."""
 
     @staticmethod
     def is_spotted(target_id: int) -> bool:
         """Returns `True` if entity can be spotted by any other entities"""
-        if not esper.has_components(target_id, Transform):
+        if not esper.has_components(target_id, Transform, UnitCondition):
             return False
-        for source_id, _ in esper.get_component(Transform):
+        for source_id, _ in esper.get_components(Transform, UnitCondition):
             if source_id == target_id:
                 continue
             is_seen = LosChecker.can_see(source_id, target_id)
