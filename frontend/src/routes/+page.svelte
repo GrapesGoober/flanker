@@ -37,39 +37,32 @@
 		svg.call(zoom as any);
 	});
 
-	function OnMapClick(event: MouseEvent) {
-		// Convert click event to world position vector
-		const point = d3.pointer(event, svgLayer); // Get click coords in SVG space
-		const inverted = transform.invert(point); // Adjust for zoom/pan to world space
-		const worldPos: Vec2 = { x: inverted[0], y: inverted[1] };
-
-		ApplyMarker(worldPos);
-	}
-
-	async function ApplyMarker(worldPos: Vec2) {
-		// Only add a new marker for selected squad
+	function AddMarker(event: MouseEvent) {
 		if (selectedUnit === null) {
 			return;
 		}
 
-		// Only add a new marker when existing one doesn't exist
-		if (marker == null) {
-			marker = worldPos;
-			return;
-		}
-		// If existing one exists, interpret the click as either
-		// - confirming the marker if clicked close enough (bounding box)
-		// - or, cancelling the marker if clicked too far
-		const distance = Math.abs(worldPos.x - marker.x) + Math.abs(worldPos.y - marker.y);
-		const threshold = 10;
-		// Cancelling marker
-		if (distance >= threshold) {
+		// Convert click event to world position vector
+		const point = d3.pointer(event, svgLayer); // Get click coords in SVG space
+		const worldPos = transform.invert(point); // Adjust for zoom/pan to world space
+		marker = { x: worldPos[0], y: worldPos[1] };
+	}
+
+	async function ConfirmMarker(_: MouseEvent) {
+		// Only apply marker for selected squad & existing marker
+		if (selectedUnit !== null && marker !== null) {
+			unitData = await MoveRifleSquad(selectedUnit, marker);
 			marker = null;
 		}
-		// Confirming marker. Mutate the unit data
-		else {
-			unitData = await MoveRifleSquad(selectedUnit, marker);
+	}
+
+	function SelectUnit(unit_id: number, event: MouseEvent) {
+		event.stopPropagation();
+		// Only select unit when no marker is active
+		if (marker !== null) {
+			return;
 		}
+		selectedUnit = unit_id;
 	}
 </script>
 
@@ -81,7 +74,7 @@
 	width="100%"
 	height="90vh"
 	style="border: 1px solid #ccc"
-	onclick={OnMapClick}
+	onclick={AddMarker}
 >
 	<g bind:this={zoomLayer}>
 		{#each terrainData as terrainFeatureData}
@@ -89,13 +82,15 @@
 		{/each}
 
 		{#each unitData as unit}
-			<g onclick={() => (selectedUnit = unit.unit_id)}>
+			<g onclick={(event) => SelectUnit(unit.unit_id, event)}>
 				<RifleSquad position={unit.position} isSelected={selectedUnit === unit.unit_id} />
 			</g>
 		{/each}
 
 		{#if marker}
-			<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
+			<g onclick={ConfirmMarker}>
+				<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
+			</g>
 		{/if}
 	</g>
 </svg>
