@@ -16,9 +16,15 @@ class CombatUnit:
 
 
 @dataclass
-class MovementControls:
+class MoveControls:
     """Component for movement controls configurations."""
 
+    class MoveType(Enum):
+        FOOT = "FOOT"
+        WHEEL = "WHEEL"
+        TRACK = "TRACK"
+
+    move_type: MoveType = MoveType.FOOT
     ...
 
 

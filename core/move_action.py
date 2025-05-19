@@ -1,4 +1,4 @@
-from core.components import CombatUnit, TerrainFeature
+from core.components import CombatUnit, TerrainFeature, MoveControls
 from core.gamestate import GameState
 from core.intersects import Intersects
 from core.los_check import LosChecker
@@ -16,6 +16,8 @@ class MoveAction:
         if not (unit := gs.get_component(unit_id, CombatUnit)):
             return
         if unit.status != CombatUnit.Status.ACTIVE:
+            return
+        if not (_ := gs.get_component(unit_id, MoveControls)):
             return
 
         for intersect in Intersects.get(gs, unit.position, to):

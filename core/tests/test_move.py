@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import MovementControls, TerrainFeature, CombatUnit
+from core.components import MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
 from core.move_action import MoveAction
 from core.vec2 import Vec2
@@ -18,9 +18,9 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    gs.add_entity(MovementControls(), CombatUnit(position=Vec2(15, 20)))
+    gs.add_entity(MoveControls(), CombatUnit(position=Vec2(15, 20)))
     id = gs.add_entity(
-        MovementControls(),
+        MoveControls(),
         cond := CombatUnit(position=Vec2(0, -10)),
     )
     # 10x10 opaque box
