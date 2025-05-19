@@ -1,32 +1,29 @@
 from dataclasses import dataclass
 import pytest
-import esper
-from core.components import TerrainFeature, UnitCondition, MovementControls, Transform
+
+from core.components import TerrainFeature, CombatUnit
 from core.fire_action import FireAction
+from core.gamestate import GameState
 from core.vec2 import Vec2
 
 
 @dataclass
 class Fixture:
+    gs: GameState
     attacker_id: int
     target_id: int
+    attacker: CombatUnit
+    target: CombatUnit
 
 
 @pytest.fixture
 def fixture() -> Fixture:
-    esper.clear_database()
-
+    gs = GameState()
     # Rifle Squads
-    attacker_id = esper.create_entity(
-        Transform(position=Vec2(0, -10)), MovementControls(), UnitCondition()
-    )
-    target_id = esper.create_entity(
-        Transform(position=Vec2(15, 20)), MovementControls(), UnitCondition()
-    )
-
+    attacker_id = gs.add_entity(attacker := CombatUnit(position=Vec2(0, -10)))
+    target_id = gs.add_entity(target := CombatUnit(position=Vec2(15, 20)))
     # 10x10 opaque box
-    esper.create_entity(
-        Transform(position=Vec2(0, 0)),
+    gs.add_entity(
         TerrainFeature(
             vertices=[
                 Vec2(0, 0),
@@ -38,22 +35,25 @@ def fixture() -> Fixture:
             flag=TerrainFeature.Flag.OPAQUE,
         ),
     )
-    return Fixture(attacker_id, target_id)
+    return Fixture(
+        gs=gs,
+        attacker_id=attacker_id,
+        target_id=target_id,
+        attacker=attacker,
+        target=target,
+    )
 
 
 def test_no_fire(fixture: Fixture) -> None:
-    FireAction.fire(fixture.attacker_id, fixture.target_id)
-    target_status = esper.component_for_entity(fixture.target_id, UnitCondition)
+    FireAction.fire(fixture.gs, fixture.attacker_id, fixture.target_id)
     assert (
-        target_status.status == UnitCondition.Status.ACTIVE
+        fixture.target.status == CombatUnit.Status.ACTIVE
     ), "Target target expects to be ACTIVE as it is not shot at"
 
 
 def test_fire(fixture: Fixture) -> None:
-    attacker_transform = esper.component_for_entity(fixture.target_id, Transform)
-    attacker_transform.position = Vec2(7.6, -10)
-    FireAction.fire(fixture.attacker_id, fixture.target_id)
-    target_status = esper.component_for_entity(fixture.target_id, UnitCondition)
+    fixture.attacker.position = Vec2(7.6, -10)
+    FireAction.fire(fixture.gs, fixture.attacker_id, fixture.target_id)
     assert (
-        target_status.status == UnitCondition.Status.SUPPRESSED
+        fixture.target.status == CombatUnit.Status.SUPPRESSED
     ), "Target target expects to be SUPPRESSED as it is shot at"

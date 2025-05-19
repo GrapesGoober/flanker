@@ -19,7 +19,6 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 
 	const resData: {
 		feature_id: number;
-		position: Vec2;
 		vertices: Vec2[];
 		terrain_type: TerrainType;
 	}[] = await res.json();
@@ -30,7 +29,6 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 			typeof data !== 'object' ||
 			data === null ||
 			typeof data.feature_id !== 'number' ||
-			typeof data.position !== 'object' ||
 			!Array.isArray(data.vertices) ||
 			typeof data.terrain_type !== 'string'
 		) {
@@ -41,8 +39,8 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 	const terrainData: TerrainFeatureData[] = resData.map((data) => ({
 		terrain_type: data.terrain_type,
 		coordinates: data.vertices.map((v) => ({
-			x: v.x + data.position.x,
-			y: v.y + data.position.y
+			x: v.x,
+			y: v.y
 		}))
 	}));
 
