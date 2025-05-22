@@ -5,6 +5,8 @@ from core.vec2 import Vec2
 
 @dataclass
 class Transform:
+    """Component for 2D linear transformations."""
+
     position: Vec2
 
 
