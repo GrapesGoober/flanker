@@ -4,6 +4,11 @@ from core.vec2 import Vec2
 
 
 @dataclass
+class Transform:
+    position: Vec2
+
+
+@dataclass
 class CombatUnit:
     """Component for combat unit status conditions."""
 
@@ -11,7 +16,6 @@ class CombatUnit:
         ACTIVE = "ACTIVE"
         SUPPRESSED = "SUPPRESSED"
 
-    position: Vec2
     status: Status = Status.ACTIVE
 
 

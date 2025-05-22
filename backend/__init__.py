@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from backend.scene import create_gamestate
 from backend.assets import SquadModel, TerrainModel, MoveActionRequest, get_terrain_type
-from core.components import TerrainFeature, CombatUnit
+from core.components import TerrainFeature, CombatUnit, Transform
 from core.move_action import MoveAction
 
 gs = create_gamestate()
@@ -12,9 +12,9 @@ app = FastAPI()
 @app.get("/api/rifle-squad")
 async def get_rifle_squads() -> list[SquadModel]:
     response: list[SquadModel] = []
-    for ent, unit in gs.query(CombatUnit):
+    for ent, unit, transform in gs.query(CombatUnit, Transform):
         response.append(
-            SquadModel(unit_id=ent, position=unit.position, status=unit.status)
+            SquadModel(unit_id=ent, position=transform.position, status=unit.status)
         )
     return response
 

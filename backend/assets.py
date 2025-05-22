@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from core.components import MoveControls, TerrainFeature, CombatUnit
+from core.components import MoveControls, TerrainFeature, CombatUnit, Transform
 from core.vec2 import Vec2
 from core.gamestate import GameState
 
@@ -62,7 +62,7 @@ def get_terrain_type(flags: int) -> TerrainModel.Types:
 
 @staticmethod
 def add_squad(gs: GameState, pos: Vec2) -> None:
-    gs.add_entity(MoveControls(), CombatUnit(position=pos))
+    gs.add_entity(MoveControls(), CombatUnit(), Transform(position=pos))
 
 
 @staticmethod

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import TerrainFeature, CombatUnit
+from core.components import TerrainFeature, CombatUnit, Transform
 from core.fire_action import FireAction
 from core.gamestate import GameState
 from core.vec2 import Vec2
@@ -12,16 +12,14 @@ class Fixture:
     gs: GameState
     attacker_id: int
     target_id: int
-    attacker: CombatUnit
-    target: CombatUnit
 
 
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    attacker_id = gs.add_entity(attacker := CombatUnit(position=Vec2(0, -10)))
-    target_id = gs.add_entity(target := CombatUnit(position=Vec2(15, 20)))
+    attacker_id = gs.add_entity(CombatUnit(), Transform(position=Vec2(0, -10)))
+    target_id = gs.add_entity(CombatUnit(), Transform(position=Vec2(15, 20)))
     # 10x10 opaque box
     gs.add_entity(
         TerrainFeature(
@@ -39,21 +37,23 @@ def fixture() -> Fixture:
         gs=gs,
         attacker_id=attacker_id,
         target_id=target_id,
-        attacker=attacker,
-        target=target,
     )
 
 
 def test_no_fire(fixture: Fixture) -> None:
     FireAction.fire(fixture.gs, fixture.attacker_id, fixture.target_id)
-    assert (
-        fixture.target.status == CombatUnit.Status.ACTIVE
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
+    assert target and (
+        target.status == CombatUnit.Status.ACTIVE
     ), "Target target expects to be ACTIVE as it is not shot at"
 
 
 def test_fire(fixture: Fixture) -> None:
-    fixture.attacker.position = Vec2(7.6, -10)
+    attacker_transform = fixture.gs.get_component(fixture.attacker_id, Transform)
+    assert attacker_transform
+    attacker_transform.position = Vec2(7.6, -10)
     FireAction.fire(fixture.gs, fixture.attacker_id, fixture.target_id)
-    assert (
-        fixture.target.status == CombatUnit.Status.SUPPRESSED
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
+    assert target and (
+        target.status == CombatUnit.Status.SUPPRESSED
     ), "Target target expects to be SUPPRESSED as it is shot at"
