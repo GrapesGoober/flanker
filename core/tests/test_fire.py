@@ -50,7 +50,7 @@ def test_no_fire(fixture: Fixture) -> None:
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target and (
         target.status == CombatUnit.Status.ACTIVE
-    ), "Target target expects to be ACTIVE as it is not shot at"
+    ), "Target target expects to be ACTIVE as it is obstructed"
 
 
 def test_fire(fixture: Fixture) -> None:
