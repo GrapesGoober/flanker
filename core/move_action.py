@@ -1,4 +1,10 @@
-from core.components import CombatUnit, TerrainFeature, MoveControls, Transform
+from core.components import (
+    CombatUnit,
+    CommandUnit,
+    TerrainFeature,
+    MoveControls,
+    Transform,
+)
 from core.gamestate import GameState
 from core.intersects import Intersects
 from core.los_check import LosChecker
@@ -21,6 +27,10 @@ class MoveAction:
             return
         if not (_ := gs.get_component(unit_id, MoveControls)):
             return
+        if not (command := gs.get_component(unit.command_id, CommandUnit)):
+            return
+        if not command.has_initiative:
+            return
 
         for intersect in Intersects.get(gs, transform.position, to):
             if not (intersect.feature.flag & TerrainFeature.Flag.WALKABLE):
@@ -36,4 +46,5 @@ class MoveAction:
             is_spotted = LosChecker.check_any(gs, unit_id)
             if is_spotted:  # Spotted, stop right there
                 unit.status = CombatUnit.status.SUPPRESSED
+                command.has_initiative = False
                 return

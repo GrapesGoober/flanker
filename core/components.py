@@ -30,7 +30,8 @@ class CommandUnit:
         PLT = "PLT"
         COY = "COY"
 
-    level: Level
+    level: Level = Level.PLT
+    has_initiative: bool = True
 
 
 @dataclass
