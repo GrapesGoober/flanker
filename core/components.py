@@ -18,7 +18,19 @@ class CombatUnit:
         ACTIVE = "ACTIVE"
         SUPPRESSED = "SUPPRESSED"
 
+    command_id: int
     status: Status = Status.ACTIVE
+
+
+@dataclass
+class CommandUnit:
+    """Component for commanding unit."""
+
+    class Level(Enum):
+        PLT = "PLT"
+        COY = "COY"
+
+    level: Level
 
 
 @dataclass
