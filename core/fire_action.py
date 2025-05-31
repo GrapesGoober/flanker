@@ -1,5 +1,6 @@
-from core.components import CombatUnit, CommandUnit
+from core.components import CombatUnit
 from core.gamestate import GameState
+from core.command import Command
 from core.los_check import LosChecker
 
 
@@ -17,9 +18,7 @@ class FireAction:
             return
         if not (target := gs.get_component(target_id, CombatUnit)):
             return
-        if not (attacker_command := gs.get_component(attacker.command_id, CommandUnit)):
-            return
-        if not attacker_command.has_initiative:
+        if not Command.has_initiative(gs, attacker_id):
             return
 
         # Check if target is in line of sight
@@ -28,5 +27,3 @@ class FireAction:
 
         # Suppress the target if it survives
         target.status = CombatUnit.Status.SUPPRESSED
-        if target_command := gs.get_component(target.command_id, CommandUnit):
-            target_command.has_initiative = False
