@@ -1,15 +1,16 @@
-from backend.assets import TerrainModel, add_squad, add_terrain
+from backend.assets import TerrainModel, add_command, add_squad, add_terrain
 from core.vec2 import Vec2
 from core.gamestate import GameState
 
 
-def create_gamestate() -> GameState:
+def  create_gamestate() -> GameState:
     """Initialize and return a `GameState` instance with predefined entities."""
     gs = GameState()
 
     # Add squads
-    add_squad(gs, Vec2(120, 160))
-    add_squad(gs, Vec2(180, 260))
+    command = add_command(gs, Vec2(100, 120))
+    add_squad(gs, Vec2(120, 160), command)
+    add_squad(gs, Vec2(180, 260), command)
 
     # Add terrains
     add_terrain(
