@@ -5,26 +5,45 @@ from core.vec2 import Vec2
 
 @dataclass
 class Transform:
-    """Component for a transformation of an entity."""
+    """Component for 2D linear transformations."""
 
     position: Vec2
 
 
 @dataclass
-class UnitCondition:
+class CombatUnit:
     """Component for combat unit status conditions."""
 
     class Status(Enum):
         ACTIVE = "ACTIVE"
         SUPPRESSED = "SUPPRESSED"
 
+    command_id: int
     status: Status = Status.ACTIVE
 
 
 @dataclass
-class MovementControls:
+class CommandUnit:
+    """Component for commanding unit."""
+
+    class Level(Enum):
+        PLT = "PLT"
+        COY = "COY"
+
+    level: Level = Level.PLT
+    has_initiative: bool = True
+
+
+@dataclass
+class MoveControls:
     """Component for movement controls configurations."""
 
+    class MoveType(Enum):
+        FOOT = "FOOT"
+        WHEEL = "WHEEL"
+        TRACK = "TRACK"
+
+    move_type: MoveType = MoveType.FOOT
     ...
 
 

@@ -1,23 +1,32 @@
 from dataclasses import dataclass
 from enum import Enum
-
-import esper
-
-from core.components import MovementControls, TerrainFeature, Transform, UnitCondition
+from core.components import (
+    CommandUnit,
+    MoveControls,
+    TerrainFeature,
+    CombatUnit,
+    Transform,
+)
 from core.vec2 import Vec2
+from core.gamestate import GameState
 
 
 @dataclass
 class SquadModel:
     unit_id: int
     position: Vec2
-    status: UnitCondition.Status
+    status: CombatUnit.Status
+
+
+@dataclass
+class MoveActionRequest:
+    unit_id: int
+    to: Vec2
 
 
 @dataclass
 class TerrainModel:
     feature_id: int
-    position: Vec2
     vertices: list[Vec2]
     terrain_type: "Types"
 
@@ -58,14 +67,24 @@ def get_terrain_type(flags: int) -> TerrainModel.Types:
 
 
 @staticmethod
-def add_squad(pos: Vec2) -> None:
-    esper.create_entity(Transform(position=pos), MovementControls(), UnitCondition())
+def add_command(gs: GameState, pos: Vec2) -> int:
+    return gs.add_entity(
+        CommandUnit()
+    )
 
 
 @staticmethod
-def add_terrain(vertices: list[Vec2], terrain_type: TerrainModel.Types) -> None:
-    esper.create_entity(
-        Transform(Vec2(0, 0)),
+def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
+    return gs.add_entity(
+        Transform(position=pos), MoveControls(), CombatUnit(command_id=command_id)
+    )
+
+
+@staticmethod
+def add_terrain(
+    gs: GameState, vertices: list[Vec2], terrain_type: TerrainModel.Types
+) -> None:
+    gs.add_entity(
         TerrainFeature(
             vertices=vertices,
             flag=get_terrain_flags(terrain_type),

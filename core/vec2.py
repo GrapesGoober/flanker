@@ -4,6 +4,8 @@ from math import sqrt, isclose
 
 @dataclass
 class Vec2:
+    """2D vector class for basic vector operations"""
+
     x: float
     y: float
 
@@ -23,15 +25,19 @@ class Vec2:
         return Vec2(self.x / scalar, self.y / scalar)
 
     def cross(self, other: "Vec2") -> float:
+        """Returns a cross product with another vector."""
         return self.x * other.y - self.y * other.x
 
     def dot(self, other: "Vec2") -> float:
+        """Returns a dot product with another vector."""
         return self.x * other.x + self.y * other.y
 
     def length(self) -> float:
+        """Returns a length (norm) of this vector."""
         return sqrt(self.x**2 + self.y**2)
 
     def normalized(self) -> "Vec2":
+        """Returns a new normalized vector."""
         length = self.length()
         return self / length if length else Vec2(0, 0)
 

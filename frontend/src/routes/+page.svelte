@@ -2,15 +2,23 @@
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
 	import RifleSquad from './rifle-squad.svelte';
-	import { GetTerrainData, GetRifleSquadsData, type RifleSquadData, type TerrainFeatureData } from '$lib';
+	import {
+		GetTerrainData,
+		GetRifleSquadsData,
+		MoveRifleSquad,
+		type RifleSquadData,
+		type TerrainFeatureData,
+		type Vec2
+	} from '$lib';
 	import TerrainFeature from './terrain-feature.svelte';
 
 	let svgLayer: SVGSVGElement | null = $state(null);
 	let zoomLayer: SVGGElement | null = $state(null);
 	let transform: d3.ZoomTransform = $state(d3.zoomIdentity);
-	let markers: [number, number][] = $state([]);
+	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let unitData: RifleSquadData[] = $state([]);
+	let selectedUnit: number | null = $state(null);
 
 	onMount(async () => {
 		terrainData = await GetTerrainData();
@@ -30,15 +38,31 @@
 	});
 
 	function AddMarker(event: MouseEvent) {
+		if (selectedUnit === null) {
+			return;
+		}
+
+		// Convert click event to world position vector
 		const point = d3.pointer(event, svgLayer); // Get click coords in SVG space
-		const inverted = transform.invert(point); // Adjust for zoom/pan
-		markers.push(inverted);
-		PrettyPrintMarkers();
+		const worldPos = transform.invert(point); // Adjust for zoom/pan to world space
+		marker = { x: worldPos[0], y: worldPos[1] };
 	}
 
-	function PrettyPrintMarkers() {
-		const pythonSyntax = markers.map(([x, y]) => `Vec2(${Math.round(x)}, ${Math.round(y)})`).join(', ');
-		console.log(`[${pythonSyntax}]`);
+	async function ConfirmMarker(_: MouseEvent) {
+		// Only apply marker for selected squad & existing marker
+		if (selectedUnit !== null && marker !== null) {
+			unitData = await MoveRifleSquad(selectedUnit, marker);
+			marker = null;
+		}
+	}
+
+	function SelectUnit(unit_id: number, event: MouseEvent) {
+		event.stopPropagation();
+		// Only select unit when no marker is active
+		if (marker !== null) {
+			return;
+		}
+		selectedUnit = unit_id;
 	}
 </script>
 
@@ -58,12 +82,16 @@
 		{/each}
 
 		{#each unitData as unit}
-			<RifleSquad position={unit.position} />
+			<g onclick={(event) => SelectUnit(unit.unit_id, event)}>
+				<RifleSquad position={unit.position} isSelected={selectedUnit === unit.unit_id} />
+			</g>
 		{/each}
 
-		{#each markers as [x, y]}
-			<circle cx={x} cy={y} r="10" fill="red" />
-		{/each}
+		{#if marker}
+			<g onclick={ConfirmMarker}>
+				<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
+			</g>
+		{/if}
 	</g>
 </svg>
 

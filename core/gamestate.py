@@ -1,0 +1,53 @@
+from typing import Any, Iterable, Iterator, overload
+
+
+class GameState:
+    """Encapsulates ECS entities & components into a game state."""
+
+    def __init__(self) -> None:
+        """Initializes the game state with empty entities."""
+        self._id_counter: int = 0
+        self._entities: dict[int, dict[type[Any], Any]] = {}
+        self._cache: dict[tuple[type, ...], list[tuple[int, Any]]] = {}
+
+    def add_entity(self, *components: Any) -> int:
+        """Adds a new entity with the given components, returns ID."""
+        entity_id = self._id_counter
+        self._id_counter += 1
+        self._entities[entity_id] = {type(c): c for c in components}
+        self._cache = {}
+        return entity_id
+
+    def delete_entity(self, entity_id: int) -> None:
+        """Deletes an entity by its ID"""
+        self._entities.pop(entity_id)
+        self._cache = {}
+
+    def get_component[T](self, entity_id: int, component_type: type[T]) -> T | None:
+        """Get an entity's component. None if entity or component not found."""
+        return self._entities.get(entity_id, {}).get(component_type)
+
+    @overload
+    def query[T](self, t: type[T]) -> Iterator[tuple[int, T]]: ...
+
+    @overload
+    def query[T, U](self, t: type[T], u: type[U]) -> Iterator[tuple[int, T, U]]: ...
+
+    @overload
+    def query[T, U, V](
+        self, t: type[T], u: type[U], v: type[V]
+    ) -> Iterator[tuple[int, T, U, V]]: ...
+
+    def query(
+        self, t: type, u: type | None = None, v: type | None = None
+    ) -> Iterable[tuple[Any, ...]]:
+        """Yields all entities with a specific component type."""
+        component_types = tuple(filter(None, (t, u, v)))
+        if component_types in self._cache:
+            yield from self._cache[component_types]
+        else:
+            for entity_id, components in self._entities.items():
+                if all(
+                    ct in components for ct in component_types
+                ):  # Check all component types exist
+                    yield (entity_id, *(components[ct] for ct in component_types))
