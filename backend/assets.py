@@ -66,18 +66,23 @@ def get_terrain_type(flags: int) -> TerrainModel.Types:
         raise ValueError(f"Unknown terrain flags: {flags}")
 
 
-@staticmethod
 def add_command(gs: GameState, pos: Vec2) -> int:
-    return gs.add_entity(
-        CommandUnit()
-    )
+    return gs.add_entity(CommandUnit())
 
 
-@staticmethod
 def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
     return gs.add_entity(
         Transform(position=pos), MoveControls(), CombatUnit(command_id=command_id)
     )
+
+
+def get_squads(gs: GameState) -> list[SquadModel]:
+    squads: list[SquadModel] = []
+    for ent, unit, transform in gs.query(CombatUnit, Transform):
+        squads.append(
+            SquadModel(unit_id=ent, position=transform.position, status=unit.status)
+        )
+    return squads
 
 
 @staticmethod
@@ -90,3 +95,16 @@ def add_terrain(
             flag=get_terrain_flags(terrain_type),
         ),
     )
+
+
+def get_terrains(gs: GameState) -> list[TerrainModel]:
+    terrains: list[TerrainModel] = []
+    for ent, feat in gs.query(TerrainFeature):
+        terrains.append(
+            TerrainModel(
+                feature_id=ent,
+                vertices=feat.vertices,
+                terrain_type=get_terrain_type(feat.flag),
+            )
+        )
+    return terrains
