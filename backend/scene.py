@@ -1,19 +1,21 @@
-from backend.assets import TerrainModel, add_command, add_squad, add_terrain
+from backend.models import TerrainModel
+from backend.squad import SquadController
+from backend.terrain import TerrainController
 from core.vec2 import Vec2
 from core.gamestate import GameState
 
 
-def  create_gamestate() -> GameState:
+def create_gamestate() -> GameState:
     """Initialize and return a `GameState` instance with predefined entities."""
     gs = GameState()
 
     # Add squads
-    command = add_command(gs, Vec2(100, 120))
-    add_squad(gs, Vec2(120, 160), command)
-    add_squad(gs, Vec2(180, 260), command)
+    command = SquadController.add_command(gs, Vec2(100, 120))
+    SquadController.add_squad(gs, Vec2(120, 160), command)
+    SquadController.add_squad(gs, Vec2(180, 260), command)
 
     # Add terrains
-    add_terrain(
+    TerrainController.add_terrain(
         gs,
         [
             Vec2(100, 100),
@@ -28,7 +30,7 @@ def  create_gamestate() -> GameState:
         ],
         terrain_type=TerrainModel.Types.FOREST,
     )
-    add_terrain(
+    TerrainController.add_terrain(
         gs,
         [
             Vec2(308, 95),
@@ -53,7 +55,7 @@ def  create_gamestate() -> GameState:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    add_terrain(
+    TerrainController.add_terrain(
         gs,
         [
             Vec2(-47, 159),
@@ -105,7 +107,7 @@ def  create_gamestate() -> GameState:
         terrain_type=TerrainModel.Types.WATER,
     )
 
-    add_terrain(
+    TerrainController.add_terrain(
         gs,
         [
             Vec2(101, -160),
@@ -127,13 +129,13 @@ def  create_gamestate() -> GameState:
         terrain_type=TerrainModel.Types.ROAD,
     )
 
-    add_terrain(
+    TerrainController.add_terrain(
         gs,
         [Vec2(92, 16), Vec2(41, -19), Vec2(-45, -38), Vec2(-205, -70)],
         terrain_type=TerrainModel.Types.ROAD,
     )
 
-    add_terrain(
+    TerrainController.add_terrain(
         gs,
         [
             Vec2(308, 499),

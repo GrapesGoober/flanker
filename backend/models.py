@@ -1,0 +1,32 @@
+from dataclasses import dataclass
+from enum import Enum
+from core.components import CombatUnit
+from core.vec2 import Vec2
+
+
+@dataclass
+class SquadModel:
+    unit_id: int
+    position: Vec2
+    status: CombatUnit.Status
+
+
+@dataclass
+class MoveActionRequest:
+    unit_id: int
+    to: Vec2
+
+
+@dataclass
+class TerrainModel:
+    feature_id: int
+    vertices: list[Vec2]
+    terrain_type: "Types"
+
+    class Types(Enum):
+        """Supported terrain types."""
+
+        FOREST = "FOREST"
+        ROAD = "ROAD"
+        FIELD = "FIELD"
+        WATER = "WATER"
