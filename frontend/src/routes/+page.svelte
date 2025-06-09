@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
-	import RifleSquad from './rifle-squad.svelte';
 	import {
 		GetTerrainData,
 		GetRifleSquadsData,
@@ -10,7 +9,8 @@
 		type TerrainFeatureData,
 		type Vec2
 	} from '$lib';
-	import TerrainFeature from './terrain-feature.svelte';
+	import RifleSquad from '$lib/rifle-squad.svelte';
+	import TerrainFeature from '$lib/terrain-feature.svelte';
 
 	let svgLayer: SVGSVGElement | null = $state(null);
 	let zoomLayer: SVGGElement | null = $state(null);
