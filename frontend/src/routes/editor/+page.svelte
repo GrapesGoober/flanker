@@ -22,6 +22,12 @@
 	function ToPythonListString(coords: Vec2[]): string {
 		return '[\n' + coords.map((c) => `Vec2(${c.x}, ${c.y}),`).join('\n') + '\n]';
 	}
+
+	function refreshTerrainData() {
+		GetTerrainData().then((data) => {
+			terrainData = data;
+		});
+	}
 </script>
 
 <!-- I'm prototying behaviours at the moment, so proper structure comes later -->
@@ -36,6 +42,7 @@
 {/snippet}
 
 <SvgMap onclick={AddMarker} body={mapMarkup} />
+<button onclick={refreshTerrainData} style="margin-bottom: 1em;">Refresh</button>
 
 <textarea
 	readonly

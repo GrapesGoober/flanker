@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from backend.scene import create_gamestate
+from backend.scene import new_scene
 from backend.models import (
     SquadModel,
     TerrainModel,
@@ -10,7 +10,7 @@ from backend.squad import SquadController
 from backend.terrain import TerrainController
 from core.move_action import MoveAction
 
-gs = create_gamestate()
+gs = new_scene()
 app = FastAPI()
 
 
