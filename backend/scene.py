@@ -223,17 +223,6 @@ def new_scene() -> GameState:
         ],
         terrain_type=TerrainModel.Types.FOREST,
     )
-    TerrainController.add_terrain(
-        gs,
-        [
-            Vec2(139, 380),
-            Vec2(118, 419),
-            Vec2(182, 448),
-            Vec2(201, 408),
-            Vec2(139, 380),
-        ],
-        terrain_type=TerrainModel.Types.ROAD,
-    )
 
     TerrainController.add_terrain(
         gs,
@@ -312,18 +301,6 @@ def new_scene() -> GameState:
     TerrainController.add_terrain(
         gs,
         [
-            Vec2(547, 303),
-            Vec2(589, 299),
-            Vec2(599, 362),
-            Vec2(557, 367),
-            Vec2(547, 303),
-        ],
-        terrain_type=TerrainModel.Types.ROAD,
-    )
-
-    TerrainController.add_terrain(
-        gs,
-        [
             Vec2(751, 209),
             Vec2(687, 237),
             Vec2(674, 294),
@@ -353,15 +330,4 @@ def new_scene() -> GameState:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    TerrainController.add_terrain(
-        gs,
-        [],
-        terrain_type=TerrainModel.Types.FOREST,
-    )
-
-    TerrainController.add_terrain(
-        gs,
-        [],
-        terrain_type=TerrainModel.Types.FOREST,
-    )
     return gs
