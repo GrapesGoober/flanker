@@ -1,18 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { GetTerrainData, GetRifleSquadsData, type TerrainFeatureData, type Vec2 } from '$lib';
+	import { GetTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
 	import TerrainFeature from '$lib/terrain-feature.svelte';
 	import SvgMap from '$lib/svg-map.svelte';
 
-	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
+	let coords: Vec2[] = $state([]);
 
 	onMount(async () => {
 		terrainData = await GetTerrainData();
 	});
 
 	function AddMarker(event: MouseEvent, worldPos: Vec2) {
-		marker = worldPos;
+		coords.push(worldPos);
+	}
+
+	function ToString(coords: { x: number; y: number }[]): string {
+		return coords.map((point) => `${point.x},${point.y}`).join(' ');
+	}
+
+	function ToPythonListString(coords: Vec2[]): string {
+		return '[\n' + coords.map((c) => `Vec2(${c.x}, ${c.y}),`).join('\n') + '\n]';
 	}
 </script>
 
@@ -24,11 +32,22 @@
 		<TerrainFeature featureData={terrainFeatureData} />
 	{/each}
 
-	{#if marker}
-		<g>
-			<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
-		</g>
-	{/if}
+	<polygon points={ToString(coords)} class="forest" />
 {/snippet}
 
 <SvgMap onclick={AddMarker} body={mapMarkup} />
+
+<textarea
+	readonly
+	style="width: 100%; min-height: 120px; resize: vertical; font-family: monospace; margin-top: 1em;"
+	value={ToPythonListString(coords)}
+></textarea>
+
+<style lang="less">
+	@stroke-width: 2;
+	.forest {
+		fill: #ccd5ae;
+		stroke: #c2cca0;
+		stroke-width: @stroke-width;
+	}
+</style>
