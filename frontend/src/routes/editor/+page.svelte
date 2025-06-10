@@ -24,6 +24,7 @@
 	}
 
 	function refreshTerrainData() {
+		coords = [];
 		GetTerrainData().then((data) => {
 			terrainData = data;
 		});
