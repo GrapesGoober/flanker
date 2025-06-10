@@ -10,6 +10,7 @@
 {#if featureData.terrain_type == TerrainType.Forest}
 	<polygon points={ToString(featureData.coordinates)} class="forest" />
 {:else if featureData.terrain_type == TerrainType.Road}
+	<polyline points={ToString(featureData.coordinates)} class="road-border" />
 	<polyline points={ToString(featureData.coordinates)} class="road" />
 {:else if featureData.terrain_type == TerrainType.Field}
 	<polygon points={ToString(featureData.coordinates)} class="field" />
@@ -21,25 +22,30 @@
 
 <style lang="less">
 	@stroke-width: 2;
-	@road-width: 4;
+	@road-width: 10;
 	.forest {
-		fill: #ccd5ae;
-		stroke: #c2cca0;
+		fill: #a2bf69;
+		stroke: #a2bf69;
 		stroke-width: @stroke-width;
 	}
 	.road {
 		fill: none;
-		stroke: #d3c1b0;
+		stroke: #f2c88e;
 		stroke-width: @road-width;
 	}
+	.road-border {
+		fill: none;
+		stroke: #cba57a;
+		stroke-width: @road-width + @stroke-width * 2;
+	}
 	.water {
-		fill: #c6e3fd;
-		stroke: #a2d2ff;
+		fill: #a5dac6;
+		stroke: #a5dac6;
 		stroke-width: @stroke-width;
 	}
 	.field {
-		fill: beige;
-		stroke: burlywood;
+		fill: #f5c887;
+		stroke: #cba57a;
 		stroke-width: @stroke-width;
 	}
 </style>

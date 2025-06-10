@@ -47,6 +47,6 @@
 <style>
 	svg {
 		touch-action: none; /* required for pointer-based zooming */
-		background-color: #fefae0;
+		background-color: #ecffc7;
 	}
 </style>
