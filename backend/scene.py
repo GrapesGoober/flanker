@@ -12,7 +12,7 @@ def new_scene() -> GameState:
     # Add squads
     command = SquadController.add_command(gs, Vec2(100, 120))
     SquadController.add_squad(gs, Vec2(120, 160), command)
-    SquadController.add_squad(gs, Vec2(180, 260), command)
+    SquadController.add_squad(gs, Vec2(500, 800), command)
 
     # Add terrains
     TerrainController.add_terrain(
