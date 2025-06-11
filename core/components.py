@@ -5,14 +5,21 @@ from core.vec2 import Vec2
 
 @dataclass
 class Transform:
-    """Component for 2D linear transformations."""
+    """
+    Holds spatial data for 2D entities. Used by rendering, movement,
+    combat mechanics, etc. The existence of this component implies
+    that the entity can be visualized in 2D space.
+    """
 
     position: Vec2
 
 
 @dataclass
 class CombatUnit:
-    """Component for combat unit status conditions."""
+    """
+    Marks an entity as a direct combat-capable unit.
+    Tracks unit suppression and command hierarchy tree.
+    """
 
     class Status(Enum):
         ACTIVE = "ACTIVE"
@@ -24,24 +31,23 @@ class CombatUnit:
 
 @dataclass
 class CommandUnit:
-    """Component for commanding unit."""
+    """
+    Marks a unit as a faction commander. Entity with this component
+    is expected to be the root node of the command hierarchy tree.
+    """
 
-    class Level(Enum):
-        PLT = "PLT"
-        COY = "COY"
-
-    level: Level = Level.PLT
     has_initiative: bool = True
 
 
 @dataclass
 class MoveControls:
-    """Component for movement controls configurations."""
+    """
+    Marks entity as movable, along with its. Used by move action to
+    determine which terrain can or cannot cross.
+    """
 
     class MoveType(Enum):
         FOOT = "FOOT"
-        WHEEL = "WHEEL"
-        TRACK = "TRACK"
 
     move_type: MoveType = MoveType.FOOT
     ...
@@ -49,7 +55,10 @@ class MoveControls:
 
 @dataclass
 class TerrainFeature:
-    """Component for terrain feature polygon."""
+    """
+    Represents a polygonal terrain feature with terrain type bit flags.
+    Bit flags are used to determine LOS, movement, and fire types.
+    """
 
     vertices: list[Vec2]
     flag: int = -1

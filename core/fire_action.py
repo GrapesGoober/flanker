@@ -9,7 +9,7 @@ class FireAction:
 
     @staticmethod
     def fire(gs: GameState, attacker_id: int, target_id: int) -> None:
-        """Handles firing action from one unit to another."""
+        """Performs fire action from attacker unit to target."""
 
         # Check if attacker and target are valid
         if not (attacker := gs.get_component(attacker_id, CombatUnit)):

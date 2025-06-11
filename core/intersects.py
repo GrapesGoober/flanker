@@ -8,7 +8,7 @@ from core.vec2 import Vec2
 
 @dataclass
 class Intersection:
-    """Return type for `get_intersects`, containing the intersecting point and feature."""
+    """Represents intersection between line and terrain feature."""
 
     point: Vec2
     feature: TerrainFeature
@@ -21,7 +21,7 @@ class Intersects:
     def get(
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
-        """Returns iterable of intersection points between the line segment and features."""
+        """Returns iterable of intersections between the line segment and features."""
         for _, feature in gs.query(TerrainFeature):
             if feature.flag & mask:
                 for b1, b2 in pairwise(feature.vertices):
