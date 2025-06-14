@@ -44,4 +44,6 @@ class Vec2:
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Vec2):
             return NotImplemented
-        return isclose(self.x, other.x) and isclose(self.y, other.y)
+        x_close = isclose(self.x, other.x, abs_tol=1e-9)
+        y_close = isclose(self.y, other.y, abs_tol=1e-9)
+        return x_close and y_close
