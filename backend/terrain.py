@@ -54,9 +54,7 @@ class TerrainController:
             terrains.append(
                 TerrainModel(
                     feature_id=ent,
-                    vertices=TransformUtils.translate(
-                        feat.vertices, transform.position
-                    ),
+                    vertices=TransformUtils.apply(feat.vertices, transform),
                     terrain_type=TerrainController.get_terrain_type(feat.flag),
                 )
             )
