@@ -12,6 +12,7 @@ class Transform:
     """
 
     position: Vec2
+    angle: float = 0
 
 
 @dataclass
