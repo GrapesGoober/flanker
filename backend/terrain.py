@@ -1,4 +1,4 @@
-from core.components import TerrainFeature
+from core.components import TerrainFeature, Transform
 from core.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import TerrainModel
@@ -38,6 +38,7 @@ class TerrainController:
         gs: GameState, vertices: list[Vec2], terrain_type: TerrainModel.Types
     ) -> None:
         gs.add_entity(
+            Transform(position=Vec2(0, 0), angle=0),
             TerrainFeature(
                 vertices=vertices,
                 flag=TerrainController.get_terrain_flags(terrain_type),
