@@ -1,4 +1,4 @@
-from core.components import TerrainFeature, Transform
+from core.components import TerrainFeature, Transform, CombatUnit
 from core.gamestate import GameState
 from core.intersects import Intersects
 
@@ -12,7 +12,7 @@ class LosChecker:
         if not gs.get_component(target_id, Transform):
             return False
 
-        for source_ent, _ in gs.query(Transform):
+        for source_ent, _, _ in gs.query(CombatUnit, Transform):
             if source_ent == target_id:
                 continue
             is_seen = LosChecker.check(gs, source_ent, target_id)
