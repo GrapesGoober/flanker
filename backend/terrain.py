@@ -50,11 +50,13 @@ class TerrainController:
     @staticmethod
     def get_terrains(gs: GameState) -> list[TerrainModel]:
         terrains: list[TerrainModel] = []
-        for ent, feat in gs.query(TerrainFeature):
+        for ent, feat, transform in gs.query(TerrainFeature, Transform):
             terrains.append(
                 TerrainModel(
                     feature_id=ent,
-                    vertices=feat.vertices,
+                    vertices=TransformUtils.translate(
+                        feat.vertices, transform.position
+                    ),
                     terrain_type=TerrainController.get_terrain_type(feat.flag),
                 )
             )
