@@ -2,7 +2,7 @@ from core.components import TerrainFeature, Transform
 from core.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import TerrainModel
-from intersects import TransformUtils
+from core.transform_utils import TransformUtils
 
 
 class TerrainController:
