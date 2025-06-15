@@ -2,6 +2,7 @@ from core.components import TerrainFeature, Transform
 from core.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import TerrainModel
+from intersects import TransformUtils
 
 
 class TerrainController:
@@ -37,10 +38,11 @@ class TerrainController:
     def add_terrain(
         gs: GameState, vertices: list[Vec2], terrain_type: TerrainModel.Types
     ) -> None:
+        pivot = vertices[0]
         gs.add_entity(
-            Transform(position=Vec2(0, 0), angle=0),
+            Transform(position=pivot, angle=0),
             TerrainFeature(
-                vertices=vertices,
+                vertices=TransformUtils.translate(vertices, pivot * -1),
                 flag=TerrainController.get_terrain_flags(terrain_type),
             ),
         )
