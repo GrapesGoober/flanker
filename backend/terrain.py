@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from core.components import TerrainFeature, Transform
 from core.vec2 import Vec2
 from core.gamestate import GameState
@@ -6,6 +7,10 @@ from core.transform_utils import TransformUtils
 
 
 class TerrainController:
+
+    @dataclass
+    class TypeTag:
+        type: TerrainModel.Types
 
     @staticmethod
     def get_terrain_flags(terrain_type: TerrainModel.Types) -> TerrainFeature.Flag:
@@ -22,19 +27,6 @@ class TerrainController:
                 raise ValueError(f"Unknown terrain type: {terrain_type}")
 
     @staticmethod
-    def get_terrain_type(flags: int) -> TerrainModel.Types:
-        if flags == (TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE):
-            return TerrainModel.Types.FOREST
-        elif flags == (TerrainFeature.Flag.WALKABLE | TerrainFeature.Flag.DRIVABLE):
-            return TerrainModel.Types.ROAD
-        elif flags == TerrainFeature.Flag.WALKABLE:
-            return TerrainModel.Types.FIELD
-        elif flags == TerrainFeature.Flag.WATER:
-            return TerrainModel.Types.WATER
-        else:
-            raise ValueError(f"Unknown terrain flags: {flags}")
-
-    @staticmethod
     def add_terrain(
         gs: GameState, vertices: list[Vec2], terrain_type: TerrainModel.Types
     ) -> None:
@@ -45,17 +37,20 @@ class TerrainController:
                 vertices=TransformUtils.translate(vertices, pivot * -1),
                 flag=TerrainController.get_terrain_flags(terrain_type),
             ),
+            TerrainController.TypeTag(terrain_type),
         )
 
     @staticmethod
     def get_terrains(gs: GameState) -> list[TerrainModel]:
         terrains: list[TerrainModel] = []
-        for ent, feat, transform in gs.query(TerrainFeature, Transform):
+        for ent, transform, terrain_feature, terrain_tag in gs.query(
+            Transform, TerrainFeature, TerrainController.TypeTag
+        ):
             terrains.append(
                 TerrainModel(
                     feature_id=ent,
-                    vertices=TransformUtils.apply(feat.vertices, transform),
-                    terrain_type=TerrainController.get_terrain_type(feat.flag),
+                    vertices=TransformUtils.apply(terrain_feature.vertices, transform),
+                    terrain_type=terrain_tag.type,
                 )
             )
         return terrains
