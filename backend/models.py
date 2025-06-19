@@ -30,3 +30,4 @@ class TerrainModel:
         ROAD = "ROAD"
         FIELD = "FIELD"
         WATER = "WATER"
+        BUILDING = "BUILDING"

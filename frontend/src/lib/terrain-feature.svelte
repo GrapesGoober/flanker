@@ -16,6 +16,8 @@
 	<polygon points={ToString(featureData.coordinates)} class="field" />
 {:else if featureData.terrain_type == TerrainType.Water}
 	<polygon points={ToString(featureData.coordinates)} class="water" />
+{:else if featureData.terrain_type == TerrainType.Building}
+	<polygon points={ToString(featureData.coordinates)} class="building" />
 {:else}
 	<polygon points={ToString(featureData.coordinates)} fill="pink" stroke="red" stroke-width="2" />
 {/if}
@@ -46,6 +48,11 @@
 	.field {
 		fill: #f5c887;
 		stroke: #cba57a;
+		stroke-width: @stroke-width;
+	}
+	.building {
+		fill: #aaaaaa;
+		stroke: #999999;
 		stroke-width: @stroke-width;
 	}
 </style>
