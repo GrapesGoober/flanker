@@ -63,10 +63,10 @@ class TerrainController:
             Transform(position=position, angle=rotation),
             TerrainFeature(
                 vertices=[
-                    Vec2(-20, 10),
-                    Vec2(20, 10),
-                    Vec2(20, -10),
-                    Vec2(-20, -10),
+                    Vec2(-10, 5),
+                    Vec2(10, 5),
+                    Vec2(10, -5),
+                    Vec2(-10, -5),
                 ],
                 flag=TerrainController.get_terrain_flags(TerrainModel.Types.BUILDING),
             ),
