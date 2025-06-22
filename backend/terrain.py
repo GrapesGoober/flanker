@@ -58,9 +58,9 @@ class TerrainController:
         )
 
     @staticmethod
-    def add_building(gs: GameState, position: Vec2, rotation: float) -> None:
+    def add_building(gs: GameState, position: Vec2, angle: float) -> None:
         gs.add_entity(
-            Transform(position=position, angle=rotation),
+            Transform(position=position, angle=angle),
             TerrainFeature(
                 vertices=[
                     Vec2(-10, 5),

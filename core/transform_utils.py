@@ -14,9 +14,10 @@ class TransformUtils:
 
     @staticmethod
     def rotate(vec_list: List[Vec2], angle: float) -> List[Vec2]:
-        """Returns a new `list[Vec2]` rotated by `angle` (in radians)."""
-        cos_a = math.cos(angle)
-        sin_a = math.sin(angle)
+        """Returns a new `list[Vec2]` rotated by `angle` (in degrees)."""
+        radians = math.radians(angle)
+        cos_a = math.cos(radians)
+        sin_a = math.sin(radians)
         return [
             Vec2(x=(vec.x * cos_a - vec.y * sin_a), y=(vec.x * sin_a + vec.y * cos_a))
             for vec in vec_list

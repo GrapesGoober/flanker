@@ -172,8 +172,8 @@ def new_scene() -> GameState:
     )
 
     # Village buildings
-    TerrainController.add_building(gs, Vec2(232, 187), -0.1)
-    TerrainController.add_building(gs, Vec2(549, 250), 1.7)
+    TerrainController.add_building(gs, Vec2(240, 187), -15)
+    TerrainController.add_building(gs, Vec2(549, 250), 100)
 
     # Village woods
     TerrainController.add_terrain(
