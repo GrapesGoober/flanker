@@ -45,13 +45,15 @@ class TerrainController:
 
     @staticmethod
     def add_terrain(
-        gs: GameState, vertices: list[Vec2], terrain_type: TerrainModel.Types
+        gs: GameState,
+        pivot: Vec2,
+        vertices: list[Vec2],
+        terrain_type: TerrainModel.Types,
     ) -> None:
-        pivot = vertices[0]
         gs.add_entity(
             Transform(position=pivot, angle=0),
             TerrainFeature(
-                vertices=TransformUtils.translate(vertices, pivot * -1),
+                vertices=vertices,
                 flag=TerrainController.get_terrain_flags(terrain_type),
             ),
             TerrainController.TypeTag(terrain_type),

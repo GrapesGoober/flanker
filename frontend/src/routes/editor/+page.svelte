@@ -15,12 +15,20 @@
 		coords.push(worldPos);
 	}
 
-	function ToString(coords: { x: number; y: number }[]): string {
+	function ToSvgString(coords: { x: number; y: number }[]): string {
 		return coords.map((point) => `${point.x},${point.y}`).join(' ');
 	}
 	function ToPythonListString(coords: Vec2[]): string {
+		if (coords.length === 0) return 'pivot: Vec2(0, 0),\nvertices: []';
+		const pivot = coords[0];
+		const pivotStr = `Vec2(${Math.round(pivot.x)}, ${Math.round(pivot.y)}),\n`;
 		return (
-			'[\n' + coords.map((c) => `Vec2(${Math.round(c.x)}, ${Math.round(c.y)}),`).join('\n') + '\n]'
+			`pivot= ${pivotStr}` +
+			'vertices= [\n' +
+			coords
+				.map((c) => `Vec2(${Math.round(c.x - pivot.x)}, ${Math.round(c.y - pivot.y)}),`)
+				.join('\n') +
+			'\n],'
 		);
 	}
 
@@ -29,6 +37,10 @@
 		GetTerrainData().then((data) => {
 			terrainData = data;
 		});
+	}
+
+	function copyToClipboard() {
+		navigator.clipboard.writeText(ToPythonListString(coords));
 	}
 </script>
 
@@ -40,13 +52,14 @@
 		<TerrainFeature featureData={terrainFeatureData} />
 	{/each}
 
-	<polygon points={ToString(coords)} class="forest" />
+	<polygon points={ToSvgString(coords)} class="editor" />
 
 	<rect x="200" y="200" width="100" height="100" fill="none" stroke="black" />
 {/snippet}
 
 <SvgMap onclick={AddMarker} body={mapMarkup} />
 <button onclick={refreshTerrainData} style="margin-bottom: 1em;">Refresh</button>
+<button onclick={copyToClipboard} style="margin-bottom: 1em;">Copy</button>
 
 <textarea
 	readonly
@@ -56,8 +69,8 @@
 
 <style lang="less">
 	@stroke-width: 1;
-	.forest {
-		fill: #ccd5ae;
+	.editor {
+		fill: #ccd5ae88;
 		stroke: #c2cca0;
 		stroke-width: @stroke-width;
 	}
