@@ -23,7 +23,7 @@
 {/if}
 
 <style lang="less">
-	@stroke-width: 1;
+	@stroke-width: 1.5;
 	@road-width: 5;
 	.forest {
 		fill: #a2bf69;

@@ -18,9 +18,10 @@
 	function ToString(coords: { x: number; y: number }[]): string {
 		return coords.map((point) => `${point.x},${point.y}`).join(' ');
 	}
-
 	function ToPythonListString(coords: Vec2[]): string {
-		return '[\n' + coords.map((c) => `Vec2(${c.x}, ${c.y}),`).join('\n') + '\n]';
+		return (
+			'[\n' + coords.map((c) => `Vec2(${Math.round(c.x)}, ${Math.round(c.y)}),`).join('\n') + '\n]'
+		);
 	}
 
 	function refreshTerrainData() {
@@ -40,6 +41,8 @@
 	{/each}
 
 	<polygon points={ToString(coords)} class="forest" />
+
+	<rect x="200" y="200" width="100" height="100" fill="none" stroke="black" />
 {/snippet}
 
 <SvgMap onclick={AddMarker} body={mapMarkup} />
@@ -52,7 +55,7 @@
 ></textarea>
 
 <style lang="less">
-	@stroke-width: 2;
+	@stroke-width: 1;
 	.forest {
 		fill: #ccd5ae;
 		stroke: #c2cca0;
