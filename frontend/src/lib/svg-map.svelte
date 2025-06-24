@@ -38,8 +38,8 @@
 
 	function onclick(event: MouseEvent) {
 		// Convert click event to world position vector
-		const point = d3.pointer(event, svgLayer); // Get click coords in SVG space
-		const worldPos = transform.invert(point); // Adjust for zoom/pan to world space
+		const point = d3.pointer(event, svgLayer);
+		const worldPos = transform.invert(point);
 		const pos: Vec2 = { x: worldPos[0], y: worldPos[1] };
 		props.onclick(event, pos);
 	}
