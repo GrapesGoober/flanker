@@ -53,8 +53,6 @@
 	{/each}
 
 	<polygon points={ToSvgString(coords)} class="editor" />
-
-	<rect x="200" y="200" width="100" height="100" fill="none" stroke="black" />
 {/snippet}
 
 <SvgMap onclick={AddMarker} body={mapMarkup} />
