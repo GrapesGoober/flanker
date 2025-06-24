@@ -32,12 +32,12 @@
 	}
 	.road {
 		fill: none;
-		stroke: #ccc;
+		stroke: #eff6e0;
 		stroke-width: @road-width;
 	}
 	.road-border {
 		fill: none;
-		stroke: #bbb;
+		stroke: #d0dcb8;
 		stroke-width: @road-width + @stroke-width * 2;
 	}
 	.water {
@@ -46,8 +46,8 @@
 		stroke-width: @stroke-width;
 	}
 	.field {
-		fill: #f5c887;
-		stroke: #cba57a;
+		fill: #f5c887aa;
+		stroke: #cba57aaa;
 		stroke-width: @stroke-width;
 	}
 	.building {
