@@ -11,13 +11,29 @@ def new_scene() -> GameState:
 
     # Add squads
     command = SquadController.add_command(gs, Vec2(100, 120))
-    SquadController.add_squad(gs, Vec2(500, 800), command)
+
+    # First Platoon
+    SquadController.add_squad(gs, Vec2(110, 60), command)
+    SquadController.add_squad(gs, Vec2(110, 75), command)
+    SquadController.add_squad(gs, Vec2(110, 90), command)
+
+    # Second Platoon
+    SquadController.add_squad(gs, Vec2(140, 60), command)
+    SquadController.add_squad(gs, Vec2(140, 75), command)
+    SquadController.add_squad(gs, Vec2(140, 90), command)
+
+    # Third Platoon
+    SquadController.add_squad(gs, Vec2(170, 60), command)
+    SquadController.add_squad(gs, Vec2(170, 75), command)
+    SquadController.add_squad(gs, Vec2(170, 90), command)
 
     # Village buildings
-    TerrainController.add_building(gs, Vec2(387, 432), -35)
     TerrainController.add_building(gs, Vec2(461, 366), 55)
+    TerrainController.add_building(gs, Vec2(387, 432), -35)
+    TerrainController.add_building(gs, Vec2(338, 481), -45)
     TerrainController.add_building(gs, Vec2(425, 512), 45)
     TerrainController.add_building(gs, Vec2(435, 528), 135)
+    TerrainController.add_building(gs, Vec2(598, 598), 0)
 
     # Roads
     TerrainController.add_terrain(
@@ -63,6 +79,12 @@ def new_scene() -> GameState:
             Vec2(982, -369),
             Vec2(1094, -447),
         ],
+        terrain_type=TerrainModel.Types.ROAD,
+    )
+    TerrainController.add_terrain(
+        gs=gs,
+        pivot=Vec2(450, 514),
+        vertices=[],
         terrain_type=TerrainModel.Types.ROAD,
     )
 
@@ -191,6 +213,50 @@ def new_scene() -> GameState:
         ],
         terrain_type=TerrainModel.Types.FOREST,
     )
+    TerrainController.add_terrain(
+        gs=gs,
+        pivot=Vec2(531, 222),
+        vertices=[
+            Vec2(0, 0),
+            Vec2(-20, 15),
+            Vec2(-31, 39),
+            Vec2(-33, 70),
+            Vec2(-26, 93),
+            Vec2(-11, 106),
+            Vec2(17, 106),
+            Vec2(52, 96),
+            Vec2(113, 78),
+            Vec2(143, 61),
+            Vec2(148, 44),
+            Vec2(148, 22),
+            Vec2(138, -2),
+            Vec2(128, -22),
+            Vec2(106, -32),
+            Vec2(81, -36),
+            Vec2(47, -25),
+        ],
+        terrain_type=TerrainModel.Types.FOREST,
+    )
+    TerrainController.add_terrain(
+        gs=gs,
+        pivot=Vec2(547, 358),
+        vertices=[
+            Vec2(0, 0),
+            Vec2(44, -24),
+            Vec2(148, -55),
+            Vec2(171, -51),
+            Vec2(185, -40),
+            Vec2(184, -21),
+            Vec2(163, -13),
+            Vec2(111, -4),
+            Vec2(55, 13),
+            Vec2(36, 28),
+            Vec2(20, 29),
+            Vec2(1, 24),
+            Vec2(-5, 11),
+        ],
+        terrain_type=TerrainModel.Types.FOREST,
+    )
 
     # Northern Farmlands
     TerrainController.add_terrain(
@@ -309,28 +375,29 @@ def new_scene() -> GameState:
     )
     TerrainController.add_terrain(
         gs=gs,
-        pivot=Vec2(464, 601),
+        pivot=Vec2(417, 569),
         vertices=[
             Vec2(0, 0),
-            Vec2(2, 4),
-            Vec2(0, 11),
-            Vec2(-23, 65),
-            Vec2(-42, 102),
-            Vec2(-56, 140),
-            Vec2(-61, 152),
-            Vec2(-68, 153),
-            Vec2(-84, 148),
-            Vec2(-130, 121),
-            Vec2(-159, 98),
-            Vec2(-162, 90),
-            Vec2(-143, 67),
-            Vec2(-118, 42),
-            Vec2(-92, 9),
-            Vec2(-66, -17),
-            Vec2(-52, -29),
-            Vec2(-47, -32),
-            Vec2(-39, -29),
-            Vec2(-21, -16),
+            Vec2(-5, 3),
+            Vec2(-17, 13),
+            Vec2(-34, 29),
+            Vec2(-44, 40),
+            Vec2(-70, 73),
+            Vec2(-96, 99),
+            Vec2(-95, 106),
+            Vec2(-72, 120),
+            Vec2(-27, 140),
+            Vec2(-10, 149),
+            Vec2(-4, 149),
+            Vec2(0, 146),
+            Vec2(6, 132),
+            Vec2(23, 97),
+            Vec2(37, 67),
+            Vec2(48, 40),
+            Vec2(49, 36),
+            Vec2(47, 33),
+            Vec2(26, 16),
+            Vec2(8, 3),
         ],
         terrain_type=TerrainModel.Types.FIELD,
     )
@@ -507,8 +574,11 @@ def new_scene() -> GameState:
         terrain_type=TerrainModel.Types.FIELD,
     )
 
-    # Southern Field Building, Woods &  Hedges
+    # Southern Field Building
     TerrainController.add_building(gs, Vec2(403, 768), -70)
+    TerrainController.add_building(gs, Vec2(582, 767), 10)
+
+    # Southern Woods & Hedges
     TerrainController.add_terrain(
         gs=gs,
         pivot=Vec2(555, 639),
@@ -536,45 +606,46 @@ def new_scene() -> GameState:
     )
     TerrainController.add_terrain(
         gs=gs,
-        pivot=Vec2(346, 557),
+        pivot=Vec2(364, 561),
         vertices=[
             Vec2(0, 0),
-            Vec2(4, -10),
-            Vec2(-2, -24),
-            Vec2(-8, -28),
-            Vec2(-25, -28),
-            Vec2(-31, -22),
-            Vec2(-32, -11),
-            Vec2(-24, 3),
-            Vec2(-14, 8),
-            Vec2(-6, 8),
+            Vec2(-24, 9),
+            Vec2(-57, 13),
+            Vec2(-75, 20),
+            Vec2(-80, 38),
+            Vec2(-69, 54),
+            Vec2(-46, 58),
+            Vec2(-22, 56),
+            Vec2(-4, 48),
+            Vec2(19, 30),
+            Vec2(22, 19),
+            Vec2(22, 7),
+            Vec2(12, -1),
         ],
         terrain_type=TerrainModel.Types.FOREST,
     )
     TerrainController.add_terrain(
         gs=gs,
-        pivot=Vec2(365, 542),
+        pivot=Vec2(325, 680),
         vertices=[
             Vec2(0, 0),
-            Vec2(-14, 14),
-            Vec2(-25, 34),
-            Vec2(-46, 58),
-            Vec2(-52, 69),
-            Vec2(-51, 80),
-            Vec2(-43, 86),
-            Vec2(-30, 89),
-            Vec2(-11, 85),
-            Vec2(2, 65),
-            Vec2(14, 52),
-            Vec2(30, 33),
-            Vec2(33, 22),
-            Vec2(31, 15),
-            Vec2(22, 5),
-            Vec2(10, -1),
+            Vec2(-10, 0),
+            Vec2(-22, 5),
+            Vec2(-24, 14),
+            Vec2(-16, 24),
+            Vec2(7, 43),
+            Vec2(44, 64),
+            Vec2(68, 73),
+            Vec2(76, 73),
+            Vec2(83, 68),
+            Vec2(87, 58),
+            Vec2(84, 47),
+            Vec2(72, 36),
+            Vec2(44, 23),
+            Vec2(22, 13),
         ],
         terrain_type=TerrainModel.Types.FOREST,
     )
-
     TerrainController.add_terrain(
         gs=gs,
         pivot=Vec2(598, 765),
