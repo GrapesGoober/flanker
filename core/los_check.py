@@ -6,7 +6,7 @@ from core.intersects import Intersects
 
 @dataclass
 class LosContext:
-    spotter_id: int
+    spotter_ids: list[int]
     target_id: int
 
 
@@ -18,13 +18,15 @@ class LosChecker:
         """Returns `LosContext` if entity can be spotted by any other entities."""
         if not gs.get_component(target_id, Transform):
             return None
-
+        spotter_ids: list[int] = []
         for spotter_id, _, _ in gs.query(CombatUnit, Transform):
             if spotter_id == target_id:
                 continue
             is_seen = LosChecker.check(gs, spotter_id, target_id)
             if is_seen:
-                return LosContext(spotter_id, target_id)
+                spotter_ids.append(spotter_id)
+        if spotter_ids:
+            return LosContext(spotter_ids, target_id)
         return None
 
     @staticmethod

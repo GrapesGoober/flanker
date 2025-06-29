@@ -42,18 +42,37 @@ class MoveAction:
         for i in range(0, int(length / STEP_SIZE) + 1):
             step = min(STEP_SIZE, length - i * STEP_SIZE)
             transform.position += direction * step
+
+            # Check for interrupt
             if MoveAction._interrupt_if_valid(gs, unit_id):
                 # Move interrupted, stop move action here
+                Command.flip_initiative(gs)
                 break
 
     @staticmethod
     def _interrupt_if_valid(gs: GameState, unit_id: int) -> bool:
         """Interrupts a move action depending on the game state."""
-        if los_ctx := LosChecker.check_any(gs, unit_id):
-            fire_ctx = FireAction.fire(
-                gs, attacker_id=los_ctx.spotter_id, target_id=unit_id
-            )
-            if fire_ctx:
-                Command.flip_initiative(gs)
-            return True
+
+        # Check that interrupt is valid
+        if not (los_ctx := LosChecker.check_any(gs, unit_id)):
+            return False
+        if not (unit := gs.get_component(unit_id, CombatUnit)):
+            return False
+
+        # Iterate through each unit that spotted
+        for spotter_id in los_ctx.spotter_ids:
+
+            # Check that spotter is a valid shooter for fire action
+            if not (spotter := gs.get_component(spotter_id, CombatUnit)):
+                continue
+            if unit.command_id == spotter.command_id:
+                continue
+
+            # Interrupt valid, perform the fire action
+            fire_result = FireAction.fire(gs, attacker_id=spotter_id, target_id=unit_id)
+            if fire_result:
+                # TODO: With RNG fire effect, fire actions can be compounded
+                # Current code is it only applies one fire action as interrupt
+                return True
+
         return False
