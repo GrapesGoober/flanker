@@ -4,6 +4,7 @@ from core.components import (
     MoveControls,
     Transform,
 )
+from core.fire_action import FireAction
 from core.gamestate import GameState
 from core.command import Command
 from core.intersects import Intersects
@@ -41,8 +42,18 @@ class MoveAction:
         for i in range(0, int(length / STEP_SIZE) + 1):
             step = min(STEP_SIZE, length - i * STEP_SIZE)
             transform.position += direction * step
-            is_spotted = LosChecker.check_any(gs, unit_id)
-            if is_spotted:  # Spotted, stop right there
-                unit.status = CombatUnit.status.SUPPRESSED
+            if MoveAction._interrupt_if_valid(gs, unit_id):
+                # Move interrupted, stop move action here
+                break
+
+    @staticmethod
+    def _interrupt_if_valid(gs: GameState, unit_id: int) -> bool:
+        """Interrupts a move action depending on the game state."""
+        if los_ctx := LosChecker.check_any(gs, unit_id):
+            fire_ctx = FireAction.fire(
+                gs, attacker_id=los_ctx.spotter_id, target_id=unit_id
+            )
+            if fire_ctx:
                 Command.flip_initiative(gs)
-                return
+            return True
+        return False
