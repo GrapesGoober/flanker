@@ -8,7 +8,6 @@ from core.fire_action import FireAction
 from core.gamestate import GameState
 from core.command import Command
 from core.intersects import Intersects
-from core.los_check import LosChecker
 from core.vec2 import Vec2
 
 
@@ -53,23 +52,24 @@ class MoveAction:
     def _interrupt_if_valid(gs: GameState, unit_id: int) -> bool:
         """Interrupts a move action depending on the game state."""
 
-        # Check that interrupt is valid
-        if not (los_ctx := LosChecker.check_any(gs, unit_id)):
+        # Check interrupt valid
+        if not gs.get_component(unit_id, Transform):
             return False
         if not (unit := gs.get_component(unit_id, CombatUnit)):
             return False
 
-        # Iterate through each unit that spotted
-        for spotter_id in los_ctx.spotter_ids:
+        for spotter_id, spotter_unit, _ in gs.query(CombatUnit, Transform):
 
             # Check that spotter is a valid shooter for fire action
-            if not (spotter := gs.get_component(spotter_id, CombatUnit)):
+            if spotter_id == unit_id:
                 continue
-            if unit.command_id == spotter.command_id:
+            if unit.command_id == spotter_unit.command_id:
                 continue
 
             # Interrupt valid, perform the fire action
-            fire_result = FireAction.fire(gs, attacker_id=spotter_id, target_id=unit_id)
+            fire_result = FireAction.fire(
+                gs=gs, attacker_id=spotter_id, target_id=unit_id
+            )
             if fire_result:
                 # TODO: With RNG fire effect, fire actions can be compounded
                 # Current code is it only applies one fire action as interrupt

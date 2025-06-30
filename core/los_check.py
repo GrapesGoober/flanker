@@ -1,33 +1,10 @@
-from dataclasses import dataclass
-from core.components import TerrainFeature, Transform, CombatUnit
+from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
 from core.intersects import Intersects
 
 
-@dataclass
-class LosContext:
-    spotter_ids: list[int]
-    target_id: int
-
-
 class LosChecker:
-    """Utility for checking Line-of-Sight (LOS) for combat units."""
-
-    @staticmethod
-    def check_any(gs: GameState, target_id: int) -> LosContext | None:
-        """Returns `LosContext` if entity can be spotted by any other entities."""
-        if not gs.get_component(target_id, Transform):
-            return None
-        spotter_ids: list[int] = []
-        for spotter_id, _, _ in gs.query(CombatUnit, Transform):
-            if spotter_id == target_id:
-                continue
-            is_seen = LosChecker.check(gs, spotter_id, target_id)
-            if is_seen:
-                spotter_ids.append(spotter_id)
-        if spotter_ids:
-            return LosContext(spotter_ids, target_id)
-        return None
+    """Utility for checking Line-of-Sight (LOS) for entities."""
 
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
