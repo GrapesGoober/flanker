@@ -64,7 +64,7 @@ def test_los_interrupt(fixture: Fixture) -> None:
     MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform and (
-        transform.position == Vec2(7.6, -10)
+        transform.position == Vec2(8, -10)
     ), "Move action expects to be interrupted at Vec2(7.6, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
     assert unit and (

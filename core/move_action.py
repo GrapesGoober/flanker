@@ -35,7 +35,7 @@ class MoveAction:
                 return
 
         # For each subdivision step of move line, check LoS
-        STEP_SIZE = 0.1
+        STEP_SIZE = 1
         length = (to - transform.position).length()
         direction = (to - transform.position).normalized()
         for i in range(0, int(length / STEP_SIZE) + 1):
