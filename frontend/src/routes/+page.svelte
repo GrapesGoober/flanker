@@ -20,6 +20,7 @@
 	onMount(async () => {
 		terrainData = await GetTerrainData();
 		unitData = await GetRifleSquadsData();
+		console.log(unitData);
 	});
 
 	function AddMarker(event: MouseEvent, worldPos: Vec2) {
@@ -57,7 +58,7 @@
 
 	{#each unitData as unit}
 		<g onclick={(event) => SelectUnit(unit.unit_id, event)}>
-			<RifleSquad position={unit.position} isSelected={selectedUnit === unit.unit_id} />
+			<RifleSquad rifleSquadData={unit} />
 		</g>
 	{/each}
 

@@ -9,7 +9,7 @@ class SquadModel:
     unit_id: int
     position: Vec2
     status: CombatUnit.Status
-    is_hostile: bool
+    is_friendly: bool
 
 
 @dataclass

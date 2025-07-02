@@ -58,7 +58,7 @@ export type RifleSquadData = {
 	unit_id: number;
 	position: Vec2;
 	state: UnitState;
-	isHostile: boolean;
+	isFriendly: boolean;
 };
 
 async function ParseRifleSquadsData(res: Response): Promise<RifleSquadData[]> {
@@ -66,7 +66,7 @@ async function ParseRifleSquadsData(res: Response): Promise<RifleSquadData[]> {
 		unit_id: number;
 		position: Vec2;
 		status: UnitState;
-		isHostile: boolean;	
+		is_friendly: boolean;	
 	}[] = await res.json();
 
 	resData.forEach((data) => {
@@ -87,7 +87,7 @@ async function ParseRifleSquadsData(res: Response): Promise<RifleSquadData[]> {
 		unit_id: data.unit_id,
 		position: data.position,
 		state: data.status,
-		isHostile: data.isHostile
+		isFriendly: data.is_friendly
 	}));
 
 	return units;

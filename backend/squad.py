@@ -25,7 +25,7 @@ class SquadController:
                     unit_id=ent,
                     position=transform.position,
                     status=unit.status,
-                    is_hostile=(unit.command_id == friendly_command_id),
+                    is_friendly=(unit.command_id == friendly_command_id),
                 )
             )
         return squads

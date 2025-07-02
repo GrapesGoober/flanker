@@ -1,14 +1,20 @@
 <script lang="ts">
-	import type { Vec2 } from '$lib';
-	let { position, isSelected }: { position: Vec2; isSelected: boolean } = $props();
+	import type { RifleSquadData } from '$lib';
+	let { rifleSquadData }: { rifleSquadData: RifleSquadData } = $props();
 </script>
 
-<g transform="translate({position.x},{position.y})">
-	<g width="15" height="15" class={isSelected ? 'unit-icon-selected' : 'unit-icon'}>
-		<rect x="0" y="0" width="15" height="15" class="box" />
-		<line x1="0" y1="0" x2="15" y2="15" class="cross" />
-		<line x1="15" y1="0" x2="0" y2="15" class="cross" />
-	</g>
+<g transform="translate({rifleSquadData.position.x},{rifleSquadData.position.y})">
+	{#if rifleSquadData.isFriendly}
+		<g class={rifleSquadData.isSelected ? 'unit-icon-selected' : 'unit-icon'}>
+			<rect x="-8" y="-8" width="16" height="16" class="box" />
+			<line x1="-8" y1="-8" x2="8" y2="8" class="cross" />
+			<line x1="8" y1="-8" x2="-8" y2="8" class="cross" />
+		</g>
+	{:else}
+		<polygon points="0,-10 10,0 0,10 -10,0" class="diamond" />
+		<line x1="-5" y1="-5" x2="5" y2="5" class="cross" />
+		<line x1="5" y1="-5" x2="-5" y2="5" class="cross" />
+	{/if}
 </g>
 
 <style>
@@ -19,6 +25,11 @@
 		transform: scale(1.1, 0.8);
 	}
 	.box {
+		fill: white;
+		stroke: black;
+		stroke-width: 1.5;
+	}
+	.diamond {
 		fill: white;
 		stroke: black;
 		stroke-width: 1.5;
