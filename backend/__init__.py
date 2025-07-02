@@ -10,21 +10,21 @@ from backend.squad import SquadController
 from backend.terrain import TerrainController
 from core.move_action import MoveAction
 
-gs = new_scene()
+ctx = new_scene()
 app = FastAPI()
 
 
 @app.get("/api/rifle-squad")
 async def get_rifle_squads() -> list[SquadModel]:
-    return SquadController.get_squads(gs)
+    return SquadController.get_squads(ctx.gs, ctx.player_command_id)
 
 
 @app.post("/api/move")
 async def action_move(body: MoveActionRequest) -> list[SquadModel]:
-    MoveAction.move(gs, body.unit_id, body.to)
-    return SquadController.get_squads(gs)
+    MoveAction.move(ctx.gs, body.unit_id, body.to)
+    return SquadController.get_squads(ctx.gs, ctx.player_command_id)
 
 
 @app.get("/api/terrain")
 async def get_terrain() -> list[TerrainModel]:
-    return TerrainController.get_terrains(gs)
+    return TerrainController.get_terrains(ctx.gs)

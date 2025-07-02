@@ -7,7 +7,7 @@ from backend.models import SquadModel
 class SquadController:
 
     @staticmethod
-    def add_command(gs: GameState, pos: Vec2) -> int:
+    def add_command(gs: GameState) -> int:
         return gs.add_entity(CommandUnit())
 
     @staticmethod
@@ -17,10 +17,15 @@ class SquadController:
         )
 
     @staticmethod
-    def get_squads(gs: GameState) -> list[SquadModel]:
+    def get_squads(gs: GameState, friendly_command_id: int) -> list[SquadModel]:
         squads: list[SquadModel] = []
         for ent, unit, transform in gs.query(CombatUnit, Transform):
             squads.append(
-                SquadModel(unit_id=ent, position=transform.position, status=unit.status)
+                SquadModel(
+                    unit_id=ent,
+                    position=transform.position,
+                    status=unit.status,
+                    is_hostile=(unit.command_id == friendly_command_id),
+                )
             )
         return squads

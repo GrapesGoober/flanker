@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from backend.models import TerrainModel
 from backend.squad import SquadController
 from backend.terrain import TerrainController
@@ -5,12 +6,18 @@ from core.vec2 import Vec2
 from core.gamestate import GameState
 
 
-def new_scene() -> GameState:
+@dataclass
+class SceneContext:
+    gs: GameState
+    player_command_id: int
+
+
+def new_scene() -> SceneContext:
     """Initialize and return a `GameState` instance with predefined entities."""
     gs = GameState()
 
     # Add squads
-    command = SquadController.add_command(gs, Vec2(100, 120))
+    command = SquadController.add_command(gs)
 
     # First Platoon
     SquadController.add_squad(gs, Vec2(110, 60), command)
@@ -26,6 +33,10 @@ def new_scene() -> GameState:
     SquadController.add_squad(gs, Vec2(170, 60), command)
     SquadController.add_squad(gs, Vec2(170, 75), command)
     SquadController.add_squad(gs, Vec2(170, 90), command)
+
+    # Hostile Squad
+    hostile = SquadController.add_command(gs)
+    SquadController.add_squad(gs, Vec2(397, 421), hostile)
 
     # Northern Road Buildings
     TerrainController.add_building(gs, Vec2(461, 366), 55)
@@ -839,4 +850,4 @@ def new_scene() -> GameState:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    return gs
+    return SceneContext(gs=gs, player_command_id=command)
