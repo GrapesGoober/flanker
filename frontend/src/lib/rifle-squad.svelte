@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { RifleSquadData } from '$lib';
-	let { rifleSquadData }: { rifleSquadData: RifleSquadData } = $props();
+	let { rifleSquadData = $bindable() }: { rifleSquadData: RifleSquadData } = $props();
 </script>
 
 <g transform="translate({rifleSquadData.position.x},{rifleSquadData.position.y})">

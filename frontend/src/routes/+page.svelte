@@ -44,6 +44,10 @@
 		if (marker !== null) {
 			return;
 		}
+		// Deselect all units, then select the correct one
+		for (const unit of unitData) {
+			unit.isSelected = unit.unit_id === unit_id;
+		}
 		selectedUnit = unit_id;
 	}
 </script>
@@ -56,9 +60,9 @@
 		<TerrainFeature featureData={terrainFeatureData} />
 	{/each}
 
-	{#each unitData as unit}
+	{#each unitData as unit, index}
 		<g onclick={(event) => SelectUnit(unit.unit_id, event)}>
-			<RifleSquad rifleSquadData={unit} />
+			<RifleSquad bind:rifleSquadData={unitData[index]} />
 		</g>
 	{/each}
 
