@@ -37,7 +37,7 @@ class CommandUnit:
     is expected to be the root node of the command hierarchy tree.
     """
 
-    has_initiative: bool = True
+    has_initiative: bool
 
 
 @dataclass

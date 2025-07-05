@@ -20,8 +20,8 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    cmd1 = gs.add_entity(CommandUnit())
-    cmd2 = gs.add_entity(CommandUnit())
+    cmd1 = gs.add_entity(CommandUnit(has_initiative=True))
+    cmd2 = gs.add_entity(CommandUnit(has_initiative=False))
     unit_move = gs.add_entity(
         MoveControls(), CombatUnit(command_id=cmd1), Transform(position=Vec2(0, -10))
     )

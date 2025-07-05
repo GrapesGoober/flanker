@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from backend.basic_ai import BasicAi
 from backend.scene import new_scene
 from backend.models import (
     SquadModel,
@@ -22,6 +23,7 @@ async def get_rifle_squads() -> list[SquadModel]:
 @app.post("/api/move")
 async def action_move(body: MoveActionRequest) -> list[SquadModel]:
     MoveAction.move(ctx.gs, body.unit_id, body.to)
+    BasicAi.play(ctx.gs, ctx.opponent_command_id)
     return SquadController.get_squads(ctx.gs, ctx.player_command_id)
 
 

@@ -8,6 +8,7 @@ from core.fire_action import FireAction
 from core.gamestate import GameState
 from core.command import Command
 from core.intersects import Intersects
+from core.los_check import LosChecker
 from core.vec2 import Vec2
 
 
@@ -43,36 +44,39 @@ class MoveAction:
             transform.position += direction * step
 
             # Check for interrupt
-            if MoveAction._interrupt_if_valid(gs, unit_id):
-                # Move interrupted, stop move action here
-                Command.flip_initiative(gs)
+            if (spotter_id := MoveAction._check_interrupt(gs, unit_id)) != None:
+                # Interrupt valid, perform the fire action
+                fire_result = FireAction.fire(
+                    gs=gs, attacker_id=spotter_id, target_id=unit_id
+                )
+                if fire_result:
+                    # TODO: With RNG fire effect, fire actions can be compounded
+                    # Current code is it only applies one fire action as interrupt
+                    Command.flip_initiative(gs)
+                    return
                 break
 
     @staticmethod
-    def _interrupt_if_valid(gs: GameState, unit_id: int) -> bool:
-        """Interrupts a move action depending on the game state."""
+    def _check_interrupt(gs: GameState, unit_id: int) -> int | None:
+        """Checks for a valid move interrupt."""
 
         # Check interrupt valid
         if not gs.get_component(unit_id, Transform):
-            return False
+            return None
         if not (unit := gs.get_component(unit_id, CombatUnit)):
-            return False
+            return None
 
         for spotter_id, spotter_unit, _ in gs.query(CombatUnit, Transform):
 
-            # Check that spotter is a valid shooter for fire action
+            # Check that spotter is a valid shooter for reactive fire
             if spotter_id == unit_id:
                 continue
             if unit.command_id == spotter_unit.command_id:
                 continue
+            if not LosChecker.check(gs, spotter_id, unit_id):
+                continue
 
-            # Interrupt valid, perform the fire action
-            fire_result = FireAction.fire(
-                gs=gs, attacker_id=spotter_id, target_id=unit_id
-            )
-            if fire_result:
-                # TODO: With RNG fire effect, fire actions can be compounded
-                # Current code is it only applies one fire action as interrupt
-                return True
+            # Valid spotter found, interrupt move
+            return spotter_id
 
-        return False
+        return None

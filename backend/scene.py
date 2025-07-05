@@ -10,6 +10,7 @@ from core.gamestate import GameState
 class SceneContext:
     gs: GameState
     player_command_id: int
+    opponent_command_id: int
 
 
 def new_scene() -> SceneContext:
@@ -17,7 +18,7 @@ def new_scene() -> SceneContext:
     gs = GameState()
 
     # Add squads
-    command = SquadController.add_command(gs)
+    command = SquadController.add_command(gs, has_initiative=True)
 
     # First Platoon
     SquadController.add_squad(gs, Vec2(110, 60), command)
@@ -35,7 +36,7 @@ def new_scene() -> SceneContext:
     SquadController.add_squad(gs, Vec2(170, 90), command)
 
     # Hostile Squad
-    hostile = SquadController.add_command(gs)
+    hostile = SquadController.add_command(gs, has_initiative=False)
     SquadController.add_squad(gs, Vec2(397, 421), hostile)
 
     # Northern Road Buildings
@@ -850,4 +851,4 @@ def new_scene() -> SceneContext:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    return SceneContext(gs=gs, player_command_id=command)
+    return SceneContext(gs=gs, player_command_id=command, opponent_command_id=hostile)

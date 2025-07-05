@@ -7,8 +7,8 @@ from backend.models import SquadModel
 class SquadController:
 
     @staticmethod
-    def add_command(gs: GameState) -> int:
-        return gs.add_entity(CommandUnit())
+    def add_command(gs: GameState, has_initiative: bool) -> int:
+        return gs.add_entity(CommandUnit(has_initiative))
 
     @staticmethod
     def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
