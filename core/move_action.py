@@ -47,7 +47,10 @@ class MoveAction:
             if (spotter_id := MoveAction._check_interrupt(gs, unit_id)) != None:
                 # Interrupt valid, perform the fire action
                 fire_result = FireAction.fire(
-                    gs=gs, attacker_id=spotter_id, target_id=unit_id
+                    gs=gs,
+                    attacker_id=spotter_id,
+                    target_id=unit_id,
+                    ingore_initiative=True,
                 )
                 if fire_result:
                     # TODO: With RNG fire effect, fire actions can be compounded

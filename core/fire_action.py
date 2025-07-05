@@ -8,7 +8,9 @@ class FireAction:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
-    def fire(gs: GameState, attacker_id: int, target_id: int) -> bool:
+    def fire(
+        gs: GameState, attacker_id: int, target_id: int, ingore_initiative: bool = False
+    ) -> bool:
         """Performs fire action from attacker unit to target."""
 
         # Check if attacker and target are valid
@@ -18,8 +20,9 @@ class FireAction:
             return False
         if not (target := gs.get_component(target_id, CombatUnit)):
             return False
-        if not Command.has_initiative(gs, attacker_id):
-            return False
+        if not ingore_initiative:
+            if not Command.has_initiative(gs, attacker_id):
+                return False
 
         # Check if target is in line of sight
         if not LosChecker.check(gs, attacker_id, target_id):
