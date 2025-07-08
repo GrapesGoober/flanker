@@ -23,6 +23,10 @@
 	});
 
 	function AddMarker(event: MouseEvent, worldPos: Vec2) {
+		if (unitData.hasInitiative === false) {
+			return;
+		}
+
 		if (selectedUnit === null) {
 			return;
 		}
@@ -30,6 +34,9 @@
 	}
 
 	async function ConfirmMarker(_: MouseEvent) {
+		if (unitData.hasInitiative === false) {
+			return;
+		}
 		// Only apply marker for selected squad & existing marker
 		if (selectedUnit !== null && marker !== null) {
 			unitData = await MoveRifleSquad(selectedUnit, marker);
