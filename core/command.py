@@ -13,15 +13,23 @@ class Command:
 
     @staticmethod
     def has_initiative(gs: GameState, unit_id: int) -> bool:
-        """Check the root of a unit's command hierarchy for initiative."""
+        """Check the unit's command faction for initiative."""
 
-        # Check that entity is a valid combat unit
-        if not (unit := gs.get_component(unit_id, CombatUnit)):
+        if (faction_id := Command.get_faction_id(gs, unit_id)) == None:
+            return False
+        if not (faction := gs.get_component(faction_id, Faction)):
             return False
 
-        # If unit belongs to a faction, return that initiative
-        if faction := gs.get_component(unit.command_id, Faction):
-            return faction.has_initiative
+        return faction.has_initiative
 
-        # Otherwise, recursively checks for initiative through hierarchy
-        return Command.has_initiative(gs, unit.command_id)
+    @staticmethod
+    def get_faction_id(gs: GameState, unit_id: int) -> int | None:
+        """Get the unit's command faction entity id."""
+
+        if not (unit := gs.get_component(unit_id, CombatUnit)):
+            return None
+        # Recursively checks for the faction at the root of hierarchy tree
+        if gs.get_component(unit.command_id, Faction):
+            return unit.command_id
+        else:
+            return Command.get_faction_id(gs, unit.command_id)
