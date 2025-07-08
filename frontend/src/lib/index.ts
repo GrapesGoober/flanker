@@ -24,19 +24,6 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 		terrain_type: TerrainType;
 	}[] = await res.json();
 
-	resData.forEach((data) => {
-		const err = new Error('Terrain response data invalid');
-		if (
-			typeof data !== 'object' ||
-			data === null ||
-			typeof data.feature_id !== 'number' ||
-			!Array.isArray(data.vertices) ||
-			typeof data.terrain_type !== 'string'
-		) {
-			throw err;
-		}
-	});
-
 	const terrainData: TerrainFeatureData[] = resData.map((data) => ({
 		terrain_type: data.terrain_type,
 		coordinates: data.vertices.map((v) => ({
@@ -68,19 +55,6 @@ async function ParseRifleSquadsData(res: Response): Promise<RifleSquadData[]> {
 		status: UnitState;
 		is_friendly: boolean;	
 	}[] = await res.json();
-
-	resData.forEach((data) => {
-		const err = new Error('Units response data invalid');
-		if (
-			typeof data !== 'object' ||
-			data === null ||
-			typeof data.unit_id !== 'number' ||
-			typeof data.position !== 'object' ||
-			typeof data.status !== 'string'
-		) {
-			throw err;
-		}
-	});
 
 	const units: RifleSquadData[] = resData.map((data) => ({
 		isSelected: false,
