@@ -9,8 +9,8 @@ from core.gamestate import GameState
 @dataclass
 class SceneContext:
     gs: GameState
-    player_command_id: int
-    opponent_command_id: int
+    player_faction_id: int
+    opponent_faction_id: int
 
 
 def new_scene() -> SceneContext:
@@ -18,26 +18,26 @@ def new_scene() -> SceneContext:
     gs = GameState()
 
     # Add squads
-    command = SquadController.add_command(gs, has_initiative=True)
+    faction_id = SquadController.add_faction(gs, has_initiative=True)
 
     # First Platoon
-    SquadController.add_squad(gs, Vec2(110, 60), command)
-    SquadController.add_squad(gs, Vec2(110, 75), command)
-    SquadController.add_squad(gs, Vec2(110, 90), command)
+    SquadController.add_squad(gs, Vec2(110, 60), faction_id)
+    SquadController.add_squad(gs, Vec2(110, 75), faction_id)
+    SquadController.add_squad(gs, Vec2(110, 90), faction_id)
 
     # Second Platoon
-    SquadController.add_squad(gs, Vec2(140, 60), command)
-    SquadController.add_squad(gs, Vec2(140, 75), command)
-    SquadController.add_squad(gs, Vec2(140, 90), command)
+    SquadController.add_squad(gs, Vec2(140, 60), faction_id)
+    SquadController.add_squad(gs, Vec2(140, 75), faction_id)
+    SquadController.add_squad(gs, Vec2(140, 90), faction_id)
 
     # Third Platoon
-    SquadController.add_squad(gs, Vec2(170, 60), command)
-    SquadController.add_squad(gs, Vec2(170, 75), command)
-    SquadController.add_squad(gs, Vec2(170, 90), command)
+    SquadController.add_squad(gs, Vec2(170, 60), faction_id)
+    SquadController.add_squad(gs, Vec2(170, 75), faction_id)
+    SquadController.add_squad(gs, Vec2(170, 90), faction_id)
 
     # Hostile Squad
-    hostile = SquadController.add_command(gs, has_initiative=False)
-    SquadController.add_squad(gs, Vec2(397, 421), hostile)
+    opponent_faction_id = SquadController.add_faction(gs, has_initiative=False)
+    SquadController.add_squad(gs, Vec2(397, 421), opponent_faction_id)
 
     # Northern Road Buildings
     TerrainController.add_building(gs, Vec2(461, 366), 55)
@@ -851,4 +851,6 @@ def new_scene() -> SceneContext:
         terrain_type=TerrainModel.Types.FOREST,
     )
 
-    return SceneContext(gs=gs, player_command_id=command, opponent_command_id=hostile)
+    return SceneContext(
+        gs=gs, player_faction_id=faction_id, opponent_faction_id=opponent_faction_id
+    )

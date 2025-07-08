@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import CommandUnit, TerrainFeature, CombatUnit, Transform
+from core.components import Faction, TerrainFeature, CombatUnit, Transform
 from core.fire_action import FireAction
 from core.gamestate import GameState
 from core.vec2 import Vec2
@@ -18,12 +18,12 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    cmd = gs.add_entity(CommandUnit(has_initiative=True))
+    faction = gs.add_entity(Faction(has_initiative=True))
     attacker_id = gs.add_entity(
-        CombatUnit(command_id=cmd), Transform(position=Vec2(0, -10))
+        CombatUnit(command_id=faction), Transform(position=Vec2(0, -10))
     )
     target_id = gs.add_entity(
-        CombatUnit(command_id=cmd), Transform(position=Vec2(15, 20))
+        CombatUnit(command_id=faction), Transform(position=Vec2(15, 20))
     )
     # 10x10 opaque box
     gs.add_entity(

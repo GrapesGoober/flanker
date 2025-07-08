@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import CommandUnit, MoveControls, TerrainFeature, CombatUnit
+from core.components import Faction, MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
 from core.los_check import Transform
 from core.move_action import MoveAction
@@ -20,16 +20,22 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    cmd1 = gs.add_entity(CommandUnit(has_initiative=True))
-    cmd2 = gs.add_entity(CommandUnit(has_initiative=False))
+    friendly_faction_id = gs.add_entity(Faction(has_initiative=True))
+    hostile_faction_id = gs.add_entity(Faction(has_initiative=False))
     unit_move = gs.add_entity(
-        MoveControls(), CombatUnit(command_id=cmd1), Transform(position=Vec2(0, -10))
+        MoveControls(),
+        CombatUnit(command_id=friendly_faction_id),
+        Transform(position=Vec2(0, -10)),
     )
     unit_friendly = gs.add_entity(
-        MoveControls(), CombatUnit(command_id=cmd1), Transform(position=Vec2(0, -11))
+        MoveControls(),
+        CombatUnit(command_id=friendly_faction_id),
+        Transform(position=Vec2(0, -11)),
     )
     unit_shoot = gs.add_entity(
-        MoveControls(), CombatUnit(command_id=cmd2), Transform(position=Vec2(15, 20))
+        MoveControls(),
+        CombatUnit(command_id=hostile_faction_id),
+        Transform(position=Vec2(15, 20)),
     )
 
     # 10x10 opaque box

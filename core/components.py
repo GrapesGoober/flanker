@@ -31,7 +31,7 @@ class CombatUnit:
 
 
 @dataclass
-class CommandUnit:
+class Faction:
     """
     Marks a unit as a faction commander. Entity with this component
     is expected to be the root node of the command hierarchy tree.

@@ -1,32 +1,31 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import CommandUnit, MoveControls, CombatUnit
+from core.components import Faction, MoveControls, CombatUnit
 from core.gamestate import GameState
 from core.los_check import Transform
 from core.move_action import MoveAction
 from core.vec2 import Vec2
-from core.components import CommandUnit, MoveControls, CombatUnit
 
 
 @dataclass
 class Fixture:
     gs: GameState
     unit_id: int
-    cmd_id: int
+    faction_id: int
 
 
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
     # Command unit without initiative
-    cmd_id = gs.add_entity(CommandUnit(has_initiative=False))
+    faction_id = gs.add_entity(Faction(has_initiative=False))
     unit_id = gs.add_entity(
         MoveControls(),
-        CombatUnit(command_id=cmd_id),
+        CombatUnit(command_id=faction_id),
         Transform(position=Vec2(0, 0)),
     )
-    return Fixture(gs, unit_id, cmd_id)
+    return Fixture(gs, unit_id, faction_id)
 
 
 def test_no_initiative(fixture: Fixture) -> None:
@@ -41,9 +40,9 @@ def test_no_initiative(fixture: Fixture) -> None:
 
 def test_has_initiative(fixture: Fixture) -> None:
     # Test with has_initiative=True
-    cmd = fixture.gs.get_component(fixture.cmd_id, CommandUnit)
-    assert cmd != None
-    cmd.has_initiative = True
+    faction = fixture.gs.get_component(fixture.faction_id, Faction)
+    assert faction != None
+    faction.has_initiative = True
     # Try to move the unit
     MoveAction.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)

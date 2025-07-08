@@ -1,15 +1,15 @@
 from core.command import Command
 from core.gamestate import GameState
-from core.components import CommandUnit
+from core.components import Faction
 
 
 class BasicAi:
 
     @staticmethod
-    def play(gs: GameState, parent_commander_id: int) -> None:
-        if not (command := gs.get_component(parent_commander_id, CommandUnit)):
+    def play(gs: GameState, faction_id: int) -> None:
+        if not (faction := gs.get_component(faction_id, Faction)):
             return
-        if command.has_initiative == False:
+        if faction.has_initiative == False:
             return
 
         # Pass on initiative without any actions

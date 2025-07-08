@@ -1,4 +1,4 @@
-from core.components import CommandUnit, CombatUnit, MoveControls, Transform
+from core.components import Faction, CombatUnit, MoveControls, Transform
 from core.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import SquadModel
@@ -7,8 +7,8 @@ from backend.models import SquadModel
 class SquadController:
 
     @staticmethod
-    def add_command(gs: GameState, has_initiative: bool) -> int:
-        return gs.add_entity(CommandUnit(has_initiative))
+    def add_faction(gs: GameState, has_initiative: bool) -> int:
+        return gs.add_entity(Faction(has_initiative))
 
     @staticmethod
     def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
