@@ -35,6 +35,11 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 	return terrainData;
 }
 
+export type UnitStateData = {
+	hasInitiative: boolean;
+	squads: RifleSquadData[];
+}
+
 export enum UnitState {
 	Active = 'ACTIVE',
 	Suppressed = 'SUPPRESSED'
@@ -42,38 +47,44 @@ export enum UnitState {
 
 export type RifleSquadData = {
 	isSelected: boolean;
-	unit_id: number;
+	unitId: number;
 	position: Vec2;
 	state: UnitState;
 	isFriendly: boolean;
 };
 
-async function ParseRifleSquadsData(res: Response): Promise<RifleSquadData[]> {
+async function ParseUnitStatesData(res: Response): Promise<UnitStateData> {
 	const resData: {
-		unit_id: number;
-		position: Vec2;
-		status: UnitState;
-		is_friendly: boolean;	
-	}[] = await res.json();
+		has_initiative: boolean;
+		squads: {
+			unit_id: number;
+			position: Vec2;
+			status: UnitState;
+			is_friendly: boolean;	
+		}[];
+	} = await res.json();
 
-	const units: RifleSquadData[] = resData.map((data) => ({
-		isSelected: false,
-		unit_id: data.unit_id,
-		position: data.position,
-		state: data.status,
-		isFriendly: data.is_friendly
-	}));
+	const unitState: UnitStateData = {
+		hasInitiative: resData.has_initiative,
+		squads: resData.squads.map((data) => ({
+			isSelected: false,
+			unitId: data.unit_id,
+			position: data.position,
+			state: data.status,
+			isFriendly: data.is_friendly
+		}))
+	}
 
-	return units;
+	return unitState;
 }
 
-export async function GetRifleSquadsData(): Promise<RifleSquadData[]> {
+export async function GetUnitStatesData(): Promise<UnitStateData> {
 	const res = await fetch('/api/rifle-squad');
 	if (!res.ok) throw new Error('Failed to fetch rifle squads');
-	return await ParseRifleSquadsData(res);
+	return await ParseUnitStatesData(res);
 }
 
-export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<RifleSquadData[]> {
+export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<UnitStateData> {
 	const res = await fetch('/api/move', {
 		method: 'POST',
 		headers: {
@@ -85,5 +96,5 @@ export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<RifleSq
 		})
 	});
 	if (!res.ok) throw new Error('Failed to move rifle squad');
-	return await ParseRifleSquadsData(res);
+	return await ParseUnitStatesData(res);
 }

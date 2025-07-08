@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from core.command import Command
 from core.components import Faction, CombatUnit, MoveControls, Transform
 from core.vec2 import Vec2
@@ -5,7 +6,13 @@ from core.gamestate import GameState
 from backend.models import SquadModel
 
 
-class SquadController:
+@dataclass
+class UnitState:
+    has_initiative: bool
+    squads: list[SquadModel]
+
+
+class UnitStateController:
 
     @staticmethod
     def add_faction(gs: GameState, has_initiative: bool) -> int:
@@ -18,7 +25,11 @@ class SquadController:
         )
 
     @staticmethod
-    def get_squads(gs: GameState, faction_id: int) -> list[SquadModel]:
+    def get_unit_state(gs: GameState, faction_id: int) -> UnitState:
+
+        if not (faction := gs.get_component(faction_id, Faction)):
+            raise Exception(f"Entity {faction_id} does not have component {Faction}")
+
         squads: list[SquadModel] = []
         for ent, unit, transform in gs.query(CombatUnit, Transform):
             if (unit_faction_id := Command.get_faction_id(gs, ent)) == None:
@@ -31,4 +42,5 @@ class SquadController:
                     is_friendly=(unit_faction_id == faction_id),
                 )
             )
-        return squads
+
+        return UnitState(has_initiative=faction.has_initiative, squads=squads)

@@ -3,11 +3,10 @@ from fastapi import FastAPI
 from backend.basic_ai import BasicAi
 from backend.scene import new_scene
 from backend.models import (
-    SquadModel,
     TerrainModel,
     MoveActionRequest,
 )
-from backend.squad import SquadController
+from backend.squad import UnitStateController, UnitState
 from backend.terrain import TerrainController
 from core.move_action import MoveAction
 
@@ -16,15 +15,15 @@ app = FastAPI()
 
 
 @app.get("/api/rifle-squad")
-async def get_rifle_squads() -> list[SquadModel]:
-    return SquadController.get_squads(context.gs, context.player_faction_id)
+async def get_rifle_squads() -> UnitState:
+    return UnitStateController.get_unit_state(context.gs, context.player_faction_id)
 
 
 @app.post("/api/move")
-async def action_move(body: MoveActionRequest) -> list[SquadModel]:
+async def action_move(body: MoveActionRequest) -> UnitState:
     MoveAction.move(context.gs, body.unit_id, body.to)
     BasicAi.play(context.gs, context.opponent_faction_id)
-    return SquadController.get_squads(context.gs, context.player_faction_id)
+    return UnitStateController.get_unit_state(context.gs, context.player_faction_id)
 
 
 @app.get("/api/terrain")

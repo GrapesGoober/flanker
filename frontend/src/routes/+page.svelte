@@ -2,10 +2,10 @@
 	import { onMount } from 'svelte';
 	import {
 		GetTerrainData,
-		GetRifleSquadsData,
+		GetUnitStatesData,
 		MoveRifleSquad,
-		type RifleSquadData,
 		type TerrainFeatureData,
+		type UnitStateData,
 		type Vec2
 	} from '$lib';
 	import RifleSquad from '$lib/rifle-squad.svelte';
@@ -14,13 +14,12 @@
 
 	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
-	let unitData: RifleSquadData[] = $state([]);
+	let unitData: UnitStateData = $state({ hasInitiative: false, squads: [] });
 	let selectedUnit: number | null = $state(null);
 
 	onMount(async () => {
 		terrainData = await GetTerrainData();
-		unitData = await GetRifleSquadsData();
-		console.log(unitData);
+		unitData = await GetUnitStatesData();
 	});
 
 	function AddMarker(event: MouseEvent, worldPos: Vec2) {
@@ -45,8 +44,8 @@
 			return;
 		}
 		// Deselect all units, then select the correct one
-		for (const unit of unitData) {
-			unit.isSelected = unit.unit_id === unit_id;
+		for (const unit of unitData.squads) {
+			unit.isSelected = unit.unitId === unit_id;
 		}
 		selectedUnit = unit_id;
 	}
@@ -60,9 +59,9 @@
 		<TerrainFeature featureData={terrainFeatureData} />
 	{/each}
 
-	{#each unitData as unit, index}
-		<g onclick={(event) => SelectUnit(unit.unit_id, event)}>
-			<RifleSquad bind:rifleSquadData={unitData[index]} />
+	{#each unitData.squads as unit, index}
+		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+			<RifleSquad bind:rifleSquadData={unitData.squads[index]} />
 		</g>
 	{/each}
 
