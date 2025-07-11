@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import Faction, MoveControls, TerrainFeature, CombatUnit
+from core.components import (
+    Faction,
+    FireControls,
+    MoveControls,
+    TerrainFeature,
+    CombatUnit,
+)
 from core.gamestate import GameState
 from core.los_check import Transform
 from core.move_action import MoveAction
@@ -35,6 +41,7 @@ def fixture() -> Fixture:
     unit_shoot = gs.add_entity(
         MoveControls(),
         CombatUnit(command_id=hostile_faction_id),
+        FireControls(override=FireControls.Outcomes.SUPPRESS),
         Transform(position=Vec2(15, 20)),
     )
 

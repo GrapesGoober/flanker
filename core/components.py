@@ -55,6 +55,21 @@ class MoveControls:
 
 
 @dataclass
+class FireControls:
+    """
+    Marks an entity as capable for fire action.
+    Defines the fire type and set of outcomes.
+    """
+
+    class Outcomes(float, Enum):
+        MISS = 0.5
+        SUPPRESS = 0.75
+        KILL = 1.0
+
+    override: Outcomes | None = None
+
+
+@dataclass
 class TerrainFeature:
     """
     Represents a polygonal terrain feature with terrain type bit flags.
