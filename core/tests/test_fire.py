@@ -87,7 +87,7 @@ def test_no_fire(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result == True, "Fire action must occur"
+    assert fire_result == False, "Fire action must be MISSED"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target and (
         target.status == CombatUnit.Status.ACTIVE

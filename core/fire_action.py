@@ -39,7 +39,7 @@ class FireAction:
 
         # Apply outcome
         if outcome <= FireControls.Outcomes.MISS:
-            return True
+            return False
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
             return True

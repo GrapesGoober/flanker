@@ -57,7 +57,6 @@ class MoveAction:
                     # Current code is it only applies one fire action as interrupt
                     Command.flip_initiative(gs)
                     return
-                break
 
     @staticmethod
     def _check_interrupt(gs: GameState, unit_id: int) -> int | None:
