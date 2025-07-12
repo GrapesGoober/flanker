@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 from core.command import Command
-from core.components import Faction, CombatUnit, MoveControls, Transform
+from core.components import (
+    Faction,
+    CombatUnit,
+    FireControls,
+    MoveControls,
+    Transform,
+)
 from core.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import SquadModel
@@ -21,7 +27,10 @@ class UnitStateController:
     @staticmethod
     def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
         return gs.add_entity(
-            Transform(position=pos), MoveControls(), CombatUnit(command_id=command_id)
+            Transform(position=pos),
+            MoveControls(),
+            CombatUnit(command_id=command_id),
+            FireControls(),
         )
 
     @staticmethod
