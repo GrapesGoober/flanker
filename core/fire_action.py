@@ -32,20 +32,18 @@ class FireAction:
             return False
 
         # Determine fire outcome, using overriden value if found
-        outcome = fire_controls.override
-        if outcome is None:
-            rand = random.random()
-            if rand < FireControls.Outcomes.MISS:
-                outcome = FireControls.Outcomes.MISS
-            elif rand < FireControls.Outcomes.SUPPRESS:
-                outcome = FireControls.Outcomes.SUPPRESS
-            elif rand < FireControls.Outcomes.KILL:
-                outcome = FireControls.Outcomes.KILL
+        if fire_controls.override:
+            outcome = float(fire_controls.override)
+        else:
+            outcome = random.random()
 
         # Apply outcome
-        if outcome == FireControls.Outcomes.SUPPRESS:
+        if outcome <= FireControls.Outcomes.MISS:
+            return True
+        elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
             return True
-        elif outcome == FireControls.Outcomes.KILL:
+        elif outcome <= FireControls.Outcomes.KILL:
             gs.delete_entity(target_id)
+            return True
         return False
