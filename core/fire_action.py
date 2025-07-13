@@ -10,9 +10,15 @@ class FireAction:
 
     @staticmethod
     def fire(
-        gs: GameState, attacker_id: int, target_id: int, is_reactive: bool = False
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
+        is_reactive: bool = False,
     ) -> bool:
-        """Performs fire action from attacker unit to target."""
+        """
+        Performs fire action from attacker unit to target unit.
+        Returns `True` if success.
+        """
 
         # Check if attacker and target are valid
         if not (attacker := gs.get_component(attacker_id, CombatUnit)):
@@ -56,7 +62,7 @@ class FireAction:
 
     @staticmethod
     def get_spotter(gs: GameState, unit_id: int) -> int | None:
-        """Checks for a valid spotter for reactive fire."""
+        """Get the a valid spotter for reactive fire, including LOS check."""
 
         # Check interrupt valid
         if not gs.get_component(unit_id, Transform):

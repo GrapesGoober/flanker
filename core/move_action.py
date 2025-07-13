@@ -25,13 +25,19 @@ class MoveAction:
             return
         if unit.status != CombatUnit.Status.ACTIVE:
             return
-        if not (_ := gs.get_component(unit_id, MoveControls)):
+        if not (move_controls := gs.get_component(unit_id, MoveControls)):
             return
         if not Command.has_initiative(gs, unit_id):
             return
 
+        # Check move action though correct terrain type
+        terrain_type = 0
+        match move_controls.move_type:
+            case MoveControls.MoveType.FOOT:
+                terrain_type = TerrainFeature.Flag.WALKABLE
+
         for intersect in Intersects.get(gs, transform.position, to):
-            if not (intersect.feature.flag & TerrainFeature.Flag.WALKABLE):
+            if not (intersect.feature.flag & terrain_type):
                 return
 
         # For each subdivision step of move line, check LoS
