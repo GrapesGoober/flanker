@@ -1,5 +1,5 @@
 import random
-from core.components import CombatUnit, FireControls
+from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.command import Command
 from core.los_check import LosChecker
@@ -10,7 +10,7 @@ class FireAction:
 
     @staticmethod
     def fire(
-        gs: GameState, attacker_id: int, target_id: int, ingore_initiative: bool = False
+        gs: GameState, attacker_id: int, target_id: int, is_reactive: bool = False
     ) -> bool:
         """Performs fire action from attacker unit to target."""
 
@@ -23,9 +23,11 @@ class FireAction:
             return False
         if not (fire_controls := gs.get_component(attacker_id, FireControls)):
             return False
-        if not ingore_initiative:
-            if not Command.has_initiative(gs, attacker_id):
-                return False
+
+        if is_reactive and Command.has_initiative(gs, attacker_id):
+            return False
+        if not is_reactive and not Command.has_initiative(gs, attacker_id):
+            return False
 
         # Check if target is in line of sight
         if not LosChecker.check(gs, attacker_id, target_id):
@@ -39,6 +41,10 @@ class FireAction:
 
         # Apply outcome
         if outcome <= FireControls.Outcomes.MISS:
+            if is_reactive:
+                fire_controls.can_fire = False
+            else:
+                Command.flip_initiative(gs)
             return False
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
@@ -47,3 +53,31 @@ class FireAction:
             gs.delete_entity(target_id)
             return True
         return False
+
+    @staticmethod
+    def get_spotter(gs: GameState, unit_id: int) -> int | None:
+        """Checks for a valid spotter for reactive fire."""
+
+        # Check interrupt valid
+        if not gs.get_component(unit_id, Transform):
+            return None
+        if not (unit := gs.get_component(unit_id, CombatUnit)):
+            return None
+
+        for spotter_id, spotter_unit, _, fire_controls in gs.query(
+            CombatUnit, Transform, FireControls
+        ):
+
+            # Check that spotter is a valid spotter for reactive fire
+            if spotter_id == unit_id:
+                continue
+            if unit.command_id == spotter_unit.command_id:
+                continue
+            if fire_controls.can_fire == False:
+                continue
+            if not LosChecker.check(gs, spotter_id, unit_id):
+                continue
+
+            return spotter_id
+
+        return None
