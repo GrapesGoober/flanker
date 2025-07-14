@@ -20,6 +20,7 @@ class Fixture:
     unit_move: int
     unit_friendly: int
     unit_shoot: int
+    fire_controls: FireControls
 
 
 @pytest.fixture
@@ -41,7 +42,7 @@ def fixture() -> Fixture:
     unit_shoot = gs.add_entity(
         MoveControls(),
         CombatUnit(command_id=hostile_faction_id),
-        FireControls(override=FireControls.Outcomes.SUPPRESS),
+        fire_controls := FireControls(),
         Transform(position=Vec2(15, 20)),
     )
 
@@ -61,7 +62,11 @@ def fixture() -> Fixture:
     )
 
     return Fixture(
-        gs=gs, unit_move=unit_move, unit_friendly=unit_friendly, unit_shoot=unit_shoot
+        gs=gs,
+        unit_move=unit_move,
+        unit_friendly=unit_friendly,
+        unit_shoot=unit_shoot,
+        fire_controls=fire_controls,
     )
 
 
@@ -73,7 +78,8 @@ def test_move(fixture: Fixture) -> None:
     ), "Move action expects to not be interrupted"
 
 
-def test_los_interrupt(fixture: Fixture) -> None:
+def test_interrupt_suppress(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
     MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform and (
@@ -83,3 +89,19 @@ def test_los_interrupt(fixture: Fixture) -> None:
     assert unit and (
         unit.status == CombatUnit.status.SUPPRESSED
     ), "Target expects to be suppressed"
+
+
+def test_interrupt_miss(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.MISS
+    MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    assert transform and (
+        transform.position == Vec2(20, -10)
+    ), "Move action expects to not be interrupted"
+
+
+def test_interrupt_kill(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.KILL
+    MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    assert transform == None, "Target expects to be killed"
