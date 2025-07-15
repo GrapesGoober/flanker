@@ -1,5 +1,5 @@
 from core.gamestate import GameState
-from core.components import CombatUnit, Faction
+from core.components import CombatUnit, Faction, FireControls
 
 
 class Command:
@@ -10,6 +10,9 @@ class Command:
         """Flips the current initiative of command units."""
         for _, faction in gs.query(Faction):
             faction.has_initiative = not faction.has_initiative
+        # Reset reactive fire
+        for _, fire_controls in gs.query(FireControls):
+            fire_controls.can_fire = True
 
     @staticmethod
     def has_initiative(gs: GameState, unit_id: int) -> bool:

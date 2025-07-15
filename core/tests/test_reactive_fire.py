@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
+from backend import Command
 from core.components import (
     Faction,
     FireControls,
@@ -98,6 +99,14 @@ def test_interrupt_miss(fixture: Fixture) -> None:
     assert transform and (
         transform.position == Vec2(20, -10)
     ), "Move action expects to not be interrupted"
+    fire_controls = fixture.gs.get_component(fixture.unit_shoot, FireControls)
+    assert (
+        fire_controls and fire_controls.can_fire == False
+    ), "MISS reactive fire results in NO FIRE"
+    Command.flip_initiative(fixture.gs)
+    assert (
+        fire_controls and fire_controls.can_fire == True
+    ), "Passing initiative must reset reactive fire"
 
 
 def test_interrupt_kill(fixture: Fixture) -> None:
