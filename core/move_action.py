@@ -62,4 +62,4 @@ class MoveAction:
                     # TODO: With RNG fire effect, fire actions can be compounded
                     # Current code is it only applies one fire action as interrupt
                     Command.flip_initiative(gs)
-                return
+                    return
