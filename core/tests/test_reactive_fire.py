@@ -101,11 +101,11 @@ def test_interrupt_miss(fixture: Fixture) -> None:
     ), "Move action expects to not be interrupted"
     fire_controls = fixture.gs.get_component(fixture.unit_shoot, FireControls)
     assert (
-        fire_controls and fire_controls.can_fire == False
+        fire_controls and fire_controls.can_reactive_fire == False
     ), "MISS reactive fire results in NO FIRE"
     Command.flip_initiative(fixture.gs)
     assert (
-        fire_controls and fire_controls.can_fire == True
+        fire_controls and fire_controls.can_reactive_fire == True
     ), "Passing initiative must reset reactive fire"
 
 

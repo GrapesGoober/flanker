@@ -48,7 +48,7 @@ class FireAction:
         # Apply outcome
         if outcome <= FireControls.Outcomes.MISS:
             if is_reactive:
-                fire_controls.can_fire = False
+                fire_controls.can_reactive_fire = False
             else:
                 Command.flip_initiative(gs)
             return False
@@ -79,7 +79,7 @@ class FireAction:
                 continue
             if unit.command_id == spotter_unit.command_id:
                 continue
-            if fire_controls.can_fire == False:
+            if fire_controls.can_reactive_fire == False:
                 continue
             if not LosChecker.check(gs, spotter_id, unit_id):
                 continue

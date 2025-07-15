@@ -67,7 +67,7 @@ class FireControls:
         KILL = 1.0
 
     override: Outcomes | None = None
-    can_fire: bool = True
+    can_reactive_fire: bool = True
 
 
 @dataclass

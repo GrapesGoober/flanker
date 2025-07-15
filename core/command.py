@@ -12,7 +12,7 @@ class Command:
             faction.has_initiative = not faction.has_initiative
         # Reset reactive fire
         for _, fire_controls in gs.query(FireControls):
-            fire_controls.can_fire = True
+            fire_controls.can_reactive_fire = True
 
     @staticmethod
     def has_initiative(gs: GameState, unit_id: int) -> bool:
