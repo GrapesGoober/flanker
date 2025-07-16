@@ -22,14 +22,19 @@ class Fixture:
     unit_friendly: int
     unit_shoot: int
     fire_controls: FireControls
+    hostile_faction: Faction
 
 
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    friendly_faction_id = gs.add_entity(Faction(has_initiative=True))
-    hostile_faction_id = gs.add_entity(Faction(has_initiative=False))
+    friendly_faction_id = gs.add_entity(
+        Faction(has_initiative=True),
+    )
+    hostile_faction_id = gs.add_entity(
+        faction := Faction(has_initiative=False),
+    )
     unit_move = gs.add_entity(
         MoveControls(),
         CombatUnit(command_id=friendly_faction_id),
@@ -68,6 +73,7 @@ def fixture() -> Fixture:
         unit_friendly=unit_friendly,
         unit_shoot=unit_shoot,
         fire_controls=fire_controls,
+        hostile_faction=faction,
     )
 
 
@@ -77,6 +83,9 @@ def test_move(fixture: Fixture) -> None:
     assert transform and (
         transform.position == Vec2(5, -15)
     ), "Move action expects to not be interrupted"
+    assert (
+        fixture.hostile_faction.has_initiative == False
+    ), "NO reactive fire must retain initiative."
 
 
 def test_interrupt_suppress(fixture: Fixture) -> None:
@@ -90,6 +99,9 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
     assert unit and (
         unit.status == CombatUnit.status.SUPPRESSED
     ), "Target expects to be suppressed"
+    assert (
+        fixture.hostile_faction.has_initiative == True
+    ), "SUPPRESS reactive fire must flip initiative."
 
 
 def test_interrupt_miss(fixture: Fixture) -> None:
@@ -103,6 +115,9 @@ def test_interrupt_miss(fixture: Fixture) -> None:
     assert (
         fire_controls and fire_controls.can_reactive_fire == False
     ), "MISS reactive fire results in NO FIRE"
+    assert (
+        fixture.hostile_faction.has_initiative == False
+    ), "MISS reactive fire mustn't flip initiative"
     Command.flip_initiative(fixture.gs)
     assert (
         fire_controls and fire_controls.can_reactive_fire == True
@@ -114,3 +129,6 @@ def test_interrupt_kill(fixture: Fixture) -> None:
     MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
+    assert (
+        fixture.hostile_faction.has_initiative == True
+    ), "KILL reactive fire must flip initiative"
