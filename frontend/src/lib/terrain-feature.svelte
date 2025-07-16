@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TerrainType, type TerrainFeatureData } from '$lib';
+	import type { TerrainFeatureData } from '$lib';
 	let { featureData }: { featureData: TerrainFeatureData } = $props();
 
 	function ToString(coords: { x: number; y: number }[]): string {
@@ -7,16 +7,16 @@
 	}
 </script>
 
-{#if featureData.terrain_type == TerrainType.Forest}
+{#if featureData.terrainType == 'FOREST'}
 	<polygon points={ToString(featureData.coordinates)} class="forest" />
-{:else if featureData.terrain_type == TerrainType.Road}
+{:else if featureData.terrainType == 'ROAD'}
 	<polyline points={ToString(featureData.coordinates)} class="road-border" />
 	<polyline points={ToString(featureData.coordinates)} class="road" />
-{:else if featureData.terrain_type == TerrainType.Field}
+{:else if featureData.terrainType == 'FIELD'}
 	<polygon points={ToString(featureData.coordinates)} class="field" />
-{:else if featureData.terrain_type == TerrainType.Water}
+{:else if featureData.terrainType == 'WATER'}
 	<polygon points={ToString(featureData.coordinates)} class="water" />
-{:else if featureData.terrain_type == TerrainType.Building}
+{:else if featureData.terrainType == 'BUILDING'}
 	<polygon points={ToString(featureData.coordinates)} class="building" />
 {:else}
 	<polygon points={ToString(featureData.coordinates)} fill="pink" stroke="red" stroke-width="2" />

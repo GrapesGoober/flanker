@@ -1,35 +1,26 @@
-export enum TerrainType {
-	Forest = 'FOREST',
-	Road = 'ROAD',
-	Field = 'FIELD',
-	Water = 'WATER',
-	Building = 'BUILDING',
-	Undefined = 0
-}
+import createClient from 'openapi-fetch';
+import type { paths } from './api-schema';
+const client = createClient<paths>();
 
 export type Vec2 = { x: number; y: number };
 
 export type TerrainFeatureData = {
-	terrain_type: TerrainType;
+	terrainType: 'FOREST' | 'ROAD' | 'FIELD' | 'WATER' | 'BUILDING';
 	coordinates: Vec2[];
 };
 
 export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
-	const res = await fetch('/api/terrain');
-	if (!res.ok) throw new Error('Failed to fetch terrain');
+	const {
+		data, // only present if 2XX response
+		error // only present if 4XX or 5XX response
+	} = await client.GET('/api/terrain');
 
-	const resData: {
-		feature_id: number;
-		vertices: Vec2[];
-		terrain_type: TerrainType;
-	}[] = await res.json();
+	if (error) throw new Error(error);
 
-	const terrainData: TerrainFeatureData[] = resData.map((data) => ({
-		terrain_type: data.terrain_type,
-		coordinates: data.vertices.map((v) => ({
-			x: v.x,
-			y: v.y
-		}))
+	// Convert to a custom type in case API and types diverge
+	const terrainData: TerrainFeatureData[] = data.map((element) => ({
+		terrainType: element.terrain_type,
+		coordinates: element.vertices
 	}));
 
 	return terrainData;
@@ -38,7 +29,7 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 export type UnitStateData = {
 	hasInitiative: boolean;
 	squads: RifleSquadData[];
-}
+};
 
 export enum UnitState {
 	Active = 'ACTIVE',
@@ -61,7 +52,7 @@ async function ParseUnitStatesData(res: Response): Promise<UnitStateData> {
 			unit_id: number;
 			position: Vec2;
 			status: UnitState;
-			is_friendly: boolean;	
+			is_friendly: boolean;
 		}[];
 	} = await res.json();
 
@@ -74,7 +65,7 @@ async function ParseUnitStatesData(res: Response): Promise<UnitStateData> {
 			state: data.status,
 			isFriendly: data.is_friendly
 		}))
-	}
+	};
 
 	return unitState;
 }
