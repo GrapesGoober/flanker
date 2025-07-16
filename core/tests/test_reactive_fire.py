@@ -85,23 +85,7 @@ def test_move(fixture: Fixture) -> None:
     ), "Move action expects to not be interrupted"
     assert (
         fixture.hostile_faction.has_initiative == False
-    ), "NO reactive fire must retain initiative."
-
-
-def test_interrupt_suppress(fixture: Fixture) -> None:
-    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
-    MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert transform and (
-        transform.position == Vec2(8, -10)
-    ), "Move action expects to be interrupted at Vec2(7.6, -10)"
-    unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
-    assert unit and (
-        unit.status == CombatUnit.status.SUPPRESSED
-    ), "Target expects to be suppressed"
-    assert (
-        fixture.hostile_faction.has_initiative == True
-    ), "SUPPRESS reactive fire must flip initiative."
+    ), "NO reactive fire mustn't flip initiative."
 
 
 def test_interrupt_miss(fixture: Fixture) -> None:
@@ -122,6 +106,22 @@ def test_interrupt_miss(fixture: Fixture) -> None:
     assert (
         fire_controls and fire_controls.can_reactive_fire == True
     ), "Passing initiative must reset reactive fire"
+
+
+def test_interrupt_suppress(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
+    MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    assert transform and (
+        transform.position == Vec2(8, -10)
+    ), "Move action expects to be interrupted at Vec2(7.6, -10)"
+    unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
+    assert unit and (
+        unit.status == CombatUnit.status.SUPPRESSED
+    ), "Target expects to be suppressed"
+    assert (
+        fixture.hostile_faction.has_initiative == True
+    ), "SUPPRESS reactive fire must flip initiative."
 
 
 def test_interrupt_kill(fixture: Fixture) -> None:
