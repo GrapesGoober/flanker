@@ -67,9 +67,11 @@
 	{/each}
 
 	{#each unitData.squads as unit, index}
-		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-			<RifleSquad bind:rifleSquadData={unitData.squads[index]} />
-		</g>
+		{#if unitData.squads[index]}
+			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+				<RifleSquad bind:rifleSquadData={unitData.squads[index]} />
+			</g>
+		{/if}
 	{/each}
 
 	{#if marker}
