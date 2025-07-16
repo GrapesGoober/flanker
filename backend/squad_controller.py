@@ -13,12 +13,12 @@ from backend.models import SquadModel
 
 
 @dataclass
-class UnitState:
+class CombatUnitsViewState:
     has_initiative: bool
     squads: list[SquadModel]
 
 
-class UnitStateController:
+class CombatUnitController:
 
     @staticmethod
     def add_faction(gs: GameState, has_initiative: bool) -> int:
@@ -34,7 +34,7 @@ class UnitStateController:
         )
 
     @staticmethod
-    def get_unit_state(gs: GameState, faction_id: int) -> UnitState:
+    def get_units(gs: GameState, faction_id: int) -> CombatUnitsViewState:
 
         if not (faction := gs.get_component(faction_id, Faction)):
             raise Exception(f"Entity {faction_id} does not have component {Faction}")
@@ -52,4 +52,6 @@ class UnitStateController:
                 )
             )
 
-        return UnitState(has_initiative=faction.has_initiative, squads=squads)
+        return CombatUnitsViewState(
+            has_initiative=faction.has_initiative, squads=squads
+        )

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from backend.models import TerrainModel
-from backend.squad_controller import UnitStateController
+from backend.squad_controller import CombatUnitController
 from backend.terrain_controller import TerrainController
 from core.vec2 import Vec2
 from core.gamestate import GameState
@@ -18,26 +18,26 @@ def new_scene() -> SceneContext:
     gs = GameState()
 
     # Add squads
-    faction_id = UnitStateController.add_faction(gs, has_initiative=True)
+    faction_id = CombatUnitController.add_faction(gs, has_initiative=True)
 
     # First Platoon
-    UnitStateController.add_squad(gs, Vec2(110, 60), faction_id)
-    UnitStateController.add_squad(gs, Vec2(110, 75), faction_id)
-    UnitStateController.add_squad(gs, Vec2(110, 90), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(110, 60), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(110, 75), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(110, 90), faction_id)
 
     # Second Platoon
-    UnitStateController.add_squad(gs, Vec2(140, 60), faction_id)
-    UnitStateController.add_squad(gs, Vec2(140, 75), faction_id)
-    UnitStateController.add_squad(gs, Vec2(140, 90), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(140, 60), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(140, 75), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(140, 90), faction_id)
 
     # Third Platoon
-    UnitStateController.add_squad(gs, Vec2(170, 60), faction_id)
-    UnitStateController.add_squad(gs, Vec2(170, 75), faction_id)
-    UnitStateController.add_squad(gs, Vec2(170, 90), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(170, 60), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(170, 75), faction_id)
+    CombatUnitController.add_squad(gs, Vec2(170, 90), faction_id)
 
     # Hostile Squad
-    opponent_faction_id = UnitStateController.add_faction(gs, has_initiative=False)
-    UnitStateController.add_squad(gs, Vec2(397, 421), opponent_faction_id)
+    opponent_faction_id = CombatUnitController.add_faction(gs, has_initiative=False)
+    CombatUnitController.add_squad(gs, Vec2(397, 421), opponent_faction_id)
 
     # Northern Road Buildings
     TerrainController.add_building(gs, Vec2(461, 366), 55)
