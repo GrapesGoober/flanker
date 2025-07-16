@@ -59,6 +59,13 @@ class FireAction:
             else:
                 Command.flip_initiative(gs)
             return False
+        elif outcome <= FireControls.Outcomes.PIN:
+            target.status = CombatUnit.Status.PINNED
+            # Only lose the initiative for failed action, not reaction
+            if not is_reactive:
+                Command.flip_initiative(gs)
+            # Stops the move action, hence return `True`
+            return True
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
             return True

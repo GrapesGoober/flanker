@@ -108,13 +108,32 @@ def test_interrupt_miss(fixture: Fixture) -> None:
     ), "Passing initiative must reset reactive fire"
 
 
+def test_interrupt_pin(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.PIN
+    MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    assert transform and (
+        transform.position == Vec2(8, -10)
+    ), "Move action expects to be interrupted at Vec2(8, -10)"
+    unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
+    assert unit and (
+        unit.status == CombatUnit.status.PINNED
+    ), "Target expects to be pinned"
+    assert (
+        fixture.hostile_faction.has_initiative == False
+    ), "PINNED reactive fire must maintain initiative."
+    assert (
+        fixture.fire_controls.can_reactive_fire == True
+    ), "PINNED reactive fire doesn't mark shooter as NO FIRE"
+
+
 def test_interrupt_suppress(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
     MoveAction.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform and (
         transform.position == Vec2(8, -10)
-    ), "Move action expects to be interrupted at Vec2(7.6, -10)"
+    ), "Move action expects to be interrupted at Vec2(8, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
     assert unit and (
         unit.status == CombatUnit.status.SUPPRESSED

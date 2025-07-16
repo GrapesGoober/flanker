@@ -105,6 +105,23 @@ def test_no_fire(fixture: Fixture) -> None:
     ), "Expects shooter to retain initiative"
 
 
+def test_pin_fire(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.PIN
+    fire_result = FireAction.fire(
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
+    )
+    assert fire_result == True, "Fire action must occur"
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
+    assert target and (
+        target.status == CombatUnit.Status.PINNED
+    ), "Target expects to be PINNED as it is shot"
+    assert (
+        fixture.attacker_faction.has_initiative == False
+    ), "Expects shooter to lose initiative"
+
+
 def test_suppress_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
     fire_result = FireAction.fire(

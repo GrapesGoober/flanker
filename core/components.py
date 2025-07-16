@@ -24,6 +24,7 @@ class CombatUnit:
 
     class Status(Enum):
         ACTIVE = "ACTIVE"
+        PINNED = "PINNED"
         SUPPRESSED = "SUPPRESSED"
 
     command_id: int
@@ -62,8 +63,9 @@ class FireControls:
     """
 
     class Outcomes(float, Enum):
-        MISS = 0.5
-        SUPPRESS = 0.75
+        MISS = 0.3
+        PIN = 0.7
+        SUPPRESS = 0.95
         KILL = 1.0
 
     override: Outcomes | None = None
