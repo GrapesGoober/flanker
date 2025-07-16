@@ -4,9 +4,10 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"dev-expose": "vite dev --host",
+		"dev": "npm run generate-api && vite dev",
+		"dev-expose": "npm run generate-api && vite dev --host",
 		"build": "vite build",
+		"generate-api": "npx openapi-typescript http://127.0.0.1:8000/openapi.json -o ./src/lib/api-schema.d.ts",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
