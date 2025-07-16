@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from backend import Command
+from core.command import Command
 from core.components import (
     Faction,
     FireControls,
