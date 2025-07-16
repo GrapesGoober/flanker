@@ -42,6 +42,7 @@ export type UnitStateData = {
 
 export enum UnitState {
 	Active = 'ACTIVE',
+	Pinned = 'PINNED',
 	Suppressed = 'SUPPRESSED'
 }
 
