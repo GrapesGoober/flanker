@@ -30,9 +30,16 @@ class FireAction:
         if not (fire_controls := gs.get_component(attacker_id, FireControls)):
             return False
 
+        # The reactive fire only allows when NOT having initiative
         if is_reactive and Command.has_initiative(gs, attacker_id):
             return False
         if not is_reactive and not Command.has_initiative(gs, attacker_id):
+            return False
+
+        # Check that the target faction is not the same as attacker
+        attacker_faction = Command.get_faction_id(gs, attacker_id)
+        target_faction = Command.get_faction_id(gs, target_id)
+        if attacker_faction == target_faction:
             return False
 
         # Check if target is in line of sight

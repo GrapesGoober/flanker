@@ -19,22 +19,26 @@ class Fixture:
     attacker_id: int
     target_id: int
     fire_controls: FireControls
+    attacker_faction: Faction
 
 
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    faction = gs.add_entity(
-        Faction(has_initiative=True),
+    attacker_faction_id = gs.add_entity(
+        faction := Faction(has_initiative=True),
+    )
+    target_faction_id = gs.add_entity(
+        Faction(has_initiative=False),
     )
     attacker_id = gs.add_entity(
-        CombatUnit(command_id=faction),
+        CombatUnit(command_id=attacker_faction_id),
         fire_controls := FireControls(),
         Transform(position=Vec2(7.6, -10)),
     )
     target_id = gs.add_entity(
-        CombatUnit(command_id=faction),
+        CombatUnit(command_id=target_faction_id),
         Transform(position=Vec2(15, 20)),
     )
     # 10x10 opaque box
@@ -56,6 +60,7 @@ def fixture() -> Fixture:
         attacker_id=attacker_id,
         target_id=target_id,
         fire_controls=fire_controls,
+        attacker_faction=faction,
     )
 
 
@@ -78,6 +83,9 @@ def test_no_los(fixture: Fixture) -> None:
     assert target and (
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as it is obstructed"
+    assert (
+        fixture.attacker_faction.has_initiative == True
+    ), "Expects shooter to retain initiative"
 
 
 def test_no_fire(fixture: Fixture) -> None:
@@ -92,6 +100,9 @@ def test_no_fire(fixture: Fixture) -> None:
     assert target and (
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as fire action MISS"
+    assert (
+        fixture.attacker_faction.has_initiative == False
+    ), "Expects shooter to retain initiative"
 
 
 def test_suppress_fire(fixture: Fixture) -> None:
@@ -106,6 +117,9 @@ def test_suppress_fire(fixture: Fixture) -> None:
     assert target and (
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be SUPPRESSED as it is shot"
+    assert (
+        fixture.attacker_faction.has_initiative == True
+    ), "Expects shooter to retain initiative"
 
 
 def test_kill_fire(fixture: Fixture) -> None:
@@ -118,3 +132,6 @@ def test_kill_fire(fixture: Fixture) -> None:
     assert fire_result == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
+    assert (
+        fixture.attacker_faction.has_initiative == True
+    ), "Expects shooter to retain initiative"
