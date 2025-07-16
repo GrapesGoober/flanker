@@ -5,7 +5,7 @@ from backend.models import (
     TerrainModel,
     MoveActionRequest,
 )
-from backend.squad_controller import CombatUnitController, CombatUnitsViewState
+from backend.squad_controller import CombatUnitController, CombatUnitsViewModel
 from backend.terrain_controller import TerrainController
 
 context = new_scene()
@@ -13,7 +13,7 @@ app = FastAPI()
 
 
 @app.get("/api/rifle-squad")
-async def get_rifle_squads() -> CombatUnitsViewState:
+async def get_rifle_squads() -> CombatUnitsViewModel:
     return CombatUnitController.get_units(
         context.gs,
         context.player_faction_id,
@@ -21,7 +21,7 @@ async def get_rifle_squads() -> CombatUnitsViewState:
 
 
 @app.post("/api/move")
-async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
+async def action_move(body: MoveActionRequest) -> CombatUnitsViewModel:
     ActionController.move(
         gs=context.gs,
         body=body,

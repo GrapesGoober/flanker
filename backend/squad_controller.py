@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from core.command import Command
 from core.components import (
     Faction,
@@ -9,13 +8,7 @@ from core.components import (
 )
 from core.vec2 import Vec2
 from core.gamestate import GameState
-from backend.models import SquadModel
-
-
-@dataclass
-class CombatUnitsViewState:
-    has_initiative: bool
-    squads: list[SquadModel]
+from backend.models import CombatUnitsViewModel, SquadModel
 
 
 class CombatUnitController:
@@ -34,7 +27,7 @@ class CombatUnitController:
         )
 
     @staticmethod
-    def get_units(gs: GameState, faction_id: int) -> CombatUnitsViewState:
+    def get_units(gs: GameState, faction_id: int) -> CombatUnitsViewModel:
 
         if not (faction := gs.get_component(faction_id, Faction)):
             raise Exception(f"Entity {faction_id} does not have component {Faction}")
@@ -52,6 +45,6 @@ class CombatUnitController:
                 )
             )
 
-        return CombatUnitsViewState(
+        return CombatUnitsViewModel(
             has_initiative=faction.has_initiative, squads=squads
         )

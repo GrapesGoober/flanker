@@ -13,6 +13,12 @@ class SquadModel:
 
 
 @dataclass
+class CombatUnitsViewModel:
+    has_initiative: bool
+    squads: list[SquadModel]
+
+
+@dataclass
 class MoveActionRequest:
     unit_id: int
     to: Vec2
