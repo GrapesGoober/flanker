@@ -25,7 +25,7 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 	return terrainData;
 }
 
-export type UnitStateData = {
+export type CombatUnitsData = {
 	hasInitiative: boolean;
 	squads: RifleSquadData[];
 };
@@ -38,7 +38,7 @@ export type RifleSquadData = {
 	isFriendly: boolean;
 };
 
-function ParseUnitStatesData(data: components['schemas']['UnitState']): UnitStateData {
+function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']): CombatUnitsData {
 	return {
 		hasInitiative: data.has_initiative,
 		squads: data.squads.map((squad) => ({
@@ -51,7 +51,7 @@ function ParseUnitStatesData(data: components['schemas']['UnitState']): UnitStat
 	};
 }
 
-export async function GetUnitStatesData(): Promise<UnitStateData> {
+export async function GetUnitStatesData(): Promise<CombatUnitsData> {
 	const {
 		data, // only present if 2XX response
 		error // only present if 4XX or 5XX response
@@ -62,7 +62,7 @@ export async function GetUnitStatesData(): Promise<UnitStateData> {
 	return ParseUnitStatesData(data);
 }
 
-export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<UnitStateData> {
+export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<CombatUnitsData> {
 	const {
 		data, // only present if 2XX response
 		error // only present if 4XX or 5XX response

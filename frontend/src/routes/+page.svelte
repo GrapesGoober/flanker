@@ -5,7 +5,7 @@
 		GetUnitStatesData,
 		MoveRifleSquad,
 		type TerrainFeatureData,
-		type UnitStateData,
+		type CombatUnitsData,
 		type Vec2
 	} from '$lib';
 	import RifleSquad from '$lib/rifle-squad.svelte';
@@ -14,7 +14,7 @@
 
 	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
-	let unitData: UnitStateData = $state({ hasInitiative: false, squads: [] });
+	let unitData: CombatUnitsData = $state({ hasInitiative: false, squads: [] });
 	let selectedUnit: number | null = $state(null);
 
 	onMount(async () => {

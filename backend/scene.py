@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from backend.models import TerrainModel
-from backend.squad_controller import CombatUnitController
+from backend.combat_unit_controller import CombatUnitController
 from backend.terrain_controller import TerrainController
 from core.vec2 import Vec2
 from core.gamestate import GameState

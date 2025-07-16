@@ -59,6 +59,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CombatUnitsViewState */
+        CombatUnitsViewState: {
+            /** Has Initiative */
+            has_initiative: boolean;
+            /** Squads */
+            squads: components["schemas"]["SquadModel"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -98,13 +105,6 @@ export interface components {
          * @enum {string}
          */
         Types: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
-        /** UnitState */
-        UnitState: {
-            /** Has Initiative */
-            has_initiative: boolean;
-            /** Squads */
-            squads: components["schemas"]["SquadModel"][];
-        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -145,7 +145,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UnitState"];
+                    "application/json": components["schemas"]["CombatUnitsViewState"];
                 };
             };
         };
@@ -169,7 +169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UnitState"];
+                    "application/json": components["schemas"]["CombatUnitsViewState"];
                 };
             };
             /** @description Validation Error */

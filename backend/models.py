@@ -13,7 +13,7 @@ class SquadModel:
 
 
 @dataclass
-class CombatUnitsViewModel:
+class CombatUnitsViewState:
     has_initiative: bool
     squads: list[SquadModel]
 
