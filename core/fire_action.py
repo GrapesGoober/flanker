@@ -53,10 +53,11 @@ class FireAction:
             outcome = random.random()
 
         # Apply outcome
+        # TODO: for fire reaction, should support multiple shooter
         if outcome <= FireControls.Outcomes.MISS:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
-            else:
+            if not is_reactive:
                 Command.flip_initiative(gs)
             return False
         elif outcome <= FireControls.Outcomes.PIN:
@@ -68,9 +69,13 @@ class FireAction:
             return True
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
+            if is_reactive:
+                Command.flip_initiative(gs)
             return True
         elif outcome <= FireControls.Outcomes.KILL:
             gs.delete_entity(target_id)
+            if is_reactive:
+                Command.flip_initiative(gs)
             return True
         return False
 

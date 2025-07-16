@@ -50,6 +50,7 @@ class MoveAction:
             transform.position += direction * step
 
             # Check for interrupt
+            # TODO: for fire reaction, should support multiple shooter
             if (spotter_id := FireAction.get_spotter(gs, unit_id)) != None:
                 # Interrupt valid, perform the fire action
                 fire_result = FireAction.fire(
@@ -59,7 +60,4 @@ class MoveAction:
                     is_reactive=True,
                 )
                 if fire_result:
-                    # TODO: With RNG fire effect, fire actions can be compounded
-                    # Current code is it only applies one fire action as interrupt
-                    Command.flip_initiative(gs)
                     return
