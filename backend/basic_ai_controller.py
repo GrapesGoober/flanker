@@ -3,7 +3,7 @@ from core.gamestate import GameState
 from core.components import Faction
 
 
-class BasicAi:
+class BasicAiController:
 
     @staticmethod
     def play(gs: GameState, faction_id: int) -> None:
