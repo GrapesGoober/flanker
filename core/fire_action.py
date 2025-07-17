@@ -1,8 +1,8 @@
 import random
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
-from core.command import Command
-from core.los_check import LosChecker
+from core.command import FactionSystem
+from core.los_check import LosCheckSystem
 
 
 class FireAction:
@@ -31,19 +31,19 @@ class FireAction:
             return False
 
         # The reactive fire only allows when NOT having initiative
-        if is_reactive and Command.has_initiative(gs, attacker_id):
+        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
             return False
-        if not is_reactive and not Command.has_initiative(gs, attacker_id):
+        if not is_reactive and not FactionSystem.has_initiative(gs, attacker_id):
             return False
 
         # Check that the target faction is not the same as attacker
-        attacker_faction = Command.get_faction_id(gs, attacker_id)
-        target_faction = Command.get_faction_id(gs, target_id)
+        attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
+        target_faction = FactionSystem.get_faction_id(gs, target_id)
         if attacker_faction == target_faction:
             return False
 
         # Check if target is in line of sight
-        if not LosChecker.check(gs, attacker_id, target_id):
+        if not LosCheckSystem.check(gs, attacker_id, target_id):
             return False
 
         # Determine fire outcome, using overriden value if found
@@ -58,24 +58,24 @@ class FireAction:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
             if not is_reactive:
-                Command.flip_initiative(gs)
+                FactionSystem.flip_initiative(gs)
             return False
         elif outcome <= FireControls.Outcomes.PIN:
             target.status = CombatUnit.Status.PINNED
             # Only lose the initiative for failed action, not reaction
             if not is_reactive:
-                Command.flip_initiative(gs)
+                FactionSystem.flip_initiative(gs)
             # Stops the move action, hence return `True`
             return True
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
             if is_reactive:
-                Command.flip_initiative(gs)
+                FactionSystem.flip_initiative(gs)
             return True
         elif outcome <= FireControls.Outcomes.KILL:
             gs.delete_entity(target_id)
             if is_reactive:
-                Command.flip_initiative(gs)
+                FactionSystem.flip_initiative(gs)
             return True
         return False
 
@@ -100,7 +100,7 @@ class FireAction:
                 continue
             if fire_controls.can_reactive_fire == False:
                 continue
-            if not LosChecker.check(gs, spotter_id, unit_id):
+            if not LosCheckSystem.check(gs, spotter_id, unit_id):
                 continue
 
             return spotter_id

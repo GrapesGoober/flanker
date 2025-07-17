@@ -2,7 +2,7 @@ from core.gamestate import GameState
 from core.components import CombatUnit, Faction, FireControls
 
 
-class Command:
+class FactionSystem:
     """ECS System class for command hierarchy and faction initiative mechanic."""
 
     @staticmethod
@@ -18,7 +18,7 @@ class Command:
     def has_initiative(gs: GameState, unit_id: int) -> bool:
         """Check the unit's command faction for initiative."""
 
-        if (faction_id := Command.get_faction_id(gs, unit_id)) == None:
+        if (faction_id := FactionSystem.get_faction_id(gs, unit_id)) == None:
             return False
         if not (faction := gs.get_component(faction_id, Faction)):
             return False
@@ -35,4 +35,4 @@ class Command:
         if gs.get_component(unit.command_id, Faction):
             return unit.command_id
         else:
-            return Command.get_faction_id(gs, unit.command_id)
+            return FactionSystem.get_faction_id(gs, unit.command_id)

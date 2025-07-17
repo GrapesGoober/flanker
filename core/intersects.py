@@ -15,8 +15,8 @@ class Intersection:
     feature: TerrainFeature
 
 
-class Intersects:
-    """Utility for finding intersections between line segments and terrain features."""
+class IntersectSystem:
+    """Static system class for finding intersections between line segments and terrain features."""
 
     @staticmethod
     def get(
@@ -27,7 +27,7 @@ class Intersects:
             if feature.flag & mask:
                 vertices = TransformUtils.apply(feature.vertices, transform)
                 for b1, b2 in pairwise(vertices):
-                    if (intsct := Intersects._get(start, end, b1, b2)) is not None:
+                    if (intsct := IntersectSystem._get(start, end, b1, b2)) is not None:
                         yield Intersection(intsct, feature)
 
     @staticmethod

@@ -4,7 +4,7 @@ import pytest
 from core.components import Faction, MoveControls, CombatUnit
 from core.gamestate import GameState
 from core.los_check import Transform
-from core.move_action import MoveAction
+from core.move_action import MoveActionSystem
 from core.vec2 import Vec2
 
 
@@ -30,7 +30,7 @@ def fixture() -> Fixture:
 
 def test_no_initiative(fixture: Fixture) -> None:
     # Try to move the unit
-    MoveAction.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    MoveActionSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Should not move from original position
     assert transform and (
@@ -44,7 +44,7 @@ def test_has_initiative(fixture: Fixture) -> None:
     assert faction != None
     faction.has_initiative = True
     # Try to move the unit
-    MoveAction.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    MoveActionSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Expects to move to new position
     assert transform and (

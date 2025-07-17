@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.command import Command
+from core.command import FactionSystem
 from core.components import Faction, CombatUnit
 from core.gamestate import GameState
 
@@ -25,18 +25,18 @@ def fixture() -> Fixture:
 
 
 def test_initiative(fixture: Fixture) -> None:
-    has_initiative = Command.has_initiative(fixture.gs, fixture.unit_id_1)
+    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == True, "Parent Faction entity has initiative"
 
-    has_initiative = Command.has_initiative(fixture.gs, fixture.unit_id_2)
+    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == True, "Parent Faction entity has initiative"
 
 
 def test_no_initiative(fixture: Fixture) -> None:
     fixture.faction.has_initiative = False
 
-    has_initiative = Command.has_initiative(fixture.gs, fixture.unit_id_1)
+    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == False, "Parent Faction entity has no initiative"
 
-    has_initiative = Command.has_initiative(fixture.gs, fixture.unit_id_2)
+    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == False, "Parent Faction entity has no initiative"
