@@ -10,7 +10,7 @@ from core.components import (
 )
 from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 
 
 @dataclass

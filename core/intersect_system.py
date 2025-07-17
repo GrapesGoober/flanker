@@ -3,8 +3,8 @@ from itertools import pairwise
 from typing import Iterable
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
-from core.vec2 import Vec2
-from core.transform_utils import TransformUtils
+from core.utils.vec2 import Vec2
+from core.utils.linear_transform import LinearTransform
 
 
 @dataclass
@@ -25,7 +25,7 @@ class IntersectSystem:
         """Returns iterable of intersections between the line segment and features."""
         for _, feature, transform in gs.query(TerrainFeature, Transform):
             if feature.flag & mask:
-                vertices = TransformUtils.apply(feature.vertices, transform)
+                vertices = LinearTransform.apply(feature.vertices, transform)
                 for b1, b2 in pairwise(vertices):
                     if (intsct := IntersectSystem._get(start, end, b1, b2)) is not None:
                         yield Intersection(intsct, feature)

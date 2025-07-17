@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from core.components import TerrainFeature, Transform
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import TerrainModel
-from core.transform_utils import TransformUtils
+from core.utils.linear_transform import LinearTransform
 
 
 class TerrainController:
@@ -37,7 +37,7 @@ class TerrainController:
             terrains.append(
                 TerrainModel(
                     feature_id=ent,
-                    vertices=TransformUtils.apply(terrain_feature.vertices, transform),
+                    vertices=LinearTransform.apply(terrain_feature.vertices, transform),
                     terrain_type=terrain_tag.type,
                 )
             )

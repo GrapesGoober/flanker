@@ -12,7 +12,7 @@ from core.components import (
 from core.gamestate import GameState
 from core.los_system import Transform
 from core.move_system import MoveSystem
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 
 
 @dataclass

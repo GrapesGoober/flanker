@@ -6,7 +6,7 @@ from core.components import (
     MoveControls,
     Transform,
 )
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import CombatUnitsViewState, SquadModel
 

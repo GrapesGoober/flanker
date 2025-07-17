@@ -1,10 +1,10 @@
 import math
 from typing import List
 from core.components import Transform
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 
 
-class TransformUtils:
+class LinearTransform:
     """Utils for coordinate transformations via `Transform` component."""
 
     @staticmethod
@@ -26,6 +26,6 @@ class TransformUtils:
     @staticmethod
     def apply(vec_list: List[Vec2], transform: Transform) -> list[Vec2]:
         """Returns a new `list[Vec2` translated and rotated by `Transform`."""
-        rotated = TransformUtils.rotate(vec_list, transform.angle)
-        translated = TransformUtils.translate(rotated, transform.position)
+        rotated = LinearTransform.rotate(vec_list, transform.angle)
+        translated = LinearTransform.translate(rotated, transform.position)
         return translated
