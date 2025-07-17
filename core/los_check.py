@@ -4,21 +4,7 @@ from core.intersects import Intersects
 
 
 class LosChecker:
-    """Utility for checking Line-of-Sight (LOS) for combat units."""
-
-    @staticmethod
-    def check_any(gs: GameState, target_id: int) -> bool:
-        """Returns `True` if entity can be spotted by any other entities."""
-        if not gs.get_component(target_id, Transform):
-            return False
-
-        for source_ent, _ in gs.query(Transform):
-            if source_ent == target_id:
-                continue
-            is_seen = LosChecker.check(gs, source_ent, target_id)
-            if is_seen:
-                return True
-        return False
+    """Utility for checking Line-of-Sight (LOS) for entities."""
 
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:

@@ -1,111 +1,79 @@
-export enum TerrainType {
-	Forest = 'FOREST',
-	Road = 'ROAD',
-	Field = 'FIELD',
-	Water = 'WATER',
-	Undefined = 0
-}
+import createClient from 'openapi-fetch';
+import type { components, paths } from './api-schema';
+const client = createClient<paths>();
 
 export type Vec2 = { x: number; y: number };
 
 export type TerrainFeatureData = {
-	terrain_type: TerrainType;
+	terrainType: 'FOREST' | 'ROAD' | 'FIELD' | 'WATER' | 'BUILDING';
 	coordinates: Vec2[];
 };
 
 export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
-	const res = await fetch('/api/terrain');
-	if (!res.ok) throw new Error('Failed to fetch terrain');
+	const {
+		data, // only present if 2XX response
+		error // only present if 4XX or 5XX response
+	} = await client.GET('/api/terrain');
+	if (error) throw new Error(JSON.stringify(error));
 
-	const resData: {
-		feature_id: number;
-		vertices: Vec2[];
-		terrain_type: TerrainType;
-	}[] = await res.json();
-
-	resData.forEach((data) => {
-		const err = new Error('Terrain response data invalid');
-		if (
-			typeof data !== 'object' ||
-			data === null ||
-			typeof data.feature_id !== 'number' ||
-			!Array.isArray(data.vertices) ||
-			typeof data.terrain_type !== 'string'
-		) {
-			throw err;
-		}
-	});
-
-	const terrainData: TerrainFeatureData[] = resData.map((data) => ({
-		terrain_type: data.terrain_type,
-		coordinates: data.vertices.map((v) => ({
-			x: v.x,
-			y: v.y
-		}))
+	// Convert to a custom type in case API and types diverge
+	const terrainData: TerrainFeatureData[] = data.map((element) => ({
+		terrainType: element.terrain_type,
+		coordinates: element.vertices
 	}));
 
 	return terrainData;
 }
 
-export enum UnitState {
-	Active = 'ACTIVE',
-	Suppressed = 'SUPPRESSED'
-}
+export type CombatUnitsData = {
+	hasInitiative: boolean;
+	squads: RifleSquadData[];
+};
 
 export type RifleSquadData = {
 	isSelected: boolean;
-	unit_id: number;
+	unitId: number;
 	position: Vec2;
-	state: UnitState;
+	status: 'ACTIVE' | 'PINNED' | 'SUPPRESSED';
+	isFriendly: boolean;
 };
 
-async function ParseRifleSquadsData(res: Response): Promise<RifleSquadData[]> {
-	const resData: {
-		unit_id: number;
-		position: Vec2;
-		status: UnitState;
-	}[] = await res.json();
+function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']): CombatUnitsData {
+	return {
+		hasInitiative: data.has_initiative,
+		squads: data.squads.map((squad) => ({
+			isSelected: false,
+			unitId: squad.unit_id,
+			position: squad.position,
+			status: squad.status,
+			isFriendly: squad.is_friendly
+		}))
+	};
+}
 
-	resData.forEach((data) => {
-		const err = new Error('Units response data invalid');
-		if (
-			typeof data !== 'object' ||
-			data === null ||
-			typeof data.unit_id !== 'number' ||
-			typeof data.position !== 'object' ||
-			typeof data.status !== 'string'
-		) {
-			throw err;
+export async function GetUnitStatesData(): Promise<CombatUnitsData> {
+	const {
+		data, // only present if 2XX response
+		error // only present if 4XX or 5XX response
+	} = await client.GET('/api/rifle-squad');
+	if (error) throw new Error(JSON.stringify(error));
+
+	// Convert to a custom type in case API and types diverge
+	return ParseUnitStatesData(data);
+}
+
+export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<CombatUnitsData> {
+	const {
+		data, // only present if 2XX response
+		error // only present if 4XX or 5XX response
+	} = await client.POST('/api/move', {
+		body: {
+			unit_id: unit_id,
+			to: to
 		}
 	});
+	if (error) throw new Error(JSON.stringify(error));
 
-	const units: RifleSquadData[] = resData.map((data) => ({
-		isSelected: false,
-		unit_id: data.unit_id,
-		position: data.position,
-		state: data.status
-	}));
-
-	return units;
-}
-
-export async function GetRifleSquadsData(): Promise<RifleSquadData[]> {
-	const res = await fetch('/api/rifle-squad');
-	if (!res.ok) throw new Error('Failed to fetch rifle squads');
-	return await ParseRifleSquadsData(res);
-}
-
-export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<RifleSquadData[]> {
-	const res = await fetch('/api/move', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify({
-			unit_id,
-			to
-		})
-	});
-	if (!res.ok) throw new Error('Failed to move rifle squad');
-	return await ParseRifleSquadsData(res);
+	// Convert to a custom type in case API and types diverge
+	return ParseUnitStatesData(data);
 }

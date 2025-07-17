@@ -12,6 +12,7 @@ class Transform:
     """
 
     position: Vec2
+    angle: float = 0
 
 
 @dataclass
@@ -23,6 +24,7 @@ class CombatUnit:
 
     class Status(Enum):
         ACTIVE = "ACTIVE"
+        PINNED = "PINNED"
         SUPPRESSED = "SUPPRESSED"
 
     command_id: int
@@ -30,13 +32,13 @@ class CombatUnit:
 
 
 @dataclass
-class CommandUnit:
+class Faction:
     """
     Marks a unit as a faction commander. Entity with this component
     is expected to be the root node of the command hierarchy tree.
     """
 
-    has_initiative: bool = True
+    has_initiative: bool
 
 
 @dataclass
@@ -51,6 +53,23 @@ class MoveControls:
 
     move_type: MoveType = MoveType.FOOT
     ...
+
+
+@dataclass
+class FireControls:
+    """
+    Marks an entity as capable for fire action.
+    Defines the fire type and set of outcomes.
+    """
+
+    class Outcomes(float, Enum):
+        MISS = 0.3
+        PIN = 0.7
+        SUPPRESS = 0.95
+        KILL = 1.0
+
+    override: Outcomes | None = None
+    can_reactive_fire: bool = True
 
 
 @dataclass

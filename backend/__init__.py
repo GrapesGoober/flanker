@@ -1,39 +1,39 @@
 from fastapi import FastAPI
+from backend.action_controller import ActionController
+from backend.scene import new_scene
+from backend.models import (
+    TerrainModel,
+    MoveActionRequest,
+)
+from backend.combat_unit_controller import CombatUnitController, CombatUnitsViewState
+from backend.terrain_controller import TerrainController
 
-from backend.scene import create_gamestate
-from backend.assets import SquadModel, TerrainModel, MoveActionRequest, get_terrain_type
-from core.components import TerrainFeature, CombatUnit, Transform
-from core.move_action import MoveAction
-
-gs = create_gamestate()
+context = new_scene()
 app = FastAPI()
 
 
 @app.get("/api/rifle-squad")
-async def get_rifle_squads() -> list[SquadModel]:
-    response: list[SquadModel] = []
-    for ent, unit, transform in gs.query(CombatUnit, Transform):
-        response.append(
-            SquadModel(unit_id=ent, position=transform.position, status=unit.status)
-        )
-    return response
+async def get_rifle_squads() -> CombatUnitsViewState:
+    return CombatUnitController.get_units(
+        context.gs,
+        context.player_faction_id,
+    )
 
 
 @app.post("/api/move")
-async def action_move(body: MoveActionRequest) -> list[SquadModel]:
-    MoveAction.move(gs, body.unit_id, body.to)
-    return await get_rifle_squads()
+async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
+    ActionController.move(
+        gs=context.gs,
+        body=body,
+        player_faction_id=context.player_faction_id,
+        opponent_faction_id=context.opponent_faction_id,
+    )
+    return CombatUnitController.get_units(
+        context.gs,
+        context.player_faction_id,
+    )
 
 
 @app.get("/api/terrain")
 async def get_terrain() -> list[TerrainModel]:
-    response: list[TerrainModel] = []
-    for ent, feat in gs.query(TerrainFeature):
-        response.append(
-            TerrainModel(
-                feature_id=ent,
-                vertices=feat.vertices,
-                terrain_type=get_terrain_type(feat.flag),
-            )
-        )
-    return response
+    return TerrainController.get_terrains(context.gs)
