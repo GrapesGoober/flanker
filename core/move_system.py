@@ -4,14 +4,14 @@ from core.components import (
     MoveControls,
     Transform,
 )
-from core.fire_action import FireAction
+from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.command import FactionSystem
-from core.intersects import IntersectSystem
+from core.faction_system import FactionSystem
+from core.intersect_system import IntersectSystem
 from core.vec2 import Vec2
 
 
-class MoveActionSystem:
+class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
     @staticmethod
@@ -51,9 +51,9 @@ class MoveActionSystem:
 
             # Check for interrupt
             # TODO: for fire reaction, should support multiple shooter
-            if (spotter_id := FireAction.get_spotter(gs, unit_id)) != None:
+            if (spotter_id := FireSystem.get_spotter(gs, unit_id)) != None:
                 # Interrupt valid, perform the fire action
-                fire_result = FireAction.fire(
+                fire_result = FireSystem.fire(
                     gs=gs,
                     attacker_id=spotter_id,
                     target_id=unit_id,

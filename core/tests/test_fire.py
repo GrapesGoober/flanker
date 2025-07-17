@@ -8,7 +8,7 @@ from core.components import (
     CombatUnit,
     Transform,
 )
-from core.fire_action import FireAction
+from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.vec2 import Vec2
 
@@ -73,7 +73,7 @@ def test_no_los(fixture: Fixture) -> None:
     assert attacker_transform
     attacker_transform.position = Vec2(0, -10)
     # Fire action won't occur
-    fire_result = FireAction.fire(
+    fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -90,7 +90,7 @@ def test_no_los(fixture: Fixture) -> None:
 
 def test_no_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.MISS
-    fire_result = FireAction.fire(
+    fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -107,7 +107,7 @@ def test_no_fire(fixture: Fixture) -> None:
 
 def test_pin_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.PIN
-    fire_result = FireAction.fire(
+    fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -124,7 +124,7 @@ def test_pin_fire(fixture: Fixture) -> None:
 
 def test_suppress_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
-    fire_result = FireAction.fire(
+    fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -141,7 +141,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
 
 def test_kill_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
-    fire_result = FireAction.fire(
+    fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,

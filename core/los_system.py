@@ -1,9 +1,9 @@
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
-from core.intersects import IntersectSystem
+from core.intersect_system import IntersectSystem
 
 
-class LosCheckSystem:
+class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) for entities."""
 
     @staticmethod

@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status
 from backend.basic_ai_controller import BasicAiController
 from backend.models import MoveActionRequest
-from core.command import FactionSystem
+from core.faction_system import FactionSystem
 from core.gamestate import GameState
-from core.move_action import MoveActionSystem
+from core.move_system import MoveSystem
 
 
 class ActionController:
@@ -20,5 +20,5 @@ class ActionController:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unit {body.unit_id} is not part of player faction",
             )
-        MoveActionSystem.move(gs, body.unit_id, body.to)
+        MoveSystem.move(gs, body.unit_id, body.to)
         BasicAiController.play(gs, opponent_faction_id)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.command import FactionSystem
+from core.faction_system import FactionSystem
 from core.components import Faction, CombatUnit
 from core.gamestate import GameState
 

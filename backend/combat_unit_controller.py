@@ -1,4 +1,4 @@
-from core.command import FactionSystem
+from core.faction_system import FactionSystem
 from core.components import (
     Faction,
     CombatUnit,

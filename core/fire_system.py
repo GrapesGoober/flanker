@@ -1,11 +1,11 @@
 import random
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
-from core.command import FactionSystem
-from core.los_check import LosCheckSystem
+from core.faction_system import FactionSystem
+from core.los_system import LosSystem
 
 
-class FireAction:
+class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
@@ -43,7 +43,7 @@ class FireAction:
             return False
 
         # Check if target is in line of sight
-        if not LosCheckSystem.check(gs, attacker_id, target_id):
+        if not LosSystem.check(gs, attacker_id, target_id):
             return False
 
         # Determine fire outcome, using overriden value if found
@@ -100,7 +100,7 @@ class FireAction:
                 continue
             if fire_controls.can_reactive_fire == False:
                 continue
-            if not LosCheckSystem.check(gs, spotter_id, unit_id):
+            if not LosSystem.check(gs, spotter_id, unit_id):
                 continue
 
             return spotter_id
