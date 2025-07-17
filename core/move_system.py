@@ -8,7 +8,7 @@ from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.faction_system import FactionSystem
 from core.intersect_system import IntersectSystem
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 
 
 class MoveSystem:
