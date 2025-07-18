@@ -39,6 +39,8 @@ class FireSystem:
         # Check that the target faction is not the same as attacker
         attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
         target_faction = FactionSystem.get_faction_id(gs, target_id)
+        if attacker_faction == None or target_faction == None:
+            return False
         if attacker_faction == target_faction:
             return False
 
@@ -57,25 +59,19 @@ class FireSystem:
         if outcome <= FireControls.Outcomes.MISS:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
-            if not is_reactive:
-                FactionSystem.flip_initiative(gs)
+            FactionSystem.set_initiative(gs, target_faction)
             return False
         elif outcome <= FireControls.Outcomes.PIN:
             target.status = CombatUnit.Status.PINNED
-            # Only lose the initiative for failed action, not reaction
-            if not is_reactive:
-                FactionSystem.flip_initiative(gs)
-            # Stops the move action, hence return `True`
+            FactionSystem.set_initiative(gs, target_faction)
             return True
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
-            if is_reactive:
-                FactionSystem.flip_initiative(gs)
+            FactionSystem.set_initiative(gs, attacker_faction)
             return True
         elif outcome <= FireControls.Outcomes.KILL:
             gs.delete_entity(target_id)
-            if is_reactive:
-                FactionSystem.flip_initiative(gs)
+            FactionSystem.set_initiative(gs, attacker_faction)
             return True
         return False
 

@@ -102,7 +102,7 @@ def test_no_fire(fixture: Fixture) -> None:
     ), "Target expects to be ACTIVE as fire action MISS"
     assert (
         fixture.attacker_faction.has_initiative == False
-    ), "Expects shooter to retain initiative"
+    ), "Expects attacker to lose initiative"
 
 
 def test_pin_fire(fixture: Fixture) -> None:
@@ -119,7 +119,7 @@ def test_pin_fire(fixture: Fixture) -> None:
     ), "Target expects to be PINNED as it is shot"
     assert (
         fixture.attacker_faction.has_initiative == False
-    ), "Expects shooter to lose initiative"
+    ), "Expects attacker to lose initiative"
 
 
 def test_suppress_fire(fixture: Fixture) -> None:
@@ -136,7 +136,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
     ), "Target expects to be SUPPRESSED as it is shot"
     assert (
         fixture.attacker_faction.has_initiative == True
-    ), "Expects shooter to retain initiative"
+    ), "Expects attacker to retain initiative"
 
 
 def test_kill_fire(fixture: Fixture) -> None:
@@ -151,4 +151,4 @@ def test_kill_fire(fixture: Fixture) -> None:
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
         fixture.attacker_faction.has_initiative == True
-    ), "Expects shooter to retain initiative"
+    ), "Expects attacker to retain initiative"

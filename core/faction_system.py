@@ -15,6 +15,20 @@ class FactionSystem:
             fire_controls.can_reactive_fire = True
 
     @staticmethod
+    def set_initiative(gs: GameState, faction_id: int) -> None:
+        """Sets the given faction to have the initiative."""
+
+        for id, faction in gs.query(Faction):
+            faction.has_initiative = False
+            if id == faction_id:
+                faction.has_initiative = True
+
+        # Reset reactive fire
+        for id, fire_controls in gs.query(FireControls):
+            if FactionSystem.get_faction_id(gs, id) == faction_id:
+                fire_controls.can_reactive_fire = True
+
+    @staticmethod
     def has_initiative(gs: GameState, unit_id: int) -> bool:
         """Check the unit's command faction for initiative."""
 
