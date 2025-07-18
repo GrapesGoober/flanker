@@ -78,7 +78,7 @@ def test_no_los(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result == False, "Fire action mustn't occur"
+    assert fire_result.is_valid == False, "Fire action mustn't occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target and (
         target.status == CombatUnit.Status.ACTIVE
@@ -95,7 +95,7 @@ def test_no_fire(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result == False, "Fire action must be MISSED"
+    assert fire_result.is_hit == False, "Fire action must be MISSED"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target and (
         target.status == CombatUnit.Status.ACTIVE
@@ -112,7 +112,7 @@ def test_pin_fire(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result == True, "Fire action must occur"
+    assert fire_result.is_hit == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target and (
         target.status == CombatUnit.Status.PINNED
@@ -129,7 +129,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result == True, "Fire action must occur"
+    assert fire_result.is_hit == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target and (
         target.status == CombatUnit.Status.SUPPRESSED
@@ -146,7 +146,7 @@ def test_kill_fire(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result == True, "Fire action must occur"
+    assert fire_result.is_hit == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (

@@ -59,5 +59,5 @@ class MoveSystem:
                     target_id=unit_id,
                     is_reactive=True,
                 )
-                if fire_result:
+                if fire_result.is_hit:
                     return
