@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
+from core.command_system import CommandSystem
 from core.faction_system import FactionSystem
 from core.components import Faction, CombatUnit
 from core.gamestate import GameState
@@ -9,6 +10,7 @@ from core.gamestate import GameState
 @dataclass
 class Fixture:
     gs: GameState
+    faction_id: int
     faction: Faction
     unit_id_1: int
     unit_id_2: int
@@ -21,7 +23,13 @@ def fixture() -> Fixture:
     unit_id_1 = gs.add_entity(CombatUnit(command_id=faction_id))
     unit_id_2 = gs.add_entity(CombatUnit(command_id=unit_id_1))
 
-    return Fixture(gs, faction, unit_id_1, unit_id_2)
+    return Fixture(
+        gs=gs,
+        faction_id=faction_id,
+        faction=faction,
+        unit_id_1=unit_id_1,
+        unit_id_2=unit_id_2,
+    )
 
 
 def test_initiative(fixture: Fixture) -> None:
@@ -40,3 +48,9 @@ def test_no_initiative(fixture: Fixture) -> None:
 
     has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == False, "Parent Faction entity has no initiative"
+
+
+def test_chain_command(fixture: Fixture) -> None:
+    CommandSystem.kill_unit(fixture.gs, fixture.unit_id_1)
+    faction_id = FactionSystem.get_faction_id(fixture.gs, fixture.unit_id_2)
+    assert faction_id == fixture.faction_id, "Command must pass down on unit death"

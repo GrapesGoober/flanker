@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import random
+from core.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.faction_system import FactionSystem
@@ -77,7 +78,7 @@ class FireSystem:
             FactionSystem.set_initiative(gs, attacker_faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.KILL:
-            gs.delete_entity(target_id)
+            CommandSystem.kill_unit(gs, target_id)
             FactionSystem.set_initiative(gs, attacker_faction)
             return FireResult(is_valid=True, is_hit=True)
         return FireResult(is_valid=False)

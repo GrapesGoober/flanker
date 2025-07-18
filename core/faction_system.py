@@ -3,7 +3,7 @@ from core.components import CombatUnit, Faction, FireControls
 
 
 class FactionSystem:
-    """ECS System class for command hierarchy and faction initiative mechanic."""
+    """ECS System class for faction and initiative mechanic."""
 
     @staticmethod
     def flip_initiative(gs: GameState) -> None:
