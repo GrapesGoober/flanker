@@ -7,13 +7,17 @@ from core.utils.linear_transform import LinearTransform
 
 
 class TerrainController:
+    """Provides static methods to manipulate and query terrain features."""
 
     @dataclass
     class TypeTag:
+        """Tag for terrain type on an entity."""
+
         type: TerrainModel.Types
 
     @staticmethod
     def get_terrain_flags(terrain_type: TerrainModel.Types) -> TerrainFeature.Flag:
+        """Return the flags for a given terrain type."""
         match terrain_type:
             case TerrainModel.Types.FOREST:
                 return TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE
@@ -30,6 +34,7 @@ class TerrainController:
 
     @staticmethod
     def get_terrains(gs: GameState) -> list[TerrainModel]:
+        """Get all terrain features from the game state."""
         terrains: list[TerrainModel] = []
         for ent, transform, terrain_feature, terrain_tag in gs.query(
             Transform, TerrainFeature, TerrainController.TypeTag
@@ -50,6 +55,7 @@ class TerrainController:
         vertices: list[Vec2],
         terrain_type: TerrainModel.Types,
     ) -> None:
+        """Add a new terrain feature to the game state."""
         gs.add_entity(
             Transform(position=pivot, angle=0),
             TerrainFeature(
@@ -61,6 +67,7 @@ class TerrainController:
 
     @staticmethod
     def add_building(gs: GameState, position: Vec2, angle: float) -> None:
+        """Add a building terrain feature to the game state."""
         gs.add_entity(
             Transform(position=position, angle=angle),
             TerrainFeature(

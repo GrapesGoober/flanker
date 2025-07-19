@@ -8,13 +8,15 @@ from core.gamestate import GameState
 
 @dataclass
 class SceneContext:
+    """Holds the game state and faction IDs for a scene."""
+
     gs: GameState
     player_faction_id: int
     opponent_faction_id: int
 
 
 def new_scene() -> SceneContext:
-    """Initialize and return a `GameState` instance with predefined entities."""
+    """Create and return a new scene with predefined units and terrain."""
     gs = GameState()
 
     # Add squads
