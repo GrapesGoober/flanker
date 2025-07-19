@@ -87,9 +87,9 @@ class FireSystem:
 
         # Check interrupt valid
         if not gs.get_component(unit_id, Transform):
-            return None
+            raise Exception(f"Missing component {Transform} for {unit_id=}")
         if not (unit := gs.get_component(unit_id, CombatUnit)):
-            return None
+            raise Exception(f"Missing component {CombatUnit} for {unit_id=}")
 
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
