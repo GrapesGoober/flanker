@@ -4,15 +4,15 @@ from core.components import (
     MoveControls,
     Transform,
 )
-from core.fire_action import FireAction
+from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.command import Command
-from core.intersects import Intersects
-from core.vec2 import Vec2
+from core.faction_system import FactionSystem
+from core.intersect_system import IntersectSystem
+from core.utils.vec2 import Vec2
 
 
-class MoveAction:
-    """Static class for handling movement action of combat units."""
+class MoveSystem:
+    """Static system class for handling movement action of combat units."""
 
     @staticmethod
     def move(gs: GameState, unit_id: int, to: Vec2) -> None:
@@ -27,7 +27,7 @@ class MoveAction:
             return
         if not (move_controls := gs.get_component(unit_id, MoveControls)):
             return
-        if not Command.has_initiative(gs, unit_id):
+        if not FactionSystem.has_initiative(gs, unit_id):
             return
 
         # Check move action though correct terrain type
@@ -36,11 +36,11 @@ class MoveAction:
             case MoveControls.MoveType.FOOT:
                 terrain_type = TerrainFeature.Flag.WALKABLE
 
-        for intersect in Intersects.get(gs, transform.position, to):
+        for intersect in IntersectSystem.get(gs, transform.position, to):
             if not (intersect.feature.flag & terrain_type):
                 return
 
-        # For each subdivision step of move line, check LoS
+        # For each subdivision step of move line, check interrupt
         STEP_SIZE = 1
         length = (to - transform.position).length()
         direction = (to - transform.position).normalized()
@@ -51,13 +51,13 @@ class MoveAction:
 
             # Check for interrupt
             # TODO: for fire reaction, should support multiple shooter
-            if (spotter_id := FireAction.get_spotter(gs, unit_id)) != None:
+            if (spotter_id := FireSystem.get_spotter(gs, unit_id)) != None:
                 # Interrupt valid, perform the fire action
-                fire_result = FireAction.fire(
+                fire_result = FireSystem.fire(
                     gs=gs,
                     attacker_id=spotter_id,
                     target_id=unit_id,
                     is_reactive=True,
                 )
-                if fire_result:
+                if fire_result.is_hit:
                     return

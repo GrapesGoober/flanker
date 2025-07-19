@@ -1,4 +1,4 @@
-from core.command import Command
+from core.faction_system import FactionSystem
 from core.components import (
     Faction,
     CombatUnit,
@@ -6,7 +6,7 @@ from core.components import (
     MoveControls,
     Transform,
 )
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import CombatUnitsViewState, SquadModel
 
@@ -34,7 +34,7 @@ class CombatUnitController:
 
         squads: list[SquadModel] = []
         for ent, unit, transform in gs.query(CombatUnit, Transform):
-            if (unit_faction_id := Command.get_faction_id(gs, ent)) == None:
+            if (unit_faction_id := FactionSystem.get_faction_id(gs, ent)) == None:
                 raise Exception(f"Unit id {ent} doesn't have parent faction")
             squads.append(
                 SquadModel(

@@ -2,8 +2,8 @@ from core.gamestate import GameState
 from core.components import CombatUnit, Faction, FireControls
 
 
-class Command:
-    """ECS System class for command hierarchy and faction initiative mechanic."""
+class FactionSystem:
+    """ECS System class for faction and initiative mechanic."""
 
     @staticmethod
     def flip_initiative(gs: GameState) -> None:
@@ -15,10 +15,24 @@ class Command:
             fire_controls.can_reactive_fire = True
 
     @staticmethod
+    def set_initiative(gs: GameState, faction_id: int) -> None:
+        """Sets the given faction to have the initiative."""
+
+        for id, faction in gs.query(Faction):
+            faction.has_initiative = False
+            if id == faction_id:
+                faction.has_initiative = True
+
+        # Reset reactive fire
+        for id, fire_controls in gs.query(FireControls):
+            if FactionSystem.get_faction_id(gs, id) == faction_id:
+                fire_controls.can_reactive_fire = True
+
+    @staticmethod
     def has_initiative(gs: GameState, unit_id: int) -> bool:
         """Check the unit's command faction for initiative."""
 
-        if (faction_id := Command.get_faction_id(gs, unit_id)) == None:
+        if (faction_id := FactionSystem.get_faction_id(gs, unit_id)) == None:
             return False
         if not (faction := gs.get_component(faction_id, Faction)):
             return False
@@ -35,4 +49,4 @@ class Command:
         if gs.get_component(unit.command_id, Faction):
             return unit.command_id
         else:
-            return Command.get_faction_id(gs, unit.command_id)
+            return FactionSystem.get_faction_id(gs, unit.command_id)

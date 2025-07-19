@@ -3,9 +3,9 @@ import pytest
 
 from core.components import Faction, MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
-from core.los_check import Transform
-from core.move_action import MoveAction
-from core.vec2 import Vec2
+from core.los_system import Transform
+from core.move_system import MoveSystem
+from core.utils.vec2 import Vec2
 
 
 @dataclass
@@ -58,7 +58,7 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveAction.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
+    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform and (
         transform.position == Vec2(5, -15)
@@ -66,7 +66,7 @@ def test_move(fixture: Fixture) -> None:
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveAction.move(fixture.gs, fixture.unit_id, Vec2(6, 6))
+    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(6, 6))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform and (
         transform.position == Vec2(0, -10)

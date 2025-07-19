@@ -1,4 +1,4 @@
-from core.command import Command
+from core.faction_system import FactionSystem
 from core.gamestate import GameState
 from core.components import Faction
 
@@ -13,4 +13,4 @@ class BasicAiController:
             return
 
         # Pass on initiative without any actions
-        Command.flip_initiative(gs)
+        FactionSystem.flip_initiative(gs)

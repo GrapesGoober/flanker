@@ -1,10 +1,10 @@
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
-from core.intersects import Intersects
+from core.intersect_system import IntersectSystem
 
 
-class LosChecker:
-    """Utility for checking Line-of-Sight (LOS) for entities."""
+class LosSystem:
+    """Static system class for checking Line-of-Sight (LOS) for entities."""
 
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
@@ -15,7 +15,7 @@ class LosChecker:
             return False
 
         # If any OPAQUE terrain exists in the way, return False
-        intersects = Intersects.get(
+        intersects = IntersectSystem.get(
             gs=gs,
             start=source_transform.position,
             end=target_transform.position,

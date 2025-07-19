@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 
 
 @dataclass

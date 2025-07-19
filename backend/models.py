@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from core.components import CombatUnit
-from core.vec2 import Vec2
+from core.utils.vec2 import Vec2
 
 
 @dataclass

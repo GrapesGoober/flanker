@@ -1,11 +1,19 @@
+from dataclasses import dataclass
 import random
+from core.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
-from core.command import Command
-from core.los_check import LosChecker
+from core.faction_system import FactionSystem
+from core.los_system import LosSystem
 
 
-class FireAction:
+@dataclass
+class FireResult:
+    is_valid: bool
+    is_hit: bool = False
+
+
+class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
@@ -14,7 +22,7 @@ class FireAction:
         attacker_id: int,
         target_id: int,
         is_reactive: bool = False,
-    ) -> bool:
+    ) -> FireResult:
         """
         Performs fire action from attacker unit to target unit.
         Returns `True` if success.
@@ -22,29 +30,31 @@ class FireAction:
 
         # Check if attacker and target are valid
         if not (attacker := gs.get_component(attacker_id, CombatUnit)):
-            return False
+            return FireResult(is_valid=False)
         if attacker.status != CombatUnit.Status.ACTIVE:
-            return False
+            return FireResult(is_valid=False)
         if not (target := gs.get_component(target_id, CombatUnit)):
-            return False
+            return FireResult(is_valid=False)
         if not (fire_controls := gs.get_component(attacker_id, FireControls)):
-            return False
+            return FireResult(is_valid=False)
 
         # The reactive fire only allows when NOT having initiative
-        if is_reactive and Command.has_initiative(gs, attacker_id):
-            return False
-        if not is_reactive and not Command.has_initiative(gs, attacker_id):
-            return False
+        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
+            return FireResult(is_valid=False)
+        if not is_reactive and not FactionSystem.has_initiative(gs, attacker_id):
+            return FireResult(is_valid=False)
 
         # Check that the target faction is not the same as attacker
-        attacker_faction = Command.get_faction_id(gs, attacker_id)
-        target_faction = Command.get_faction_id(gs, target_id)
+        attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
+        target_faction = FactionSystem.get_faction_id(gs, target_id)
+        if attacker_faction == None or target_faction == None:
+            return FireResult(is_valid=False)
         if attacker_faction == target_faction:
-            return False
+            return FireResult(is_valid=False)
 
         # Check if target is in line of sight
-        if not LosChecker.check(gs, attacker_id, target_id):
-            return False
+        if not LosSystem.check(gs, attacker_id, target_id):
+            return FireResult(is_valid=False)
 
         # Determine fire outcome, using overriden value if found
         if fire_controls.override:
@@ -57,27 +67,21 @@ class FireAction:
         if outcome <= FireControls.Outcomes.MISS:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
-            if not is_reactive:
-                Command.flip_initiative(gs)
-            return False
+            FactionSystem.set_initiative(gs, target_faction)
+            return FireResult(is_valid=True, is_hit=False)
         elif outcome <= FireControls.Outcomes.PIN:
             target.status = CombatUnit.Status.PINNED
-            # Only lose the initiative for failed action, not reaction
-            if not is_reactive:
-                Command.flip_initiative(gs)
-            # Stops the move action, hence return `True`
-            return True
+            FactionSystem.set_initiative(gs, target_faction)
+            return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target.status = CombatUnit.Status.SUPPRESSED
-            if is_reactive:
-                Command.flip_initiative(gs)
-            return True
+            FactionSystem.set_initiative(gs, attacker_faction)
+            return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.KILL:
-            gs.delete_entity(target_id)
-            if is_reactive:
-                Command.flip_initiative(gs)
-            return True
-        return False
+            CommandSystem.kill_unit(gs, target_id)
+            FactionSystem.set_initiative(gs, attacker_faction)
+            return FireResult(is_valid=True, is_hit=True)
+        return FireResult(is_valid=False)
 
     @staticmethod
     def get_spotter(gs: GameState, unit_id: int) -> int | None:
@@ -100,7 +104,7 @@ class FireAction:
                 continue
             if fire_controls.can_reactive_fire == False:
                 continue
-            if not LosChecker.check(gs, spotter_id, unit_id):
+            if not LosSystem.check(gs, spotter_id, unit_id):
                 continue
 
             return spotter_id
