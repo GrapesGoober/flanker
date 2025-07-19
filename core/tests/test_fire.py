@@ -147,7 +147,7 @@ def test_kill_fire(fixture: Fixture) -> None:
         fixture.target_id,
     )
     assert fire_result.is_hit == True, "Fire action must occur"
-    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
+    target = fixture.gs.try_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
         fixture.attacker_faction.has_initiative == True

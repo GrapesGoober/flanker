@@ -146,7 +146,7 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
 def test_interrupt_kill(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    transform = fixture.gs.try_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
     assert (
         fixture.hostile_faction.has_initiative == True
