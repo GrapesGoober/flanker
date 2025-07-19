@@ -14,6 +14,7 @@ app = FastAPI()
 
 @app.get("/api/rifle-squad")
 async def get_rifle_squads() -> CombatUnitsViewState:
+    """Get all rifle squads for the player faction."""
     return CombatUnitController.get_units(
         context.gs,
         context.player_faction_id,
@@ -22,6 +23,7 @@ async def get_rifle_squads() -> CombatUnitsViewState:
 
 @app.post("/api/move")
 async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
+    """Move a unit and return updated rifle squads."""
     ActionController.move(
         gs=context.gs,
         body=body,
@@ -36,4 +38,5 @@ async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
 
 @app.get("/api/terrain")
 async def get_terrain() -> list[TerrainModel]:
+    """Get all terrain tiles for the current game state."""
     return TerrainController.get_terrains(context.gs)

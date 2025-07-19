@@ -12,13 +12,16 @@ from backend.models import CombatUnitsViewState, SquadModel
 
 
 class CombatUnitController:
+    """Provides static methods to add and query combat units and factions."""
 
     @staticmethod
     def add_faction(gs: GameState, has_initiative: bool) -> int:
+        """Add a new faction to the game state."""
         return gs.add_entity(Faction(has_initiative))
 
     @staticmethod
     def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
+        """Add a new squad to the game state for a given faction."""
         return gs.add_entity(
             Transform(position=pos),
             MoveControls(),
@@ -28,7 +31,7 @@ class CombatUnitController:
 
     @staticmethod
     def get_units(gs: GameState, faction_id: int) -> CombatUnitsViewState:
-
+        """Get all squads for a given faction as a view state."""
         if not (faction := gs.get_component(faction_id, Faction)):
             raise Exception(f"Entity {faction_id} does not have component {Faction}")
 

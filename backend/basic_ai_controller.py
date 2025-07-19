@@ -4,13 +4,15 @@ from core.components import Faction
 
 
 class BasicAiController:
+    """Provides static methods for basic AI behavior."""
 
     @staticmethod
     def play(gs: GameState, faction_id: int) -> None:
+        """Perform a basic AI turn for the given faction."""
         if not (faction := gs.get_component(faction_id, Faction)):
             return
         if faction.has_initiative == False:
             return
 
-        # Pass on initiative without any actions
+        # For now, pass on initiative without any actions
         FactionSystem.flip_initiative(gs)
