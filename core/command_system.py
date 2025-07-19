@@ -9,8 +9,7 @@ class CommandSystem:
     def kill_unit(gs: GameState, unit_id: int) -> None:
         """Kills a combat unit while transferring down chain of command."""
 
-        if not (unit := gs.get_component(unit_id, CombatUnit)):
-            return
+        unit = gs.get_component(unit_id, CombatUnit)
         current_command = unit.command_id
 
         # Finds the next chain of command

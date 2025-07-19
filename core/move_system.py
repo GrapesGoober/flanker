@@ -19,13 +19,11 @@ class MoveSystem:
         """Actively moves a unit to a positon. Susceptible to reactive fire."""
 
         # Check move action is valid
-        if not (transform := gs.get_component(unit_id, Transform)):
-            return
-        if not (unit := gs.get_component(unit_id, CombatUnit)):
-            return
+        transform = gs.get_component(unit_id, Transform)
+        unit = gs.get_component(unit_id, CombatUnit)
+        move_controls = gs.get_component(unit_id, MoveControls)
+
         if unit.status != CombatUnit.Status.ACTIVE:
-            return
-        if not (move_controls := gs.get_component(unit_id, MoveControls)):
             return
         if not FactionSystem.has_initiative(gs, unit_id):
             return

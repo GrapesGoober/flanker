@@ -38,12 +38,11 @@ class FactionSystem:
     @staticmethod
     def get_faction_id(gs: GameState, unit_id: int, depth: int = 10) -> int:
         """Get the unit's command faction entity id. Limited tree depth."""
-
-        unit = gs.get_component(unit_id, CombatUnit)
         if depth <= 0:
             raise Exception(f"Can't find root {Faction} for {unit_id=}")
 
         # Recursively checks for the faction at the root of hierarchy tree
+        unit = gs.get_component(unit_id, CombatUnit)
         if gs.try_component(unit.command_id, Faction):
             return unit.command_id
         else:
