@@ -29,13 +29,13 @@ class FireSystem:
         """
 
         # Check if attacker and target are valid
-        if not (attacker := gs.get_component(attacker_id, CombatUnit)):
-            return FireResult(is_valid=False)
-        if attacker.status != CombatUnit.Status.ACTIVE:
-            return FireResult(is_valid=False)
         if not (target := gs.get_component(target_id, CombatUnit)):
-            return FireResult(is_valid=False)
+            raise Exception(f"Missing component {CombatUnit} for {target_id=}")
         if not (fire_controls := gs.get_component(attacker_id, FireControls)):
+            raise Exception(f"Missing component {FireControls} for {attacker_id=}")
+        if not (attacker := gs.get_component(attacker_id, CombatUnit)):
+            raise Exception(f"Missing component {CombatUnit} for {attacker_id=}")
+        if attacker.status != CombatUnit.Status.ACTIVE:
             return FireResult(is_valid=False)
 
         # The reactive fire only allows when NOT having initiative
@@ -47,8 +47,6 @@ class FireSystem:
         # Check that the target faction is not the same as attacker
         attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
         target_faction = FactionSystem.get_faction_id(gs, target_id)
-        if attacker_faction == None or target_faction == None:
-            return FireResult(is_valid=False)
         if attacker_faction == target_faction:
             return FireResult(is_valid=False)
 
