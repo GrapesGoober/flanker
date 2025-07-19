@@ -80,8 +80,8 @@ def fixture() -> Fixture:
 def test_move(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert transform and (
-        transform.position == Vec2(5, -15)
+    assert transform.position == Vec2(
+        5, -15
     ), "Move action expects to not be interrupted"
     assert (
         fixture.hostile_faction.has_initiative == False
@@ -92,12 +92,12 @@ def test_interrupt_miss(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.MISS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert transform and (
-        transform.position == Vec2(20, -10)
+    assert transform.position == Vec2(
+        20, -10
     ), "Move action expects to not be interrupted"
     fire_controls = fixture.gs.get_component(fixture.unit_shoot, FireControls)
     assert (
-        fire_controls and fire_controls.can_reactive_fire == False
+        fire_controls.can_reactive_fire == False
     ), "MISS reactive fire results in NO FIRE"
     assert (
         fixture.hostile_faction.has_initiative == False
@@ -112,13 +112,11 @@ def test_interrupt_pin(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.PIN
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert transform and (
-        transform.position == Vec2(8, -10)
+    assert transform.position == Vec2(
+        8, -10
     ), "Move action expects to be interrupted at Vec2(8, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
-    assert unit and (
-        unit.status == CombatUnit.status.PINNED
-    ), "Target expects to be pinned"
+    assert unit.status == CombatUnit.status.PINNED, "Target expects to be pinned"
     assert (
         fixture.hostile_faction.has_initiative == False
     ), "PINNED reactive fire must maintain initiative."
@@ -131,11 +129,11 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert transform and (
-        transform.position == Vec2(8, -10)
+    assert transform.position == Vec2(
+        8, -10
     ), "Move action expects to be interrupted at Vec2(8, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
-    assert unit and (
+    assert (
         unit.status == CombatUnit.status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
