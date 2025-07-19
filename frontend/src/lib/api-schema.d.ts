@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Rifle Squads */
+        /**
+         * Get Rifle Squads
+         * @description Get all rifle squads for the player faction.
+         */
         get: operations["get_rifle_squads_api_rifle_squad_get"];
         put?: never;
         post?: never;
@@ -30,7 +33,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Action Move */
+        /**
+         * Action Move
+         * @description Move a unit and return updated rifle squads.
+         */
         post: operations["action_move_api_move_post"];
         delete?: never;
         options?: never;
@@ -45,7 +51,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Terrain */
+        /**
+         * Get Terrain
+         * @description Get all terrain tiles for the current game state.
+         */
         get: operations["get_terrain_api_terrain_get"];
         put?: never;
         post?: never;
