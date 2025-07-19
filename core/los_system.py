@@ -9,10 +9,8 @@ class LosSystem:
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
         """Returns `True` if entity `source_id` can see entity `target_id`."""
-        if not (source_transform := gs.get_component(source_ent, Transform)):
-            return False
-        if not (target_transform := gs.get_component(target_ent, Transform)):
-            return False
+        source_transform = gs.get_component(source_ent, Transform)
+        target_transform = gs.get_component(target_ent, Transform)
 
         # If any OPAQUE terrain exists in the way, return False
         intersects = IntersectSystem.get(

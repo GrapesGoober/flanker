@@ -23,9 +23,16 @@ class GameState:
         self._entities.pop(entity_id)
         self._cache = {}
 
-    def get_component[T](self, entity_id: int, component_type: type[T]) -> T | None:
+    def get_component[T](self, entity_id: int, component_type: type[T]) -> T:
         """Get an entity's component. None if entity or component not found."""
-        return self._entities.get(entity_id, {}).get(component_type)
+        if entity_id not in self._entities:
+            raise KeyError(f"{entity_id=} doesn't exist")
+        if component_type not in self._entities[entity_id]:
+            raise KeyError(f"{component_type=} missing for {entity_id=}")
+        return self._entities[entity_id][component_type]
+
+    def try_component[T](self, entity_id: int, component_type: type[T]) -> T | None:
+        return self._entities.get(entity_id, {}).get(component_type, None)
 
     @overload
     def query[T](self, t: type[T]) -> Iterator[tuple[int, T]]: ...

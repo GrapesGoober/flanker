@@ -9,8 +9,7 @@ class BasicAiController:
     @staticmethod
     def play(gs: GameState, faction_id: int) -> None:
         """Perform a basic AI turn for the given faction."""
-        if not (faction := gs.get_component(faction_id, Faction)):
-            return
+        faction = gs.get_component(faction_id, Faction)
         if faction.has_initiative == False:
             return
 

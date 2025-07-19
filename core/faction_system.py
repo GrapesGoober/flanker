@@ -31,22 +31,20 @@ class FactionSystem:
     @staticmethod
     def has_initiative(gs: GameState, unit_id: int) -> bool:
         """Check the unit's command faction for initiative."""
-
-        if (faction_id := FactionSystem.get_faction_id(gs, unit_id)) == None:
-            return False
-        if not (faction := gs.get_component(faction_id, Faction)):
-            return False
-
+        faction_id = FactionSystem.get_faction_id(gs, unit_id)
+        faction = gs.get_component(faction_id, Faction)
         return faction.has_initiative
 
     @staticmethod
-    def get_faction_id(gs: GameState, unit_id: int) -> int | None:
-        """Get the unit's command faction entity id."""
+    def get_faction_id(gs: GameState, unit_id: int, depth: int = 10) -> int:
+        """Get the unit's command faction entity id. Limited tree depth."""
+        if depth <= 0:
+            raise Exception(f"Can't find root {Faction} for {unit_id=}")
 
-        if not (unit := gs.get_component(unit_id, CombatUnit)):
-            return None
         # Recursively checks for the faction at the root of hierarchy tree
-        if gs.get_component(unit.command_id, Faction):
+        unit = gs.get_component(unit_id, CombatUnit)
+        if gs.try_component(unit.command_id, Faction):
             return unit.command_id
         else:
+            depth -= 1
             return FactionSystem.get_faction_id(gs, unit.command_id)

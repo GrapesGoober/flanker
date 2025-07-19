@@ -28,27 +28,21 @@ class FireSystem:
         Returns `True` if success.
         """
 
-        # Check if attacker and target are valid
-        if not (attacker := gs.get_component(attacker_id, CombatUnit)):
-            return FireResult(is_valid=False)
-        if attacker.status != CombatUnit.Status.ACTIVE:
-            return FireResult(is_valid=False)
-        if not (target := gs.get_component(target_id, CombatUnit)):
-            return FireResult(is_valid=False)
-        if not (fire_controls := gs.get_component(attacker_id, FireControls)):
-            return FireResult(is_valid=False)
+        target_unit = gs.get_component(target_id, CombatUnit)
+        fire_controls = gs.get_component(attacker_id, FireControls)
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
 
-        # The reactive fire only allows when NOT having initiative
-        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
+        # Check if attacker and target are valid
+        if attacker_unit.status != CombatUnit.Status.ACTIVE:
             return FireResult(is_valid=False)
+        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
+            return FireResult(is_valid=False)  # No initiative for reactive fire
         if not is_reactive and not FactionSystem.has_initiative(gs, attacker_id):
             return FireResult(is_valid=False)
 
         # Check that the target faction is not the same as attacker
         attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
         target_faction = FactionSystem.get_faction_id(gs, target_id)
-        if attacker_faction == None or target_faction == None:
-            return FireResult(is_valid=False)
         if attacker_faction == target_faction:
             return FireResult(is_valid=False)
 
@@ -70,11 +64,11 @@ class FireSystem:
             FactionSystem.set_initiative(gs, target_faction)
             return FireResult(is_valid=True, is_hit=False)
         elif outcome <= FireControls.Outcomes.PIN:
-            target.status = CombatUnit.Status.PINNED
+            target_unit.status = CombatUnit.Status.PINNED
             FactionSystem.set_initiative(gs, target_faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.SUPPRESS:
-            target.status = CombatUnit.Status.SUPPRESSED
+            target_unit.status = CombatUnit.Status.SUPPRESSED
             FactionSystem.set_initiative(gs, attacker_faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.KILL:
@@ -87,12 +81,7 @@ class FireSystem:
     def get_spotter(gs: GameState, unit_id: int) -> int | None:
         """Get the a valid spotter for reactive fire, including LOS check."""
 
-        # Check interrupt valid
-        if not gs.get_component(unit_id, Transform):
-            return None
-        if not (unit := gs.get_component(unit_id, CombatUnit)):
-            return None
-
+        unit = gs.get_component(unit_id, CombatUnit)
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
