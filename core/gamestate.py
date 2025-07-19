@@ -26,9 +26,9 @@ class GameState:
     def get_component[T](self, entity_id: int, component_type: type[T]) -> T:
         """Get an entity's component. None if entity or component not found."""
         if entity_id not in self._entities:
-            raise Exception(f"{entity_id=} doesn't exist")
+            raise KeyError(f"{entity_id=} doesn't exist")
         if component_type not in self._entities[entity_id]:
-            raise Exception(f"{component_type=} missing for {entity_id=}")
+            raise KeyError(f"{component_type=} missing for {entity_id=}")
         return self._entities[entity_id][component_type]
 
     def try_component[T](self, entity_id: int, component_type: type[T]) -> T | None:

@@ -32,13 +32,10 @@ class CombatUnitController:
     @staticmethod
     def get_units(gs: GameState, faction_id: int) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
-        if not (faction := gs.get_component(faction_id, Faction)):
-            raise Exception(f"Entity {faction_id} does not have component {Faction}")
-
+        faction = gs.get_component(faction_id, Faction)
         squads: list[SquadModel] = []
         for ent, unit, transform in gs.query(CombatUnit, Transform):
-            if (unit_faction_id := FactionSystem.get_faction_id(gs, ent)) == None:
-                raise Exception(f"Unit id {ent} doesn't have parent faction")
+            unit_faction_id = FactionSystem.get_faction_id(gs, ent)
             squads.append(
                 SquadModel(
                     unit_id=ent,
