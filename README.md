@@ -66,9 +66,9 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 
 Svelte-based web frontend for the game.
 
-- This is the presentation (view) layer of the game. This is strictly for user interface, game visualization, and client-side logic. No domain gameplay level logic implemented here.
+- This is the presentation (view) layer of the game. This is strictly for user interface and game visualization logic. No gameplay level logic implemented here.
 - Svelte app Vite for development and build. Contains Svelte components, routes, and static assets.
-- Uses `openapi-ts` and `openapi-fetch`
+- Uses `openapi-ts` and `openapi-fetch` from backend's OpenApi schema.
 
 ### `backend/`
 
@@ -76,11 +76,11 @@ Python FastApi backend implementing game logic and controllers.
 
 - This is the presentation (view) layer and the controllers for actions, AI, combat units, terrain, and scenes.
 - Defines API models and manages the game state.
-- Intended to be run as an API or service for the frontend.
+- Intended to be run as an API or service for the frontend. This bridges the gap between presentation layer and the core's actions.
 
 ### `core/`
 
 - Core game engine logic in Python. The is the domain level gameplay logic implemented in ECS. The components (data models) and systems are defined here.
 - Contains `GameState` object for ECS architecture.
-- Implements systems for gameplay logic: commands, factions, fire, movement, line-of-sight. Contains reusable components and utility functions. These logic are implemented as static classes. Some system calls represent player actions.
+- Implements systems for gameplay logic: commands, factions, fire, movement, line-of-sight. Contains reusable components and utility functions. These systems and utils are implemented as static methods. Some system methods represent player actions, while some other represent other non-action mechanics.
 - Includes a `tests/` directory with unit tests for core systems and actions.
