@@ -59,3 +59,7 @@ def test_chain_command(fixture: Fixture) -> None:
     assert faction_id == fixture.faction_id, "Command must pass down on unit death"
     faction_id = FactionSystem.get_faction_id(fixture.gs, fixture.unit_id_3)
     assert faction_id == fixture.faction_id, "Command must pass down on unit death"
+    unit_3 = fixture.gs.get_component(fixture.unit_id_3, CombatUnit)
+    assert unit_3 and (
+        unit_3.command_id == fixture.unit_id_2
+    ), "Remaining subordinate units must be assigned to new commander"
