@@ -1,6 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import * as d3 from 'd3';
+	import type { TerrainFeatureData } from '$lib';
+
+	type Props = {
+		terrainData: TerrainFeatureData[];
+		svgSnippet: Snippet;
+	};
+	let props: Props = $props();
 
 	let mapLayer: SVGGElement | null = null;
 	let zoomLayer: SVGGElement | null = null;
@@ -29,6 +36,15 @@
 
 		mapDiv.call(zoom as any);
 	});
+
+	// for converting terrain data to SVG
+	function CoordsToSvgString(coords: { x: number; y: number }[]): string {
+		return coords.map((point) => `${point.x},${point.y}`).join(' ');
+	}
+
+	function RoadFeatures(): TerrainFeatureData[] {
+		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
+	}
 </script>
 
 <!-- I'm prototying behaviours at the moment, so proper structure comes later -->
@@ -36,36 +52,74 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <svg bind:this={mapLayer} class="map-box">
 	<g bind:this={zoomLayer}>
-		<foreignObject x="10" y="10" width="200" height="200">
-			<h1>Hello</h1>
-			<svg>
-				<circle cx="10" cy="10" r="10" fill="red" />
-			</svg>
-			<svg>
-				<circle cx="20" cy="20" r="10" fill="blue" />
-			</svg>
-		</foreignObject>
+		{#each RoadFeatures() as road}
+			<polyline points={CoordsToSvgString(road.coordinates)} class="terrain-road-border" />
+		{/each}
+		{#each RoadFeatures() as road}
+			<polyline points={CoordsToSvgString(road.coordinates)} class="terrain-road" />
+		{/each}
+		{#each props.terrainData as terrain}
+			{#if terrain.terrainType == 'FOREST'}
+				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest" />
+			{:else if terrain.terrainType == 'FIELD'}
+				<polygon points={CoordsToSvgString(terrain.coordinates)} class="field" />
+			{:else if terrain.terrainType == 'WATER'}
+				<polygon points={CoordsToSvgString(terrain.coordinates)} class="water" />
+			{:else if terrain.terrainType == 'BUILDING'}
+				<polygon points={CoordsToSvgString(terrain.coordinates)} class="building" />
+			{/if}
+		{/each}
+
+		{@render props.svgSnippet()}
 		{#each lines as i}
-			<line x1={i} y1={GRID_START} x2={i} y2={GRID_END} class="grid-line" />
-			<line x1={GRID_START} y1={i} x2={GRID_END} y2={i} class="grid-line" />
+			<line x1={i} y1={GRID_START} x2={i} y2={GRID_END} class="map-grid-line" />
+			<line x1={GRID_START} y1={i} x2={GRID_END} y2={i} class="map-grid-line" />
 		{/each}
 	</g>
 </svg>
 
-<style>
+<style lang="less">
+	@stroke-width: 1.5;
+	@road-width: 5;
 	.map-box {
 		border: 1px solid #ccc;
 		width: 100%;
 		height: 90vh;
-	}
-	svg {
-		width: 100%;
-		height: 100%;
 		touch-action: none; /* required for pointer-based zooming */
 		background-color: #ecffc7;
 	}
-	.grid-line {
+	.map-grid-line {
 		stroke-width: 1;
 		stroke: #00000020;
+	}
+	.terrain-road-border {
+		fill: none;
+		stroke: #d0dcb8;
+		stroke-width: @road-width + @stroke-width * 2;
+	}
+	.terrain-road {
+		fill: none;
+		stroke: #eff6e0;
+		stroke-width: @road-width;
+	}
+	.forest {
+		fill: #a2bf69;
+		stroke: #a2bf69;
+		stroke-width: @stroke-width;
+	}
+	.water {
+		fill: #a5dac6;
+		stroke: #a5dac6;
+		stroke-width: @stroke-width;
+	}
+	.field {
+		fill: #f5c887aa;
+		stroke: #cba57aaa;
+		stroke-width: @stroke-width;
+	}
+	.building {
+		fill: #aaa;
+		stroke: #999;
+		stroke-width: @stroke-width;
 	}
 </style>
