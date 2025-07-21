@@ -1,15 +1,16 @@
-<rect x="-8" y="-6" width="16" height="12" class="box" />
-<line x1="-8" y1="-6" x2="8" y2="6" class="cross" />
-<line x1="8" y1="-6" x2="-8" y2="6" class="cross" />
+<rect x="-7" y="-5" width="14" height="10" class="box" />
+<line x1="-7" y1="-5" x2="7" y2="5" class="cross" />
+<line x1="7" y1="-5" x2="-7" y2="5" class="cross" />
 
-<style>
+<style lang="less">
+	@stroke-width: 1;
 	.box {
 		fill: white;
 		stroke: black;
-		stroke-width: 1.5;
+		stroke-width: @stroke-width;
 	}
 	.cross {
 		stroke: black;
-		stroke-width: 1.5;
+		stroke-width: @stroke-width;
 	}
 </style>

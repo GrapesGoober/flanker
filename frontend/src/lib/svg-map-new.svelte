@@ -9,7 +9,7 @@
 	};
 	let props: Props = $props();
 
-	let mapLayer: SVGGElement | null = null;
+	let mapLayer: SVGSVGElement | null = null;
 	let zoomLayer: SVGGElement | null = null;
 	let transform: d3.ZoomTransform = d3.zoomIdentity;
 
@@ -24,7 +24,7 @@
 	}
 
 	onMount(() => {
-		const mapDiv = d3.select(mapLayer);
+		const mapDiv = d3.select(mapLayer as SVGSVGElement);
 		const svgZoom = d3.select(zoomLayer);
 		const zoom = d3
 			.zoom<SVGSVGElement, unknown>()
@@ -34,6 +34,9 @@
 				svgZoom.attr('transform', transform.toString());
 			});
 
+		// Set default starting zoom and pan
+		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(1.5));
+
 		mapDiv.call(zoom as any);
 	});
 
@@ -42,21 +45,15 @@
 		return coords.map((point) => `${point.x},${point.y}`).join(' ');
 	}
 
-	function RoadFeatures(): TerrainFeatureData[] {
+	function GetRoadFeatures(): TerrainFeatureData[] {
 		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
 	}
 </script>
 
-<!-- I'm prototying behaviours at the moment, so proper structure comes later -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svg bind:this={mapLayer} class="map-box">
 	<g bind:this={zoomLayer}>
-		{#each RoadFeatures() as road}
+		{#each GetRoadFeatures() as road}
 			<polyline points={CoordsToSvgString(road.coordinates)} class="terrain-road-border" />
-		{/each}
-		{#each RoadFeatures() as road}
-			<polyline points={CoordsToSvgString(road.coordinates)} class="terrain-road" />
 		{/each}
 		{#each props.terrainData as terrain}
 			{#if terrain.terrainType == 'FOREST'}
@@ -67,6 +64,8 @@
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="water" />
 			{:else if terrain.terrainType == 'BUILDING'}
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="building" />
+			{:else if terrain.terrainType == 'ROAD'}
+				<polyline points={CoordsToSvgString(terrain.coordinates)} class="terrain-road" />
 			{/if}
 		{/each}
 
