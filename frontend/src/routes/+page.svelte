@@ -23,7 +23,7 @@
 	});
 
 	function AddMarker(event: MouseEvent) {
-		if (map == undefined) {
+		if (map == null) {
 			return;
 		}
 		if (unitData.hasInitiative === false) {

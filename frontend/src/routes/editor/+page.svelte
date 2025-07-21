@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { GetTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
-	import TerrainFeature from '$lib/terrain-feature.svelte';
 	import SvgMap from '$lib/svg-map.svelte';
 
+	let map: SvgMap | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let coords: Vec2[] = $state([]);
 
@@ -11,7 +11,11 @@
 		terrainData = await GetTerrainData();
 	});
 
-	function AddMarker(event: MouseEvent, worldPos: Vec2) {
+	function AddVertex(event: MouseEvent) {
+		if (map == null) {
+			return;
+		}
+		let worldPos: Vec2 = map.ToWorldCoords({ x: event.clientX, y: event.clientY });
 		coords.push(worldPos);
 	}
 
@@ -50,15 +54,16 @@
 <!-- I'm prototying behaviours at the moment, so proper structure comes later -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-{#snippet mapMarkup()}
-	{#each terrainData as terrainFeatureData}
-		<TerrainFeature featureData={terrainFeatureData} />
-	{/each}
-
+{#snippet mapSvgSnippet()}
 	<polygon points={ToSvgString(coords)} class="editor" />
 {/snippet}
 
-<SvgMap onclick={AddMarker} body={mapMarkup} />
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div onclick={AddVertex}>
+	<SvgMap svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
+</div>
+
 <button onclick={refreshTerrainData} style="margin-bottom: 1em;">Refresh</button>
 <button onclick={copyToClipboard} style="margin-bottom: 1em;">Copy</button>
 
