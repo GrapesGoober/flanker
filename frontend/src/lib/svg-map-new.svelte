@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
 	import * as d3 from 'd3';
-	import type { TerrainFeatureData } from '$lib';
+	import type { TerrainFeatureData, Vec2 } from '$lib';
 
 	type Props = {
 		terrainData: TerrainFeatureData[];
@@ -13,16 +13,16 @@
 	let zoomLayer: SVGGElement | null = null;
 	let transform: d3.ZoomTransform = d3.zoomIdentity;
 
+	// Calculate grid lines
 	const GRID_SPACING = 100;
 	const GRID_START = -200;
 	const GRID_END = 1200;
-
-	// Calculate vertical grid lines (vary x, fixed y)
 	const lines: number[] = [];
 	for (let i = GRID_START; i <= GRID_END; i += GRID_SPACING) {
 		lines.push(i);
 	}
 
+	// Set up D3 pan/zoom
 	onMount(() => {
 		const mapDiv = d3.select(mapLayer as SVGSVGElement);
 		const svgZoom = d3.select(zoomLayer);
@@ -40,18 +40,26 @@
 		mapDiv.call(zoom as any);
 	});
 
-	// for converting terrain data to SVG
+	// Util func for converting terrain data to SVG
 	function CoordsToSvgString(coords: { x: number; y: number }[]): string {
 		return coords.map((point) => `${point.x},${point.y}`).join(' ');
 	}
 
+	// Road's boarders need to be drawn separately
 	function GetRoadFeatures(): TerrainFeatureData[] {
 		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
+	}
+
+	// Convert screen coordinates to world position using current transform
+	export function ToWorldCoords(coords: Vec2): Vec2 {
+		const [x, y] = transform.invert([coords.x, coords.y]);
+		return { x, y };
 	}
 </script>
 
 <svg bind:this={mapLayer} class="map-box">
 	<g bind:this={zoomLayer}>
+		<!-- Road's boarders need to be drawn separately -->
 		{#each GetRoadFeatures() as road}
 			<polyline points={CoordsToSvgString(road.coordinates)} class="terrain-road-border" />
 		{/each}
