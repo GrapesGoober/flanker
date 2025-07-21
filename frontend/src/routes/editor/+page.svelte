@@ -21,6 +21,9 @@
 	function ToPythonListString(coords: Vec2[]): string {
 		if (coords.length === 0) return 'pivot: Vec2(0, 0),\nvertices: []';
 		const pivot = coords[0];
+		if (pivot == undefined) {
+			return '';
+		}
 		const pivotStr = `Vec2(${Math.round(pivot.x)}, ${Math.round(pivot.y)}),\n`;
 		return (
 			`pivot= ${pivotStr}` +
