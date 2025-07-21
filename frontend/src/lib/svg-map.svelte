@@ -2,6 +2,7 @@
 	import { onMount, type Snippet } from 'svelte';
 	import * as d3 from 'd3';
 	import type { TerrainFeatureData, Vec2 } from '$lib';
+	import { generatePointsInsidePolygon } from '$lib/tree-utils';
 
 	type Props = {
 		terrainData: TerrainFeatureData[];
@@ -21,6 +22,13 @@
 	for (let i = GRID_START; i <= GRID_END; i += GRID_SPACING) {
 		lines.push(i);
 	}
+
+	// Calculate tree points
+	let treePoints: Vec2[] = $derived(
+		props.terrainData
+			.filter((feature) => feature.terrainType === 'FOREST')
+			.flatMap((terrain) => generatePointsInsidePolygon(terrain.coordinates, 16, 10))
+	);
 
 	// Set up D3 pan/zoom
 	onMount(() => {
@@ -75,6 +83,9 @@
 			{:else if terrain.terrainType == 'ROAD'}
 				<polyline points={CoordsToSvgString(terrain.coordinates)} class="terrain-road" />
 			{/if}
+		{/each}
+		{#each treePoints as p}
+			<circle cx={p.x} cy={p.y} r="2" fill="red" />
 		{/each}
 
 		{@render props.svgSnippet()}
