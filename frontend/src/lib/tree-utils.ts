@@ -37,11 +37,17 @@ export function generatePointsInsidePolygon(
 	const result: Vec2[] = [];
 	for (let x = minX; x <= maxX; x += spacing) {
 		for (let y = minY; y <= maxY; y += spacing) {
-			const jitterX = (Math.random() - 0.5) * jitter;
-			const jitterY = (Math.random() - 0.5) * jitter;
-			const point = { x: x + jitterX, y: y + jitterY };
-			if (pointInPolygon(point, coords)) {
-				result.push(point);
+			const maxAttempts = 10;
+
+			for (let attempt = 0; attempt < maxAttempts; attempt++) {
+				const jitterX = (Math.random() - 0.5) * jitter;
+				const jitterY = (Math.random() - 0.5) * jitter;
+				const point = { x: x + jitterX, y: y + jitterY };
+
+				if (pointInPolygon(point, coords)) {
+					result.push(point);
+					break;
+				}
 			}
 		}
 	}

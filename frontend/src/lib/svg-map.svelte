@@ -3,6 +3,7 @@
 	import * as d3 from 'd3';
 	import type { TerrainFeatureData, Vec2 } from '$lib';
 	import { generateEvenPointsInsidePolygon, generatePointsInsidePolygon } from '$lib/tree-utils';
+	import TreeTriangle from './svg-icons/tree-triangle.svelte';
 
 	type Props = {
 		terrainData: TerrainFeatureData[];
@@ -68,8 +69,10 @@
 			{#if terrain.terrainType == 'FOREST'}
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest" />
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest-border" />
-				{#each generateEvenPointsInsidePolygon(terrain.coordinates, 20, 0.7) as p}
-					<circle cx={p.x} cy={p.y} r="2" fill="red" />
+				{#each generatePointsInsidePolygon(terrain.coordinates, 20, 10) as p}
+					<g transform="translate({p.x}, {p.y})">
+						<TreeTriangle />
+					</g>
 				{/each}
 			{:else if terrain.terrainType == 'FIELD'}
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="field" />
