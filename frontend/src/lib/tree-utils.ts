@@ -39,6 +39,7 @@ export function generatePointsInsidePolygon(
 		for (let y = minY; y <= maxY; y += spacing) {
 			const maxAttempts = 10;
 
+			// Keep jittering until falls falls inside
 			for (let attempt = 0; attempt < maxAttempts; attempt++) {
 				const jitterX = (Math.random() - 0.5) * jitter;
 				const jitterY = (Math.random() - 0.5) * jitter;

@@ -69,7 +69,7 @@
 			{#if terrain.terrainType == 'FOREST'}
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest" />
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest-border" />
-				{#each generatePointsInsidePolygon(terrain.coordinates, 20, 10) as p}
+				{#each generatePointsInsidePolygon(terrain.coordinates, 30, 20) as p}
 					<g transform="translate({p.x}, {p.y})">
 						<TreeTriangle />
 					</g>
