@@ -58,7 +58,6 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   cd frontend
   npm run dev-expose
   ```
-  **_Note:_** this will run `openapi-ts` that updates API type file `/frontend/src/lib/api-schema.d.ts`. Make sure that backend is running for this.
 
 ## Project Structure
 
