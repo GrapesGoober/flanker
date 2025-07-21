@@ -9,9 +9,9 @@
 		type Vec2
 	} from '$lib';
 	import RifleSquad from '$lib/rifle-squad.svelte';
-	import TerrainFeature from '$lib/terrain-feature.svelte';
 	import SvgMap from '$lib/svg-map.svelte';
 
+	let map: SvgMap | null = $state(null);
 	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let unitData: CombatUnitsData = $state({ hasInitiative: false, squads: [] });
@@ -22,7 +22,10 @@
 		unitData = await GetUnitStatesData();
 	});
 
-	function AddMarker(event: MouseEvent, worldPos: Vec2) {
+	function AddMarker(event: MouseEvent) {
+		if (map == undefined) {
+			return;
+		}
 		if (unitData.hasInitiative === false) {
 			return;
 		}
@@ -30,7 +33,8 @@
 		if (selectedUnit === null) {
 			return;
 		}
-		marker = worldPos;
+
+		marker = map.ToWorldCoords({ x: event.clientX, y: event.clientY });
 	}
 
 	async function ConfirmMarker(_: MouseEvent) {
@@ -61,11 +65,7 @@
 <!-- I'm prototying behaviours at the moment, so proper structure comes later -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-{#snippet mapMarkup()}
-	{#each terrainData as terrainFeatureData}
-		<TerrainFeature featureData={terrainFeatureData} />
-	{/each}
-
+{#snippet mapSvgSnippet()}
 	{#each unitData.squads as unit, index}
 		{#if unitData.squads[index]}
 			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
@@ -81,4 +81,8 @@
 	{/if}
 {/snippet}
 
-<SvgMap onclick={AddMarker} body={mapMarkup} />
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div onclick={AddMarker}>
+	<SvgMap svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
+</div>

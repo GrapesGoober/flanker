@@ -2,10 +2,10 @@
 	import { GetTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
 	import FriendlyRifleSquad from '$lib/svg-icons/friendly-rifle-squad.svelte';
 	import HostileRifleSquad from '$lib/svg-icons/hostile-rifle-squad.svelte';
-	import SvgMapNew from '$lib/svg-map-new.svelte';
+	import SvgMap from '$lib/svg-map.svelte';
 	import { onMount } from 'svelte';
 
-	let map: SvgMapNew | null = $state(null);
+	let map: SvgMap | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	onMount(async () => {
 		terrainData = await GetTerrainData();
@@ -40,5 +40,5 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div onclick={OnClick}>
-	<SvgMapNew svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
+	<SvgMap svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
 </div>
