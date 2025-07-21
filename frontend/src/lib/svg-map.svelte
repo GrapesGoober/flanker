@@ -66,6 +66,7 @@
 		{#each props.terrainData as terrain}
 			{#if terrain.terrainType == 'FOREST'}
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest" />
+				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest-border" />
 			{:else if terrain.terrainType == 'FIELD'}
 				<polygon points={CoordsToSvgString(terrain.coordinates)} class="field" />
 			{:else if terrain.terrainType == 'WATER'}
@@ -110,9 +111,15 @@
 		stroke-width: @road-width;
 	}
 	.forest {
-		fill: #a2bf69;
+		fill: #c1da91;
+		stroke: #c1da91;
+		stroke-width: @stroke-width;
+	}
+	.forest-border {
+		fill: none;
 		stroke: #a2bf69;
 		stroke-width: @stroke-width;
+		stroke-dasharray: 8, 8;
 	}
 	.water {
 		fill: #a5dac6;
