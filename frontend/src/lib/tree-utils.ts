@@ -24,7 +24,11 @@ export function pointInPolygon(point: Vec2, coords: Vec2[]): boolean {
 	return inside;
 }
 
-export function generatePointsInsidePolygon(coords: Vec2[], spacing: number, jitter: number) {
+export function generatePointsInsidePolygon(
+	coords: Vec2[],
+	spacing: number,
+	jitter: number
+): Vec2[] {
 	const xs = coords.map((p) => p.x);
 	const ys = coords.map((p) => p.y);
 	const [minX, maxX] = [Math.min(...xs), Math.max(...xs)];
@@ -42,4 +46,40 @@ export function generatePointsInsidePolygon(coords: Vec2[], spacing: number, jit
 		}
 	}
 	return result;
+}
+
+export function generateEvenPointsInsidePolygon(
+	coords: Vec2[],
+	numpoints: number,
+	jitter_multiplier: number,
+	minSpacing: number = 15,
+	maxSpacing: number = 200
+): Vec2[] {
+	if (coords.length < 3 || numpoints <= 0) return [];
+
+	let bestPoints: Vec2[] = [];
+
+	for (let i = 0; i < 20; i++) {
+		// max 20 iterations
+		const midSpacing = (minSpacing + maxSpacing) / 2;
+		const jitter = midSpacing * jitter_multiplier;
+		const points = generatePointsInsidePolygon(coords, midSpacing, jitter);
+
+		if (points.length === numpoints) {
+			return points;
+		}
+
+		bestPoints = points;
+
+		// Too many points => Spacing is too small
+		if (points.length > numpoints) {
+			minSpacing = midSpacing;
+		}
+		// Too few points => Spacing is too large
+		else {
+			maxSpacing = midSpacing;
+		}
+	}
+
+	return bestPoints;
 }
