@@ -8,8 +8,9 @@
 	};
 	let props: Props = $props();
 
-	const headLength = 5;
-	const headWidth = 3;
+	const headLength = 8;
+	const headWidth = 2;
+	const headOffset = 5;
 	function GetPoints() {
 		// Normalized directional vector of this arrow
 		const dx = props.end.x - props.start.x;
@@ -37,8 +38,12 @@
 			x: shaftEnd.x - perpX * headWidth,
 			y: shaftEnd.y - perpY * headWidth
 		};
+		const top: Vec2 = {
+			x: props.end.x - ux * headOffset,
+			y: props.end.y - uy * headOffset
+		};
 
-		return [props.start, shaftEnd, leftHead, props.end, rightHead, shaftEnd];
+		return [props.start, shaftEnd, leftHead, top, rightHead, shaftEnd];
 	}
 
 	function GetPath(coords: Vec2[]): string {

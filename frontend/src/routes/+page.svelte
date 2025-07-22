@@ -17,6 +17,7 @@
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let unitData: CombatUnitsData = $state({ hasInitiative: false, squads: [] });
 	let selectedUnitId: number | null = $state(null);
+	let clickTarget: HTMLElement | null = $state(null);
 
 	onMount(async () => {
 		terrainData = await GetTerrainData();
@@ -35,7 +36,11 @@
 			return;
 		}
 
-		marker = map.ToWorldCoords({ x: event.clientX, y: event.clientY });
+		let node = clickTarget as HTMLElement;
+		let rect = node.getBoundingClientRect();
+		let x = event.clientX - rect.x; //x position within the element.
+		let y = event.clientY - rect.y; //y position within the element.
+		marker = map.ToWorldCoords({ x, y });
 	}
 
 	async function ConfirmMarker(_: MouseEvent) {
@@ -77,7 +82,7 @@
 
 	{#if marker}
 		<g onclick={ConfirmMarker} fill-opacity="0.5">
-			<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
+			<circle cx={marker.x} cy={marker.y} r="5" fill="red" />
 			<Arrow start={{ x: 0, y: 0 }} end={marker} />
 		</g>
 	{/if}
@@ -85,6 +90,6 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div onclick={AddMarker}>
+<div bind:this={clickTarget} onclick={AddMarker}>
 	<SvgMap svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
 </div>
