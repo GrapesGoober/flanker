@@ -2,8 +2,15 @@
 	import { onMount, type Snippet } from 'svelte';
 	import * as d3 from 'd3';
 	import type { TerrainFeatureData, Vec2 } from '$lib';
-	import { generatePointsInsidePolygon } from '$lib/tree-utils';
-	import TreeTriangle from './svg-icons/tree-triangle.svelte';
+	import TreeTriangle from '../svg-icons/tree-triangle.svelte';
+	import {
+		GetClosedPath,
+		GetGridLines,
+		GetSmoothedClosedPath,
+		GetSmoothedPath,
+		SetupZoomPan,
+		generatePointsInsidePolygon
+	} from './map-utils';
 
 	type Props = {
 		terrainData: TerrainFeatureData[];
@@ -14,66 +21,16 @@
 	let mapLayer: SVGSVGElement | null = null;
 	let zoomLayer: SVGGElement | null = null;
 	let transform: d3.ZoomTransform = d3.zoomIdentity;
-
-	// Calculate grid lines
-	const GRID_SPACING = 100;
-	const GRID_START = -200;
-	const GRID_END = 1200;
-	const lines: number[] = [];
-	for (let i = GRID_START; i <= GRID_END; i += GRID_SPACING) {
-		lines.push(i);
-	}
-
-	// Set up D3 pan/zoom
-	onMount(() => {
-		const mapDiv = d3.select(mapLayer as SVGSVGElement);
-		const svgZoom = d3.select(zoomLayer);
-		const zoom = d3
-			.zoom<SVGSVGElement, unknown>()
-			.scaleExtent([0.5, 10])
-			.on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-				transform = event.transform;
-				svgZoom.attr('transform', transform.toString());
-			});
-
-		// Set default starting zoom and pan
-		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(1.5));
-
-		mapDiv.call(zoom as any);
+	const lines: [Vec2, Vec2][] = GetGridLines({
+		xMin: -200,
+		xMax: 1000,
+		yMin: -200,
+		yMax: 1000
 	});
 
 	// Road's boarders need to be drawn separately
-	function GetRoadFeatures(): TerrainFeatureData[] {
+	function FilterRoads(): TerrainFeatureData[] {
 		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
-	}
-
-	// Util func for converting terrain data to SVG
-	function GetClosedPath(coords: Vec2[]): string {
-		const line = d3
-			.line<Vec2>()
-			.x((d) => d.x)
-			.y((d) => d.y)
-			.curve(d3.curveCardinalClosed.tension(1));
-		return line(coords) || '';
-	}
-
-	const pathTension = 0.7;
-	function GetSmoothedClosedPath(coords: Vec2[]): string {
-		const line = d3
-			.line<Vec2>()
-			.x((d) => d.x)
-			.y((d) => d.y)
-			.curve(d3.curveCardinalClosed.tension(pathTension));
-		return line(coords) || '';
-	}
-
-	function GetSmoothedPath(coords: Vec2[]): string {
-		const line = d3
-			.line<Vec2>()
-			.x((d) => d.x)
-			.y((d) => d.y)
-			.curve(d3.curveCardinal.tension(pathTension));
-		return line(coords) || '';
 	}
 
 	// Convert screen coordinates to world position using current transform
@@ -81,38 +38,47 @@
 		const [x, y] = transform.invert([coords.x, coords.y]);
 		return { x, y };
 	}
+
+	// Set up D3 pan/zoom
+	onMount(() => {
+		SetupZoomPan(mapLayer as SVGSVGElement, zoomLayer as SVGGElement, transform);
+	});
 </script>
 
 <svg bind:this={mapLayer} class="map-box">
 	<g bind:this={zoomLayer}>
 		<!-- Road's boarders need to be drawn separately -->
-		{#each GetRoadFeatures() as road}
-			<path d={GetSmoothedPath(road.coordinates)} class="terrain-road-border" />
+		{#each FilterRoads() as road}
+			<path d={GetSmoothedPath(road.coordinates, 0.7)} class="terrain-road-border" />
 		{/each}
+
+		<!-- Draw each polygons -->
 		{#each props.terrainData as terrain}
 			{#if terrain.terrainType == 'FOREST'}
-				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="forest" />
-				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="forest-border" />
+				<!-- Forest has separate dashed border (so that it rests inside) -->
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest-border" />
 				{#each generatePointsInsidePolygon(terrain.coordinates, 30, 20) as p}
 					<g transform="translate({p.x}, {p.y})">
 						<TreeTriangle />
 					</g>
 				{/each}
 			{:else if terrain.terrainType == 'FIELD'}
-				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="field" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="field" />
 			{:else if terrain.terrainType == 'WATER'}
-				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="water" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="water" />
 			{:else if terrain.terrainType == 'BUILDING'}
 				<path d={GetClosedPath(terrain.coordinates)} class="building" />
 			{:else if terrain.terrainType == 'ROAD'}
-				<path d={GetSmoothedPath(terrain.coordinates)} class="terrain-road" />
+				<path d={GetSmoothedPath(terrain.coordinates, 0.7)} class="terrain-road" />
 			{/if}
 		{/each}
 
 		{@render props.svgSnippet()}
-		{#each lines as i}
-			<line x1={i} y1={GRID_START} x2={i} y2={GRID_END} class="map-grid-line" />
-			<line x1={GRID_START} y1={i} x2={GRID_END} y2={i} class="map-grid-line" />
+
+		<!-- Translucent grid lines on top of everything -->
+		{#each lines as [start, end]}
+			<line x1={start.x} y1={start.y} x2={end.x} y2={end.y} class="map-grid-line" />
 		{/each}
 	</g>
 </svg>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { GetTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
-	import SvgMap from '$lib/svg-map.svelte';
+	import SvgMap from '$lib/map/svg-map.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);

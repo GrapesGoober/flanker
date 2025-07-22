@@ -9,7 +9,7 @@
 		type Vec2
 	} from '$lib';
 	import RifleSquad from '$lib/rifle-squad.svelte';
-	import SvgMap from '$lib/svg-map.svelte';
+	import SvgMap from '$lib/map/svg-map.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let marker: Vec2 | null = $state(null);
