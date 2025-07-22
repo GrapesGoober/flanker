@@ -3,66 +3,53 @@
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import SvgMap from '$lib/map/svg-map.svelte';
 	import Arrow from '$lib/svg-icons/arrow.svelte';
-	import {
-		addMarker,
-		cancleMarker,
-		initializePlayerState,
-		moveToMarkerAsync,
-		newPlayerState,
-		selectUnit,
-		type PlayerStateContext
-	} from './player-state';
+	import { PlayerState } from './player-state.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
-	let playerState: PlayerStateContext = $state(newPlayerState());
+	let playerState: PlayerState = $state(new PlayerState());
 
 	onMount(async () => {
-		await initializePlayerState(playerState);
+		await playerState.initializeAsync();
 	});
 
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
-
-		let node = clickTarget as HTMLElement;
-		let rect = node.getBoundingClientRect();
-		let x = event.clientX - rect.x; //x position within the element.
-		let y = event.clientY - rect.y; //y position within the element.
-		addMarker(playerState, map.ToWorldCoords({ x, y }));
+		const node = clickTarget as HTMLElement;
+		const rect = node.getBoundingClientRect();
+		const x = event.clientX - rect.x;
+		const y = event.clientY - rect.y;
+		playerState.addMoveMarker(map.ToWorldCoords({ x, y }));
 	}
 
 	async function ConfirmMarker() {
-		await moveToMarkerAsync(playerState);
+		await playerState.moveToMarkerAsync();
 	}
 
 	function SelectUnit(unitId: number, event: MouseEvent) {
-		event.stopPropagation(); // No carryover to map's onclick
-		selectUnit(playerState, unitId);
+		event.stopPropagation();
+		playerState.selectUnit(unitId);
 	}
 
 	function CancleMarker() {
-		cancleMarker(playerState);
+		playerState.cancelMarker();
 	}
 
 	async function OnKeyDown(event: KeyboardEvent) {
-		if (event.key.toLowerCase() === 'c') {
-			cancleMarker(playerState);
-		}
-		if (event.key.toLowerCase() === 'm') {
-			moveToMarkerAsync(playerState);
-		}
+		const key = event.key.toLowerCase();
+		if (key === 'c') playerState.cancelMarker();
+		if (key === 'm') await playerState.moveToMarkerAsync();
 	}
 </script>
 
 <svelte:window onkeydown={OnKeyDown} />
 
-<!-- I'm prototying behaviours at the moment, so proper structure comes later -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
-	{#if playerState.marker && playerState.selectedUnit}
-		<circle cx={playerState.marker.x} cy={playerState.marker.y} r="5" class="move-circle" />
-		<Arrow start={playerState.selectedUnit.position} end={playerState.marker} />
+	{#if playerState.moveMarker && playerState.selectedUnit}
+		<circle cx={playerState.moveMarker.x} cy={playerState.moveMarker.y} r="5" class="move-circle" />
+		<Arrow start={playerState.selectedUnit.position} end={playerState.moveMarker} />
 	{/if}
 
 	{#each playerState.unitData.squads as unit, index}
@@ -80,11 +67,10 @@
 	<SvgMap svgSnippet={mapSvgSnippet} terrainData={playerState.terrainData} bind:this={map} />
 </div>
 
-{#if playerState.marker}
+{#if playerState.moveMarker}
 	<div class="action-box">
 		<button onclick={CancleMarker} class="action-button">Cancel (c)</button>
-		<br />
-		<br />
+		<br /><br />
 		<button onclick={ConfirmMarker} class="action-button">Move (m)</button>
 	</div>
 {/if}
