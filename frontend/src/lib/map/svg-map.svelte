@@ -8,7 +8,6 @@
 		GetGridLines,
 		GetSmoothedClosedPath,
 		GetSmoothedPath,
-		SetupZoomPan,
 		generatePointsInsidePolygon
 	} from './map-utils';
 
@@ -41,7 +40,19 @@
 
 	// Set up D3 pan/zoom
 	onMount(() => {
-		SetupZoomPan(mapLayer as SVGSVGElement, zoomLayer as SVGGElement, transform);
+		const mapDiv = d3.select(mapLayer as SVGSVGElement);
+		const svgZoom = d3.select(zoomLayer);
+		const zoom = d3
+			.zoom<SVGSVGElement, unknown>()
+			.scaleExtent([0.5, 10])
+			.on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+				transform = event.transform;
+				svgZoom.attr('transform', transform.toString());
+			});
+
+		// Set default starting zoom and pan
+		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(1.5));
+		mapDiv.call(zoom as any);
 	});
 </script>
 

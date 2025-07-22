@@ -28,27 +28,6 @@ export function GetSmoothedPath(coords: Vec2[], tension: number): string {
 	return line(coords) || '';
 }
 
-export function SetupZoomPan(
-	mapLayer: SVGSVGElement,
-	zoomLayer: SVGGElement,
-	transform: d3.ZoomTransform
-) {
-	const mapDiv = d3.select(mapLayer as SVGSVGElement);
-	const svgZoom = d3.select(zoomLayer);
-	const zoom = d3
-		.zoom<SVGSVGElement, unknown>()
-		.scaleExtent([0.5, 10])
-		.on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-			transform = event.transform;
-			svgZoom.attr('transform', transform.toString());
-		});
-
-	// Set default starting zoom and pan
-	mapDiv.call(zoom.transform, d3.zoomIdentity.scale(1.5));
-
-	mapDiv.call(zoom as any);
-}
-
 export function GetGridLines(bounds: {
 	xMin: number;
 	xMax: number;
