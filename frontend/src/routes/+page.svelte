@@ -6,7 +6,8 @@
 		MoveRifleSquad,
 		type TerrainFeatureData,
 		type CombatUnitsData,
-		type Vec2
+		type Vec2,
+		type RifleSquadData
 	} from '$lib';
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import SvgMap from '$lib/map/svg-map.svelte';
@@ -16,7 +17,7 @@
 	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let unitData: CombatUnitsData = $state({ hasInitiative: false, squads: [] });
-	let selectedUnitId: number | null = $state(null);
+	let selectedUnitId: RifleSquadData | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
 	onMount(async () => {
@@ -49,12 +50,12 @@
 		}
 		// Only apply marker for selected squad & existing marker
 		if (selectedUnitId !== null && marker !== null) {
-			unitData = await MoveRifleSquad(selectedUnitId, marker);
+			unitData = await MoveRifleSquad(selectedUnitId.unitId, marker);
 			marker = null;
 		}
 	}
 
-	function SelectUnit(unit_id: number, event: MouseEvent) {
+	function SelectUnit(unitId: number, event: MouseEvent) {
 		event.stopPropagation();
 		// Only select unit when no marker is active
 		if (marker !== null) {
@@ -62,9 +63,11 @@
 		}
 		// Deselect all units, then select the correct one
 		for (const unit of unitData.squads) {
-			unit.isSelected = unit.unitId === unit_id;
+			unit.isSelected = unit.unitId === unitId;
+			if (unit.unitId == unitId) {
+				selectedUnitId = unit;
+			}
 		}
-		selectedUnitId = unit_id;
 	}
 </script>
 
@@ -72,6 +75,13 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
+	{#if marker && selectedUnitId}
+		<g onclick={ConfirmMarker} fill-opacity="0.5">
+			<circle cx={marker.x} cy={marker.y} r="5" fill="red" />
+			<Arrow start={selectedUnitId.position} end={marker} />
+		</g>
+	{/if}
+
 	{#each unitData.squads as unit, index}
 		{#if unitData.squads[index]}
 			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
@@ -79,13 +89,6 @@
 			</g>
 		{/if}
 	{/each}
-
-	{#if marker}
-		<g onclick={ConfirmMarker} fill-opacity="0.5">
-			<circle cx={marker.x} cy={marker.y} r="5" fill="red" />
-			<Arrow start={{ x: 0, y: 0 }} end={marker} />
-		</g>
-	{/if}
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
