@@ -2,7 +2,7 @@
 	import { onMount, type Snippet } from 'svelte';
 	import * as d3 from 'd3';
 	import type { TerrainFeatureData, Vec2 } from '$lib';
-	import { generateEvenPointsInsidePolygon, generatePointsInsidePolygon } from '$lib/tree-utils';
+	import { generatePointsInsidePolygon } from '$lib/tree-utils';
 	import TreeTriangle from './svg-icons/tree-triangle.svelte';
 
 	type Props = {

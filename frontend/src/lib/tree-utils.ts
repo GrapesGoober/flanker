@@ -1,28 +1,5 @@
 import type { Vec2 } from '$lib';
-
-export function pointInPolygon(point: Vec2, coords: Vec2[]): boolean {
-	const x = point.x,
-		y = point.y;
-	let inside = false;
-
-	for (let i = 0, j = coords.length - 1; i < coords.length; j = i++) {
-		const current = coords[i];
-		const prev = coords[j];
-
-		// Skip if either point is null or undefined
-		if (!current || !prev) continue;
-
-		const xi = current.x,
-			yi = current.y;
-		const xj = prev.x,
-			yj = prev.y;
-
-		const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi + 0.000001) + xi;
-		if (intersect) inside = !inside;
-	}
-
-	return inside;
-}
+import * as d3 from 'd3';
 
 export function generatePointsInsidePolygon(
 	coords: Vec2[],
@@ -33,6 +10,9 @@ export function generatePointsInsidePolygon(
 	const ys = coords.map((p) => p.y);
 	const [minX, maxX] = [Math.min(...xs), Math.max(...xs)];
 	const [minY, maxY] = [Math.min(...ys), Math.max(...ys)];
+
+	// Polygon array for D3
+	const d3Coords: [number, number][] = coords.map(({ x, y }) => [x, y]);
 
 	const result: Vec2[] = [];
 	for (let x = minX; x <= maxX; x += spacing) {
@@ -45,7 +25,7 @@ export function generatePointsInsidePolygon(
 				const jitterY = (Math.random() - 0.5) * jitter;
 				const point = { x: x + jitterX, y: y + jitterY };
 
-				if (pointInPolygon(point, coords)) {
+				if (d3.polygonContains(d3Coords, [point.x, point.y])) {
 					result.push(point);
 					break;
 				}
