@@ -10,12 +10,13 @@
 	} from '$lib';
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import SvgMap from '$lib/map/svg-map.svelte';
+	import Arrow from '$lib/svg-icons/arrow.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let marker: Vec2 | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
 	let unitData: CombatUnitsData = $state({ hasInitiative: false, squads: [] });
-	let selectedUnit: number | null = $state(null);
+	let selectedUnitId: number | null = $state(null);
 
 	onMount(async () => {
 		terrainData = await GetTerrainData();
@@ -30,7 +31,7 @@
 			return;
 		}
 
-		if (selectedUnit === null) {
+		if (selectedUnitId === null) {
 			return;
 		}
 
@@ -42,8 +43,8 @@
 			return;
 		}
 		// Only apply marker for selected squad & existing marker
-		if (selectedUnit !== null && marker !== null) {
-			unitData = await MoveRifleSquad(selectedUnit, marker);
+		if (selectedUnitId !== null && marker !== null) {
+			unitData = await MoveRifleSquad(selectedUnitId, marker);
 			marker = null;
 		}
 	}
@@ -58,7 +59,7 @@
 		for (const unit of unitData.squads) {
 			unit.isSelected = unit.unitId === unit_id;
 		}
-		selectedUnit = unit_id;
+		selectedUnitId = unit_id;
 	}
 </script>
 
@@ -75,8 +76,9 @@
 	{/each}
 
 	{#if marker}
-		<g onclick={ConfirmMarker}>
+		<g onclick={ConfirmMarker} fill-opacity="0.5">
 			<circle cx={marker.x} cy={marker.y} r="10" fill="red" />
+			<Arrow start={{ x: 0, y: 0 }} end={marker} />
 		</g>
 	{/if}
 {/snippet}

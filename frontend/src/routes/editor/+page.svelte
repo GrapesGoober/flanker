@@ -51,9 +51,6 @@
 	}
 </script>
 
-<!-- I'm prototying behaviours at the moment, so proper structure comes later -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
 	<polygon points={ToSvgString(coords)} class="editor" />
 {/snippet}
