@@ -42,14 +42,38 @@
 		mapDiv.call(zoom as any);
 	});
 
-	// Util func for converting terrain data to SVG
-	function CoordsToSvgString(coords: { x: number; y: number }[]): string {
-		return coords.map((point) => `${point.x},${point.y}`).join(' ');
-	}
-
 	// Road's boarders need to be drawn separately
 	function GetRoadFeatures(): TerrainFeatureData[] {
 		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
+	}
+
+	// Util func for converting terrain data to SVG
+	function GetClosedPath(coords: Vec2[]): string {
+		const line = d3
+			.line<Vec2>()
+			.x((d) => d.x)
+			.y((d) => d.y)
+			.curve(d3.curveCardinalClosed.tension(1));
+		return line(coords) || '';
+	}
+
+	const pathTension = 0.7;
+	function GetSmoothedClosedPath(coords: Vec2[]): string {
+		const line = d3
+			.line<Vec2>()
+			.x((d) => d.x)
+			.y((d) => d.y)
+			.curve(d3.curveCardinalClosed.tension(pathTension));
+		return line(coords) || '';
+	}
+
+	function GetSmoothedPath(coords: Vec2[]): string {
+		const line = d3
+			.line<Vec2>()
+			.x((d) => d.x)
+			.y((d) => d.y)
+			.curve(d3.curveCardinal.tension(pathTension));
+		return line(coords) || '';
 	}
 
 	// Convert screen coordinates to world position using current transform
@@ -63,25 +87,25 @@
 	<g bind:this={zoomLayer}>
 		<!-- Road's boarders need to be drawn separately -->
 		{#each GetRoadFeatures() as road}
-			<polyline points={CoordsToSvgString(road.coordinates)} class="terrain-road-border" />
+			<path d={GetSmoothedPath(road.coordinates)} class="terrain-road-border" />
 		{/each}
 		{#each props.terrainData as terrain}
 			{#if terrain.terrainType == 'FOREST'}
-				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest" />
-				<polygon points={CoordsToSvgString(terrain.coordinates)} class="forest-border" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="forest" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="forest-border" />
 				{#each generatePointsInsidePolygon(terrain.coordinates, 30, 20) as p}
 					<g transform="translate({p.x}, {p.y})">
 						<TreeTriangle />
 					</g>
 				{/each}
 			{:else if terrain.terrainType == 'FIELD'}
-				<polygon points={CoordsToSvgString(terrain.coordinates)} class="field" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="field" />
 			{:else if terrain.terrainType == 'WATER'}
-				<polygon points={CoordsToSvgString(terrain.coordinates)} class="water" />
+				<path d={GetSmoothedClosedPath(terrain.coordinates)} class="water" />
 			{:else if terrain.terrainType == 'BUILDING'}
-				<polygon points={CoordsToSvgString(terrain.coordinates)} class="building" />
+				<path d={GetClosedPath(terrain.coordinates)} class="building" />
 			{:else if terrain.terrainType == 'ROAD'}
-				<polyline points={CoordsToSvgString(terrain.coordinates)} class="terrain-road" />
+				<path d={GetSmoothedPath(terrain.coordinates)} class="terrain-road" />
 			{/if}
 		{/each}
 
@@ -142,5 +166,6 @@
 		fill: #aaa;
 		stroke: #999;
 		stroke-width: @stroke-width;
+		stroke-linecap: square;
 	}
 </style>
