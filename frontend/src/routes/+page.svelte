@@ -39,8 +39,8 @@
 	async function OnKeyDown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
 		if (key === 'c') controller.cancelMarker();
-		else if (key === 'm') await controller.confirmMarkerAsync();
-		else if (key === 'f') await controller.confirmMarkerAsync();
+		else if (key === 'm' && controller.isMoveValid()) await controller.confirmMarkerAsync();
+		else if (key === 'f' && controller.isFireValid()) await controller.confirmMarkerAsync();
 	}
 </script>
 
