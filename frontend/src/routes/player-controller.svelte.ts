@@ -32,14 +32,19 @@ export class PlayerController {
 	selectUnit(unitId: number) {
 		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
-		if (unit.isFriendly == true) {
+		if (unit.isFriendly === true) {
 			this.state = {
 				type: 'selected',
 				selectedUnit: unit
 			};
-		} else {
-			// click on hostile => assume fire action
-			this.setFireMarker(unit);
+		}
+		if (unit.isFriendly === false) {
+			if (this.state.type === 'default') {
+				this.state = {
+					type: 'selected',
+					selectedUnit: unit
+				};
+			} else this.setFireMarker(unit);
 		}
 	}
 

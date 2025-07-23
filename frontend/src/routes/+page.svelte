@@ -28,7 +28,7 @@
 	}
 
 	function SelectUnit(unitId: number, event: MouseEvent) {
-		event.stopPropagation();
+		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);
 	}
 
@@ -88,6 +88,7 @@
 		<br />
 		<p>
 			Unit #{controller.state.selectedUnit.unitId},
+			{controller.state.selectedUnit.isFriendly ? 'Friendly' : 'Hostile'},
 			{controller.state.selectedUnit.status}
 		</p>
 	</div>
