@@ -47,30 +47,25 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
-	{#if controller.state.type === 'selected'}
-		{@const selectedUnit = controller.state.selectedUnit}
-		<g class="transparent-icons">
+	<g class="transparent-icons">
+		{#if controller.state.type !== 'default'}
+			{@const selectedUnit = controller.state.selectedUnit}
 			<circle
 				cx={selectedUnit.position.x}
 				cy={selectedUnit.position.y}
 				r="10"
 				class="select-circle"
 			/>
-		</g>
-	{:else if controller.state.type == 'marked'}
-		{@const selectedUnit = controller.state.selectedUnit}
-		{@const moveMarker = controller.state.moveMarker}
-		<g class="transparent-icons">
-			<circle
-				cx={selectedUnit.position.x}
-				cy={selectedUnit.position.y}
-				r="10"
-				class="select-circle"
-			/>
-			<circle cx={moveMarker.x} cy={moveMarker.y} r="5" class="move-circle" />
-			<Arrow start={controller.state.selectedUnit.position} end={controller.state.moveMarker} />
-		</g>
-	{/if}
+			{#if controller.state.type == 'moveMarked'}
+				{@const moveMarker = controller.state.moveMarker}
+				<circle cx={moveMarker.x} cy={moveMarker.y} r="5" class="move-circle" />
+				<Arrow start={selectedUnit.position} end={controller.state.moveMarker} />
+			{:else if controller.state.type == 'fireMarked'}
+				{@const target = controller.state.target.position}
+				<Arrow start={selectedUnit.position} end={target} />
+			{/if}
+		{/if}
+	</g>
 
 	{#each controller.unitData.squads as unit, index}
 		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
@@ -85,7 +80,7 @@
 	<SvgMap svgSnippet={mapSvgSnippet} terrainData={controller.terrainData} bind:this={map} />
 </div>
 
-{#if controller.state.type == 'marked'}
+{#if controller.state.type == 'moveMarked'}
 	<div class="action-box">
 		<button onclick={ConfirmMarker}>Move (m)</button>
 	</div>

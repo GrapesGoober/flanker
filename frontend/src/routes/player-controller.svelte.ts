@@ -11,7 +11,8 @@ import {
 type PlayerControllerState =
 	| { type: 'default' }
 	| { type: 'selected'; selectedUnit: RifleSquadData }
-	| { type: 'marked'; selectedUnit: RifleSquadData; moveMarker: Vec2 };
+	| { type: 'moveMarked'; selectedUnit: RifleSquadData; moveMarker: Vec2 }
+	| { type: 'fireMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
 
 export class PlayerController {
 	terrainData: TerrainFeatureData[] = $state([]);
@@ -41,8 +42,18 @@ export class PlayerController {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type == 'default') return;
 		this.state = {
-			type: 'marked',
+			type: 'moveMarked',
 			moveMarker: at,
+			selectedUnit: this.state.selectedUnit
+		};
+	}
+
+	setFireMarker(target: RifleSquadData) {
+		if (!this.unitData.hasInitiative) return;
+		if (this.state.type == 'default') return;
+		this.state = {
+			type: 'fireMarked',
+			target: target,
 			selectedUnit: this.state.selectedUnit
 		};
 	}
@@ -55,7 +66,7 @@ export class PlayerController {
 
 	async moveToMarkerAsync() {
 		if (!this.unitData.hasInitiative) return;
-		if (this.state.type != 'marked') return;
+		if (this.state.type != 'moveMarked') return;
 
 		let selectedUnit = this.state.selectedUnit; // Avoid this binding shenanigans
 		this.unitData = await MoveRifleSquad(selectedUnit.unitId, this.state.moveMarker);
