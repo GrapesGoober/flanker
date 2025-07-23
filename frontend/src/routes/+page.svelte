@@ -128,11 +128,4 @@
 	.transparent-icons {
 		opacity: 0.5;
 	}
-	.selected-unit {
-		transform: translate(1.1, 1.1);
-	}
-	.move-line {
-		stroke: black;
-		stroke-width: 3px;
-	}
 </style>

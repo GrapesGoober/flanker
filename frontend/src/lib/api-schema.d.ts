@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/unit": {
+    "/api/units": {
         parameters: {
             query?: never;
             header?: never;
@@ -15,7 +15,7 @@ export interface paths {
          * Get Units
          * @description Get all combat units for the player faction.
          */
-        get: operations["get_units_api_unit_get"];
+        get: operations["get_units_api_units_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -166,7 +166,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_units_api_unit_get: {
+    get_units_api_units_get: {
         parameters: {
             query?: never;
             header?: never;

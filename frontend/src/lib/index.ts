@@ -53,7 +53,7 @@ export async function GetUnitStatesData(): Promise<CombatUnitsData> {
 	const {
 		data, // only present if 2XX response
 		error // only present if 4XX or 5XX response
-	} = await client.GET('/api/rifle-squad');
+	} = await client.GET('/api/units');
 	if (error) throw new Error(JSON.stringify(error));
 
 	// Convert to a custom type in case API and types diverge

@@ -13,7 +13,7 @@ context = new_scene()
 app = FastAPI()
 
 
-@app.get("/api/unit")
+@app.get("/api/units")
 async def get_units() -> CombatUnitsViewState:
     """Get all combat units for the player faction."""
     return CombatUnitController.get_units(
