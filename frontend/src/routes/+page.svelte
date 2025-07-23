@@ -94,13 +94,11 @@
 	</div>
 
 	<div class="action-box">
-		<button
-			onclick={ConfirmMarker}
-			class={controller.state.type === 'moveMarked' ? '' : 'invalid-option'}>Move (m)</button
+		<button onclick={ConfirmMarker} class={controller.isMoveValid() ? '' : 'invalid-option'}
+			>Move (m)</button
 		>
-		<button
-			onclick={ConfirmMarker}
-			class={controller.state.type === 'fireMarked' ? '' : 'invalid-option'}>Fire (f)</button
+		<button onclick={ConfirmMarker} class={controller.isFireValid() ? '' : 'invalid-option'}
+			>Fire (f)</button
 		>
 	</div>
 {/if}

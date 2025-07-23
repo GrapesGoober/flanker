@@ -82,9 +82,11 @@ export class PlayerController {
 
 		switch (this.state.type) {
 			case 'moveMarked':
+				if (!this.isMoveValid()) return;
 				this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
 				break;
 			case 'fireMarked':
+				if (!this.isFireValid()) return;
 				this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
 				break;
 		}
@@ -100,5 +102,17 @@ export class PlayerController {
 			this.state = {
 				type: 'default'
 			};
+	}
+
+	isMoveValid(): boolean {
+		if (this.state.type !== 'moveMarked') return false;
+		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
+		return true;
+	}
+
+	isFireValid(): boolean {
+		if (this.state.type !== 'fireMarked') return false;
+		if (this.state.selectedUnit.status === 'SUPPRESSED') return false;
+		return true;
 	}
 }
