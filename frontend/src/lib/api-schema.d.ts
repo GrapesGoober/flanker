@@ -121,6 +121,8 @@ export interface components {
             status: components["schemas"]["Status"];
             /** Is Friendly */
             is_friendly: boolean;
+            /** No Fire */
+            no_fire: boolean;
         };
         /**
          * Status

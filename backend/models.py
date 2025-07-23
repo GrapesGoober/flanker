@@ -12,6 +12,7 @@ class SquadModel:
     position: Vec2
     status: CombatUnit.Status
     is_friendly: bool
+    no_fire: bool
 
 
 @dataclass

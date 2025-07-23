@@ -32,6 +32,7 @@ export type RifleSquadData = {
 	position: Vec2;
 	status: 'ACTIVE' | 'PINNED' | 'SUPPRESSED';
 	isFriendly: boolean;
+	noFire: boolean;
 };
 
 function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']): CombatUnitsData {
@@ -41,7 +42,8 @@ function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']
 			unitId: squad.unit_id,
 			position: squad.position,
 			status: squad.status,
-			isFriendly: squad.is_friendly
+			isFriendly: squad.is_friendly,
+			noFire: squad.no_fire
 		}))
 	};
 }
