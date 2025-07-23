@@ -31,11 +31,15 @@ export class PlayerController {
 	selectUnit(unitId: number) {
 		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
-		if (unit.isFriendly !== true) return;
-		this.state = {
-			type: 'selected',
-			selectedUnit: unit
-		};
+		if (unit.isFriendly == true) {
+			this.state = {
+				type: 'selected',
+				selectedUnit: unit
+			};
+		} else {
+			// click on hostile => assume fire action
+			this.setFireMarker(unit);
+		}
 	}
 
 	setMoveMarker(at: Vec2) {
@@ -51,6 +55,7 @@ export class PlayerController {
 	setFireMarker(target: RifleSquadData) {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type == 'default') return;
+		if (target.isFriendly) return;
 		this.state = {
 			type: 'fireMarked',
 			target: target,
