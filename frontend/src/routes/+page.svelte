@@ -94,8 +94,14 @@
 	</div>
 
 	<div class="action-box">
-		<button onclick={ConfirmMarker}>Move (m)</button>
-		<button onclick={ConfirmMarker}>Fire (f)</button>
+		<button
+			onclick={ConfirmMarker}
+			class={controller.state.type === 'moveMarked' ? '' : 'invalid-option'}>Move (m)</button
+		>
+		<button
+			onclick={ConfirmMarker}
+			class={controller.state.type === 'fireMarked' ? '' : 'invalid-option'}>Fire (f)</button
+		>
 	</div>
 {/if}
 
@@ -121,5 +127,9 @@
 	}
 	.transparent-icons {
 		opacity: 0.5;
+	}
+	.invalid-option {
+		opacity: 0.5;
+		text-decoration: line-through;
 	}
 </style>
