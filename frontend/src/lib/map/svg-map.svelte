@@ -107,6 +107,7 @@
 	.map-grid-line {
 		stroke-width: 1;
 		stroke: #00000020;
+		pointer-events: none;
 	}
 	.terrain-road-border {
 		fill: none;
