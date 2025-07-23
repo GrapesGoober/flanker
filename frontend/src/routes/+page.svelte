@@ -47,29 +47,35 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
-	{#if controller.state.type == 'marked'}
-		<circle
-			cx={controller.state.moveMarker.x}
-			cy={controller.state.moveMarker.y}
-			r="5"
-			class="move-circle"
-		/>
-		<Arrow start={controller.state.selectedUnit.position} end={controller.state.moveMarker} />
+	{#if controller.state.type === 'selected'}
+		{@const selectedUnit = controller.state.selectedUnit}
+		<g class="transparent-icons">
+			<circle
+				cx={selectedUnit.position.x}
+				cy={selectedUnit.position.y}
+				r="10"
+				class="select-circle"
+			/>
+		</g>
+	{:else if controller.state.type == 'marked'}
+		{@const selectedUnit = controller.state.selectedUnit}
+		{@const moveMarker = controller.state.moveMarker}
+		<g class="transparent-icons">
+			<circle
+				cx={selectedUnit.position.x}
+				cy={selectedUnit.position.y}
+				r="10"
+				class="select-circle"
+			/>
+			<circle cx={moveMarker.x} cy={moveMarker.y} r="5" class="move-circle" />
+			<Arrow start={controller.state.selectedUnit.position} end={controller.state.moveMarker} />
+		</g>
 	{/if}
 
 	{#each controller.unitData.squads as unit, index}
-		{#if controller.unitData.squads[index]}
-			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-				{#if controller.state.type === 'default'}
-					<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} isSelected={false} />
-				{:else}
-					<RifleSquad
-						bind:rifleSquadData={controller.unitData.squads[index]}
-						isSelected={controller.state.selectedUnit.unitId === unit.unitId}
-					/>
-				{/if}
-			</g>
-		{/if}
+		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+		</g>
 	{/each}
 {/snippet}
 
@@ -115,6 +121,18 @@
 	}
 	.move-circle {
 		fill: red;
-		fill-opacity: 0.5;
+	}
+	.select-circle {
+		fill: black;
+	}
+	.transparent-icons {
+		opacity: 0.5;
+	}
+	.selected-unit {
+		transform: translate(1.1, 1.1);
+	}
+	.move-line {
+		stroke: black;
+		stroke-width: 3px;
 	}
 </style>
