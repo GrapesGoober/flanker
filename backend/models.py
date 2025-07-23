@@ -24,10 +24,18 @@ class CombatUnitsViewState:
 
 @dataclass
 class MoveActionRequest:
-    """Request model for moving a unit."""
+    """Request model for a unit's move action."""
 
     unit_id: int
     to: Vec2
+
+
+@dataclass
+class FireActionRequest:
+    """Request model for a unit's fire action."""
+
+    unit_id: int
+    target_id: int
 
 
 @dataclass
