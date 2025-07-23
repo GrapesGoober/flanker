@@ -3,7 +3,7 @@
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import SvgMap from '$lib/map/svg-map.svelte';
 	import Arrow from '$lib/svg-icons/arrow.svelte';
-	import { PlayerController } from './player-state.svelte';
+	import { PlayerController } from './player-controller.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
