@@ -29,16 +29,13 @@ export class PlayerController {
 
 	selectUnit(unitId: number) {
 		if (this.state.type != 'default') return;
-
-		for (const unit of this.unitData.squads) {
-			unit.isSelected = unit.unitId === unitId;
-			if (unit.unitId === unitId && unit.isFriendly === true) {
-				this.state = {
-					type: 'selected',
-					selectedUnit: unit
-				};
-			}
-		}
+		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
+		if (!unit) return;
+		if (unit.isFriendly !== true) return;
+		this.state = {
+			type: 'selected',
+			selectedUnit: unit
+		};
 	}
 
 	setMoveMarker(at: Vec2) {

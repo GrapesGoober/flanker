@@ -60,7 +60,14 @@
 	{#each controller.unitData.squads as unit, index}
 		{#if controller.unitData.squads[index]}
 			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-				<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+				{#if controller.state.type === 'default'}
+					<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} isSelected={false} />
+				{:else}
+					<RifleSquad
+						bind:rifleSquadData={controller.unitData.squads[index]}
+						isSelected={controller.state.selectedUnit.unitId === unit.unitId}
+					/>
+				{/if}
 			</g>
 		{/if}
 	{/each}

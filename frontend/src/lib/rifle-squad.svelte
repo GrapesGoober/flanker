@@ -2,12 +2,13 @@
 	import type { RifleSquadData } from '$lib';
 	import FriendlyRifleSquad from './svg-icons/friendly-rifle-squad.svelte';
 	import HostileRifleSquad from './svg-icons/hostile-rifle-squad.svelte';
-	let { rifleSquadData = $bindable() }: { rifleSquadData: RifleSquadData } = $props();
+
+	let { rifleSquadData = $bindable<RifleSquadData>(), isSelected } = $props();
 </script>
 
 <g transform="translate({rifleSquadData.position.x},{rifleSquadData.position.y})">
 	{#if rifleSquadData.isFriendly}
-		<g class={rifleSquadData.isSelected ? 'unit-icon-selected' : 'unit-icon'}>
+		<g class={isSelected ? 'unit-icon-selected' : 'unit-icon'}>
 			<FriendlyRifleSquad />
 		</g>
 	{:else}

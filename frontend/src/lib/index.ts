@@ -31,7 +31,6 @@ export type CombatUnitsData = {
 };
 
 export type RifleSquadData = {
-	isSelected: boolean;
 	unitId: number;
 	position: Vec2;
 	status: 'ACTIVE' | 'PINNED' | 'SUPPRESSED';
@@ -42,7 +41,6 @@ function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']
 	return {
 		hasInitiative: data.has_initiative,
 		squads: data.squads.map((squad) => ({
-			isSelected: false,
 			unitId: squad.unit_id,
 			position: squad.position,
 			status: squad.status,
