@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { GetTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
+	import { getTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
 	import SvgMap from '$lib/map/svg-map.svelte';
 
 	let map: SvgMap | null = $state(null);
@@ -8,7 +8,7 @@
 	let coords: Vec2[] = $state([]);
 
 	onMount(async () => {
-		terrainData = await GetTerrainData();
+		terrainData = await getTerrainData();
 	});
 
 	function AddVertex(event: MouseEvent) {
@@ -41,7 +41,7 @@
 
 	function refreshTerrainData() {
 		coords = [];
-		GetTerrainData().then((data) => {
+		getTerrainData().then((data) => {
 			terrainData = data;
 		});
 	}

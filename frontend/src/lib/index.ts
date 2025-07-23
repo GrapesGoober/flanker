@@ -9,11 +9,8 @@ export type TerrainFeatureData = {
 	coordinates: Vec2[];
 };
 
-export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
-	const {
-		data, // only present if 2XX response
-		error // only present if 4XX or 5XX response
-	} = await client.GET('/api/terrain');
+export async function getTerrainData(): Promise<TerrainFeatureData[]> {
+	const { data, error } = await client.GET('/api/terrain');
 	if (error) throw new Error(JSON.stringify(error));
 
 	// Convert to a custom type in case API and types diverge
@@ -49,29 +46,33 @@ function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']
 	};
 }
 
-export async function GetUnitStatesData(): Promise<CombatUnitsData> {
-	const {
-		data, // only present if 2XX response
-		error // only present if 4XX or 5XX response
-	} = await client.GET('/api/units');
+export async function getUnitStatesData(): Promise<CombatUnitsData> {
+	const { data, error } = await client.GET('/api/units');
 	if (error) throw new Error(JSON.stringify(error));
-
-	// Convert to a custom type in case API and types diverge
 	return ParseUnitStatesData(data);
 }
 
-export async function MoveRifleSquad(unit_id: number, to: Vec2): Promise<CombatUnitsData> {
-	const {
-		data, // only present if 2XX response
-		error // only present if 4XX or 5XX response
-	} = await client.POST('/api/move', {
+export async function performMoveActionAsync(unit_id: number, to: Vec2): Promise<CombatUnitsData> {
+	const { data, error } = await client.POST('/api/move', {
 		body: {
 			unit_id: unit_id,
 			to: to
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
+	return ParseUnitStatesData(data);
+}
 
-	// Convert to a custom type in case API and types diverge
+export async function performFireActionAsync(
+	unit_id: number,
+	target_id: number
+): Promise<CombatUnitsData> {
+	const { data, error } = await client.POST('/api/fire', {
+		body: {
+			unit_id: unit_id,
+			target_id: target_id
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
 	return ParseUnitStatesData(data);
 }

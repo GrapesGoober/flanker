@@ -1,7 +1,8 @@
 import {
-	GetTerrainData,
-	GetUnitStatesData,
-	MoveRifleSquad,
+	getTerrainData,
+	getUnitStatesData,
+	performFireActionAsync,
+	performMoveActionAsync,
 	type CombatUnitsData,
 	type RifleSquadData,
 	type TerrainFeatureData,
@@ -24,8 +25,8 @@ export class PlayerController {
 	state: PlayerControllerState = $state({ type: 'default' });
 
 	async initializeAsync() {
-		this.terrainData = await GetTerrainData();
-		this.unitData = await GetUnitStatesData();
+		this.terrainData = await getTerrainData();
+		this.unitData = await getUnitStatesData();
 	}
 
 	selectUnit(unitId: number) {
@@ -69,13 +70,22 @@ export class PlayerController {
 		};
 	}
 
-	async moveToMarkerAsync() {
+	async confirmMarkerAsync() {
 		if (!this.unitData.hasInitiative) return;
-		if (this.state.type != 'moveMarked') return;
+		if (this.state.type === 'default') return;
+		let unitId = this.state.selectedUnit.unitId;
 
-		let selectedUnit = this.state.selectedUnit; // Avoid this binding shenanigans
-		this.unitData = await MoveRifleSquad(selectedUnit.unitId, this.state.moveMarker);
-		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == selectedUnit.unitId);
+		switch (this.state.type) {
+			case 'moveMarked':
+				this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
+				break;
+			case 'fireMarked':
+				this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
+				break;
+		}
+
+		// Reselect the unit again, if exists
+		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
 		if (currentUnit)
 			this.state = {
 				type: 'selected',

@@ -24,7 +24,7 @@
 	}
 
 	async function ConfirmMarker() {
-		await controller.moveToMarkerAsync();
+		await controller.confirmMarkerAsync();
 	}
 
 	function SelectUnit(unitId: number, event: MouseEvent) {
@@ -39,7 +39,8 @@
 	async function OnKeyDown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
 		if (key === 'c') controller.cancelMarker();
-		if (key === 'm') await controller.moveToMarkerAsync();
+		else if (key === 'm') await controller.confirmMarkerAsync();
+		else if (key === 'f') await controller.confirmMarkerAsync();
 	}
 </script>
 
@@ -81,12 +82,6 @@
 	<SvgMap svgSnippet={mapSvgSnippet} terrainData={controller.terrainData} bind:this={map} />
 </div>
 
-{#if controller.state.type == 'moveMarked'}
-	<div class="action-box">
-		<button onclick={ConfirmMarker}>Move (m)</button>
-	</div>
-{/if}
-
 {#if controller.state.type != 'default'}
 	<div class="info-box">
 		<button onclick={CancleMarker}>Cancel (c)</button>
@@ -95,6 +90,11 @@
 			Unit #{controller.state.selectedUnit.unitId},
 			{controller.state.selectedUnit.status}
 		</p>
+	</div>
+
+	<div class="action-box">
+		<button onclick={ConfirmMarker}>Move (m)</button>
+		<button onclick={ConfirmMarker}>Fire (f)</button>
 	</div>
 {/if}
 
