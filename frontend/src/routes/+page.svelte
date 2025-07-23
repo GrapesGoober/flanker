@@ -81,21 +81,37 @@
 
 {#if controller.state.type == 'marked'}
 	<div class="action-box">
-		<button onclick={CancleMarker} class="action-button">Cancel (c)</button>
-		<br /><br />
-		<button onclick={ConfirmMarker} class="action-button">Move (m)</button>
+		<button onclick={ConfirmMarker}>Move (m)</button>
+	</div>
+{/if}
+
+{#if controller.state.type != 'default'}
+	<div class="info-box">
+		<button onclick={CancleMarker}>Cancel (c)</button>
+		<br />
+		<p>
+			Unit #{controller.state.selectedUnit.unitId},
+			{controller.state.selectedUnit.status}
+		</p>
 	</div>
 {/if}
 
 <style lang="less">
+	* {
+		font-size: large;
+		font-family: Verdana, Geneva, Tahoma, sans-serif;
+	}
 	.action-box {
 		position: absolute;
 		top: 0%;
 		right: 0%;
 		padding: 1em;
 	}
-	.action-button {
-		font-size: large;
+	.info-box {
+		position: absolute;
+		top: 0%;
+		left: 0%;
+		padding: 1em;
 	}
 	.move-circle {
 		fill: red;

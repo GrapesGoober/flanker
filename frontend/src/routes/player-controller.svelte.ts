@@ -28,7 +28,6 @@ export class PlayerController {
 	}
 
 	selectUnit(unitId: number) {
-		if (this.state.type != 'default') return;
 		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
 		if (unit.isFriendly !== true) return;
@@ -58,9 +57,17 @@ export class PlayerController {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type != 'marked') return;
 
-		this.unitData = await MoveRifleSquad(this.state.selectedUnit.unitId, this.state.moveMarker);
-		this.state = {
-			type: 'default'
-		};
+		let selectedUnit = this.state.selectedUnit; // Avoid this binding shenanigans
+		this.unitData = await MoveRifleSquad(selectedUnit.unitId, this.state.moveMarker);
+		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == selectedUnit.unitId);
+		if (currentUnit)
+			this.state = {
+				type: 'selected',
+				selectedUnit: currentUnit
+			};
+		else
+			this.state = {
+				type: 'default'
+			};
 	}
 }
