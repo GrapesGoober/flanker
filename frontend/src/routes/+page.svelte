@@ -4,6 +4,7 @@
 	import SvgMap from '$lib/map/svg-map.svelte';
 	import Arrow from '$lib/svg-icons/arrow.svelte';
 	import { PlayerController } from './player-controller.svelte';
+	import BlankUnit from '$lib/svg-icons/blank-unit.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
@@ -58,11 +59,11 @@
 			/>
 			{#if controller.state.type == 'moveMarked'}
 				{@const moveMarker = controller.state.moveMarker}
-				<circle cx={moveMarker.x} cy={moveMarker.y} r="5" class="move-circle" />
-				<Arrow start={selectedUnit.position} end={controller.state.moveMarker} />
+				<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankUnit /></g>
+				<Arrow start={selectedUnit.position} end={controller.state.moveMarker} offset={15} />
 			{:else if controller.state.type == 'fireMarked'}
 				{@const target = controller.state.target.position}
-				<Arrow start={selectedUnit.position} end={target} />
+				<Arrow start={selectedUnit.position} end={target} offset={15} />
 			{/if}
 		{/if}
 	</g>
@@ -113,9 +114,6 @@
 		top: 0%;
 		left: 0%;
 		padding: 1em;
-	}
-	.move-circle {
-		fill: red;
 	}
 	.select-circle {
 		fill: black;

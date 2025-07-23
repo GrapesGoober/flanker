@@ -4,6 +4,7 @@
 	type Props = {
 		start: Vec2;
 		end: Vec2;
+		offset: number;
 	};
 	let props: Props = $props();
 
@@ -16,10 +17,9 @@
 		const uy = dy / length;
 
 		// Point before arrowhead starts
-		const HEADLENGTH = 6;
 		return {
-			x: props.end.x - ux * HEADLENGTH,
-			y: props.end.y - uy * HEADLENGTH
+			x: props.end.x - ux * props.offset,
+			y: props.end.y - uy * props.offset
 		};
 	}
 
