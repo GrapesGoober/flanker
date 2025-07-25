@@ -51,6 +51,7 @@ export class PlayerController {
 	setMoveMarker(at: Vec2) {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type == 'default') return;
+		if (!this.state.selectedUnit.isFriendly) return;
 		this.state = {
 			type: 'moveMarked',
 			moveMarker: at,
@@ -107,12 +108,14 @@ export class PlayerController {
 	isMoveValid(): boolean {
 		if (this.state.type !== 'moveMarked') return false;
 		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
 		return true;
 	}
 
 	isFireValid(): boolean {
 		if (this.state.type !== 'fireMarked') return false;
 		if (this.state.selectedUnit.status === 'SUPPRESSED') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
 		return true;
 	}
 }
