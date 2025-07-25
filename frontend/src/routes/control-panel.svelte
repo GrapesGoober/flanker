@@ -58,8 +58,9 @@
 
 <style lang="less">
 	@spacing: 15px;
-	@background-color: rgba(255, 255, 255, 0.3);
-	@border-color: rgba(0, 0, 0, 0.3);
+	@opacity: 0.5;
+	@background-color: rgba(255, 255, 255, @opacity);
+	@border-color: rgba(0, 0, 0, @opacity);
 	@border: 1px solid @border-color;
 
 	// Globals
