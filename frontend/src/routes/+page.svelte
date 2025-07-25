@@ -5,6 +5,7 @@
 	import Arrow from '$lib/svg-icons/arrow.svelte';
 	import { PlayerController } from './player-controller.svelte';
 	import BlankUnit from '$lib/svg-icons/blank-unit.svelte';
+	import ControlPanel from './control-panel.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
@@ -44,8 +45,6 @@
 	}
 </script>
 
-<svelte:window onkeydown={OnKeyDown} />
-
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
@@ -82,53 +81,17 @@
 	<SvgMap svgSnippet={mapSvgSnippet} terrainData={controller.terrainData} bind:this={map} />
 </div>
 
-{#if controller.state.type != 'default'}
-	<div class="info-box">
-		<button onclick={CancleMarker}>Cancel (c)</button>
-		<br />
-		<p>
-			Unit #{controller.state.selectedUnit.unitId},
-			{controller.state.selectedUnit.isFriendly ? 'Friendly' : 'Hostile'},
-			{controller.state.selectedUnit.status}
-			{controller.state.selectedUnit.noFire ? ', No Fire' : ''}
-		</p>
-	</div>
-
-	<div class="action-box">
-		<button onclick={ConfirmMarker} class={controller.isMoveValid() ? '' : 'invalid-option'}
-			>Move (m)</button
-		>
-		<button onclick={ConfirmMarker} class={controller.isFireValid() ? '' : 'invalid-option'}
-			>Fire (f)</button
-		>
-	</div>
-{/if}
+<ControlPanel bind:controller />
 
 <style lang="less">
 	* {
 		font-size: large;
 		font-family: Verdana, Geneva, Tahoma, sans-serif;
 	}
-	.action-box {
-		position: absolute;
-		top: 0%;
-		right: 0%;
-		padding: 1em;
-	}
-	.info-box {
-		position: absolute;
-		top: 0%;
-		left: 0%;
-		padding: 1em;
-	}
 	.select-circle {
 		fill: black;
 	}
 	.transparent-icons {
 		opacity: 0.5;
-	}
-	.invalid-option {
-		opacity: 0.5;
-		text-decoration: line-through;
 	}
 </style>
