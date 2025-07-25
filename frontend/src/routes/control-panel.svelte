@@ -1,12 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { PlayerController } from './player-controller.svelte';
 
 	let { controller = $bindable<PlayerController>() } = $props();
-
-	onMount(async () => {
-		await controller.initializeAsync();
-	});
 
 	async function confirmMarker() {
 		await controller.confirmMarkerAsync();
