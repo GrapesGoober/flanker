@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/rifle-squad": {
+    "/api/units": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,10 +12,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Rifle Squads
-         * @description Get all rifle squads for the player faction.
+         * Get Units
+         * @description Get all combat units for the player faction.
          */
-        get: operations["get_rifle_squads_api_rifle_squad_get"];
+        get: operations["get_units_api_units_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/terrain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Terrain
+         * @description Get all terrain tiles for the current game state.
+         */
+        get: operations["get_terrain_api_terrain_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -44,20 +64,20 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/terrain": {
+    "/api/fire": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Get Terrain
-         * @description Get all terrain tiles for the current game state.
-         */
-        get: operations["get_terrain_api_terrain_get"];
+        get?: never;
         put?: never;
-        post?: never;
+        /**
+         * Action Fire
+         * @description Move a unit and return updated rifle squads.
+         */
+        post: operations["action_fire_api_fire_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -68,25 +88,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** CombatUnitsViewState */
+        /**
+         * CombatUnitsViewState
+         * @description View state for all combat units in the game.
+         */
         CombatUnitsViewState: {
             /** Has Initiative */
             has_initiative: boolean;
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
         };
+        /**
+         * FireActionRequest
+         * @description Request model for a unit's fire action.
+         */
+        FireActionRequest: {
+            /** Unit Id */
+            unit_id: number;
+            /** Target Id */
+            target_id: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** MoveActionRequest */
+        /**
+         * MoveActionRequest
+         * @description Request model for a unit's move action.
+         */
         MoveActionRequest: {
             /** Unit Id */
             unit_id: number;
             to: components["schemas"]["Vec2"];
         };
-        /** SquadModel */
+        /**
+         * SquadModel
+         * @description Represents a single squad in the game.
+         */
         SquadModel: {
             /** Unit Id */
             unit_id: number;
@@ -94,13 +133,18 @@ export interface components {
             status: components["schemas"]["Status"];
             /** Is Friendly */
             is_friendly: boolean;
+            /** No Fire */
+            no_fire: boolean;
         };
         /**
          * Status
          * @enum {string}
          */
         Status: "ACTIVE" | "PINNED" | "SUPPRESSED";
-        /** TerrainModel */
+        /**
+         * TerrainModel
+         * @description Represents a terrain feature in the game.
+         */
         TerrainModel: {
             /** Feature Id */
             feature_id: number;
@@ -139,7 +183,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_rifle_squads_api_rifle_squad_get: {
+    get_units_api_units_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -155,6 +199,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CombatUnitsViewState"];
+                };
+            };
+        };
+    };
+    get_terrain_api_terrain_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TerrainModel"][];
                 };
             };
         };
@@ -192,14 +256,18 @@ export interface operations {
             };
         };
     };
-    get_terrain_api_terrain_get: {
+    action_fire_api_fire_post: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FireActionRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -207,7 +275,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TerrainModel"][];
+                    "application/json": components["schemas"]["CombatUnitsViewState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

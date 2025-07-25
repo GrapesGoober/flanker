@@ -34,7 +34,11 @@ class CombatUnitController:
         """Get all squads for a given faction as a view state."""
         faction = gs.get_component(faction_id, Faction)
         squads: list[SquadModel] = []
-        for ent, unit, transform in gs.query(CombatUnit, Transform):
+        for ent, unit, transform, fire in gs.query(
+            CombatUnit,
+            Transform,
+            FireControls,
+        ):
             unit_faction_id = FactionSystem.get_faction_id(gs, ent)
             squads.append(
                 SquadModel(
@@ -42,6 +46,7 @@ class CombatUnitController:
                     position=transform.position,
                     status=unit.status,
                     is_friendly=(unit_faction_id == faction_id),
+                    no_fire=not fire.can_reactive_fire,
                 )
             )
 
