@@ -33,7 +33,10 @@ class FireSystem:
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
 
         # Check if attacker and target are valid
-        if attacker_unit.status != CombatUnit.Status.ACTIVE:
+        if attacker_unit.status not in (
+            CombatUnit.Status.ACTIVE,
+            CombatUnit.Status.PINNED,
+        ):
             return FireResult(is_valid=False)
         if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
             return FireResult(is_valid=False)  # No initiative for reactive fire
