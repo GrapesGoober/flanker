@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import SvgMap from '$lib/map/svg-map.svelte';
 	import Arrow from '$lib/svg-icons/arrow.svelte';
@@ -9,10 +8,6 @@
 	let { controller = $bindable<PlayerController>() } = $props();
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
-
-	onMount(async () => {
-		await controller.initializeAsync();
-	});
 
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
