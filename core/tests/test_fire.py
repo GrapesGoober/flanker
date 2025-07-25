@@ -172,4 +172,4 @@ def test_status_supppressed(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result.is_hit == True, "SUPPRESSED unit can't do fire action"
+    assert fire_result.is_hit == False, "SUPPRESSED unit can't do fire action"
