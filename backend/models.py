@@ -1,11 +1,11 @@
-from dataclasses import dataclass
 from enum import Enum
+
+from pydantic import BaseModel
 from core.components import CombatUnit
 from core.utils.vec2 import Vec2
 
 
-@dataclass
-class SquadModel:
+class SquadModel(BaseModel):
     """Represents a single squad in the game."""
 
     unit_id: int
@@ -15,32 +15,28 @@ class SquadModel:
     no_fire: bool
 
 
-@dataclass
-class CombatUnitsViewState:
+class CombatUnitsViewState(BaseModel):
     """View state for all combat units in the game."""
 
     has_initiative: bool
     squads: list[SquadModel]
 
 
-@dataclass
-class MoveActionRequest:
+class MoveActionRequest(BaseModel):
     """Request model for a unit's move action."""
 
     unit_id: int
     to: Vec2
 
 
-@dataclass
-class FireActionRequest:
+class FireActionRequest(BaseModel):
     """Request model for a unit's fire action."""
 
     unit_id: int
     target_id: int
 
 
-@dataclass
-class TerrainModel:
+class TerrainModel(BaseModel):
     """Represents a terrain feature in the game."""
 
     feature_id: int

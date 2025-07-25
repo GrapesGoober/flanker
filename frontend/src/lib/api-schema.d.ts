@@ -88,14 +88,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** CombatUnitsViewState */
+        /**
+         * CombatUnitsViewState
+         * @description View state for all combat units in the game.
+         */
         CombatUnitsViewState: {
             /** Has Initiative */
             has_initiative: boolean;
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
         };
-        /** FireActionRequest */
+        /**
+         * FireActionRequest
+         * @description Request model for a unit's fire action.
+         */
         FireActionRequest: {
             /** Unit Id */
             unit_id: number;
@@ -107,13 +113,19 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** MoveActionRequest */
+        /**
+         * MoveActionRequest
+         * @description Request model for a unit's move action.
+         */
         MoveActionRequest: {
             /** Unit Id */
             unit_id: number;
             to: components["schemas"]["Vec2"];
         };
-        /** SquadModel */
+        /**
+         * SquadModel
+         * @description Represents a single squad in the game.
+         */
         SquadModel: {
             /** Unit Id */
             unit_id: number;
@@ -129,7 +141,10 @@ export interface components {
          * @enum {string}
          */
         Status: "ACTIVE" | "PINNED" | "SUPPRESSED";
-        /** TerrainModel */
+        /**
+         * TerrainModel
+         * @description Represents a terrain feature in the game.
+         */
         TerrainModel: {
             /** Feature Id */
             feature_id: number;
