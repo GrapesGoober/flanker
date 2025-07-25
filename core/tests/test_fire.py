@@ -20,6 +20,7 @@ class Fixture:
     target_id: int
     fire_controls: FireControls
     attacker_faction: Faction
+    attacker_unit: CombatUnit
 
 
 @pytest.fixture
@@ -33,7 +34,7 @@ def fixture() -> Fixture:
         Faction(has_initiative=False),
     )
     attacker_id = gs.add_entity(
-        CombatUnit(command_id=attacker_faction_id),
+        attacker_unit := CombatUnit(command_id=attacker_faction_id),
         fire_controls := FireControls(),
         Transform(position=Vec2(7.6, -10)),
     )
@@ -61,6 +62,7 @@ def fixture() -> Fixture:
         target_id=target_id,
         fire_controls=fire_controls,
         attacker_faction=faction,
+        attacker_unit=attacker_unit,
     )
 
 
@@ -151,3 +153,23 @@ def test_kill_fire(fixture: Fixture) -> None:
     assert (
         fixture.attacker_faction.has_initiative == True
     ), "Expects attacker to retain initiative"
+
+
+def test_status_pinned(fixture: Fixture) -> None:
+    fixture.attacker_unit.status = CombatUnit.Status.PINNED
+    fire_result = FireSystem.fire(
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
+    )
+    assert fire_result.is_hit == True, "PINNED unit can do fire action"
+
+
+def test_status_supppressed(fixture: Fixture) -> None:
+    fixture.attacker_unit.status = CombatUnit.Status.SUPPRESSED
+    fire_result = FireSystem.fire(
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
+    )
+    assert fire_result.is_hit == True, "SUPPRESSED unit can't do fire action"
