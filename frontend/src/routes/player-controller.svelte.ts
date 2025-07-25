@@ -70,7 +70,7 @@ export class PlayerController {
 		};
 	}
 
-	cancelMarker() {
+	closeSelection() {
 		this.state = {
 			type: 'default'
 		};
