@@ -157,6 +157,7 @@ def test_kill_fire(fixture: Fixture) -> None:
 
 def test_status_pinned(fixture: Fixture) -> None:
     fixture.attacker_unit.status = CombatUnit.Status.PINNED
+    fixture.fire_controls.override = FireControls.Outcomes.KILL
     fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
@@ -167,6 +168,7 @@ def test_status_pinned(fixture: Fixture) -> None:
 
 def test_status_supppressed(fixture: Fixture) -> None:
     fixture.attacker_unit.status = CombatUnit.Status.SUPPRESSED
+    fixture.fire_controls.override = FireControls.Outcomes.KILL
     fire_result = FireSystem.fire(
         fixture.gs,
         fixture.attacker_id,
