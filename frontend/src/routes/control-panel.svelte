@@ -27,9 +27,8 @@
 <svelte:window onkeydown={OnKeyDown} />
 
 {#if controller.state.type != 'default'}
-	<div class="info-box">
+	<div class="info-box white-translucent-box">
 		<button onclick={CancleMarker}>Cancel (c)</button>
-		<br />
 		<p>
 			Unit #{controller.state.selectedUnit.unitId},
 			{controller.state.selectedUnit.isFriendly ? 'Friendly' : 'Hostile'},
@@ -38,34 +37,42 @@
 		</p>
 	</div>
 
-	<div class="action-box">
-		<button onclick={ConfirmMarker} class={controller.isMoveValid() ? '' : 'invalid-option'}
-			>Move (m)</button
-		>
-		<button onclick={ConfirmMarker} class={controller.isFireValid() ? '' : 'invalid-option'}
-			>Fire (f)</button
-		>
+	<div class="action-box white-translucent-box">
+		<button onclick={ConfirmMarker} class={controller.isMoveValid() ? '' : 'invalid-button'}>
+			Move (m)
+		</button>
+		<button onclick={ConfirmMarker} class={controller.isFireValid() ? '' : 'invalid-button'}>
+			Fire (f)
+		</button>
 	</div>
 {/if}
 
 <style lang="less">
+	@spacing: 1em;
+
 	* {
-		font-size: large;
 		font-family: Verdana, Geneva, Tahoma, sans-serif;
+		display: block;
+		margin: @spacing;
 	}
+
+	.white-translucent-box {
+		background-color: rgba(255, 255, 255, 0.3);
+		border: 1px solid rgba(0, 0, 0, 0.3);
+	}
+
 	.action-box {
 		position: absolute;
-		top: 0%;
-		right: 0%;
-		padding: 1em;
+		top: 0px;
+		right: 0px;
 	}
 	.info-box {
 		position: absolute;
-		top: 0%;
-		left: 0%;
-		padding: 1em;
+		top: 0px;
+		left: 0px;
 	}
-	.invalid-option {
+
+	.invalid-button {
 		opacity: 0.5;
 		text-decoration: line-through;
 	}
