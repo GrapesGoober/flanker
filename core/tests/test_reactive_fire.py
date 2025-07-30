@@ -116,7 +116,7 @@ def test_interrupt_pin(fixture: Fixture) -> None:
         8, -10
     ), "Move action expects to be interrupted at Vec2(8, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
-    assert unit.status == CombatUnit.status.PINNED, "Target expects to be pinned"
+    assert unit.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
         fixture.hostile_faction.has_initiative == False
     ), "PINNED reactive fire must maintain initiative."
@@ -134,7 +134,7 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
     ), "Move action expects to be interrupted at Vec2(8, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
     assert (
-        unit.status == CombatUnit.status.SUPPRESSED
+        unit.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
         fixture.hostile_faction.has_initiative == True
