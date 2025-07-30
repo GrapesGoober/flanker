@@ -49,3 +49,8 @@ class SceneManager:
             player_faction_id=player_faction,
             opponent_faction_id=opponent_faction,
         )
+
+    @staticmethod
+    def save_scene(gs: GameState) -> None:
+        with open("entities.json", "w") as f:
+            f.write(gs.save())

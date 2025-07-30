@@ -56,3 +56,9 @@ async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
         context.gs,
         context.player_faction_id,
     )
+
+
+@app.post("/api/editor/save")
+async def save_scene() -> None:
+    """Save the scene."""
+    SceneManager.save_scene(context.gs)
