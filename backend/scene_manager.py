@@ -19,7 +19,7 @@ class SceneContext:
 class SceneManager:
 
     @staticmethod
-    def load_scene() -> SceneContext:
+    def load_scene(path: str) -> SceneContext:
         manifest: list[type[Any]] = []
         for _, cls in vars(components).items():
             if isclass(cls) and is_dataclass(cls):
@@ -29,7 +29,7 @@ class SceneManager:
         manifest.append(CombatUnitController.PlayerFactionTag)
         manifest.append(CombatUnitController.OpponentFactionTag)
 
-        with open("entities.json", "r") as f:
+        with open(path, "r") as f:
             gs = GameState.load(f.read(), manifest)
 
         player_faction: int | None = None
@@ -51,6 +51,6 @@ class SceneManager:
         )
 
     @staticmethod
-    def save_scene(gs: GameState) -> None:
-        with open("entities.json", "w") as f:
+    def save_scene(path: str, gs: GameState) -> None:
+        with open(path, "w") as f:
             f.write(gs.save())

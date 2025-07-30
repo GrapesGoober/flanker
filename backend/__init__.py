@@ -9,7 +9,8 @@ from backend.combat_unit_controller import CombatUnitController, CombatUnitsView
 from backend.scene_manager import SceneManager
 from backend.terrain_controller import TerrainController
 
-context = SceneManager.load_scene()
+SCENE_PATH = "./scenes/demo.json"
+context = SceneManager.load_scene(SCENE_PATH)
 app = FastAPI()
 
 
@@ -61,4 +62,4 @@ async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
 @app.post("/api/editor/save")
 async def save_scene() -> None:
     """Save the scene."""
-    SceneManager.save_scene(context.gs)
+    SceneManager.save_scene(SCENE_PATH, context.gs)
