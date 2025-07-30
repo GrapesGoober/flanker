@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from core.component import component
 from core.components import TerrainFeature, Transform
 from core.utils.vec2 import Vec2
 from core.gamestate import GameState
@@ -9,7 +9,7 @@ from core.utils.linear_transform import LinearTransform
 class TerrainController:
     """Provides static methods to manipulate and query terrain features."""
 
-    @dataclass
+    @component
     class TypeTag:
         """Tag for terrain type on an entity."""
 

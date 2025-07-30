@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
+from core.component import component
 from core.utils.vec2 import Vec2
 
 
-@dataclass
+@component
 class Transform:
     """
     Holds spatial data for 2D entities. Used by rendering, movement,
@@ -15,7 +15,7 @@ class Transform:
     angle: float = 0
 
 
-@dataclass
+@component
 class CombatUnit:
     """
     Marks an entity as a direct combat-capable unit.
@@ -31,7 +31,7 @@ class CombatUnit:
     status: Status = Status.ACTIVE
 
 
-@dataclass
+@component
 class Faction:
     """
     Marks a unit as a faction commander. Entity with this component
@@ -41,7 +41,7 @@ class Faction:
     has_initiative: bool
 
 
-@dataclass
+@component
 class MoveControls:
     """
     Marks entity as movable, along with its. Used by move action to
@@ -55,7 +55,7 @@ class MoveControls:
     ...
 
 
-@dataclass
+@component
 class FireControls:
     """
     Marks an entity as capable for fire action.
@@ -72,7 +72,7 @@ class FireControls:
     can_reactive_fire: bool = True
 
 
-@dataclass
+@component
 class TerrainFeature:
     """
     Represents a polygonal terrain feature with terrain type bit flags.
