@@ -1,15 +1,15 @@
 from fastapi import FastAPI
 from backend.action_controller import ActionController
-from backend.scene import new_scene
 from backend.models import (
     FireActionRequest,
     TerrainModel,
     MoveActionRequest,
 )
 from backend.combat_unit_controller import CombatUnitController, CombatUnitsViewState
+from backend.scene_manager import SceneManager
 from backend.terrain_controller import TerrainController
 
-context = new_scene()
+context = SceneManager.load_scene()
 app = FastAPI()
 
 

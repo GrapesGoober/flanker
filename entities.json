@@ -189,7 +189,7 @@
     "Faction": {
       "has_initiative": false
     },
-    "HostileFactionTag": {}
+    "OpponentFactionTag": {}
   },
   "11": {
     "Transform": {

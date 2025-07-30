@@ -19,7 +19,7 @@ class CombatUnitController:
     class PlayerFactionTag: ...
 
     @dataclass
-    class HostileFactionTag: ...
+    class OpponentFactionTag: ...
 
     @staticmethod
     def add_player_faction(gs: GameState, has_initiative: bool) -> int:
@@ -34,7 +34,7 @@ class CombatUnitController:
         """Add a new faction to the game state."""
         return gs.add_entity(
             Faction(has_initiative),
-            CombatUnitController.HostileFactionTag(),
+            CombatUnitController.OpponentFactionTag(),
         )
 
     @staticmethod
