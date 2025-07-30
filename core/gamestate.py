@@ -1,6 +1,7 @@
 import json
 from typing import Any, Iterable, Iterator, overload
-from core.component import COMP_ADAPTERS, COMP_KEYS, COMP_TYPES
+
+from pydantic import TypeAdapter
 
 
 class GameState:
@@ -61,15 +62,20 @@ class GameState:
                 ):  # Check all component types exist
                     yield (entity_id, *(components[ct] for ct in component_types))
 
-    def save(self) -> str:
+    def save(self, manifest: list[type]) -> str:
+
+        adapters: dict[type, TypeAdapter[Any]] = {}
+        for comp_type in manifest:
+            adapters[comp_type] = TypeAdapter(comp_type)
+
         serialized = {}
         for entity_id, components in self._entities.items():
             serialized[entity_id] = {}
             for comp_type, comp_instance in components.items():
-                if comp_type not in COMP_KEYS:
-                    raise ValueError(f"Component {comp_type} is not registered")
-                comp_key = COMP_KEYS[comp_type]
-                comp_adapter = COMP_ADAPTERS[comp_key]
+                if comp_type not in adapters:
+                    raise ValueError(f"Component {comp_type} is not in manifest")
+                comp_adapter = adapters[comp_type]
+                comp_key = comp_type.__name__
                 serialized[entity_id][comp_key] = comp_adapter.dump_python(
                     comp_instance, mode="json"
                 )
@@ -77,22 +83,23 @@ class GameState:
         return json.dumps(serialized, indent=2)
 
     @staticmethod
-    def load(data: str) -> "GameState":
+    def load(data: str, manifest: list[type]) -> "GameState":
         raw = json.loads(data)
         gs = GameState()
+
+        adapters: dict[str, TypeAdapter[Any]] = {}
+        for comp_type in manifest:
+            adapters[comp_type.__name__] = TypeAdapter(comp_type)
 
         for entity_id_str, components_raw in raw.items():
             entity_id = int(entity_id_str)
             entity_components: dict[type[Any], Any] = {}
-
-            for comp_key, comp_values in components_raw.items():
-                if comp_key not in COMP_ADAPTERS:
-                    raise ValueError(f"Component {comp_key} is not registered")
-
-                adapter = COMP_ADAPTERS[comp_key]
+            for comp_name, comp_values in components_raw.items():
+                if comp_name not in adapters:
+                    raise ValueError(f"Component {comp_name} is not registered")
+                adapter = adapters[comp_name]
                 comp_instance = adapter.validate_python(comp_values)
-                comp_type: type[Any] = COMP_TYPES[comp_key]
-                entity_components[comp_type] = comp_instance
+                entity_components[type(comp_instance)] = comp_instance
 
             gs._entities[entity_id] = entity_components
             if entity_id > gs._id_counter:
