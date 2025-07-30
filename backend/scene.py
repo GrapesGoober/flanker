@@ -20,7 +20,7 @@ def new_scene() -> SceneContext:
     gs = GameState()
 
     # Add squads
-    faction_id = CombatUnitController.add_faction(gs, has_initiative=True)
+    faction_id = CombatUnitController.add_player_faction(gs, has_initiative=True)
 
     # First Platoon
     CombatUnitController.add_squad(gs, Vec2(110, 60), faction_id)
@@ -38,7 +38,9 @@ def new_scene() -> SceneContext:
     CombatUnitController.add_squad(gs, Vec2(170, 90), faction_id)
 
     # Hostile Squad
-    opponent_faction_id = CombatUnitController.add_faction(gs, has_initiative=False)
+    opponent_faction_id = CombatUnitController.add_hostile_faction(
+        gs, has_initiative=False
+    )
     CombatUnitController.add_squad(gs, Vec2(397, 421), opponent_faction_id)
 
     # Northern Road Buildings

@@ -2,7 +2,8 @@
   "0": {
     "Faction": {
       "has_initiative": true
-    }
+    },
+    "PlayerFactionTag": {}
   },
   "1": {
     "Transform": {
@@ -187,7 +188,8 @@
   "10": {
     "Faction": {
       "has_initiative": false
-    }
+    },
+    "HostileFactionTag": {}
   },
   "11": {
     "Transform": {

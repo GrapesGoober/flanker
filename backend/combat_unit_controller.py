@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from core.faction_system import FactionSystem
 from core.components import (
     Faction,
@@ -14,10 +15,27 @@ from backend.models import CombatUnitsViewState, SquadModel
 class CombatUnitController:
     """Provides static methods to add and query combat units and factions."""
 
+    @dataclass
+    class PlayerFactionTag: ...
+
+    @dataclass
+    class HostileFactionTag: ...
+
     @staticmethod
-    def add_faction(gs: GameState, has_initiative: bool) -> int:
+    def add_player_faction(gs: GameState, has_initiative: bool) -> int:
         """Add a new faction to the game state."""
-        return gs.add_entity(Faction(has_initiative))
+        return gs.add_entity(
+            Faction(has_initiative),
+            CombatUnitController.PlayerFactionTag(),
+        )
+
+    @staticmethod
+    def add_hostile_faction(gs: GameState, has_initiative: bool) -> int:
+        """Add a new faction to the game state."""
+        return gs.add_entity(
+            Faction(has_initiative),
+            CombatUnitController.HostileFactionTag(),
+        )
 
     @staticmethod
     def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
