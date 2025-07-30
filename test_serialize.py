@@ -21,4 +21,4 @@ with open("entities.json", "r") as f:
     gs = GameState.load(f.read(), manifest)
 
 with open("entities.json", "w") as f:
-    f.write(gs.save(manifest))
+    f.write(gs.save())

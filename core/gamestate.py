@@ -62,19 +62,12 @@ class GameState:
                 ):  # Check all component types exist
                     yield (entity_id, *(components[ct] for ct in component_types))
 
-    def save(self, manifest: list[type]) -> str:
-
-        adapters: dict[type, TypeAdapter[Any]] = {}
-        for comp_type in manifest:
-            adapters[comp_type] = TypeAdapter(comp_type)
-
+    def save(self) -> str:
         serialized = {}
         for entity_id, components in self._entities.items():
             serialized[entity_id] = {}
             for comp_type, comp_instance in components.items():
-                if comp_type not in adapters:
-                    raise ValueError(f"Component {comp_type} is not in manifest")
-                comp_adapter = adapters[comp_type]
+                comp_adapter = TypeAdapter(comp_type)
                 comp_key = comp_type.__name__
                 serialized[entity_id][comp_key] = comp_adapter.dump_python(
                     comp_instance, mode="json"
@@ -83,12 +76,12 @@ class GameState:
         return json.dumps(serialized, indent=2)
 
     @staticmethod
-    def load(data: str, manifest: list[type]) -> "GameState":
+    def load(data: str, component_types: list[type]) -> "GameState":
         raw = json.loads(data)
         gs = GameState()
 
         adapters: dict[str, TypeAdapter[Any]] = {}
-        for comp_type in manifest:
+        for comp_type in component_types:
             adapters[comp_type.__name__] = TypeAdapter(comp_type)
 
         for entity_id_str, components_raw in raw.items():
@@ -96,7 +89,7 @@ class GameState:
             entity_components: dict[type[Any], Any] = {}
             for comp_name, comp_values in components_raw.items():
                 if comp_name not in adapters:
-                    raise ValueError(f"Component {comp_name} is not registered")
+                    raise ValueError(f"Component {comp_name} is not recognized")
                 adapter = adapters[comp_name]
                 comp_instance = adapter.validate_python(comp_values)
                 entity_components[type(comp_instance)] = comp_instance
