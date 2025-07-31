@@ -20,17 +20,17 @@ class SceneManager:
 
     @staticmethod
     def load_scene(path: str) -> SceneContext:
-        manifest: list[type[Any]] = []
+        component_types: list[type[Any]] = []
         for _, cls in vars(components).items():
             if isclass(cls) and is_dataclass(cls):
-                manifest.append(cls)
+                component_types.append(cls)
 
-        manifest.append(TerrainController.TypeTag)
-        manifest.append(CombatUnitController.PlayerFactionTag)
-        manifest.append(CombatUnitController.OpponentFactionTag)
+        component_types.append(TerrainController.TypeTag)
+        component_types.append(CombatUnitController.PlayerFactionTag)
+        component_types.append(CombatUnitController.OpponentFactionTag)
 
         with open(path, "r") as f:
-            gs = GameState.load(f.read(), manifest)
+            gs = GameState.load(f.read(), component_types)
 
         player_faction: int | None = None
         for id, _ in gs.query(CombatUnitController.PlayerFactionTag):
