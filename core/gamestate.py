@@ -1,7 +1,5 @@
-import json
 from typing import Any, Iterable, Iterator, overload
-
-from pydantic import TypeAdapter
+from core.serializer import Serializer
 
 
 class GameState:
@@ -64,50 +62,11 @@ class GameState:
 
     def save(self) -> str:
         """Saves game state to json string."""
-        # Maps each key=entity to its value=components
-        serialized: dict[int, dict[str, Any]] = {}
-        for entity_id, components in self._entities.items():
-            serialized[entity_id] = {}
-            # For each component, serialize using TypeAdapter
-            for comp_type, comp_instance in components.items():
-                comp_adapter = TypeAdapter(comp_type)
-                comp_key = comp_type.__name__
-                serialized[entity_id][comp_key] = comp_adapter.dump_python(
-                    comp_instance, mode="json"
-                )
-
-        return json.dumps(serialized, indent=2)
+        return Serializer.serialize(self._entities, self._id_counter)
 
     @staticmethod
     def load(data: str, component_types: list[type]) -> "GameState":
         """Loads game state from json string."""
-
-        # Data maps each key=entity to its value=components
-        # Note that entity ids are int, but JSON serialize as str
-        raw: dict[str, dict[str, Any]] = json.loads(data)
         gs = GameState()
-
-        # Generate type adapter for each component class name
-        adapters: dict[str, TypeAdapter[Any]] = {}
-        for comp_type in component_types:
-            adapters[comp_type.__name__] = TypeAdapter(comp_type)
-
-        # Loop through each entity to serialize its components
-        for entity_id_str, components_raw in raw.items():
-            entity_id = int(entity_id_str)
-            entity_components: dict[type[Any], Any] = {}
-
-            # For each component (key=class name, value=data),
-            # take the type adapter of that component
-            for comp_name, comp_values in components_raw.items():
-                if comp_name not in adapters:
-                    raise ValueError(f"Component {comp_name} is not recognized")
-                adapter = adapters[comp_name]
-                comp_instance = adapter.validate_python(comp_values)
-                entity_components[type(comp_instance)] = comp_instance
-
-            gs._entities[entity_id] = entity_components
-            if entity_id > gs._id_counter:
-                gs._id_counter = entity_id
-
+        gs._id_counter, gs._entities = Serializer.deserialize(data, component_types)
         return gs
