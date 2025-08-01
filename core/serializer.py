@@ -1,13 +1,22 @@
 from pydantic import BaseModel, create_model
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 
 class Serializer:
+    """Static class game state's entity-components serialization mechanism."""
+
+    class FileDataType(BaseModel):
+        """Defines the output file data structure for serialization"""
+
+        id_counter: int
+        entities: dict[int, BaseModel]
 
     @staticmethod
-    def build_schema(
+    def _build_schema(
         component_types: list[type],
-    ) -> tuple[type[BaseModel], type[BaseModel]]:
+    ) -> tuple[type[BaseModel], type[FileDataType]]:
+        """Build (EntityComponent, FileData) schemas using component types."""
+
         component_fields: dict[str, Any] = {
             t.__name__: (Optional[t], None) for t in component_types
         }
@@ -15,38 +24,41 @@ class Serializer:
         FileData = create_model(
             "FileData", id_counter=int, entities=dict[int, EntityComponent]
         )
-        return EntityComponent, FileData
+        # The dynamically built FileData type must conform to _FileDataType
+        return EntityComponent, cast(type[Serializer.FileDataType], FileData)
 
     @staticmethod
     def serialize(entities: dict[int, dict[type, Any]], id_counter: int) -> str:
+        """Serialises entity-component table & id counter to json string"""
+
         # Define file schema models using existing components
-        EntityComponent, FileData = Serializer.build_schema(
+        EntityComponent, FileData = Serializer._build_schema(
             [comp_type for comps in entities.values() for comp_type in comps]
         )
 
         # Convert entities to using EntityComponent models
-        entity_models = {
-            entity_id: EntityComponent(
-                **{comp.__class__.__name__: comp for comp in comps.values()}
-            )
-            for entity_id, comps in entities.items()
-        }
+        file_data = FileData(
+            id_counter=id_counter,
+            entities={
+                entity_id: EntityComponent(
+                    **{comp.__class__.__name__: comp for comp in comps.values()}
+                )
+                for entity_id, comps in entities.items()
+            },
+        )
 
         # Serialize with nulls excluded
-        return FileData(
-            entities=entity_models,
-            id_counter=id_counter,
-        ).model_dump_json(indent=2, exclude_none=True)
+        return file_data.model_dump_json(indent=2, exclude_none=True)
 
     @staticmethod
     def deserialize(
         json_data: str, component_types: list[type]
-    ) -> tuple[int, dict[int, dict[type, Any]]]:
+    ) -> tuple[dict[int, dict[type, Any]], int]:
+        """Deerialises entity-component table & id counter from json string"""
+
         # Serialize with nulls excluded
-        EntityComponent, FileData = Serializer.build_schema(component_types)
+        EntityComponent, FileData = Serializer._build_schema(component_types)
         file_data = FileData.model_validate_json(json_data)
-        entities_data: dict[int, BaseModel] = getattr(file_data, "entities")
-        id_counter: int = getattr(file_data, "id_counter")
 
         # Convert EntityComponent models to dict[type, Any] components
         entities: dict[int, dict[type, Any]] = {
@@ -55,7 +67,6 @@ class Serializer:
                 for comp_name in EntityComponent.model_fields.keys()
                 if (comp_obj := getattr(entity_components, comp_name)) is not None
             }
-            for entity_id, entity_components in entities_data.items()
+            for entity_id, entity_components in file_data.entities.items()
         }
-
-        return id_counter, entities
+        return entities, file_data.id_counter

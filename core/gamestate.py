@@ -68,5 +68,5 @@ class GameState:
     def load(data: str, component_types: list[type]) -> "GameState":
         """Loads game state from json string."""
         gs = GameState()
-        gs._id_counter, gs._entities = Serializer.deserialize(data, component_types)
+        gs._entities, gs._id_counter = Serializer.deserialize(data, component_types)
         return gs
