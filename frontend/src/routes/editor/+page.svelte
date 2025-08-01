@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { getTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
 	import SvgMap from '$lib/map/svg-map.svelte';
+	import EditorTerrainFeatures from './editor-terrain-features.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let terrainData: TerrainFeatureData[] = $state([]);
@@ -52,13 +53,14 @@
 </script>
 
 {#snippet mapSvgSnippet()}
+	<EditorTerrainFeatures {terrainData} />
 	<polygon points={ToSvgString(coords)} class="editor" />
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div onclick={AddVertex}>
-	<SvgMap svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
+	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
 </div>
 
 <button onclick={refreshTerrainData} style="margin-bottom: 1em;">Refresh</button>

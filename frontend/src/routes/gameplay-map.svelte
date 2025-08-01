@@ -4,6 +4,7 @@
 	import Arrow from '$lib/svg-icons/arrow.svelte';
 	import { PlayerController } from './player-controller.svelte';
 	import BlankUnit from '$lib/svg-icons/blank-unit.svelte';
+	import TerrainFeatures from './terrain-features.svelte';
 
 	let { controller = $bindable<PlayerController>() } = $props();
 	let map: SvgMap | null = $state(null);
@@ -27,6 +28,9 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
+	<TerrainFeatures terrainData={controller.terrainData} />
+
+	<!-- Defines overlay for gameplay icons -->
 	<g class="transparent-icons">
 		{#if controller.state.type !== 'default'}
 			{@const selectedUnit = controller.state.selectedUnit}
@@ -47,6 +51,7 @@
 		{/if}
 	</g>
 
+	<!-- Draw combat units -->
 	{#each controller.unitData.squads as unit, index}
 		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
 			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
@@ -57,7 +62,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div bind:this={clickTarget} onclick={AddMarker}>
-	<SvgMap svgSnippet={mapSvgSnippet} terrainData={controller.terrainData} bind:this={map} />
+	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
 </div>
 
 <style lang="less">
