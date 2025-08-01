@@ -5,12 +5,9 @@ from typing import Any, Optional
 class Serializer:
 
     @staticmethod
-    def serialize(entities: dict[int, dict[type, Any]], id_counter: int) -> str:
-        # Extract unique component types
-        component_types: list[type] = [
-            comp_type for comps in entities.values() for comp_type in comps
-        ]
-        # Define file schema models using component fields
+    def build_schema(
+        component_types: list[type],
+    ) -> tuple[type[BaseModel], type[BaseModel]]:
         component_fields: dict[str, Any] = {
             t.__name__: (Optional[t], None) for t in component_types
         }
@@ -18,9 +15,17 @@ class Serializer:
         FileData = create_model(
             "FileData", id_counter=int, entities=dict[int, EntityComponent]
         )
+        return EntityComponent, FileData
+
+    @staticmethod
+    def serialize(entities: dict[int, dict[type, Any]], id_counter: int) -> str:
+        # Define file schema models using existing components
+        EntityComponent, FileData = Serializer.build_schema(
+            [comp_type for comps in entities.values() for comp_type in comps]
+        )
 
         # Convert entities to using EntityComponent models
-        typed_entities = {
+        entity_models = {
             entity_id: EntityComponent(
                 **{comp.__class__.__name__: comp for comp in comps.values()}
             )
@@ -29,7 +34,7 @@ class Serializer:
 
         # Serialize with nulls excluded
         return FileData(
-            entities=typed_entities,
+            entities=entity_models,
             id_counter=id_counter,
         ).model_dump_json(indent=2, exclude_none=True)
 
@@ -37,17 +42,8 @@ class Serializer:
     def deserialize(
         json_data: str, component_types: list[type]
     ) -> tuple[int, dict[int, dict[type, Any]]]:
-
-        # Define file schema models using component fields
-        component_fields: dict[str, Any] = {
-            t.__name__: (Optional[t], None) for t in component_types
-        }
-        EntityComponent = create_model("EntityComponent", **component_fields)
-        FileData = create_model(
-            "FileData", id_counter=int, entities=dict[int, EntityComponent]
-        )
-
         # Serialize with nulls excluded
+        EntityComponent, FileData = Serializer.build_schema(component_types)
         file_data = FileData.model_validate_json(json_data)
         entities_data: dict[int, BaseModel] = getattr(file_data, "entities")
         id_counter: int = getattr(file_data, "id_counter")
