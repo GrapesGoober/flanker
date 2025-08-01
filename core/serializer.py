@@ -3,7 +3,7 @@ from typing import Any, Optional, cast
 
 
 class Serializer:
-    """Static class game state's entity-components serialization mechanism."""
+    """Static class for game state's entity-components serialization."""
 
     class FileDataType(BaseModel):
         """Defines the output file data structure for serialization"""
