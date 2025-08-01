@@ -69,7 +69,7 @@
 				<!-- Forest has separate dashed border (so that it rests inside) -->
 				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest" />
 				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest-border" />
-				{#each generatePointsInsidePolygon(terrain.coordinates, 30, 20) as p}
+				{#each generatePointsInsidePolygon(terrain.coordinates, 20, 15) as p}
 					<g transform="translate({p.x}, {p.y})">
 						<TreeTriangle />
 					</g>
