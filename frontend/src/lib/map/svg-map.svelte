@@ -78,10 +78,15 @@
 				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="field" />
 			{:else if terrain.terrainType == 'WATER'}
 				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="water" />
-			{:else if terrain.terrainType == 'BUILDING'}
-				<path d={GetClosedPath(terrain.coordinates)} class="building" />
 			{:else if terrain.terrainType == 'ROAD'}
 				<path d={GetSmoothedPath(terrain.coordinates, 0.7)} class="terrain-road" />
+			{/if}
+		{/each}
+
+		<!-- Buildings drawn on top of other polygons -->
+		{#each props.terrainData as terrain}
+			{#if terrain.terrainType == 'BUILDING'}
+				<path d={GetClosedPath(terrain.coordinates)} class="building" />
 			{/if}
 		{/each}
 
