@@ -1,4 +1,5 @@
 from typing import Any, Iterable, Iterator, overload
+from core.serializer import Serializer
 
 
 class GameState:
@@ -58,3 +59,14 @@ class GameState:
                     ct in components for ct in component_types
                 ):  # Check all component types exist
                     yield (entity_id, *(components[ct] for ct in component_types))
+
+    def save(self) -> str:
+        """Saves game state to json string."""
+        return Serializer.serialize(self._entities, self._id_counter)
+
+    @staticmethod
+    def load(data: str, component_types: list[type]) -> "GameState":
+        """Loads game state from json string."""
+        gs = GameState()
+        gs._entities, gs._id_counter = Serializer.deserialize(data, component_types)
+        return gs
