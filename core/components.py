@@ -7,7 +7,7 @@ from core.utils.vec2 import Vec2
 class Transform:
     """
     Holds spatial data for 2D entities. Used by rendering, movement,
-    combat mechanics, etc. The existence of this dataclass implies
+    combat mechanics, etc. The existence of this component implies
     that the entity can be visualized in 2D space.
     """
 
@@ -34,7 +34,7 @@ class CombatUnit:
 @dataclass
 class Faction:
     """
-    Marks a unit as a faction commander. Entity with this dataclass
+    Marks a unit as a faction commander. Entity with this component
     is expected to be the root node of the command hierarchy tree.
     """
 
