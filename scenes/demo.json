@@ -15,15 +15,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "2": {
@@ -34,15 +34,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "3": {
@@ -53,15 +53,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "4": {
@@ -72,15 +72,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "5": {
@@ -91,15 +91,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "6": {
@@ -110,15 +110,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "7": {
@@ -129,15 +129,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "8": {
@@ -148,15 +148,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "9": {
@@ -167,22 +167,22 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 0,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 0,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "10": {
-      "OpponentFactionTag": {},
       "Faction": {
         "has_initiative": false
-      }
+      },
+      "OpponentFactionTag": {}
     },
     "11": {
       "Transform": {
@@ -192,15 +192,15 @@
         },
         "angle": 0.0
       },
-      "FireControls": {
-        "can_reactive_fire": true
+      "CombatUnit": {
+        "command_id": 10,
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
-      "CombatUnit": {
-        "command_id": 10,
-        "status": "ACTIVE"
+      "FireControls": {
+        "can_reactive_fire": true
       }
     },
     "12": {
@@ -211,9 +211,6 @@
         },
         "angle": 55.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -234,6 +231,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "13": {
@@ -244,9 +244,6 @@
         },
         "angle": -35.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -267,6 +264,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "14": {
@@ -277,9 +277,6 @@
         },
         "angle": -45.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -300,6 +297,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "15": {
@@ -310,9 +310,6 @@
         },
         "angle": -25.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -333,6 +330,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "16": {
@@ -343,9 +343,6 @@
         },
         "angle": -20.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -366,6 +363,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "17": {
@@ -376,9 +376,6 @@
         },
         "angle": 50.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -399,6 +396,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "18": {
@@ -409,9 +409,6 @@
         },
         "angle": 70.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -432,6 +429,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "19": {
@@ -442,9 +442,6 @@
         },
         "angle": 45.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -465,6 +462,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "20": {
@@ -475,9 +475,6 @@
         },
         "angle": 0.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -498,6 +495,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "21": {
@@ -508,9 +508,6 @@
         },
         "angle": 135.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -531,6 +528,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "22": {
@@ -540,9 +540,6 @@
           "y": -94.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "ROAD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -616,6 +613,9 @@
           }
         ],
         "flag": 6
+      },
+      "TypeTag": {
+        "type": "ROAD"
       }
     },
     "23": {
@@ -625,9 +625,6 @@
           "y": 454.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "ROAD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -689,6 +686,9 @@
           }
         ],
         "flag": 6
+      },
+      "TypeTag": {
+        "type": "ROAD"
       }
     },
     "24": {
@@ -698,9 +698,6 @@
           "y": 529.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "ROAD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -754,6 +751,9 @@
           }
         ],
         "flag": 6
+      },
+      "TypeTag": {
+        "type": "ROAD"
       }
     },
     "25": {
@@ -763,9 +763,6 @@
           "y": 78.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -835,6 +832,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "26": {
@@ -844,9 +844,6 @@
           "y": 302.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -896,6 +893,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "27": {
@@ -905,9 +905,6 @@
           "y": 52.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -969,6 +966,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "28": {
@@ -978,9 +978,6 @@
           "y": 414.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1066,6 +1063,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "29": {
@@ -1075,9 +1075,6 @@
           "y": 268.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1143,6 +1140,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "30": {
@@ -1152,9 +1152,6 @@
           "y": 222.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1228,6 +1225,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "31": {
@@ -1237,9 +1237,6 @@
           "y": 31.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1305,6 +1302,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "32": {
@@ -1314,9 +1314,6 @@
           "y": 421.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1366,6 +1363,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "33": {
@@ -1375,9 +1375,6 @@
           "y": 358.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1435,6 +1432,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "34": {
@@ -1444,9 +1444,6 @@
           "y": 418.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1492,6 +1489,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "35": {
@@ -1501,9 +1501,6 @@
           "y": 513.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1553,6 +1550,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "36": {
@@ -1562,9 +1562,6 @@
           "y": 381.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1634,6 +1631,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "37": {
@@ -1643,9 +1643,6 @@
           "y": 414.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1695,6 +1692,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "38": {
@@ -1704,9 +1704,6 @@
           "y": 360.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1764,6 +1761,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "39": {
@@ -1773,9 +1773,6 @@
           "y": 265.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1837,6 +1834,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "40": {
@@ -1846,9 +1846,6 @@
           "y": 327.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -1926,6 +1923,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "41": {
@@ -1935,9 +1935,6 @@
           "y": 701.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2019,6 +2016,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "42": {
@@ -2028,9 +2028,6 @@
           "y": 569.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2120,6 +2117,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "43": {
@@ -2129,9 +2129,6 @@
           "y": 620.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2205,6 +2202,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "44": {
@@ -2214,9 +2214,6 @@
           "y": 739.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2298,6 +2295,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "45": {
@@ -2307,9 +2307,6 @@
           "y": 634.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2411,6 +2408,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "46": {
@@ -2420,9 +2420,6 @@
           "y": 786.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2528,6 +2525,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "47": {
@@ -2537,9 +2537,6 @@
           "y": 618.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2641,6 +2638,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "48": {
@@ -2650,9 +2650,6 @@
           "y": 783.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FIELD"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2730,6 +2727,9 @@
           }
         ],
         "flag": 2
+      },
+      "TypeTag": {
+        "type": "FIELD"
       }
     },
     "49": {
@@ -2740,9 +2740,6 @@
         },
         "angle": -70.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -2763,6 +2760,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "50": {
@@ -2773,9 +2773,6 @@
         },
         "angle": 10.0
       },
-      "TypeTag": {
-        "type": "BUILDING"
-      },
       "TerrainFeature": {
         "vertices": [
           {
@@ -2796,6 +2793,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "BUILDING"
       }
     },
     "51": {
@@ -2805,9 +2805,6 @@
           "y": 639.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2885,6 +2882,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "52": {
@@ -2894,9 +2894,6 @@
           "y": 561.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -2954,6 +2951,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "53": {
@@ -2963,9 +2963,6 @@
           "y": 680.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -3031,6 +3028,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "54": {
@@ -3041,12 +3041,12 @@
         },
         "angle": 0.0
       },
-      "TypeTag": {
-        "type": "FOREST"
-      },
       "TerrainFeature": {
         "vertices": [],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "55": {
@@ -3056,9 +3056,6 @@
           "y": 644.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -3172,6 +3169,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "56": {
@@ -3181,9 +3181,6 @@
           "y": 755.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -3237,6 +3234,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     },
     "57": {
@@ -3246,9 +3246,6 @@
           "y": 737.0
         },
         "angle": 0.0
-      },
-      "TypeTag": {
-        "type": "FOREST"
       },
       "TerrainFeature": {
         "vertices": [
@@ -3322,6 +3319,9 @@
           }
         ],
         "flag": 3
+      },
+      "TypeTag": {
+        "type": "FOREST"
       }
     }
   }

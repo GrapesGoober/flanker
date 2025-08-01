@@ -7,18 +7,16 @@ class Serializer:
     @staticmethod
     def serialize(entities: dict[int, dict[type, Any]], id_counter: int) -> str:
         # Extract unique component types
-        component_types: set[type] = {
+        component_types: list[type] = [
             comp_type for comps in entities.values() for comp_type in comps
-        }
+        ]
         # Define file schema models using component fields
         component_fields: dict[str, Any] = {
             t.__name__: (Optional[t], None) for t in component_types
         }
         EntityComponent = create_model("EntityComponent", **component_fields)
         FileData = create_model(
-            "FileData",
-            id_counter=(int, ...),
-            entities=(dict[int, EntityComponent], ...),
+            "FileData", id_counter=int, entities=dict[int, EntityComponent]
         )
 
         # Convert entities to using EntityComponent models
@@ -46,9 +44,7 @@ class Serializer:
         }
         EntityComponent = create_model("EntityComponent", **component_fields)
         FileData = create_model(
-            "FileData",
-            id_counter=(int, ...),
-            entities=(dict[int, EntityComponent], ...),
+            "FileData", id_counter=int, entities=dict[int, EntityComponent]
         )
 
         # Serialize with nulls excluded
@@ -57,14 +53,13 @@ class Serializer:
         id_counter: int = getattr(file_data, "id_counter")
 
         # Convert EntityComponent models to dict[type, Any] components
-        entities: dict[int, dict[type, Any]] = {}
-        for entity_id, entity_components in entities_data.items():
-            components: dict[type, Any] = {}
-            for comp_name, comp_value in entity_components.model_dump().items():
-                if comp_value is not None:
-                    # Get actual class from model field type
-                    comp_obj: Any = getattr(entity_components, comp_name)
-                    components[type(comp_obj)] = comp_obj
-            entities[entity_id] = components
+        entities: dict[int, dict[type, Any]] = {
+            entity_id: {
+                type(comp_obj): comp_obj
+                for comp_name in EntityComponent.model_fields.keys()
+                if (comp_obj := getattr(entity_components, comp_name)) is not None
+            }
+            for entity_id, entity_components in entities_data.items()
+        }
 
         return id_counter, entities
