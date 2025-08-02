@@ -6,7 +6,7 @@ from core.utils.vec2 import Vec2
 
 
 class SquadModel(BaseModel):
-    """Represents a single squad in the game."""
+    """Represents a view of a single squad in the game."""
 
     unit_id: int
     position: Vec2
@@ -37,7 +37,7 @@ class FireActionRequest(BaseModel):
 
 
 class TerrainModel(BaseModel):
-    """Represents a terrain feature in the game."""
+    """Represents a view of terrain feature in the game."""
 
     feature_id: int
     vertices: list[Vec2]
@@ -53,8 +53,8 @@ class TerrainModel(BaseModel):
         BUILDING = "BUILDING"
 
 
-class TerrainMoveRequest(BaseModel):
-    """Request model move or rotate a terrain feature."""
+class TerrainTransformModel(BaseModel):
+    """Represents the transformation data of a terrain feature."""
 
     feature_id: int
     position: Vec2

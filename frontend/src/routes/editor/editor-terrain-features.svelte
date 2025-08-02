@@ -9,14 +9,12 @@
 	let props: Props = $props();
 
 	function selectTerrain(terrain: TerrainFeatureData) {
-		if (props.controller.state.type === 'select') {
-			props.controller.state.selectedTerrain = terrain;
-		}
+		props.controller.selectTerrain(terrain);
 	}
 
 	function isSelected(terrain: TerrainFeatureData) {
-		if (props.controller.state.type === 'select') {
-			return props.controller.state.selectedTerrain === terrain;
+		if (props.controller.state.type === 'selected') {
+			return props.controller.state.terrain === terrain;
 		}
 		return false;
 	}

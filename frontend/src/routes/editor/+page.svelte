@@ -32,8 +32,20 @@
 		controller.drawMode();
 	}
 
-	function selectMode() {
-		controller.selectMode();
+	function moveUp() {
+		if (controller.state.type == 'selected') {
+			let transform = controller.state.transform;
+			transform.position.y -= 1;
+
+			let coords = controller.state.terrain.coordinates;
+			for (let i = 0; i < coords.length; i++) {
+				coords[i]!.y -= 1;
+			}
+		}
+	}
+
+	function save() {
+		controller.updateTransformAsync();
 	}
 </script>
 
@@ -53,7 +65,8 @@
 mode = {controller.state.type}
 <button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
-<button onclick={selectMode} style="margin-bottom: 1em;">Select Mode</button>
+<button onclick={moveUp} style="margin-bottom: 1em;">MoveUp</button>
+<button onclick={save} style="margin-bottom: 1em;">Save</button>
 
 <style lang="less">
 	@stroke-width: 1;
