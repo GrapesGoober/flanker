@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from backend.action_controller import ActionController
 from backend.models import (
     FireActionRequest,
+    TerrainMoveRequest,
     TerrainModel,
     MoveActionRequest,
 )
@@ -63,3 +64,14 @@ async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
 async def save_scene() -> None:
     """Save the scene."""
     SceneManager.save_scene(SCENE_PATH, context.gs)
+
+
+@app.patch("/api/editor/terrain")
+async def move_terrain(body: TerrainMoveRequest) -> None:
+    """Edit the terrain polygon."""
+    TerrainController.move_terrain(
+        context.gs,
+        body.feature_id,
+        body.position,
+        body.angle,
+    )

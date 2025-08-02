@@ -51,3 +51,11 @@ class TerrainModel(BaseModel):
         FIELD = "FIELD"
         WATER = "WATER"
         BUILDING = "BUILDING"
+
+
+class TerrainMoveRequest(BaseModel):
+    """Request model move or rotate a terrain feature."""
+
+    feature_id: int
+    position: Vec2
+    angle: float

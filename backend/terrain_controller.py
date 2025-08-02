@@ -81,3 +81,9 @@ class TerrainController:
             ),
             TerrainController.TypeTag(TerrainModel.Types.BUILDING),
         )
+
+    @staticmethod
+    def move_terrain(gs: GameState, id: int, position: Vec2, angle: float) -> None:
+        transform = gs.get_component(id, Transform)
+        transform.position = position
+        transform.angle = angle
