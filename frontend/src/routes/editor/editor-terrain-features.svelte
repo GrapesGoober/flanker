@@ -1,42 +1,65 @@
 <script lang="ts">
 	import type { TerrainFeatureData } from '$lib';
 	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map/map-utils';
+	import type { EditorController } from './editor-controller.svelte';
 
 	type Props = {
-		terrainData: TerrainFeatureData[];
+		controller: EditorController;
 	};
 	let props: Props = $props();
+
+	function selectTerrain(terrain: TerrainFeatureData) {
+		if (props.controller.state.type === 'select') {
+			props.controller.state.selectedTerrain = terrain;
+		}
+	}
+
+	function isSelected(terrain: TerrainFeatureData) {
+		if (props.controller.state.type === 'select') {
+			return props.controller.state.selectedTerrain === terrain;
+		}
+		return false;
+	}
 </script>
 
-<svg>
+<g>
 	<!-- Draw each polygons -->
-	{#each props.terrainData as terrain}
-		{#if terrain.terrainType == 'FOREST'}
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest" />
-		{:else if terrain.terrainType == 'FIELD'}
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="field" />
-		{:else if terrain.terrainType == 'WATER'}
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="water" />
-		{:else if terrain.terrainType == 'ROAD'}
-			<path d={GetSmoothedPath(terrain.coordinates, 0.7)} class="road" />
-		{:else if terrain.terrainType == 'BUILDING'}
-			<path d={GetClosedPath(terrain.coordinates)} class="building" />
-		{/if}
+	{#each props.controller.terrainData as terrain}
+		{@const selectedClass = isSelected(terrain) ? 'selected-terrain' : ''}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<g onclick={() => selectTerrain(terrain)}>
+			{#if terrain.terrainType == 'FOREST'}
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest {selectedClass}" />
+			{:else if terrain.terrainType == 'FIELD'}
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="field {selectedClass}" />
+			{:else if terrain.terrainType == 'WATER'}
+				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="water {selectedClass}" />
+			{:else if terrain.terrainType == 'ROAD'}
+				<path d={GetSmoothedPath(terrain.coordinates, 0.7)} class="road {selectedClass}" />
+			{:else if terrain.terrainType == 'BUILDING'}
+				<path d={GetClosedPath(terrain.coordinates)} class="building {selectedClass}" />
+			{/if}
+		</g>
 	{/each}
-</svg>
+</g>
 
 <style lang="less">
 	@stroke-width: 1.5;
 	@road-width: 5;
 
+	.selected-terrain {
+		stroke: red !important;
+		stroke-width: @road-width;
+	}
 	.road {
 		fill: none;
-		stroke: #d0dcb8;
+		stroke: #bbc5a5;
 		stroke-width: @road-width;
 	}
 	.forest {
 		fill: #c1da91;
-		stroke: #c1da91;
+		stroke: #a2b879;
 		stroke-width: @stroke-width;
 	}
 	.water {
