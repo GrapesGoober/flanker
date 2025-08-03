@@ -5,7 +5,7 @@ const client = createClient<paths>();
 export type Vec2 = { x: number; y: number };
 
 export type TerrainFeatureData = {
-	feature_id: number;
+	featureId: number;
 	terrainType: 'FOREST' | 'ROAD' | 'FIELD' | 'WATER' | 'BUILDING';
 	position: Vec2;
 	angle: number;
@@ -18,7 +18,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 
 	// Convert to a custom type in case API and types diverge
 	const terrainData: TerrainFeatureData[] = data.map((element) => ({
-		feature_id: element.feature_id,
+		featureId: element.feature_id,
 		terrainType: element.terrain_type,
 		position: element.position,
 		angle: element.angle,
@@ -28,29 +28,15 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 	return terrainData;
 }
 
-export type TerrainTransformData = {
-	feature_id: number;
-	position: Vec2;
-	angle: number;
-};
-
-export async function getTerrainTransformData(): Promise<TerrainTransformData[]> {
-	const { data, error } = await client.GET('/api/editor/terrain_transform');
-	if (error) throw new Error(JSON.stringify(error));
-
-	// Convert to a custom type in case API and types diverge
-	const terrainData: TerrainTransformData[] = data.map((element) => ({
-		feature_id: element.feature_id,
-		position: element.position,
-		angle: element.angle
-	}));
-
-	return terrainData;
-}
-
-export async function updateTerrainTransformData(transform: TerrainTransformData) {
-	const { data, error } = await client.PUT('/api/editor/terrain_transform', {
-		body: transform
+export async function updateTerrainTransformData(terrain: TerrainFeatureData) {
+	const { data, error } = await client.PUT('/api/terrain', {
+		body: {
+			feature_id: terrain.featureId,
+			terrain_type: terrain.terrainType,
+			position: terrain.position,
+			angle: terrain.angle,
+			vertices: terrain.vertices
+		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
 }

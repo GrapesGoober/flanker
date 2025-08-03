@@ -34,13 +34,7 @@
 
 	function moveUp() {
 		if (controller.state.type == 'selected') {
-			let transform = controller.state.transform;
-			transform.position.y -= 1;
-
-			let coords = controller.state.terrain.vertices;
-			for (let i = 0; i < coords.length; i++) {
-				coords[i]!.y -= 1;
-			}
+			controller.state.terrain.position.y -= 1;
 		}
 	}
 

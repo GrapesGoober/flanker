@@ -53,11 +53,3 @@ class TerrainModel(BaseModel):
         FIELD = "FIELD"
         WATER = "WATER"
         BUILDING = "BUILDING"
-
-
-class TerrainTransformModel(BaseModel):
-    """Represents the transformation data of a terrain feature."""
-
-    feature_id: int
-    position: Vec2
-    angle: float

@@ -36,7 +36,11 @@ export interface paths {
          * @description Get all terrain tiles for the current game state.
          */
         get: operations["get_terrain_api_terrain_get"];
-        put?: never;
+        /**
+         * Update Terrain Transform
+         * @description Edit the terrain polygon.
+         */
+        put: operations["update_terrain_transform_api_terrain_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -98,30 +102,6 @@ export interface paths {
          * @description Save the scene.
          */
         post: operations["save_scene_api_editor_save_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/editor/terrain_transform": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Terrain Transform
-         * @description Get transformation data for terrain features.
-         */
-        get: operations["get_terrain_transform_api_editor_terrain_transform_get"];
-        /**
-         * Update Terrain Transform
-         * @description Edit the terrain polygon.
-         */
-        put: operations["update_terrain_transform_api_editor_terrain_transform_put"];
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -200,17 +180,6 @@ export interface components {
             terrain_type: components["schemas"]["Types"];
         };
         /**
-         * TerrainTransformModel
-         * @description Represents the transformation data of a terrain feature.
-         */
-        TerrainTransformModel: {
-            /** Feature Id */
-            feature_id: number;
-            position: components["schemas"]["Vec2"];
-            /** Angle */
-            angle: number;
-        };
-        /**
          * Types
          * @description Supported terrain types.
          * @enum {string}
@@ -277,6 +246,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TerrainModel"][];
+                };
+            };
+        };
+    };
+    update_terrain_transform_api_terrain_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerrainModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -363,59 +365,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
-                };
-            };
-        };
-    };
-    get_terrain_transform_api_editor_terrain_transform_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TerrainTransformModel"][];
-                };
-            };
-        };
-    };
-    update_terrain_transform_api_editor_terrain_transform_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TerrainTransformModel"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

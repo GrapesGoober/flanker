@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Iterable
 from core.components import TerrainFeature, Transform
 from core.utils.vec2 import Vec2
 from core.gamestate import GameState
-from backend.models import TerrainModel, TerrainTransformModel
+from backend.models import TerrainModel
 
 
 class TerrainController:
@@ -85,14 +84,12 @@ class TerrainController:
         )
 
     @staticmethod
-    def get_terrain_transform(gs: GameState) -> Iterable[TerrainTransformModel]:
-        for id, transform, _ in gs.query(Transform, TerrainController.TypeTag):
-            yield TerrainTransformModel(
-                feature_id=id, position=transform.position, angle=transform.angle
-            )
-
-    @staticmethod
-    def transform_terrain(gs: GameState, body: TerrainTransformModel) -> None:
+    def update_terrain(gs: GameState, body: TerrainModel) -> None:
         transform = gs.get_component(body.feature_id, Transform)
+        feature = gs.get_component(body.feature_id, TerrainFeature)
+        tag = gs.get_component(body.feature_id, TerrainController.TypeTag)
         transform.position = body.position
         transform.angle = body.angle
+        feature.vertices = body.vertices
+        feature.flag = TerrainController.get_terrain_flags(body.terrain_type)
+        tag.type = body.terrain_type

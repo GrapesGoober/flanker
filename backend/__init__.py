@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from backend.action_controller import ActionController
 from backend.models import (
     FireActionRequest,
-    TerrainTransformModel,
     TerrainModel,
     MoveActionRequest,
 )
@@ -66,13 +65,7 @@ async def save_scene() -> None:
     SceneManager.save_scene(SCENE_PATH, context.gs)
 
 
-@app.get("/api/editor/terrain_transform")
-async def get_terrain_transform() -> list[TerrainTransformModel]:
-    """Get transformation data for terrain features."""
-    return list(TerrainController.get_terrain_transform(context.gs))
-
-
-@app.put("/api/editor/terrain_transform")
-async def update_terrain_transform(body: TerrainTransformModel) -> None:
+@app.put("/api/terrain")
+async def update_terrain_transform(body: TerrainModel) -> None:
     """Edit the terrain polygon."""
-    TerrainController.transform_terrain(context.gs, body)
+    TerrainController.update_terrain(context.gs, body)
