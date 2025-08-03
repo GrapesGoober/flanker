@@ -32,12 +32,6 @@
 		controller.drawMode();
 	}
 
-	function moveUp() {
-		if (controller.state.type == 'selected') {
-			controller.state.terrain.position.y -= 1;
-		}
-	}
-
 	function save() {
 		controller.updateTransformAsync();
 	}
@@ -59,11 +53,19 @@
 mode = {controller.state.type}
 <button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
-<button onclick={moveUp} style="margin-bottom: 1em;">MoveUp</button>
 <button onclick={save} style="margin-bottom: 1em;">Save</button>
+
+{#if controller.state.type == 'selected'}
+	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />
+	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
+	angle = <input type="number" class="number-input" bind:value={controller.state.terrain.angle} />
+{/if}
 
 <style lang="less">
 	@stroke-width: 1;
+	.number-input {
+		width: 4em;
+	}
 	.draw-polygon {
 		fill: #ccd5ae88;
 		stroke: #c2cca0;

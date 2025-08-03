@@ -239,10 +239,10 @@
     "13": {
       "Transform": {
         "position": {
-          "x": 193.5,
-          "y": 216.0
+          "x": 190.0,
+          "y": 212.0
         },
-        "angle": -35.0
+        "angle": -39.0
       },
       "TerrainFeature": {
         "vertices": [
