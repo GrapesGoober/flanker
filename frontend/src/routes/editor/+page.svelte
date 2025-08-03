@@ -37,7 +37,7 @@
 			let transform = controller.state.transform;
 			transform.position.y -= 1;
 
-			let coords = controller.state.terrain.coordinates;
+			let coords = controller.state.terrain.vertices;
 			for (let i = 0; i < coords.length; i++) {
 				coords[i]!.y -= 1;
 			}

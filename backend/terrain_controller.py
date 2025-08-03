@@ -4,7 +4,6 @@ from core.components import TerrainFeature, Transform
 from core.utils.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import TerrainModel, TerrainTransformModel
-from core.utils.linear_transform import LinearTransform
 
 
 class TerrainController:
@@ -43,7 +42,9 @@ class TerrainController:
             terrains.append(
                 TerrainModel(
                     feature_id=ent,
-                    vertices=LinearTransform.apply(terrain_feature.vertices, transform),
+                    position=transform.position,
+                    angle=transform.angle,
+                    vertices=terrain_feature.vertices,
                     terrain_type=terrain_tag.type,
                 )
             )

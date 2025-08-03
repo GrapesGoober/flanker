@@ -192,6 +192,9 @@ export interface components {
         TerrainModel: {
             /** Feature Id */
             feature_id: number;
+            position: components["schemas"]["Vec2"];
+            /** Angle */
+            angle: number;
             /** Vertices */
             vertices: components["schemas"]["Vec2"][];
             terrain_type: components["schemas"]["Types"];

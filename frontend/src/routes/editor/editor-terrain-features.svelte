@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TerrainFeatureData } from '$lib';
+	import { transform } from '$lib/linear-transform';
 	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map/map-utils';
 	import type { EditorController } from './editor-controller.svelte';
 
@@ -24,19 +25,20 @@
 	<!-- Draw each polygons -->
 	{#each props.controller.terrainData as terrain}
 		{@const selectedClass = isSelected(terrain) ? 'selected-terrain' : ''}
+		{@const vertices = transform(terrain.vertices, terrain.position, terrain.angle)}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g onclick={() => selectTerrain(terrain)}>
 			{#if terrain.terrainType == 'FOREST'}
-				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest {selectedClass}" />
+				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="forest {selectedClass}" />
 			{:else if terrain.terrainType == 'FIELD'}
-				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="field {selectedClass}" />
+				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field {selectedClass}" />
 			{:else if terrain.terrainType == 'WATER'}
-				<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="water {selectedClass}" />
+				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water {selectedClass}" />
 			{:else if terrain.terrainType == 'ROAD'}
-				<path d={GetSmoothedPath(terrain.coordinates, 0.7)} class="road {selectedClass}" />
+				<path d={GetSmoothedPath(vertices, 0.7)} class="road {selectedClass}" />
 			{:else if terrain.terrainType == 'BUILDING'}
-				<path d={GetClosedPath(terrain.coordinates)} class="building {selectedClass}" />
+				<path d={GetClosedPath(vertices)} class="building {selectedClass}" />
 			{/if}
 		</g>
 	{/each}

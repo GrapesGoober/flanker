@@ -40,6 +40,8 @@ class TerrainModel(BaseModel):
     """Represents a view of terrain feature in the game."""
 
     feature_id: int
+    position: Vec2
+    angle: float
     vertices: list[Vec2]
     terrain_type: "Types"
 

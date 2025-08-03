@@ -7,6 +7,7 @@
 		GetSmoothedPath,
 		generatePointsInsidePolygon
 	} from '$lib/map/map-utils';
+	import { transform } from '$lib/linear-transform';
 
 	type Props = {
 		terrainData: TerrainFeatureData[];
@@ -21,33 +22,36 @@
 <g>
 	<!-- Road's boarders need to be drawn separately -->
 	{#each FilterRoads() as road}
-		<path d={GetSmoothedPath(road.coordinates, 0.7)} class="road-border" />
+		{@const vertices = transform(road.vertices, road.position, road.angle)}
+		<path d={GetSmoothedPath(vertices, 0.7)} class="road-border" />
 	{/each}
 
 	<!-- Draw each polygons -->
 	{#each props.terrainData as terrain}
+		{@const vertices = transform(terrain.vertices, terrain.position, terrain.angle)}
 		{#if terrain.terrainType == 'FOREST'}
 			<!-- Forest has separate dashed border (so that it rests inside) -->
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest" />
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="forest-border" />
-			{#each generatePointsInsidePolygon(terrain.coordinates, 20, 15) as p}
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="forest" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="forest-border" />
+			{#each generatePointsInsidePolygon(vertices, 20, 15) as p}
 				<g transform="translate({p.x}, {p.y})">
 					<TreeTriangle />
 				</g>
 			{/each}
 		{:else if terrain.terrainType == 'FIELD'}
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="field" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" />
 		{:else if terrain.terrainType == 'WATER'}
-			<path d={GetSmoothedClosedPath(terrain.coordinates, 0.7)} class="water" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water" />
 		{:else if terrain.terrainType == 'ROAD'}
-			<path d={GetSmoothedPath(terrain.coordinates, 0.7)} class="road" />
+			<path d={GetSmoothedPath(vertices, 0.7)} class="road" />
 		{/if}
 	{/each}
 
 	<!-- Buildings drawn on top of other polygons -->
 	{#each props.terrainData as terrain}
+		{@const vertices = transform(terrain.vertices, terrain.position, terrain.angle)}
 		{#if terrain.terrainType == 'BUILDING'}
-			<path d={GetClosedPath(terrain.coordinates)} class="building" />
+			<path d={GetClosedPath(vertices)} class="building" />
 		{/if}
 	{/each}
 </g>
