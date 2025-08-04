@@ -50,12 +50,11 @@
 
 	.selected-terrain {
 		stroke: red !important;
-		stroke-width: @road-width;
 	}
 	.road {
 		fill: none;
 		stroke: #bbc5a5;
-		stroke-width: @road-width;
+		stroke-width: @road-width + @stroke-width * 2;
 	}
 	.forest {
 		fill: #c1da91;
