@@ -1,8 +1,8 @@
 from dataclasses import dataclass, is_dataclass
 from inspect import isclass
 from typing import Any
-from backend import CombatUnitController
-from backend.terrain_controller import TerrainController
+from backend import CombatUnitService
+from backend.terrain_service import TerrainService
 from core.gamestate import GameState
 from core import components
 
@@ -16,7 +16,7 @@ class SceneContext:
     opponent_faction_id: int
 
 
-class SceneManager:
+class SceneService:
 
     @staticmethod
     def load_scene(path: str) -> SceneContext:
@@ -25,21 +25,21 @@ class SceneManager:
             if isclass(cls) and is_dataclass(cls):
                 component_types.append(cls)
 
-        component_types.append(TerrainController.TypeTag)
-        component_types.append(CombatUnitController.PlayerFactionTag)
-        component_types.append(CombatUnitController.OpponentFactionTag)
+        component_types.append(TerrainService.TypeTag)
+        component_types.append(CombatUnitService.PlayerFactionTag)
+        component_types.append(CombatUnitService.OpponentFactionTag)
 
         with open(path, "r") as f:
             gs = GameState.load(f.read(), component_types)
 
         player_faction: int | None = None
-        for id, _ in gs.query(CombatUnitController.PlayerFactionTag):
+        for id, _ in gs.query(CombatUnitService.PlayerFactionTag):
             player_faction = id
         if player_faction == None:
             raise Exception("Player faction not found in save file")
 
         opponent_faction: int | None = None
-        for id, _ in gs.query(CombatUnitController.OpponentFactionTag):
+        for id, _ in gs.query(CombatUnitService.OpponentFactionTag):
             opponent_faction = id
         if opponent_faction == None:
             raise Exception("Opponent faction not found in save file")

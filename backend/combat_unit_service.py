@@ -12,7 +12,7 @@ from core.gamestate import GameState
 from backend.models import CombatUnitsViewState, SquadModel
 
 
-class CombatUnitController:
+class CombatUnitService:
     """Provides static methods to add and query combat units and factions."""
 
     @dataclass
@@ -26,7 +26,7 @@ class CombatUnitController:
         """Add a new faction to the game state."""
         return gs.add_entity(
             Faction(has_initiative),
-            CombatUnitController.PlayerFactionTag(),
+            CombatUnitService.PlayerFactionTag(),
         )
 
     @staticmethod
@@ -34,7 +34,7 @@ class CombatUnitController:
         """Add a new faction to the game state."""
         return gs.add_entity(
             Faction(has_initiative),
-            CombatUnitController.OpponentFactionTag(),
+            CombatUnitService.OpponentFactionTag(),
         )
 
     @staticmethod

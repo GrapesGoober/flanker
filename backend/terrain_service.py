@@ -5,7 +5,7 @@ from core.gamestate import GameState
 from backend.models import TerrainModel
 
 
-class TerrainController:
+class TerrainService:
     """Provides static methods to manipulate and query terrain features."""
 
     @dataclass
@@ -36,7 +36,7 @@ class TerrainController:
         """Get all terrain features from the game state."""
         terrains: list[TerrainModel] = []
         for ent, transform, terrain_feature, terrain_tag in gs.query(
-            Transform, TerrainFeature, TerrainController.TypeTag
+            Transform, TerrainFeature, TerrainService.TypeTag
         ):
             terrains.append(
                 TerrainModel(
@@ -61,9 +61,9 @@ class TerrainController:
             Transform(position=pivot, angle=0),
             TerrainFeature(
                 vertices=vertices,
-                flag=TerrainController.get_terrain_flags(terrain_type),
+                flag=TerrainService.get_terrain_flags(terrain_type),
             ),
-            TerrainController.TypeTag(terrain_type),
+            TerrainService.TypeTag(terrain_type),
         )
 
     @staticmethod
@@ -78,18 +78,18 @@ class TerrainController:
                     Vec2(10, -5),
                     Vec2(-10, -5),
                 ],
-                flag=TerrainController.get_terrain_flags(TerrainModel.Types.BUILDING),
+                flag=TerrainService.get_terrain_flags(TerrainModel.Types.BUILDING),
             ),
-            TerrainController.TypeTag(TerrainModel.Types.BUILDING),
+            TerrainService.TypeTag(TerrainModel.Types.BUILDING),
         )
 
     @staticmethod
     def update_terrain(gs: GameState, body: TerrainModel) -> None:
         transform = gs.get_component(body.feature_id, Transform)
         feature = gs.get_component(body.feature_id, TerrainFeature)
-        tag = gs.get_component(body.feature_id, TerrainController.TypeTag)
+        tag = gs.get_component(body.feature_id, TerrainService.TypeTag)
         transform.position = body.position
         transform.angle = body.angle
         feature.vertices = body.vertices
-        feature.flag = TerrainController.get_terrain_flags(body.terrain_type)
+        feature.flag = TerrainService.get_terrain_flags(body.terrain_type)
         tag.type = body.terrain_type

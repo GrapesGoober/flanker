@@ -3,7 +3,7 @@ from core.gamestate import GameState
 from core.components import Faction
 
 
-class BasicAiController:
+class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod

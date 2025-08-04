@@ -1,23 +1,25 @@
 from fastapi import FastAPI
-from backend.action_controller import ActionController
+from backend.action_service import ActionService
+from backend.ai_service import AiService
 from backend.models import (
     FireActionRequest,
     TerrainModel,
     MoveActionRequest,
+    CombatUnitsViewState,
 )
-from backend.combat_unit_controller import CombatUnitController, CombatUnitsViewState
-from backend.scene_manager import SceneManager
-from backend.terrain_controller import TerrainController
+from backend.combat_unit_service import CombatUnitService
+from backend.scene_service import SceneService
+from backend.terrain_service import TerrainService
 
 SCENE_PATH = "./scenes/demo.json"
-context = SceneManager.load_scene(SCENE_PATH)
+context = SceneService.load_scene(SCENE_PATH)
 app = FastAPI()
 
 
 @app.get("/api/units")
 async def get_units() -> CombatUnitsViewState:
     """Get all combat units for the player faction."""
-    return CombatUnitController.get_units(
+    return CombatUnitService.get_units(
         context.gs,
         context.player_faction_id,
     )
@@ -26,19 +28,19 @@ async def get_units() -> CombatUnitsViewState:
 @app.get("/api/terrain")
 async def get_terrain() -> list[TerrainModel]:
     """Get all terrain tiles for the current game state."""
-    return TerrainController.get_terrains(context.gs)
+    return TerrainService.get_terrains(context.gs)
 
 
 @app.post("/api/move")
 async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
     """Move a unit and return updated rifle squads."""
-    ActionController.move(
+    ActionService.move(
         gs=context.gs,
         body=body,
         player_faction_id=context.player_faction_id,
-        opponent_faction_id=context.opponent_faction_id,
     )
-    return CombatUnitController.get_units(
+    AiService.play(context.gs, context.opponent_faction_id)
+    return CombatUnitService.get_units(
         context.gs,
         context.player_faction_id,
     )
@@ -47,27 +49,27 @@ async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
 @app.post("/api/fire")
 async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
     """Move a unit and return updated rifle squads."""
-    ActionController.fire(
+    ActionService.fire(
         gs=context.gs,
         body=body,
         player_faction_id=context.player_faction_id,
-        opponent_faction_id=context.opponent_faction_id,
     )
-    return CombatUnitController.get_units(
+    AiService.play(context.gs, context.opponent_faction_id)
+    return CombatUnitService.get_units(
         context.gs,
         context.player_faction_id,
     )
 
 
 @app.post("/api/reset")
-async def save_scene() -> None:
+async def reset_scene() -> None:
     """Resets the scene."""
     global context
-    context = SceneManager.load_scene(SCENE_PATH)
+    context = SceneService.load_scene(SCENE_PATH)
 
 
 @app.put("/api/terrain")
 async def update_terrain(body: TerrainModel) -> None:
     """Edit the terrain polygon."""
-    TerrainController.update_terrain(context.gs, body)
-    SceneManager.save_scene(SCENE_PATH, context.gs)
+    TerrainService.update_terrain(context.gs, body)
+    SceneService.save_scene(SCENE_PATH, context.gs)
