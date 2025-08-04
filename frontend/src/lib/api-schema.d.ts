@@ -37,10 +37,10 @@ export interface paths {
          */
         get: operations["get_terrain_api_terrain_get"];
         /**
-         * Update Terrain Transform
+         * Update Terrain
          * @description Edit the terrain polygon.
          */
-        put: operations["update_terrain_transform_api_terrain_put"];
+        put: operations["update_terrain_api_terrain_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -88,7 +88,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/editor/save": {
+    "/api/reset": {
         parameters: {
             query?: never;
             header?: never;
@@ -99,9 +99,9 @@ export interface paths {
         put?: never;
         /**
          * Save Scene
-         * @description Save the scene.
+         * @description Resets the scene.
          */
-        post: operations["save_scene_api_editor_save_post"];
+        post: operations["save_scene_api_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -250,7 +250,7 @@ export interface operations {
             };
         };
     };
-    update_terrain_transform_api_terrain_put: {
+    update_terrain_api_terrain_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -349,7 +349,7 @@ export interface operations {
             };
         };
     };
-    save_scene_api_editor_save_post: {
+    save_scene_api_reset_post: {
         parameters: {
             query?: never;
             header?: never;

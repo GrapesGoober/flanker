@@ -31,10 +31,6 @@
 	function drawMode() {
 		controller.drawMode();
 	}
-
-	function save() {
-		controller.updateTransformAsync();
-	}
 </script>
 
 {#snippet mapSvgSnippet()}
@@ -53,7 +49,6 @@
 mode = {controller.state.type}
 <button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
-<button onclick={save} style="margin-bottom: 1em;">Save</button>
 
 {#if controller.state.type == 'selected'}
 	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />

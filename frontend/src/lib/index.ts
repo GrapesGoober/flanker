@@ -28,7 +28,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 	return terrainData;
 }
 
-export async function updateTerrainTransformData(terrain: TerrainFeatureData) {
+export async function updateTerrainData(terrain: TerrainFeatureData) {
 	const { data, error } = await client.PUT('/api/terrain', {
 		body: {
 			feature_id: terrain.featureId,

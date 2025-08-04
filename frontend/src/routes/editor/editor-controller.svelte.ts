@@ -1,9 +1,4 @@
-import {
-	getTerrainData,
-	updateTerrainTransformData,
-	type TerrainFeatureData,
-	type Vec2
-} from '$lib';
+import { getTerrainData, updateTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
 
 type EditorControllerState =
 	| { type: 'default' }
@@ -25,14 +20,15 @@ export class EditorController {
 	}
 	selectTerrain(terrain: TerrainFeatureData) {
 		if (this.state.type != 'default' && this.state.type != 'selected') return;
+		if (this.state.type == 'selected') updateTerrainData(this.state.terrain);
 		this.state = {
 			type: 'selected',
 			terrain: terrain
 		};
 	}
-	async updateTransformAsync() {
+	async updateTerrainAsync() {
 		if (this.state.type != 'selected') return;
-		await updateTerrainTransformData(this.state.terrain);
+		await updateTerrainData(this.state.terrain);
 	}
 	reset() {
 		this.state = { type: 'default' };

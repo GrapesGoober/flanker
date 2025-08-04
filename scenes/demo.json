@@ -1440,7 +1440,7 @@
     "34": {
       "Transform": {
         "position": {
-          "x": 231.0,
+          "x": 238.0,
           "y": 209.0
         },
         "angle": 0.0
@@ -1769,10 +1769,10 @@
     "39": {
       "Transform": {
         "position": {
-          "x": 176.0,
-          "y": 120.0
+          "x": 179.0,
+          "y": 128.0
         },
-        "angle": 0.0
+        "angle": -3.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1932,7 +1932,7 @@
       "Transform": {
         "position": {
           "x": 138.0,
-          "y": 353.0
+          "y": 354.0
         },
         "angle": 0.0
       },
@@ -2125,7 +2125,7 @@
     "43": {
       "Transform": {
         "position": {
-          "x": 270.5,
+          "x": 270.0,
           "y": 310.0
         },
         "angle": 0.0
@@ -2735,7 +2735,7 @@
     "49": {
       "Transform": {
         "position": {
-          "x": 209.0,
+          "x": 208.0,
           "y": 354.0
         },
         "angle": -67.0
@@ -2962,7 +2962,7 @@
           "x": 155.0,
           "y": 344.0
         },
-        "angle": 0.0
+        "angle": -1.0
       },
       "TerrainFeature": {
         "vertices": [

@@ -59,13 +59,15 @@ async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
     )
 
 
-@app.post("/api/editor/save")
+@app.post("/api/reset")
 async def save_scene() -> None:
-    """Save the scene."""
-    SceneManager.save_scene(SCENE_PATH, context.gs)
+    """Resets the scene."""
+    global context
+    context = SceneManager.load_scene(SCENE_PATH)
 
 
 @app.put("/api/terrain")
-async def update_terrain_transform(body: TerrainModel) -> None:
+async def update_terrain(body: TerrainModel) -> None:
     """Edit the terrain polygon."""
     TerrainController.update_terrain(context.gs, body)
+    SceneManager.save_scene(SCENE_PATH, context.gs)
