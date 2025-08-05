@@ -24,12 +24,24 @@ class CombatUnitService:
         )
 
     @staticmethod
-    def add_hostile_faction(gs: GameState, has_initiative: bool) -> int:
+    def add_opponent_faction(gs: GameState, has_initiative: bool) -> int:
         """Add a new faction to the game state."""
         return gs.add_entity(
             Faction(has_initiative),
             OpponentFactionTag(),
         )
+
+    @staticmethod
+    def get_player_faction_id(gs: GameState) -> int:
+        for id, _, _ in gs.query(PlayerFactionTag, Faction):
+            return id
+        raise Exception("Player faction not found in save file")
+
+    @staticmethod
+    def get_opponent_faction_id(gs: GameState) -> int:
+        for id, _, _ in gs.query(OpponentFactionTag, Faction):
+            return id
+        raise Exception("Player faction not found in save file")
 
     @staticmethod
     def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
@@ -42,8 +54,9 @@ class CombatUnitService:
         )
 
     @staticmethod
-    def get_units(gs: GameState, faction_id: int) -> CombatUnitsViewState:
+    def get_units(gs: GameState) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
+        faction_id = CombatUnitService.get_player_faction_id(gs)
         faction = gs.get_component(faction_id, Faction)
         squads: list[SquadModel] = []
         for ent, unit, transform, fire in gs.query(
