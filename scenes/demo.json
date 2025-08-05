@@ -232,7 +232,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -265,7 +265,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -298,7 +298,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -331,7 +331,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -364,7 +364,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -397,7 +397,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -430,7 +430,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -463,7 +463,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -496,7 +496,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -529,7 +529,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -614,7 +614,7 @@
         ],
         "flag": 6
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "ROAD"
       }
     },
@@ -687,7 +687,7 @@
         ],
         "flag": 6
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "ROAD"
       }
     },
@@ -752,7 +752,7 @@
         ],
         "flag": 6
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "ROAD"
       }
     },
@@ -833,7 +833,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -894,7 +894,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -967,7 +967,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1064,7 +1064,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1141,7 +1141,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1226,7 +1226,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1303,7 +1303,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1364,7 +1364,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1433,7 +1433,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1490,7 +1490,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1551,7 +1551,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1632,7 +1632,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -1693,7 +1693,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -1762,7 +1762,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -1835,7 +1835,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -1924,7 +1924,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -2017,7 +2017,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2118,7 +2118,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2203,7 +2203,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2296,7 +2296,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2409,7 +2409,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2526,7 +2526,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2639,7 +2639,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2728,7 +2728,7 @@
         ],
         "flag": 2
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FIELD"
       }
     },
@@ -2761,7 +2761,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -2794,7 +2794,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "BUILDING"
       }
     },
@@ -2883,7 +2883,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -2952,7 +2952,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -3029,7 +3029,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -3045,7 +3045,7 @@
         "vertices": [],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -3170,7 +3170,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -3235,7 +3235,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     },
@@ -3320,7 +3320,7 @@
         ],
         "flag": 3
       },
-      "TypeTag": {
+      "TerrainTypeTag": {
         "type": "FOREST"
       }
     }

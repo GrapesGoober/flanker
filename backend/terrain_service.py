@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from backend.tag_components import TerrainTypeTag
 from core.components import TerrainFeature, Transform
 from core.utils.vec2 import Vec2
 from core.gamestate import GameState
@@ -7,12 +7,6 @@ from backend.models import TerrainModel
 
 class TerrainService:
     """Provides static methods to manipulate and query terrain features."""
-
-    @dataclass
-    class TypeTag:
-        """Tag for terrain type on an entity."""
-
-        type: TerrainModel.Types
 
     @staticmethod
     def get_terrain_flags(terrain_type: TerrainModel.Types) -> TerrainFeature.Flag:
@@ -36,7 +30,7 @@ class TerrainService:
         """Get all terrain features from the game state."""
         terrains: list[TerrainModel] = []
         for ent, transform, terrain_feature, terrain_tag in gs.query(
-            Transform, TerrainFeature, TerrainService.TypeTag
+            Transform, TerrainFeature, TerrainTypeTag
         ):
             terrains.append(
                 TerrainModel(
@@ -63,7 +57,7 @@ class TerrainService:
                 vertices=vertices,
                 flag=TerrainService.get_terrain_flags(terrain_type),
             ),
-            TerrainService.TypeTag(terrain_type),
+            TerrainTypeTag(terrain_type),
         )
 
     @staticmethod
@@ -80,14 +74,14 @@ class TerrainService:
                 ],
                 flag=TerrainService.get_terrain_flags(TerrainModel.Types.BUILDING),
             ),
-            TerrainService.TypeTag(TerrainModel.Types.BUILDING),
+            TerrainTypeTag(TerrainModel.Types.BUILDING),
         )
 
     @staticmethod
     def update_terrain(gs: GameState, body: TerrainModel) -> None:
         transform = gs.get_component(body.feature_id, Transform)
         feature = gs.get_component(body.feature_id, TerrainFeature)
-        tag = gs.get_component(body.feature_id, TerrainService.TypeTag)
+        tag = gs.get_component(body.feature_id, TerrainTypeTag)
         transform.position = body.position
         transform.angle = body.angle
         feature.vertices = body.vertices
