@@ -9,6 +9,8 @@ from core.los_system import LosSystem
 
 @dataclass
 class FireResult:
+    """Result of a fire action as valid or successfully hit."""
+
     is_valid: bool
     is_hit: bool = False
 
