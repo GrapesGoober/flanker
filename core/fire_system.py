@@ -17,6 +17,39 @@ class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
+    def _validate_fire_action(
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
+        is_reactive: bool,
+    ) -> bool:
+
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
+        target_faction = FactionSystem.get_faction_id(gs, target_id)
+
+        # Check if attacker can attack
+        if attacker_unit.status not in (
+            CombatUnit.Status.ACTIVE,
+            CombatUnit.Status.PINNED,
+        ):
+            return False
+        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
+            return False  # No initiative for reactive fire
+        if not is_reactive and not FactionSystem.has_initiative(gs, attacker_id):
+            return False
+
+        # Check that the target faction is not the same as attacker
+        if attacker_faction == target_faction:
+            return False
+
+        # Check if target is in line of sight
+        if not LosSystem.check(gs, attacker_id, target_id):
+            return False
+
+        return True
+
+    @staticmethod
     def fire(
         gs: GameState,
         attacker_id: int,
@@ -28,30 +61,15 @@ class FireSystem:
         Returns `True` if success.
         """
 
-        target_unit = gs.get_component(target_id, CombatUnit)
-        fire_controls = gs.get_component(attacker_id, FireControls)
-        attacker_unit = gs.get_component(attacker_id, CombatUnit)
-
-        # Check if attacker and target are valid
-        if attacker_unit.status not in (
-            CombatUnit.Status.ACTIVE,
-            CombatUnit.Status.PINNED,
+        if not FireSystem._validate_fire_action(
+            gs, attacker_id, target_id, is_reactive
         ):
             return FireResult(is_valid=False)
-        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
-            return FireResult(is_valid=False)  # No initiative for reactive fire
-        if not is_reactive and not FactionSystem.has_initiative(gs, attacker_id):
-            return FireResult(is_valid=False)
 
-        # Check that the target faction is not the same as attacker
+        target_unit = gs.get_component(target_id, CombatUnit)
+        fire_controls = gs.get_component(attacker_id, FireControls)
         attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
         target_faction = FactionSystem.get_faction_id(gs, target_id)
-        if attacker_faction == target_faction:
-            return FireResult(is_valid=False)
-
-        # Check if target is in line of sight
-        if not LosSystem.check(gs, attacker_id, target_id):
-            return FireResult(is_valid=False)
 
         # Determine fire outcome, using overriden value if found
         if fire_controls.override:
