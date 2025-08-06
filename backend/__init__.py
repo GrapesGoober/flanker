@@ -47,8 +47,8 @@ async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
 @app.post("/api/reset")
 async def reset_scene() -> None:
     """Resets the scene."""
-    global context
-    context = SceneService.load_scene(SCENE_PATH)
+    global gs
+    gs = SceneService.load_scene(SCENE_PATH)
 
 
 @app.put("/api/terrain")
