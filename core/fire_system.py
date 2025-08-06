@@ -87,6 +87,8 @@ class FireSystem:
             FactionSystem.set_initiative(gs, target_faction)
             return FireResult(is_valid=True, is_hit=False)
         elif outcome <= FireControls.Outcomes.PIN:
+            if target_unit.status == CombatUnit.Status.PINNED:
+                return FireResult(is_valid=True, is_hit=True)
             target_unit.status = CombatUnit.Status.PINNED
             FactionSystem.set_initiative(gs, target_faction)
             return FireResult(is_valid=True, is_hit=True)
