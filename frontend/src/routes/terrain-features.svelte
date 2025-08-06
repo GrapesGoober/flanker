@@ -22,13 +22,13 @@
 <g>
 	<!-- Road's boarders need to be drawn separately -->
 	{#each FilterRoads() as road}
-		{@const vertices = transform(road.vertices, road.position, road.angle)}
+		{@const vertices = transform(road.vertices, road.position, road.degrees)}
 		<path d={GetSmoothedPath(vertices, 0.7)} class="road-border" />
 	{/each}
 
 	<!-- Draw each polygons -->
 	{#each props.terrainData as terrain}
-		{@const vertices = transform(terrain.vertices, terrain.position, terrain.angle)}
+		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		{#if terrain.terrainType == 'FOREST'}
 			<!-- Forest has separate dashed border (so that it rests inside) -->
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="forest" />
@@ -49,7 +49,7 @@
 
 	<!-- Buildings drawn on top of other polygons -->
 	{#each props.terrainData as terrain}
-		{@const vertices = transform(terrain.vertices, terrain.position, terrain.angle)}
+		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		{#if terrain.terrainType == 'BUILDING'}
 			<path d={GetClosedPath(vertices)} class="building" />
 		{/if}

@@ -8,7 +8,7 @@ export type TerrainFeatureData = {
 	featureId: number;
 	terrainType: 'FOREST' | 'ROAD' | 'FIELD' | 'WATER' | 'BUILDING';
 	position: Vec2;
-	angle: number;
+	degrees: number;
 	vertices: Vec2[];
 };
 
@@ -21,7 +21,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 		featureId: element.feature_id,
 		terrainType: element.terrain_type,
 		position: element.position,
-		angle: element.degrees,
+		degrees: element.degrees,
 		vertices: element.vertices
 	}));
 
@@ -34,7 +34,7 @@ export async function updateTerrainData(terrain: TerrainFeatureData) {
 			feature_id: terrain.featureId,
 			terrain_type: terrain.terrainType,
 			position: terrain.position,
-			degrees: terrain.angle,
+			degrees: terrain.degrees,
 			vertices: terrain.vertices
 		}
 	});

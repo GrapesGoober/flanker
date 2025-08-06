@@ -25,7 +25,7 @@
 	<!-- Draw each polygons -->
 	{#each props.controller.terrainData as terrain}
 		{@const selectedClass = isSelected(terrain) ? 'selected-terrain' : ''}
-		{@const vertices = transform(terrain.vertices, terrain.position, terrain.angle)}
+		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g onclick={() => selectTerrain(terrain)}>

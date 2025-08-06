@@ -53,7 +53,8 @@ mode = {controller.state.type}
 {#if controller.state.type == 'selected'}
 	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />
 	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
-	angle = <input type="number" class="number-input" bind:value={controller.state.terrain.angle} />
+	degrees =
+	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
 {/if}
 
 <style lang="less">
