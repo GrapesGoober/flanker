@@ -139,6 +139,20 @@ def test_suppress_fire(fixture: Fixture) -> None:
         fixture.attacker_faction.has_initiative == True
     ), "Expects attacker to retain initiative"
 
+    fixture.fire_controls.override = FireControls.Outcomes.PIN
+    fire_result = FireSystem.fire(
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
+    )
+    assert fire_result.is_hit == True, "Fire action must occur"
+    assert (
+        target.status == CombatUnit.Status.SUPPRESSED
+    ), "Expects PIN outcome to not overwrite SUPPRESSED status."
+    assert (
+        fixture.attacker_faction.has_initiative == False
+    ), "Expects attacker to lose initiative"
+
 
 def test_kill_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
