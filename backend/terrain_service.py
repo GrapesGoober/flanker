@@ -1,19 +1,12 @@
-from dataclasses import dataclass
+from backend.tag_components import TerrainTypeTag
 from core.components import TerrainFeature, Transform
 from core.utils.vec2 import Vec2
 from core.gamestate import GameState
 from backend.models import TerrainModel
-from core.utils.linear_transform import LinearTransform
 
 
-class TerrainController:
+class TerrainService:
     """Provides static methods to manipulate and query terrain features."""
-
-    @dataclass
-    class TypeTag:
-        """Tag for terrain type on an entity."""
-
-        type: TerrainModel.Types
 
     @staticmethod
     def get_terrain_flags(terrain_type: TerrainModel.Types) -> TerrainFeature.Flag:
@@ -37,12 +30,14 @@ class TerrainController:
         """Get all terrain features from the game state."""
         terrains: list[TerrainModel] = []
         for ent, transform, terrain_feature, terrain_tag in gs.query(
-            Transform, TerrainFeature, TerrainController.TypeTag
+            Transform, TerrainFeature, TerrainTypeTag
         ):
             terrains.append(
                 TerrainModel(
                     feature_id=ent,
-                    vertices=LinearTransform.apply(terrain_feature.vertices, transform),
+                    position=transform.position,
+                    degrees=transform.degrees,
+                    vertices=terrain_feature.vertices,
                     terrain_type=terrain_tag.type,
                 )
             )
@@ -57,19 +52,19 @@ class TerrainController:
     ) -> None:
         """Add a new terrain feature to the game state."""
         gs.add_entity(
-            Transform(position=pivot, angle=0),
+            Transform(position=pivot, degrees=0),
             TerrainFeature(
                 vertices=vertices,
-                flag=TerrainController.get_terrain_flags(terrain_type),
+                flag=TerrainService.get_terrain_flags(terrain_type),
             ),
-            TerrainController.TypeTag(terrain_type),
+            TerrainTypeTag(terrain_type),
         )
 
     @staticmethod
-    def add_building(gs: GameState, position: Vec2, angle: float) -> None:
+    def add_building(gs: GameState, position: Vec2, degrees: float) -> None:
         """Add a building terrain feature to the game state."""
         gs.add_entity(
-            Transform(position=position, angle=angle),
+            Transform(position=position, degrees=degrees),
             TerrainFeature(
                 vertices=[
                     Vec2(-10, 5),
@@ -77,7 +72,18 @@ class TerrainController:
                     Vec2(10, -5),
                     Vec2(-10, -5),
                 ],
-                flag=TerrainController.get_terrain_flags(TerrainModel.Types.BUILDING),
+                flag=TerrainService.get_terrain_flags(TerrainModel.Types.BUILDING),
             ),
-            TerrainController.TypeTag(TerrainModel.Types.BUILDING),
+            TerrainTypeTag(TerrainModel.Types.BUILDING),
         )
+
+    @staticmethod
+    def update_terrain(gs: GameState, body: TerrainModel) -> None:
+        transform = gs.get_component(body.feature_id, Transform)
+        feature = gs.get_component(body.feature_id, TerrainFeature)
+        tag = gs.get_component(body.feature_id, TerrainTypeTag)
+        transform.position = body.position
+        transform.degrees = body.degrees
+        feature.vertices = body.vertices
+        feature.flag = TerrainService.get_terrain_flags(body.terrain_type)
+        tag.type = body.terrain_type

@@ -6,7 +6,7 @@ from core.utils.vec2 import Vec2
 
 
 class SquadModel(BaseModel):
-    """Represents a single squad in the game."""
+    """Represents a view of a single squad in the game."""
 
     unit_id: int
     position: Vec2
@@ -37,9 +37,11 @@ class FireActionRequest(BaseModel):
 
 
 class TerrainModel(BaseModel):
-    """Represents a terrain feature in the game."""
+    """Represents a view of terrain feature in the game."""
 
     feature_id: int
+    position: Vec2
+    degrees: float
     vertices: list[Vec2]
     terrain_type: "Types"
 

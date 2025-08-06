@@ -26,6 +26,6 @@ class LinearTransform:
     @staticmethod
     def apply(vec_list: List[Vec2], transform: Transform) -> list[Vec2]:
         """Returns a new `list[Vec2` translated and rotated by `Transform`."""
-        rotated = LinearTransform.rotate(vec_list, transform.angle)
+        rotated = LinearTransform.rotate(vec_list, transform.degrees)
         translated = LinearTransform.translate(rotated, transform.position)
         return translated

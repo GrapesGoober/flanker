@@ -1,78 +1,68 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
 	import SvgMap from '$lib/map/svg-map.svelte';
+	import EditorTerrainFeatures from './editor-terrain-features.svelte';
+	import { EditorController } from './editor-controller.svelte';
+	import { GetSmoothedClosedPath } from '$lib/map/map-utils';
 
+	let controller: EditorController = $state(new EditorController());
 	let map: SvgMap | null = $state(null);
-	let terrainData: TerrainFeatureData[] = $state([]);
-	let coords: Vec2[] = $state([]);
+	let clickTarget: HTMLElement | null = $state(null);
 
-	onMount(async () => {
-		terrainData = await getTerrainData();
+	onMount(() => {
+		controller.refreshTerrain();
 	});
 
-	function AddVertex(event: MouseEvent) {
-		if (map == null) {
-			return;
-		}
-		let worldPos: Vec2 = map.ToWorldCoords({ x: event.clientX, y: event.clientY });
-		coords.push(worldPos);
+	function addVertex(event: MouseEvent) {
+		if (map == null) return;
+		const node = clickTarget as HTMLElement;
+		const rect = node.getBoundingClientRect();
+		const x = event.clientX - rect.x;
+		const y = event.clientY - rect.y;
+		let worldPos = map.ToWorldCoords({ x, y });
+		controller.addVertex(worldPos);
 	}
 
-	function ToSvgString(coords: { x: number; y: number }[]): string {
-		return coords.map((point) => `${point.x},${point.y}`).join(' ');
-	}
-	function ToPythonListString(coords: Vec2[]): string {
-		if (coords.length === 0) return 'pivot: Vec2(0, 0),\nvertices: []';
-		const pivot = coords[0];
-		if (pivot == undefined) {
-			return '';
-		}
-		const pivotStr = `Vec2(${Math.round(pivot.x)}, ${Math.round(pivot.y)}),\n`;
-		return (
-			`pivot= ${pivotStr}` +
-			'vertices= [\n' +
-			coords
-				.map((c) => `Vec2(${Math.round(c.x - pivot.x)}, ${Math.round(c.y - pivot.y)}),`)
-				.join('\n') +
-			'\n],'
-		);
+	function resetMode() {
+		controller.refreshTerrain();
+		controller.reset();
 	}
 
-	function refreshTerrainData() {
-		coords = [];
-		getTerrainData().then((data) => {
-			terrainData = data;
-		});
-	}
-
-	function copyToClipboard() {
-		navigator.clipboard.writeText(ToPythonListString(coords));
+	function drawMode() {
+		controller.drawMode();
 	}
 </script>
 
 {#snippet mapSvgSnippet()}
-	<polygon points={ToSvgString(coords)} class="editor" />
+	<EditorTerrainFeatures {controller} />
+	{#if controller.state.type == 'draw'}
+		<path d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)} class="draw-polygon" />
+	{/if}
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div onclick={AddVertex}>
-	<SvgMap svgSnippet={mapSvgSnippet} {terrainData} bind:this={map} />
+<div onclick={addVertex} bind:this={clickTarget}>
+	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
 </div>
 
-<button onclick={refreshTerrainData} style="margin-bottom: 1em;">Refresh</button>
-<button onclick={copyToClipboard} style="margin-bottom: 1em;">Copy</button>
+mode = {controller.state.type}
+<button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
+<button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
 
-<textarea
-	readonly
-	style="width: 100%; min-height: 120px; resize: vertical; font-family: monospace; margin-top: 1em;"
-	value={ToPythonListString(coords)}
-></textarea>
+{#if controller.state.type == 'selected'}
+	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />
+	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
+	degrees =
+	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
+{/if}
 
 <style lang="less">
 	@stroke-width: 1;
-	.editor {
+	.number-input {
+		width: 4em;
+	}
+	.draw-polygon {
 		fill: #ccd5ae88;
 		stroke: #c2cca0;
 		stroke-width: @stroke-width;

@@ -36,7 +36,11 @@ export interface paths {
          * @description Get all terrain tiles for the current game state.
          */
         get: operations["get_terrain_api_terrain_get"];
-        put?: never;
+        /**
+         * Update Terrain
+         * @description Edit the terrain polygon.
+         */
+        put: operations["update_terrain_api_terrain_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -84,6 +88,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Scene
+         * @description Resets the scene.
+         */
+        post: operations["reset_scene_api_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -124,7 +148,7 @@ export interface components {
         };
         /**
          * SquadModel
-         * @description Represents a single squad in the game.
+         * @description Represents a view of a single squad in the game.
          */
         SquadModel: {
             /** Unit Id */
@@ -143,11 +167,14 @@ export interface components {
         Status: "ACTIVE" | "PINNED" | "SUPPRESSED";
         /**
          * TerrainModel
-         * @description Represents a terrain feature in the game.
+         * @description Represents a view of terrain feature in the game.
          */
         TerrainModel: {
             /** Feature Id */
             feature_id: number;
+            position: components["schemas"]["Vec2"];
+            /** Degrees */
+            degrees: number;
             /** Vertices */
             vertices: components["schemas"]["Vec2"][];
             terrain_type: components["schemas"]["Types"];
@@ -223,6 +250,39 @@ export interface operations {
             };
         };
     };
+    update_terrain_api_terrain_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerrainModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     action_move_api_move_post: {
         parameters: {
             query?: never;
@@ -285,6 +345,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_scene_api_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

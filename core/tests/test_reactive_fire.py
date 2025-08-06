@@ -54,7 +54,7 @@ def fixture() -> Fixture:
 
     # 10x10 opaque box
     gs.add_entity(
-        Transform(position=Vec2(0, 0), angle=0),
+        Transform(position=Vec2(0, 0), degrees=0),
         TerrainFeature(
             vertices=[
                 Vec2(0, 0),
