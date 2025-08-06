@@ -13,6 +13,7 @@ class Intersection:
 
     point: Vec2
     feature: TerrainFeature
+    feature_id: int
 
 
 class IntersectSystem:
@@ -23,12 +24,12 @@ class IntersectSystem:
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
         """Returns iterable of intersections between the line segment and features."""
-        for _, feature, transform in gs.query(TerrainFeature, Transform):
+        for id, feature, transform in gs.query(TerrainFeature, Transform):
             if feature.flag & mask:
                 vertices = LinearTransform.apply(feature.vertices, transform)
                 for b1, b2 in pairwise(vertices):
                     if (intsct := IntersectSystem._get(start, end, b1, b2)) is not None:
-                        yield Intersection(intsct, feature)
+                        yield Intersection(intsct, feature, id)
 
     @staticmethod
     def _get(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2) -> Vec2 | None:
