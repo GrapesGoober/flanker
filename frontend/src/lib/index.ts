@@ -21,7 +21,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 		featureId: element.feature_id,
 		terrainType: element.terrain_type,
 		position: element.position,
-		angle: element.angle,
+		angle: element.degrees,
 		vertices: element.vertices
 	}));
 
@@ -34,7 +34,7 @@ export async function updateTerrainData(terrain: TerrainFeatureData) {
 			feature_id: terrain.featureId,
 			terrain_type: terrain.terrainType,
 			position: terrain.position,
-			angle: terrain.angle,
+			degrees: terrain.angle,
 			vertices: terrain.vertices
 		}
 	});

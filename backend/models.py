@@ -41,7 +41,7 @@ class TerrainModel(BaseModel):
 
     feature_id: int
     position: Vec2
-    angle: float
+    degrees: float
     vertices: list[Vec2]
     terrain_type: "Types"
 

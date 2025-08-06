@@ -98,10 +98,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Save Scene
+         * Reset Scene
          * @description Resets the scene.
          */
-        post: operations["save_scene_api_reset_post"];
+        post: operations["reset_scene_api_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -173,8 +173,8 @@ export interface components {
             /** Feature Id */
             feature_id: number;
             position: components["schemas"]["Vec2"];
-            /** Angle */
-            angle: number;
+            /** Degrees */
+            degrees: number;
             /** Vertices */
             vertices: components["schemas"]["Vec2"][];
             terrain_type: components["schemas"]["Types"];
@@ -349,7 +349,7 @@ export interface operations {
             };
         };
     };
-    save_scene_api_reset_post: {
+    reset_scene_api_reset_post: {
         parameters: {
             query?: never;
             header?: never;

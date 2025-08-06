@@ -36,7 +36,7 @@ class TerrainService:
                 TerrainModel(
                     feature_id=ent,
                     position=transform.position,
-                    angle=transform.degrees,
+                    degrees=transform.degrees,
                     vertices=terrain_feature.vertices,
                     terrain_type=terrain_tag.type,
                 )
@@ -61,10 +61,10 @@ class TerrainService:
         )
 
     @staticmethod
-    def add_building(gs: GameState, position: Vec2, angle: float) -> None:
+    def add_building(gs: GameState, position: Vec2, degrees: float) -> None:
         """Add a building terrain feature to the game state."""
         gs.add_entity(
-            Transform(position=position, degrees=angle),
+            Transform(position=position, degrees=degrees),
             TerrainFeature(
                 vertices=[
                     Vec2(-10, 5),
@@ -83,7 +83,7 @@ class TerrainService:
         feature = gs.get_component(body.feature_id, TerrainFeature)
         tag = gs.get_component(body.feature_id, TerrainTypeTag)
         transform.position = body.position
-        transform.degrees = body.angle
+        transform.degrees = body.degrees
         feature.vertices = body.vertices
         feature.flag = TerrainService.get_terrain_flags(body.terrain_type)
         tag.type = body.terrain_type
