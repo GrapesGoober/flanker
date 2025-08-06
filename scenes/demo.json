@@ -13,7 +13,7 @@
           "x": 40.0,
           "y": 30.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -32,7 +32,7 @@
           "x": 40.0,
           "y": 45.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -51,7 +51,7 @@
           "x": 40.0,
           "y": 60.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -70,7 +70,7 @@
           "x": 70.0,
           "y": 30.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -89,7 +89,7 @@
           "x": 70.0,
           "y": 45.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -108,7 +108,7 @@
           "x": 70.0,
           "y": 60.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -127,7 +127,7 @@
           "x": 100.0,
           "y": 30.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -146,7 +146,7 @@
           "x": 100.0,
           "y": 45.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -165,7 +165,7 @@
           "x": 100.0,
           "y": 60.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 0,
@@ -190,7 +190,7 @@
           "x": 327.0,
           "y": 391.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "CombatUnit": {
         "command_id": 10,
@@ -209,7 +209,7 @@
           "x": 225.0,
           "y": 175.0
         },
-        "angle": 55.0
+        "degrees": 55.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -242,7 +242,7 @@
           "x": 190.0,
           "y": 212.0
         },
-        "angle": -39.0
+        "degrees": -39.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -275,7 +275,7 @@
           "x": 169.0,
           "y": 232.5
         },
-        "angle": -45.0
+        "degrees": -45.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -308,7 +308,7 @@
           "x": 257.0,
           "y": 192.0
         },
-        "angle": -25.0
+        "degrees": -25.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -341,7 +341,7 @@
           "x": 293.5,
           "y": 233.0
         },
-        "angle": -20.0
+        "degrees": -20.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -374,7 +374,7 @@
           "x": 266.0,
           "y": 252.0
         },
-        "angle": 50.0
+        "degrees": 50.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -407,7 +407,7 @@
           "x": 306.0,
           "y": 204.0
         },
-        "angle": -17.0
+        "degrees": -17.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -440,7 +440,7 @@
           "x": 203.0,
           "y": 254.0
         },
-        "angle": 45.0
+        "degrees": 45.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -473,7 +473,7 @@
           "x": 297.0,
           "y": 305.0
         },
-        "angle": 2.0
+        "degrees": 2.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -506,7 +506,7 @@
           "x": 213.0,
           "y": 271.0
         },
-        "angle": 135.0
+        "degrees": 135.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -539,7 +539,7 @@
           "x": 453.0,
           "y": -47.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -624,7 +624,7 @@
           "x": 192.5,
           "y": 227.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -697,7 +697,7 @@
           "x": 231.5,
           "y": 264.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -762,7 +762,7 @@
           "x": -4.0,
           "y": 39.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -843,7 +843,7 @@
           "x": 65.0,
           "y": 151.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -904,7 +904,7 @@
           "x": 141.0,
           "y": 26.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -977,7 +977,7 @@
           "x": 113.5,
           "y": 207.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1074,7 +1074,7 @@
           "x": 381.0,
           "y": 139.0
         },
-        "angle": 1.0
+        "degrees": 1.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1151,7 +1151,7 @@
           "x": 265.5,
           "y": 109.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1236,7 +1236,7 @@
           "x": 318.5,
           "y": 12.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1313,7 +1313,7 @@
           "x": 370.0,
           "y": 210.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1374,7 +1374,7 @@
           "x": 276.0,
           "y": 183.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1443,7 +1443,7 @@
           "x": 238.0,
           "y": 209.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1500,7 +1500,7 @@
           "x": 306.0,
           "y": 256.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1561,7 +1561,7 @@
           "x": 368.5,
           "y": 190.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1642,7 +1642,7 @@
           "x": 169.0,
           "y": 206.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1703,7 +1703,7 @@
           "x": 204.0,
           "y": 169.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1772,7 +1772,7 @@
           "x": 179.0,
           "y": 128.0
         },
-        "angle": -3.0
+        "degrees": -3.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1845,7 +1845,7 @@
           "x": 192.5,
           "y": 163.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -1934,7 +1934,7 @@
           "x": 139.0,
           "y": 352.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2027,7 +2027,7 @@
           "x": 196.0,
           "y": 287.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2128,7 +2128,7 @@
           "x": 270.0,
           "y": 310.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2213,7 +2213,7 @@
           "x": 212.5,
           "y": 369.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2306,7 +2306,7 @@
           "x": 338.0,
           "y": 318.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2419,7 +2419,7 @@
           "x": 298.0,
           "y": 392.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2536,7 +2536,7 @@
           "x": 390.0,
           "y": 309.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2649,7 +2649,7 @@
           "x": 365.0,
           "y": 391.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2738,7 +2738,7 @@
           "x": 208.0,
           "y": 354.0
         },
-        "angle": -67.0
+        "degrees": -67.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2771,7 +2771,7 @@
           "x": 285.0,
           "y": 387.0
         },
-        "angle": -11.0
+        "degrees": -11.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2804,7 +2804,7 @@
           "x": 277.5,
           "y": 319.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2893,7 +2893,7 @@
           "x": 175.0,
           "y": 272.0
         },
-        "angle": -20.0
+        "degrees": -20.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -2962,7 +2962,7 @@
           "x": 155.0,
           "y": 344.0
         },
-        "angle": -1.0
+        "degrees": -1.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -3039,7 +3039,7 @@
           "x": 299.0,
           "y": 382.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [],
@@ -3055,7 +3055,7 @@
           "x": 344.0,
           "y": 322.0
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -3180,7 +3180,7 @@
           "x": 302.0,
           "y": 377.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
@@ -3245,7 +3245,7 @@
           "x": 18.0,
           "y": 368.5
         },
-        "angle": 0.0
+        "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
