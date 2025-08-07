@@ -1,6 +1,7 @@
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
 from core.intersect_system import IntersectSystem
+from core.utils.linear_transform import LinearTransform
 from core.utils.vec2 import Vec2
 
 
@@ -11,9 +12,14 @@ class LosSystem:
     def _is_inside(gs: GameState, terrain_id: int, ent: int) -> bool:
         """Checks whether the entity is inside the closed terrain feature."""
         ent_transform = gs.get_component(ent, Transform)
+        terrain = gs.get_component(terrain_id, TerrainFeature)
+        terrain_transform = gs.get_component(terrain_id, Transform)
 
-        # Cast a line to the right with the length 1000
-        end_point = ent_transform.position + Vec2(1000, 0)
+        # Cast a line from the ent to the right
+        # The end point must be further (outside) of polygon
+        coords = LinearTransform.apply(terrain.vertices, terrain_transform)
+        max_x = max(coords, key=lambda v: v.x).x
+        end_point = Vec2(max_x + 1, ent_transform.position.y)
         intersects = IntersectSystem.get(
             gs=gs,
             start=ent_transform.position,
