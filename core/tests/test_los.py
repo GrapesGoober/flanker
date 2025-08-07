@@ -34,6 +34,20 @@ def fixture() -> Fixture:
             flag=TerrainFeature.Flag.OPAQUE,
         ),
     )
+    # 5x5 opaque box to the left
+    gs.add_entity(
+        Transform(position=Vec2(0, 0), degrees=0),
+        TerrainFeature(
+            vertices=[
+                Vec2(-5, 0),
+                Vec2(-10, 0),
+                Vec2(-10, 5),
+                Vec2(-5, 5),
+                Vec2(-5, 0),
+            ],
+            flag=TerrainFeature.Flag.OPAQUE,
+        ),
+    )
 
     return Fixture(gs, source, target)
 
@@ -50,15 +64,24 @@ def test_los(fixture: Fixture) -> None:
     assert has_los == True, "Expects LOS as target in open view"
 
 
-def test_los_target_inside_polygon(fixture: Fixture) -> None:
+def test_los_target_inside_terrain(fixture: Fixture) -> None:
     transform = fixture.gs.get_component(fixture.target_id, Transform)
     transform.position = Vec2(5, 1)
     has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
-    assert has_los == True, "Expects LOS as target in polygon"
+    assert has_los == True, "Expects LOS as target in terrain"
 
 
-def test_los_source_inside_polygon(fixture: Fixture) -> None:
+def test_los_source_inside_terrain(fixture: Fixture) -> None:
     transform = fixture.gs.get_component(fixture.source_id, Transform)
     transform.position = Vec2(9, 9)
     has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
-    assert has_los == True, "Expects LOS as source in polygon"
+    assert has_los == True, "Expects LOS as source in terrain"
+
+
+def test_los_both_inside_terrain(fixture: Fixture) -> None:
+    source_transform = fixture.gs.get_component(fixture.source_id, Transform)
+    source_transform.position = Vec2(9, 9)
+    target_transform = fixture.gs.get_component(fixture.target_id, Transform)
+    target_transform.position = Vec2(-6, 4)
+    has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
+    assert has_los == True, "Expects LOS as both are in terrain"
