@@ -34,7 +34,7 @@ class TerrainService:
         ):
             terrains.append(
                 TerrainModel(
-                    feature_id=ent,
+                    terrain_id=ent,
                     position=transform.position,
                     degrees=transform.degrees,
                     vertices=terrain_feature.vertices,
@@ -79,11 +79,11 @@ class TerrainService:
 
     @staticmethod
     def update_terrain(gs: GameState, body: TerrainModel) -> None:
-        transform = gs.get_component(body.feature_id, Transform)
-        feature = gs.get_component(body.feature_id, TerrainFeature)
-        tag = gs.get_component(body.feature_id, TerrainTypeTag)
+        transform = gs.get_component(body.terrain_id, Transform)
+        terrain = gs.get_component(body.terrain_id, TerrainFeature)
+        tag = gs.get_component(body.terrain_id, TerrainTypeTag)
         transform.position = body.position
         transform.degrees = body.degrees
-        feature.vertices = body.vertices
-        feature.flag = TerrainService.get_terrain_flags(body.terrain_type)
+        terrain.vertices = body.vertices
+        terrain.flag = TerrainService.get_terrain_flags(body.terrain_type)
         tag.type = body.terrain_type

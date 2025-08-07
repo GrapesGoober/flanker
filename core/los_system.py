@@ -22,7 +22,7 @@ class LosSystem:
         )
         count = 0
         for intersect in intersects:
-            if intersect.feature_id == terrain_id:
+            if intersect.terrain_id == terrain_id:
                 count += 1
 
         # Even or zero count means outside
@@ -44,15 +44,15 @@ class LosSystem:
         )
 
         # Can see into one other terrain polygon
-        passed_one_polygon = False
+        passed_one_terrain = False
         for intersect in intersects:
             # Doesn't count current terrain
-            if LosSystem._is_inside(gs, intersect.feature_id, source_ent):
+            if LosSystem._is_inside(gs, intersect.terrain_id, source_ent):
                 continue
-            if not passed_one_polygon:
-                passed_one_polygon = True
+            if not passed_one_terrain:
+                passed_one_terrain = True
                 continue
             # Can only see into one polygon
-            if passed_one_polygon:
+            if passed_one_terrain:
                 return False
         return True

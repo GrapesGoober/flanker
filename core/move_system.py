@@ -35,7 +35,7 @@ class MoveSystem:
                 terrain_type = TerrainFeature.Flag.WALKABLE
 
         for intersect in IntersectSystem.get(gs, transform.position, to):
-            if not (intersect.feature.flag & terrain_type):
+            if not (intersect.terrain.flag & terrain_type):
                 return
 
         # For each subdivision step of move line, check interrupt

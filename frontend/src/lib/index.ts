@@ -5,7 +5,7 @@ const client = createClient<paths>();
 export type Vec2 = { x: number; y: number };
 
 export type TerrainFeatureData = {
-	featureId: number;
+	terrainId: number;
 	terrainType: 'FOREST' | 'ROAD' | 'FIELD' | 'WATER' | 'BUILDING';
 	position: Vec2;
 	degrees: number;
@@ -18,7 +18,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 
 	// Convert to a custom type in case API and types diverge
 	const terrainData: TerrainFeatureData[] = data.map((element) => ({
-		featureId: element.feature_id,
+		terrainId: element.terrain_id,
 		terrainType: element.terrain_type,
 		position: element.position,
 		degrees: element.degrees,
@@ -31,7 +31,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 export async function updateTerrainData(terrain: TerrainFeatureData) {
 	const { data, error } = await client.PUT('/api/terrain', {
 		body: {
-			feature_id: terrain.featureId,
+			terrain_id: terrain.terrainId,
 			terrain_type: terrain.terrainType,
 			position: terrain.position,
 			degrees: terrain.degrees,

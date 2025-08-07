@@ -39,7 +39,7 @@ class FireActionRequest(BaseModel):
 class TerrainModel(BaseModel):
     """Represents a view of terrain feature in the game."""
 
-    feature_id: int
+    terrain_id: int
     position: Vec2
     degrees: float
     vertices: list[Vec2]

@@ -12,8 +12,8 @@ class Intersection:
     """Represents intersection between line and terrain feature."""
 
     point: Vec2
-    feature: TerrainFeature
-    feature_id: int
+    terrain: TerrainFeature
+    terrain_id: int
 
 
 class IntersectSystem:

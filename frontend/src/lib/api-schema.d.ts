@@ -170,8 +170,8 @@ export interface components {
          * @description Represents a view of terrain feature in the game.
          */
         TerrainModel: {
-            /** Feature Id */
-            feature_id: number;
+            /** Terrain Id */
+            terrain_id: number;
             position: components["schemas"]["Vec2"];
             /** Degrees */
             degrees: number;
