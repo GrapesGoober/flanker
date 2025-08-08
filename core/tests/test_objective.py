@@ -7,14 +7,17 @@ from core.components import (
     FireControls,
     CombatUnit,
 )
+from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.los_system import Transform
+from core.objective_system import ObjectiveSystem
 from core.utils.vec2 import Vec2
 
 
 @dataclass
 class Fixture:
     gs: GameState
+    attacker_faction_id: int
     attacker_id: int
     target_id_1: int
     target_id_2: int
@@ -51,7 +54,23 @@ def fixture() -> Fixture:
 
     return Fixture(
         gs=gs,
+        attacker_faction_id=attacker_faction_id,
         attacker_id=attacker_id,
         target_id_1=target_id_1,
         target_id_2=target_id_2,
     )
+
+
+def test_kill_one(fixture: Fixture) -> None:
+    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert winner == None, "Expects no winner as objective not met"
+
+
+def test_kill_two(fixture: Fixture) -> None:
+    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
+    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_2)
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert (
+        winner == fixture.attacker_faction_id
+    ), "Expects attacker faction as winner as objective is met"
