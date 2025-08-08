@@ -91,3 +91,14 @@ class TerrainFeature:
         DRIVABLE = auto()
         WATER = auto()
         HILL = auto()
+
+
+@dataclass
+class EliminationObjective:
+    """
+    Represents the enemy elimination objective for a given faction.
+    """
+
+    target_faction_id: int
+    units_to_destroy: int
+    units_destroyed_counter: int
