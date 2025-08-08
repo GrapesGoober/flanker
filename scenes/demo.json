@@ -5,6 +5,11 @@
       "Faction": {
         "has_initiative": true
       },
+      "EliminationObjective": {
+        "target_faction_id": 10,
+        "units_to_destroy": 3,
+        "units_destroyed_counter": 0
+      },
       "PlayerFactionTag": {}
     },
     "1": {
