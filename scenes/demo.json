@@ -621,7 +621,7 @@
             "y": 495.5
           }
         ],
-        "is_closed_loop": true,
+        "is_closed_loop": false,
         "flag": 6
       },
       "TerrainTypeTag": {
@@ -695,7 +695,7 @@
             "y": -223.5
           }
         ],
-        "is_closed_loop": true,
+        "is_closed_loop": false,
         "flag": 6
       },
       "TerrainTypeTag": {
@@ -761,7 +761,7 @@
             "y": -34.0
           }
         ],
-        "is_closed_loop": true,
+        "is_closed_loop": false,
         "flag": 6
       },
       "TerrainTypeTag": {
