@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import pytest
 
 from core.components import (
-    FactionManager,
+    Faction,
     FireControls,
     TerrainFeature,
     CombatUnit,
@@ -27,17 +27,17 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    gs.add_entity(FactionManager())
+    gs.add_entity(Faction())
     attacker_id = gs.add_entity(
         attacker_unit := CombatUnit(
-            faction=FactionManager.FactionType.FACTION_A,
+            faction=Faction.FactionType.RED,
         ),
         fire_controls := FireControls(),
         Transform(position=Vec2(7.6, -10)),
     )
     target_id = gs.add_entity(
         CombatUnit(
-            faction=FactionManager.FactionType.FACTION_B,
+            faction=Faction.FactionType.BLUE,
         ),
         Transform(position=Vec2(15, 20)),
     )

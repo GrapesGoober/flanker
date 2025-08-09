@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import FactionManager, MoveControls, CombatUnit
+from core.components import Faction, MoveControls, CombatUnit
 from core.faction_system import FactionSystem
 from core.gamestate import GameState
 from core.los_system import Transform
@@ -18,10 +18,10 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    gs.add_entity(FactionManager())
+    gs.add_entity(Faction())
     unit_id = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=FactionManager.FactionType.FACTION_A),
+        CombatUnit(faction=Faction.FactionType.RED),
         Transform(position=Vec2(0, 0)),
     )
     return Fixture(gs, unit_id)
@@ -29,7 +29,7 @@ def fixture() -> Fixture:
 
 def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
-    FactionSystem.set_initiative(fixture.gs, FactionManager.FactionType.FACTION_B)
+    FactionSystem.set_initiative(fixture.gs, Faction.FactionType.BLUE)
     # Try to move the unit
     MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)

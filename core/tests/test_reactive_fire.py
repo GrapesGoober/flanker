@@ -3,7 +3,7 @@ import pytest
 
 from core.faction_system import FactionSystem
 from core.components import (
-    FactionManager,
+    Faction,
     FireControls,
     MoveControls,
     TerrainFeature,
@@ -28,20 +28,20 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    gs.add_entity(FactionManager())
+    gs.add_entity(Faction())
     unit_move = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=FactionManager.FactionType.FACTION_A),
+        CombatUnit(faction=Faction.FactionType.RED),
         Transform(position=Vec2(0, -10)),
     )
     unit_friendly = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=FactionManager.FactionType.FACTION_A),
+        CombatUnit(faction=Faction.FactionType.RED),
         Transform(position=Vec2(0, -11)),
     )
     unit_shoot = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=FactionManager.FactionType.FACTION_B),
+        CombatUnit(faction=Faction.FactionType.BLUE),
         fire_controls := FireControls(),
         Transform(position=Vec2(15, 20)),
     )

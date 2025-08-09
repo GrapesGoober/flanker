@@ -2,12 +2,12 @@
   "id_counter": 57,
   "entities": {
     "0": {
-      "FactionManager": {
-        "active_faction": "FACTION_A"
+      "Faction": {
+        "active_faction": "BLUE"
       },
       "EliminationObjective": {
-        "target_faction": "FACTION_B",
-        "winning_faction": "FACTION_A",
+        "target_faction": "RED",
+        "winning_faction": "BLUE",
         "units_to_destroy": 3,
         "units_destroyed_counter": 0
       }
@@ -21,7 +21,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -40,7 +40,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -59,7 +59,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -78,7 +78,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -97,7 +97,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -116,7 +116,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -135,7 +135,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -154,7 +154,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -173,7 +173,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "BLUE",
         "status": "ACTIVE"
       },
       "MoveControls": {
@@ -192,7 +192,7 @@
         "degrees": 0.0
       },
       "CombatUnit": {
-        "faction": "FACTION_A",
+        "faction": "RED",
         "status": "ACTIVE"
       },
       "MoveControls": {

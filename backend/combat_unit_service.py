@@ -1,7 +1,7 @@
 from core.faction_system import FactionSystem
 from core.components import (
     CombatUnit,
-    FactionManager,
+    Faction,
     FireControls,
     MoveControls,
     Transform,
@@ -19,7 +19,7 @@ class CombatUnitService:
         gs: GameState,
         pos: Vec2,
         command_id: int,
-        faction: FactionManager.FactionType,
+        faction: Faction.FactionType,
     ) -> int:
         """Add a new squad to the game state for a given faction."""
         return gs.add_entity(
@@ -35,8 +35,8 @@ class CombatUnitService:
     @staticmethod
     def get_units(gs: GameState) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
-        # Assume player faction is FACTION_A
-        faction = FactionManager.FactionType.FACTION_A
+        # Assume player faction is BLUE
+        faction = Faction.FactionType.BLUE
         squads: list[SquadModel] = []
         for ent, unit, transform, fire in gs.query(
             CombatUnit,

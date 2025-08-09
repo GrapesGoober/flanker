@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import FactionManager, MoveControls, TerrainFeature, CombatUnit
+from core.components import Faction, MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
 from core.los_system import Transform
 from core.move_system import MoveSystem
@@ -17,11 +17,11 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    gs.add_entity(FactionManager())
+    gs.add_entity(Faction())
     # Rifle Squad
     id = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=FactionManager.FactionType.FACTION_A),
+        CombatUnit(faction=Faction.FactionType.RED),
         Transform(position=Vec2(0, -10)),
     )
     # 10x10 opaque box

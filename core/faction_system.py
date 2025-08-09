@@ -1,5 +1,5 @@
 from core.gamestate import GameState
-from core.components import CombatUnit, FactionManager, FireControls
+from core.components import CombatUnit, Faction, FireControls
 
 
 class FactionSystem:
@@ -8,20 +8,20 @@ class FactionSystem:
     @staticmethod
     def flip_initiative(gs: GameState) -> None:
         """Flips the current initiative of command units."""
-        for _, faction in gs.query(FactionManager):
+        for _, faction in gs.query(Faction):
             match faction.active_faction:
-                case FactionManager.FactionType.FACTION_A:
-                    faction.active_faction = FactionManager.FactionType.FACTION_B
-                case FactionManager.FactionType.FACTION_B:
-                    faction.active_faction = FactionManager.FactionType.FACTION_A
+                case Faction.FactionType.RED:
+                    faction.active_faction = Faction.FactionType.BLUE
+                case Faction.FactionType.BLUE:
+                    faction.active_faction = Faction.FactionType.RED
         # Reset reactive fire
         for _, fire_controls in gs.query(FireControls):
             fire_controls.can_reactive_fire = True
 
     @staticmethod
-    def set_initiative(gs: GameState, faction: FactionManager.FactionType) -> None:
+    def set_initiative(gs: GameState, faction: Faction.FactionType) -> None:
         """Sets the given faction to have the initiative."""
-        for _, faction_manager in gs.query(FactionManager):
+        for _, faction_manager in gs.query(Faction):
             faction_manager.active_faction = faction
         # Reset reactive fire
         for _, unit, fire_controls in gs.query(CombatUnit, FireControls):
@@ -35,7 +35,7 @@ class FactionSystem:
         return unit.faction == FactionSystem.get_initiative(gs)
 
     @staticmethod
-    def get_initiative(gs: GameState) -> FactionManager.FactionType:
-        for _, faction in gs.query(FactionManager):
+    def get_initiative(gs: GameState) -> Faction.FactionType:
+        for _, faction in gs.query(Faction):
             return faction.active_faction
         raise Exception("FactionManager component not found")
