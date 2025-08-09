@@ -114,5 +114,6 @@ class EliminationObjective:
     """
 
     target_faction: FactionManager.FactionType
+    winning_faction: FactionManager.FactionType
     units_to_destroy: int
     units_destroyed_counter: int

@@ -111,7 +111,7 @@ class FireSystem:
             # Check that spotter is a valid spotter for reactive fire
             if spotter_id == unit_id:
                 continue
-            if unit.command_id == spotter_unit.command_id:
+            if unit.faction == spotter_unit.faction:
                 continue
             if fire_controls.can_reactive_fire == False:
                 continue

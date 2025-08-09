@@ -1,4 +1,8 @@
-from core.components import CombatUnit, EliminationObjective, Faction
+from core.components import (
+    CombatUnit,
+    EliminationObjective,
+    FactionManager,
+)
 from core.gamestate import GameState
 
 
@@ -14,7 +18,7 @@ class ObjectiveSystem:
             objective.units_destroyed_counter += 1
 
     @staticmethod
-    def get_winning_faction(gs: GameState) -> int | None:
-        for id, _, objective in gs.query(Faction, EliminationObjective):
-            if objective.units_destroyed_counter == objective.units_to_destroy:
-                return id
+    def get_winning_faction(gs: GameState) -> FactionManager.FactionType | None:
+        for _, _, objective in gs.query(FactionManager, EliminationObjective):
+            if objective.units_destroyed_counter >= objective.units_to_destroy:
+                return objective.winning_faction
