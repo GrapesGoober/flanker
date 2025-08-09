@@ -16,6 +16,19 @@ class Transform:
 
 
 @dataclass
+class FactionManager:
+    """
+    Singleton component that keeps track of faction & initiatives.
+    """
+
+    class FactionType(Enum):
+        FACTION_A = "FACTION_A"
+        FACTION_B = "FACTION_B"
+
+    active_faction: FactionType = FactionType.FACTION_A
+
+
+@dataclass
 class CombatUnit:
     """
     Marks an entity as a direct combat-capable unit.
@@ -27,7 +40,8 @@ class CombatUnit:
         PINNED = "PINNED"
         SUPPRESSED = "SUPPRESSED"
 
-    command_id: int
+    faction: FactionManager.FactionType
+    command_id: int | None = None
     status: Status = Status.ACTIVE
 
 
@@ -99,6 +113,6 @@ class EliminationObjective:
     Represents the enemy elimination objective for a given faction.
     """
 
-    target_faction_id: int
+    target_faction: FactionManager.FactionType
     units_to_destroy: int
     units_destroyed_counter: int

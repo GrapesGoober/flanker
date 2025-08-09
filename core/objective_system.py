@@ -1,5 +1,4 @@
-from core.components import EliminationObjective, Faction
-from core.faction_system import FactionSystem
+from core.components import CombatUnit, EliminationObjective, Faction
 from core.gamestate import GameState
 
 
@@ -8,10 +7,9 @@ class ObjectiveSystem:
 
     @staticmethod
     def count_kill(gs: GameState, unit_destroyed_id: int) -> None:
+        unit = gs.get_component(unit_destroyed_id, CombatUnit)
         for _, objective in gs.query(EliminationObjective):
-            if objective.target_faction_id != FactionSystem.get_faction_id(
-                gs, unit_destroyed_id
-            ):
+            if objective.target_faction != unit.faction:
                 continue
             objective.units_destroyed_counter += 1
 

@@ -27,8 +27,7 @@ class FireSystem:
     ) -> bool:
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
-        attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
-        target_faction = FactionSystem.get_faction_id(gs, target_id)
+        target_unit = gs.get_component(target_id, CombatUnit)
 
         # Check if attacker can attack
         if attacker_unit.status not in (
@@ -42,7 +41,7 @@ class FireSystem:
             return False
 
         # Check that the target faction is not the same as attacker
-        if attacker_faction == target_faction:
+        if attacker_unit.faction == target_unit.faction:
             return False
 
         # Check if target is in line of sight
@@ -69,9 +68,8 @@ class FireSystem:
             return FireResult(is_valid=False)
 
         target_unit = gs.get_component(target_id, CombatUnit)
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
         fire_controls = gs.get_component(attacker_id, FireControls)
-        attacker_faction = FactionSystem.get_faction_id(gs, attacker_id)
-        target_faction = FactionSystem.get_faction_id(gs, target_id)
 
         # Determine fire outcome, using overriden value if found
         if fire_controls.override:
@@ -84,20 +82,20 @@ class FireSystem:
         if outcome <= FireControls.Outcomes.MISS:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
-            FactionSystem.set_initiative(gs, target_faction)
+            FactionSystem.set_initiative(gs, target_unit.faction)
             return FireResult(is_valid=True, is_hit=False)
         elif outcome <= FireControls.Outcomes.PIN:
             if target_unit.status != CombatUnit.Status.SUPPRESSED:
                 target_unit.status = CombatUnit.Status.PINNED
-            FactionSystem.set_initiative(gs, target_faction)
+            FactionSystem.set_initiative(gs, target_unit.faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target_unit.status = CombatUnit.Status.SUPPRESSED
-            FactionSystem.set_initiative(gs, attacker_faction)
+            FactionSystem.set_initiative(gs, attacker_unit.faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.KILL:
             CommandSystem.kill_unit(gs, target_id)
-            FactionSystem.set_initiative(gs, attacker_faction)
+            FactionSystem.set_initiative(gs, attacker_unit.faction)
             return FireResult(is_valid=True, is_hit=True)
         return FireResult(is_valid=False)
 
