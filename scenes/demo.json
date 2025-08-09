@@ -2,6 +2,9 @@
   "id_counter": 57,
   "entities": {
     "0": {
+      "FactionManager": {
+        "active_faction": "FACTION_A"
+      },
       "EliminationObjective": {
         "target_faction": "FACTION_B",
         "winning_faction": "FACTION_A",

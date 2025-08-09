@@ -46,16 +46,6 @@ class CombatUnit:
 
 
 @dataclass
-class Faction:
-    """
-    Marks a unit as a faction commander. Entity with this component
-    is expected to be the root node of the command hierarchy tree.
-    """
-
-    has_initiative: bool
-
-
-@dataclass
 class MoveControls:
     """
     Marks entity as movable, along with its. Used by move action to

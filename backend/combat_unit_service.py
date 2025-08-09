@@ -1,8 +1,7 @@
-from backend.tag_components import OpponentFactionTag, PlayerFactionTag
 from core.faction_system import FactionSystem
 from core.components import (
-    Faction,
     CombatUnit,
+    FactionManager,
     FireControls,
     MoveControls,
     Transform,
@@ -16,65 +15,46 @@ class CombatUnitService:
     """Provides static methods to add and query combat units and factions."""
 
     @staticmethod
-    def add_player_faction(gs: GameState, has_initiative: bool) -> int:
-        """Add a new faction to the game state."""
-        return gs.add_entity(
-            Faction(has_initiative),
-            PlayerFactionTag(),
-        )
-
-    @staticmethod
-    def add_opponent_faction(gs: GameState, has_initiative: bool) -> int:
-        """Add a new faction to the game state."""
-        return gs.add_entity(
-            Faction(has_initiative),
-            OpponentFactionTag(),
-        )
-
-    @staticmethod
-    def get_player_faction_id(gs: GameState) -> int:
-        for id, _, _ in gs.query(PlayerFactionTag, Faction):
-            return id
-        raise Exception("Player faction not found in save file")
-
-    @staticmethod
-    def get_opponent_faction_id(gs: GameState) -> int:
-        for id, _, _ in gs.query(OpponentFactionTag, Faction):
-            return id
-        raise Exception("Player faction not found in save file")
-
-    @staticmethod
-    def add_squad(gs: GameState, pos: Vec2, command_id: int) -> int:
+    def add_squad(
+        gs: GameState,
+        pos: Vec2,
+        command_id: int,
+        faction: FactionManager.FactionType,
+    ) -> int:
         """Add a new squad to the game state for a given faction."""
         return gs.add_entity(
             Transform(position=pos),
             MoveControls(),
-            CombatUnit(command_id=command_id),
+            CombatUnit(
+                command_id=command_id,
+                faction=faction,
+            ),
             FireControls(),
         )
 
     @staticmethod
     def get_units(gs: GameState) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
-        faction_id = CombatUnitService.get_player_faction_id(gs)
-        faction = gs.get_component(faction_id, Faction)
+        # Assume player faction is FACTION_A
+        faction = FactionManager.FactionType.FACTION_A
         squads: list[SquadModel] = []
         for ent, unit, transform, fire in gs.query(
             CombatUnit,
             Transform,
             FireControls,
         ):
-            unit_faction_id = FactionSystem.get_faction_id(gs, ent)
             squads.append(
                 SquadModel(
                     unit_id=ent,
                     position=transform.position,
                     status=unit.status,
-                    is_friendly=(unit_faction_id == faction_id),
+                    is_friendly=(unit.faction == faction),
                     no_fire=not fire.can_reactive_fire,
                 )
             )
 
+        has_initiative = FactionSystem.get_initiative(gs) == faction
         return CombatUnitsViewState(
-            has_initiative=faction.has_initiative, squads=squads
+            has_initiative=has_initiative,
+            squads=squads,
         )
