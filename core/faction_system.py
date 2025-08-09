@@ -32,7 +32,10 @@ class FactionSystem:
     def has_initiative(gs: GameState, unit_id: int) -> bool:
         """Check whether the unit's faction has initiative."""
         unit = gs.get_component(unit_id, CombatUnit)
-        faction_type = unit.faction
+        return unit.faction == FactionSystem.get_initiative(gs)
+
+    @staticmethod
+    def get_initiative(gs: GameState) -> FactionManager.FactionType:
         for _, faction in gs.query(FactionManager):
-            return faction.active_faction == faction_type
-        return False
+            return faction.active_faction
+        raise Exception("FactionManager component not found")
