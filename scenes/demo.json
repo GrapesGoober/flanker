@@ -3074,23 +3074,6 @@
         "type": "FOREST"
       }
     },
-    "53": {
-      "Transform": {
-        "position": {
-          "x": 299.0,
-          "y": 382.5
-        },
-        "degrees": 0.0
-      },
-      "TerrainFeature": {
-        "vertices": [],
-        "is_closed_loop": true,
-        "flag": 3
-      },
-      "TerrainTypeTag": {
-        "type": "FOREST"
-      }
-    },
     "54": {
       "Transform": {
         "position": {
