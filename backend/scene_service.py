@@ -2,8 +2,11 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 from backend import CombatUnitService
-from backend.combat_unit_service import OpponentFactionTag
-from backend.tag_components import PlayerFactionTag, TerrainTypeTag
+from backend.tag_components import (
+    OpponentFactionTag,
+    PlayerFactionTag,
+    TerrainTypeTag,
+)
 from core.gamestate import GameState
 from core import components
 
