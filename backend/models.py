@@ -18,7 +18,12 @@ class SquadModel(BaseModel):
 class CombatUnitsViewState(BaseModel):
     """View state for all combat units in the game."""
 
-    is_objectives_completed: bool
+    class ObjectiveState(Enum):
+        INCOMPLETE = "INCOMPLETE"
+        COMPLETED = "COMPLETED"
+        FAILED = "FAILED"
+
+    objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
 

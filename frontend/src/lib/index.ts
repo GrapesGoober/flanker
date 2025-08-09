@@ -42,6 +42,7 @@ export async function updateTerrainData(terrain: TerrainFeatureData) {
 }
 
 export type CombatUnitsData = {
+	objectivesState: 'INCOMPLETE' | 'COMPLETED' | 'FAILED';
 	hasInitiative: boolean;
 	squads: RifleSquadData[];
 };
@@ -56,6 +57,7 @@ export type RifleSquadData = {
 
 function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']): CombatUnitsData {
 	return {
+		objectivesState: data.objective_state,
 		hasInitiative: data.has_initiative,
 		squads: data.squads.map((squad) => ({
 			unitId: squad.unit_id,

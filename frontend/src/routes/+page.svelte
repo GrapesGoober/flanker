@@ -9,6 +9,12 @@
 	onMount(async () => {
 		await controller.initializeAsync();
 	});
+
+	$effect(() => {
+		if (controller.unitData.objectivesState == 'COMPLETED') {
+			alert('Objectives Completed');
+		}
+	});
 </script>
 
 <GameplayMap bind:controller />

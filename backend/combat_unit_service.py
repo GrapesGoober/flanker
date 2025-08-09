@@ -55,9 +55,17 @@ class CombatUnitService:
             )
 
         has_initiative = InitiativeSystem.get_initiative(gs) == faction
-        completed = ObjectiveSystem.get_winning_faction(gs) == faction
+        winning_faction = ObjectiveSystem.get_winning_faction(gs)
+
+        if winning_faction == faction:
+            objective_state = CombatUnitsViewState.ObjectiveState.COMPLETED
+        elif winning_faction == None:
+            objective_state = CombatUnitsViewState.ObjectiveState.INCOMPLETE
+        else:
+            objective_state = CombatUnitsViewState.ObjectiveState.FAILED
+
         return CombatUnitsViewState(
-            is_objectives_completed=completed,
+            objective_state=objective_state,
             has_initiative=has_initiative,
             squads=squads,
         )

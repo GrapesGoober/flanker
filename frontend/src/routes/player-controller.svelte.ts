@@ -18,6 +18,7 @@ type PlayerControllerState =
 export class PlayerController {
 	terrainData: TerrainFeatureData[] = $state([]);
 	unitData: CombatUnitsData = $state({
+		objectivesState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []
 	});

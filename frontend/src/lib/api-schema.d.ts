@@ -117,6 +117,7 @@ export interface components {
          * @description View state for all combat units in the game.
          */
         CombatUnitsViewState: {
+            objective_state: components["schemas"]["ObjectiveState"];
             /** Has Initiative */
             has_initiative: boolean;
             /** Squads */
@@ -146,6 +147,11 @@ export interface components {
             unit_id: number;
             to: components["schemas"]["Vec2"];
         };
+        /**
+         * ObjectiveState
+         * @enum {string}
+         */
+        ObjectiveState: "INCOMPLETE" | "COMPLETED" | "FAILED";
         /**
          * SquadModel
          * @description Represents a view of a single squad in the game.
