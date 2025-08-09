@@ -3,7 +3,7 @@ import pytest
 
 from core.components import (
     EliminationObjective,
-    Faction,
+    InitiativeState,
     FireControls,
     CombatUnit,
 )
@@ -27,25 +27,25 @@ def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
     gs.add_entity(
-        Faction(),
+        InitiativeState(),
         EliminationObjective(
-            target_faction=Faction.FactionType.BLUE,
-            winning_faction=Faction.FactionType.RED,
+            target_faction=InitiativeState.Faction.BLUE,
+            winning_faction=InitiativeState.Faction.RED,
             units_to_destroy=2,
             units_destroyed_counter=0,
         ),
     )
     attacker_id = gs.add_entity(
-        CombatUnit(faction=Faction.FactionType.RED),
+        CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireControls.Outcomes.KILL),
         Transform(position=Vec2(0, 0)),
     )
     target_id_1 = gs.add_entity(
-        CombatUnit(faction=Faction.FactionType.BLUE),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(1, 1)),
     )
     target_id_2 = gs.add_entity(
-        CombatUnit(faction=Faction.FactionType.BLUE),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(2, 2)),
     )
 
@@ -68,5 +68,5 @@ def test_kill_two(fixture: Fixture) -> None:
     FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_2)
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert (
-        winner == Faction.FactionType.RED
+        winner == InitiativeState.Faction.RED
     ), "Expects attacker faction as winner as objective is met"

@@ -2,15 +2,15 @@ from dataclasses import dataclass
 import pytest
 
 from core.command_system import CommandSystem
-from core.faction_system import FactionSystem
-from core.components import CombatUnit, Faction
+from core.faction_system import InitiativeSystem
+from core.components import CombatUnit, InitiativeState
 from core.gamestate import GameState
 
 
 @dataclass
 class Fixture:
     gs: GameState
-    faction: Faction
+    faction: InitiativeState
     unit_root: int
     unit_id_1: int
     unit_id_2: int
@@ -21,28 +21,28 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     gs.add_entity(
-        faction := Faction(),
+        faction := InitiativeState(),
     )
     unit_root = gs.add_entity(
         CombatUnit(
-            faction=Faction.FactionType.RED,
+            faction=InitiativeState.Faction.RED,
         )
     )
     unit_id_1 = gs.add_entity(
         CombatUnit(
-            faction=Faction.FactionType.RED,
+            faction=InitiativeState.Faction.RED,
             command_id=unit_root,
         )
     )
     unit_id_2 = gs.add_entity(
         CombatUnit(
-            faction=Faction.FactionType.RED,
+            faction=InitiativeState.Faction.RED,
             command_id=unit_id_1,
         )
     )
     unit_id_3 = gs.add_entity(
         CombatUnit(
-            faction=Faction.FactionType.RED,
+            faction=InitiativeState.Faction.RED,
             command_id=unit_id_1,
         )
     )
@@ -58,20 +58,20 @@ def fixture() -> Fixture:
 
 
 def test_initiative(fixture: Fixture) -> None:
-    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_1)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == True, "Expects FACTION_A to have initiative"
 
-    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_2)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == True, "Expects FACTION_A to have initiative"
 
 
 def test_no_initiative(fixture: Fixture) -> None:
-    fixture.faction.active_faction = Faction.FactionType.BLUE
+    fixture.faction.faction = InitiativeState.Faction.BLUE
 
-    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_1)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == False, "Expects FACTION_A to no longer have initiative"
 
-    has_initiative = FactionSystem.has_initiative(fixture.gs, fixture.unit_id_2)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == False, "Expects FACTION_A to no longer have initiative"
 
 

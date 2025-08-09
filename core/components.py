@@ -16,16 +16,16 @@ class Transform:
 
 
 @dataclass
-class Faction:
+class InitiativeState:
     """
     Singleton component that keeps track of faction & initiatives.
     """
 
-    class FactionType(Enum):
+    class Faction(Enum):
         BLUE = "BLUE"
         RED = "RED"
 
-    active_faction: FactionType = FactionType.RED
+    faction: Faction = Faction.RED
 
 
 @dataclass
@@ -40,7 +40,7 @@ class CombatUnit:
         PINNED = "PINNED"
         SUPPRESSED = "SUPPRESSED"
 
-    faction: Faction.FactionType
+    faction: InitiativeState.Faction
     command_id: int | None = None
     status: Status = Status.ACTIVE
 
@@ -103,7 +103,7 @@ class EliminationObjective:
     Represents the enemy elimination objective for a given faction.
     """
 
-    target_faction: Faction.FactionType
-    winning_faction: Faction.FactionType
+    target_faction: InitiativeState.Faction
+    winning_faction: InitiativeState.Faction
     units_to_destroy: int
     units_destroyed_counter: int

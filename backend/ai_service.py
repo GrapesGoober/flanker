@@ -1,5 +1,5 @@
-from core.components import Faction
-from core.faction_system import FactionSystem
+from core.components import InitiativeState
+from core.faction_system import InitiativeSystem
 from core.gamestate import GameState
 
 
@@ -10,8 +10,9 @@ class AiService:
     def play(gs: GameState) -> None:
         """Perform a basic AI turn for the given faction."""
         # Assume that the AI plays RED
-        if FactionSystem.get_initiative(gs) != Faction.FactionType.RED:
+        faction = InitiativeState.Faction.RED
+        if InitiativeSystem.get_initiative(gs) != faction:
             return
 
         # For now, pass on initiative without any actions
-        FactionSystem.flip_initiative(gs)
+        InitiativeSystem.flip_initiative(gs)

@@ -2,13 +2,13 @@ from dataclasses import dataclass
 import pytest
 
 from core.components import (
-    Faction,
+    InitiativeState,
     FireControls,
     TerrainFeature,
     CombatUnit,
     Transform,
 )
-from core.faction_system import FactionSystem
+from core.faction_system import InitiativeSystem
 from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.utils.vec2 import Vec2
@@ -27,17 +27,17 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    gs.add_entity(Faction())
+    gs.add_entity(InitiativeState())
     attacker_id = gs.add_entity(
         attacker_unit := CombatUnit(
-            faction=Faction.FactionType.RED,
+            faction=InitiativeState.Faction.RED,
         ),
         fire_controls := FireControls(),
         Transform(position=Vec2(7.6, -10)),
     )
     target_id = gs.add_entity(
         CombatUnit(
-            faction=Faction.FactionType.BLUE,
+            faction=InitiativeState.Faction.BLUE,
         ),
         Transform(position=Vec2(15, 20)),
     )
@@ -83,7 +83,7 @@ def test_no_los(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as it is obstructed"
     assert (
-        FactionSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects shooter to retain initiative"
 
 
@@ -100,7 +100,7 @@ def test_no_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as fire action MISS"
     assert (
-        FactionSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
@@ -117,7 +117,7 @@ def test_pin_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.PINNED
     ), "Target expects to be PINNED as it is shot"
     assert (
-        FactionSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
@@ -134,7 +134,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be SUPPRESSED as it is shot"
     assert (
-        FactionSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
     fixture.fire_controls.override = FireControls.Outcomes.PIN
@@ -148,7 +148,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Expects PIN outcome to not overwrite SUPPRESSED status."
     assert (
-        FactionSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
@@ -163,7 +163,7 @@ def test_kill_fire(fixture: Fixture) -> None:
     target = fixture.gs.try_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
-        FactionSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
 

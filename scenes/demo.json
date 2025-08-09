@@ -2,8 +2,8 @@
   "id_counter": 57,
   "entities": {
     "0": {
-      "Faction": {
-        "active_faction": "BLUE"
+      "InitiativeState": {
+        "faction": "BLUE"
       },
       "EliminationObjective": {
         "target_faction": "RED",

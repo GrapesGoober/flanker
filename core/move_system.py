@@ -6,7 +6,7 @@ from core.components import (
 )
 from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.faction_system import FactionSystem
+from core.faction_system import InitiativeSystem
 from core.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
 
@@ -25,7 +25,7 @@ class MoveSystem:
 
         if unit.status != CombatUnit.Status.ACTIVE:
             return
-        if not FactionSystem.has_initiative(gs, unit_id):
+        if not InitiativeSystem.has_initiative(gs, unit_id):
             return
 
         # Check move action though correct terrain type

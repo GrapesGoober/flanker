@@ -3,7 +3,7 @@ import random
 from core.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
-from core.faction_system import FactionSystem
+from core.faction_system import InitiativeSystem
 from core.los_system import LosSystem
 
 
@@ -35,9 +35,9 @@ class FireSystem:
             CombatUnit.Status.PINNED,
         ):
             return False
-        if is_reactive and FactionSystem.has_initiative(gs, attacker_id):
+        if is_reactive and InitiativeSystem.has_initiative(gs, attacker_id):
             return False  # No initiative for reactive fire
-        if not is_reactive and not FactionSystem.has_initiative(gs, attacker_id):
+        if not is_reactive and not InitiativeSystem.has_initiative(gs, attacker_id):
             return False
 
         # Check that the target faction is not the same as attacker
@@ -82,20 +82,20 @@ class FireSystem:
         if outcome <= FireControls.Outcomes.MISS:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
-            FactionSystem.set_initiative(gs, target_unit.faction)
+            InitiativeSystem.set_initiative(gs, target_unit.faction)
             return FireResult(is_valid=True, is_hit=False)
         elif outcome <= FireControls.Outcomes.PIN:
             if target_unit.status != CombatUnit.Status.SUPPRESSED:
                 target_unit.status = CombatUnit.Status.PINNED
-            FactionSystem.set_initiative(gs, target_unit.faction)
+            InitiativeSystem.set_initiative(gs, target_unit.faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target_unit.status = CombatUnit.Status.SUPPRESSED
-            FactionSystem.set_initiative(gs, attacker_unit.faction)
+            InitiativeSystem.set_initiative(gs, attacker_unit.faction)
             return FireResult(is_valid=True, is_hit=True)
         elif outcome <= FireControls.Outcomes.KILL:
             CommandSystem.kill_unit(gs, target_id)
-            FactionSystem.set_initiative(gs, attacker_unit.faction)
+            InitiativeSystem.set_initiative(gs, attacker_unit.faction)
             return FireResult(is_valid=True, is_hit=True)
         return FireResult(is_valid=False)
 
