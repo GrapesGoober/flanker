@@ -18,6 +18,7 @@ class SquadModel(BaseModel):
 class CombatUnitsViewState(BaseModel):
     """View state for all combat units in the game."""
 
+    is_objectives_completed: bool
     has_initiative: bool
     squads: list[SquadModel]
 

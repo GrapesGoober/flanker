@@ -1,3 +1,4 @@
+from core.command_system import ObjectiveSystem
 from core.faction_system import InitiativeSystem
 from core.components import (
     CombatUnit,
@@ -54,7 +55,9 @@ class CombatUnitService:
             )
 
         has_initiative = InitiativeSystem.get_initiative(gs) == faction
+        completed = ObjectiveSystem.get_winning_faction(gs) == faction
         return CombatUnitsViewState(
+            is_objectives_completed=completed,
             has_initiative=has_initiative,
             squads=squads,
         )
