@@ -84,6 +84,7 @@ class TerrainFeature:
     """
 
     vertices: list[Vec2]
+    is_closed_loop: bool = True
     flag: int = -1
 
     class Flag(IntFlag):

@@ -229,6 +229,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -262,6 +263,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -295,6 +297,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -328,6 +331,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -361,6 +365,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -394,6 +399,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -427,6 +433,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -460,6 +467,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -493,6 +501,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -526,6 +535,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -611,6 +621,7 @@
             "y": 495.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 6
       },
       "TerrainTypeTag": {
@@ -684,6 +695,7 @@
             "y": -223.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 6
       },
       "TerrainTypeTag": {
@@ -749,6 +761,7 @@
             "y": -34.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 6
       },
       "TerrainTypeTag": {
@@ -830,6 +843,7 @@
             "y": -2.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -891,6 +905,7 @@
             "y": -14.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -964,6 +979,7 @@
             "y": -1.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1061,6 +1077,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1138,6 +1155,7 @@
             "y": 6.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1223,6 +1241,7 @@
             "y": -12.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1300,6 +1319,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1361,6 +1381,7 @@
             "y": -0.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1430,6 +1451,7 @@
             "y": 5.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1487,6 +1509,7 @@
             "y": -1.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1548,6 +1571,7 @@
             "y": -0.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1629,6 +1653,7 @@
             "y": -4.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -1690,6 +1715,7 @@
             "y": -24.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -1759,6 +1785,7 @@
             "y": -13.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -1832,6 +1859,7 @@
             "y": -15.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -1921,6 +1949,7 @@
             "y": -23.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -2014,6 +2043,7 @@
             "y": 12.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2115,6 +2145,7 @@
             "y": 1.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2200,6 +2231,7 @@
             "y": -4.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2293,6 +2325,7 @@
             "y": 10.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2406,6 +2439,7 @@
             "y": 0.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2523,6 +2557,7 @@
             "y": 4.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2636,6 +2671,7 @@
             "y": 3.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2725,6 +2761,7 @@
             "y": 15.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 2
       },
       "TerrainTypeTag": {
@@ -2758,6 +2795,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -2791,6 +2829,7 @@
             "y": -5.0
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -2880,6 +2919,7 @@
             "y": -1.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -2949,6 +2989,7 @@
             "y": -0.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -3026,6 +3067,7 @@
             "y": 6.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -3042,6 +3084,7 @@
       },
       "TerrainFeature": {
         "vertices": [],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -3167,6 +3210,7 @@
             "y": -0.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -3232,6 +3276,7 @@
             "y": 0.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
@@ -3317,6 +3362,7 @@
             "y": 0.5
           }
         ],
+        "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": {
