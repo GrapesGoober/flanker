@@ -1,13 +1,17 @@
 <script lang="ts">
 	import RifleSquad from '$lib/rifle-squad.svelte';
-	import SvgMap from '$lib/map/svg-map.svelte';
 	import Arrow from '$lib/svg-icons/arrow.svelte';
 	import { PlayerController } from './player-controller.svelte';
 	import BlankUnit from '$lib/svg-icons/blank-unit.svelte';
 
-	let { controller = $bindable<PlayerController>() } = $props();
+	type Props = {
+		controller: PlayerController;
+	};
+
+	let { controller = $bindable() }: Props = $props();
 
 	function SelectUnit(unitId: number, event: MouseEvent) {
+		if (controller.isFetching) return;
 		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);
 	}

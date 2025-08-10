@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { PlayerController } from './player-controller.svelte';
 
-	let { controller = $bindable<PlayerController>() } = $props();
+	type Props = {
+		controller: PlayerController;
+	};
+
+	let { controller = $bindable() }: Props = $props();
 
 	async function confirmMarker() {
+		if (controller.isFetching) return;
 		await controller.confirmMarkerAsync();
 	}
 
@@ -12,6 +17,7 @@
 	}
 
 	async function onKeyDown(event: KeyboardEvent) {
+		if (controller.isFetching == true) return;
 		const key = event.key.toLowerCase();
 		if (key === 'c') controller.closeSelection();
 		else if (key === 'm' && controller.isMoveValid()) await controller.confirmMarkerAsync();
@@ -35,17 +41,11 @@
 		</span>
 	</div>
 
-	<div class="action-box">
-		<button
-			onclick={confirmMarker}
-			class={controller.isMoveValid() ? 'valid-button' : 'invalid-button'}
-		>
+	<div class="action-box {controller.isFetching ? 'loading' : ''}">
+		<button class="action-button" onclick={confirmMarker} disabled={!controller.isMoveValid()}>
 			Move (m)
 		</button>
-		<button
-			onclick={confirmMarker}
-			class={controller.isFireValid() ? 'valid-button' : 'invalid-button'}
-		>
+		<button class="action-button" onclick={confirmMarker} disabled={!controller.isFireValid()}>
 			Fire (f)
 		</button>
 	</div>
@@ -100,14 +100,11 @@
 		background-color: @background-color;
 		border: @border;
 	}
-	.valid-button {
-		display: block;
-		margin: @spacing;
-	}
-	.invalid-button {
-		display: block;
-		margin: @spacing;
+	.loading {
 		opacity: 0.5;
-		text-decoration: line-through;
+	}
+	.action-button {
+		display: block;
+		margin: @spacing;
 	}
 </style>

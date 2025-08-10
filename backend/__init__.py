@@ -1,3 +1,4 @@
+import time
 from fastapi import FastAPI
 from backend.action_service import ActionService
 from backend.ai_service import AiService
@@ -31,6 +32,7 @@ async def get_terrain() -> list[TerrainModel]:
 @app.post("/api/move")
 async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
     """Move a unit and return updated rifle squads."""
+    time.sleep(1)
     ActionService.move(gs, body)
     AiService.play(gs)
     return CombatUnitService.get_units(gs)

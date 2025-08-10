@@ -12,6 +12,7 @@
 
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
+		if (controller.isFetching) return;
 		const node = clickTarget as HTMLElement;
 		const rect = node.getBoundingClientRect();
 		const x = event.clientX - rect.x;
