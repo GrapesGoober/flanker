@@ -22,12 +22,14 @@ export class PlayerController {
 		hasInitiative: false,
 		squads: []
 	});
-
+	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
 
 	async initializeAsync() {
+		this.isFetching = true;
 		this.terrainData = await getTerrainData();
 		this.unitData = await getUnitStatesData();
+		this.isFetching = false;
 	}
 
 	selectUnit(unitId: number) {
@@ -82,6 +84,7 @@ export class PlayerController {
 		if (this.state.type === 'default') return;
 		let unitId = this.state.selectedUnit.unitId;
 
+		this.isFetching = true;
 		switch (this.state.type) {
 			case 'moveMarked':
 				if (!this.isMoveValid()) return;
@@ -92,6 +95,7 @@ export class PlayerController {
 				this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
 				break;
 		}
+		this.isFetching = false;
 
 		// Reselect the unit again, if exists
 		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
