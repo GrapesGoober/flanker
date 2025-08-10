@@ -35,7 +35,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
 	<TerrainFeatures terrainData={controller.terrainData} />
-	<CombatUnits {controller} />
+	<CombatUnits bind:controller />
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->

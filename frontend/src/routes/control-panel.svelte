@@ -1,4 +1,5 @@
 <script lang="ts">
+	import LoadingSpinner from '$lib/svg-icons/loading-spinner.svelte';
 	import { PlayerController } from './player-controller.svelte';
 
 	type Props = {
@@ -41,6 +42,7 @@
 		</span>
 	</div>
 
+	<!-- there's a bit flicker with loading opacity css, might wanna fade that -->
 	<div class="action-box {controller.isFetching ? 'loading' : ''}">
 		<button class="action-button" onclick={confirmMarker} disabled={!controller.isMoveValid()}>
 			Move (m)
@@ -48,6 +50,11 @@
 		<button class="action-button" onclick={confirmMarker} disabled={!controller.isFireValid()}>
 			Fire (f)
 		</button>
+		{#if controller.isFetching}
+			<div class="loading-spinner">
+				<LoadingSpinner />
+			</div>
+		{/if}
 	</div>
 {/if}
 
@@ -102,9 +109,16 @@
 	}
 	.loading {
 		opacity: 0.5;
+		transition: opacity 0.3s ease;
 	}
 	.action-button {
 		display: block;
 		margin: @spacing;
+	}
+	.loading-spinner {
+		position: absolute;
+		opacity: 0.5;
+		transition: opacity 0.3s ease;
+		transform: translate(100%, -150%);
 	}
 </style>
