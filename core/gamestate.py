@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Iterator, overload
+from typing import Any, Callable, Iterable, Iterator, overload
 from core.serializer import Serializer
 
 
@@ -10,6 +10,21 @@ class GameState:
         self._id_counter: int = 0
         self._entities: dict[int, dict[type[Any], Any]] = {}
         self._cache: dict[tuple[type, ...], list[tuple[int, Any]]] = {}
+        self._event_handlers: dict[type, list[Callable[[GameState, Any], None]]] = {}
+
+    def add_handler[T](
+        self,
+        event_type: type[T],
+        handler: Callable[["GameState", T], None],
+    ) -> None:
+        self._event_handlers.setdefault(event_type, [])
+        self._event_handlers[event_type].append(handler)
+
+    def emit(self, event: object) -> None:
+        if type(event) not in self._event_handlers:
+            return
+        for handlers in self._event_handlers[type(event)]:
+            handlers(self, event)
 
     def add_entity(self, *components: Any) -> int:
         """Adds a new entity with the given components, returns ID."""
