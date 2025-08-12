@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from core.event_bus import EventBus
 from core.gamestate import GameState
 
 
@@ -9,7 +8,7 @@ class MoveEvent: ...
 
 class MockMove:
 
-    @EventBus.on(MoveEvent)
+    @GameState.on_event(MoveEvent)
     @staticmethod
     def on_move(gs: GameState, event: MoveEvent) -> None:
         """Docstring"""
@@ -18,7 +17,7 @@ class MockMove:
 
 class MockFire:
 
-    @EventBus.on(MoveEvent)
+    @GameState.on_event(MoveEvent)
     @staticmethod
     def check_interrupt(gs: GameState, event: MoveEvent) -> None:
         """Docstring"""
@@ -26,5 +25,5 @@ class MockFire:
 
 
 gs = GameState()
-EventBus.register(gs, MockMove, MockFire)
+gs.register(MockMove, MockFire)
 gs.emit(MoveEvent())

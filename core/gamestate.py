@@ -1,6 +1,8 @@
 from typing import Any, Callable, Iterable, Iterator, overload
 from core.serializer import Serializer
 
+_REGISTRY: dict[Callable[["GameState", Any], None], type] = {}
+
 
 class GameState:
     """Encapsulates ECS entities & components into a game state."""
@@ -11,20 +13,6 @@ class GameState:
         self._entities: dict[int, dict[type[Any], Any]] = {}
         self._cache: dict[tuple[type, ...], list[tuple[int, Any]]] = {}
         self._event_handlers: dict[type, list[Callable[[GameState, Any], None]]] = {}
-
-    def add_handler[T](
-        self,
-        event_type: type[T],
-        handler: Callable[["GameState", T], None],
-    ) -> None:
-        self._event_handlers.setdefault(event_type, [])
-        self._event_handlers[event_type].append(handler)
-
-    def emit(self, event: object) -> None:
-        if type(event) not in self._event_handlers:
-            return
-        for handlers in self._event_handlers[type(event)]:
-            handlers(self, event)
 
     def add_entity(self, *components: Any) -> int:
         """Adds a new entity with the given components, returns ID."""
@@ -74,6 +62,38 @@ class GameState:
                     ct in components for ct in component_types
                 ):  # Check all component types exist
                     yield (entity_id, *(components[ct] for ct in component_types))
+
+    @staticmethod
+    def on_event[T](
+        event_type: type[T],
+    ) -> Callable[  # Returns the same method without modifying
+        [Callable[["GameState", T], None]],
+        Callable[["GameState", T], None],
+    ]:
+        """Decorator that declares a callable as an event handler."""
+
+        def decorator(
+            handler: Callable[[GameState, T], None],
+        ) -> Callable[[GameState, T], None]:
+            _REGISTRY[handler] = event_type
+            return handler
+
+        return decorator
+
+    def register(self, *systems: type) -> None:
+        """Registers declared handlers as ECS systems."""
+        for system in systems:
+            for func in system.__dict__.values():
+                if func in _REGISTRY:
+                    event_type = _REGISTRY[func]
+                    self._event_handlers.setdefault(event_type, [])
+                    self._event_handlers[event_type].append(func)
+
+    def emit(self, event: object) -> None:
+        if type(event) not in self._event_handlers:
+            return
+        for handlers in self._event_handlers[type(event)]:
+            handlers(self, event)
 
     def save(self) -> str:
         """Saves game state to json string."""
