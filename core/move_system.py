@@ -68,9 +68,12 @@ class MoveSystem:
         """Performs assault action to target; may trigger reactive fire."""
         # Check assault action valid
         unit = gs.get_component(attacker_id, CombatUnit)
+        target = gs.get_component(target_id, CombatUnit)
         if unit.status != CombatUnit.Status.ACTIVE:
             return
         if not InitiativeSystem.has_initiative(gs, attacker_id):
+            return
+        if unit.faction == target.faction:
             return
 
         # Moves the unit to target position (allow reactive fire)
