@@ -25,24 +25,24 @@ def fixture() -> Fixture:
     )
     unit_root = gs.add_entity(
         CombatUnit(
-            faction=InitiativeState.Faction.RED,
+            faction=InitiativeState.Faction.BLUE,
         )
     )
     unit_id_1 = gs.add_entity(
         CombatUnit(
-            faction=InitiativeState.Faction.RED,
+            faction=InitiativeState.Faction.BLUE,
             command_id=unit_root,
         )
     )
     unit_id_2 = gs.add_entity(
         CombatUnit(
-            faction=InitiativeState.Faction.RED,
+            faction=InitiativeState.Faction.BLUE,
             command_id=unit_id_1,
         )
     )
     unit_id_3 = gs.add_entity(
         CombatUnit(
-            faction=InitiativeState.Faction.RED,
+            faction=InitiativeState.Faction.BLUE,
             command_id=unit_id_1,
         )
     )
@@ -66,7 +66,7 @@ def test_initiative(fixture: Fixture) -> None:
 
 
 def test_no_initiative(fixture: Fixture) -> None:
-    fixture.faction.faction = InitiativeState.Faction.BLUE
+    fixture.faction.faction = InitiativeState.Faction.RED
 
     has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == False, "Expects FACTION_A to no longer have initiative"

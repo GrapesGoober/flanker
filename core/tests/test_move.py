@@ -21,7 +21,7 @@ def fixture() -> Fixture:
     # Rifle Squad
     id = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(0, -10)),
     )
     # 10x10 opaque box

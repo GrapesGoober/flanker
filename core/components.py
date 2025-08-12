@@ -25,7 +25,7 @@ class InitiativeState:
         BLUE = "BLUE"
         RED = "RED"
 
-    faction: Faction = Faction.RED
+    faction: Faction = Faction.BLUE
 
 
 @dataclass

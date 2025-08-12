@@ -31,17 +31,17 @@ def fixture() -> Fixture:
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(0, -10)),
     )
     unit_friendly = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(0, -11)),
     )
     unit_shoot = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(faction=InitiativeState.Faction.RED),
         fire_controls := FireControls(),
         Transform(position=Vec2(15, 20)),
     )
