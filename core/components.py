@@ -82,17 +82,16 @@ class FireControls:
 class AssaultControls:
     """
     Marks an entity as capable for assault action.
-    Defines the set of RNG roll multiplier and override (range [0, 1]).
+    Defines the RNG roll multiplier.
     """
 
-    class Multipliers(float, Enum):
-        """Each assault RNG roll multiplier."""
+    class Outcomes(Enum):
+        """Each assault outcome result"""
 
-        ACTIVE = 1
-        PINNED = 0.3
-        SUPPRESSED = 0.1
+        FAIL = "FAIL"
+        SUCCESS = "SUCCESS"
 
-    override: float | None = None
+    override: Outcomes | None = None
 
 
 @dataclass
