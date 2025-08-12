@@ -26,7 +26,5 @@ class MockFire:
 
 
 gs = GameState()
-handlers = EventBus.get_handlers(MockMove, MockFire)
-for handler, event_type in handlers:
-    gs.add_handler(event_type, handler)
+EventBus.register(gs, MockMove, MockFire)
 gs.emit(MoveEvent())
