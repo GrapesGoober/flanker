@@ -63,17 +63,36 @@ class MoveControls:
 class FireControls:
     """
     Marks an entity as capable for fire action.
-    Defines the fire type and set of outcomes.
+    Defines the set of outcomes and override.
     """
 
     class Outcomes(float, Enum):
+        """Each fire outcome and its probability range"""
+
         MISS = 0.3
         PIN = 0.7
         SUPPRESS = 0.95
         KILL = 1.0
 
-    override: Outcomes | None = None
+    override: float | None = None
     can_reactive_fire: bool = True
+
+
+@dataclass
+class AssaultControls:
+    """
+    Marks an entity as capable for assault action.
+    Defines the set of RNG roll multiplier and override (range [0, 1]).
+    """
+
+    class Multipliers(float, Enum):
+        """Each assault RNG roll multiplier."""
+
+        ACTIVE = 1
+        PINNED = 0.3
+        SUPPRESSED = 0.1
+
+    override: float | None = None
 
 
 @dataclass

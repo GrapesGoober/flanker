@@ -75,7 +75,7 @@ class FireSystem:
         if fire_controls.override:
             outcome = float(fire_controls.override)
         else:
-            outcome = random.random()
+            outcome = random.uniform(0, 1)
 
         # Apply outcome
         # TODO: for fire reaction, should support multiple shooter

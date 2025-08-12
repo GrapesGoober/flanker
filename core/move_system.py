@@ -1,4 +1,7 @@
+import random
+from core.command_system import CommandSystem
 from core.components import (
+    AssaultControls,
     CombatUnit,
     TerrainFeature,
     MoveControls,
@@ -16,7 +19,7 @@ class MoveSystem:
 
     @staticmethod
     def move(gs: GameState, unit_id: int, to: Vec2) -> None:
-        """Actively moves a unit to a positon. Susceptible to reactive fire."""
+        """Performs move action to position; may trigger reactive fire."""
 
         # Check move action is valid
         transform = gs.get_component(unit_id, Transform)
@@ -59,3 +62,36 @@ class MoveSystem:
                 )
                 if fire_result.is_hit:
                     return
+
+    @staticmethod
+    def assault(gs: GameState, attacker_id: int, target_id: int) -> None:
+        """Performs assault action to target; may trigger reactive fire."""
+        # Check assault action valid
+        unit = gs.get_component(attacker_id, CombatUnit)
+        if unit.status != CombatUnit.Status.ACTIVE:
+            return
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
+            return
+
+        # Moves the unit to target position (allow reactive fire)
+        target_transform = gs.get_component(target_id, Transform)
+        MoveSystem.move(gs, attacker_id, target_transform.position)
+
+        # Once at location, do dice roll; only one can survive
+        attacker_assault = gs.get_component(attacker_id, AssaultControls)
+        target_assault = gs.get_component(target_id, AssaultControls)
+
+        if attacker_assault.override:
+            attacker_roll = attacker_assault.override
+        else:
+            attacker_roll = random.uniform(0, 1)
+
+        if target_assault.override:
+            target_roll = target_assault.override
+        else:
+            target_roll = random.uniform(0, 1)
+
+        if attacker_roll >= target_roll:
+            CommandSystem.kill_unit(gs, target_id)
+        else:
+            CommandSystem.kill_unit(gs, attacker_id)
