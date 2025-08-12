@@ -15,6 +15,12 @@ class MockMove:
         """Docstring"""
         print("moved")
 
+    @EventRegistry.on(MoveEvent)
+    @staticmethod
+    def on_move_2(gs: GameState, event: MoveEvent) -> None:
+        """Docstring"""
+        print("moved 2")
+
 
 class MockFire:
 

@@ -7,11 +7,13 @@ from core.components import (
     FireControls,
     CombatUnit,
 )
+from core.events import FireActionInput
 from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.los_system import Transform
 from core.objective_system import ObjectiveSystem
 from core.utils.vec2 import Vec2
+from test_event import EventRegistry
 
 
 @dataclass
@@ -25,6 +27,7 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    gs.events = EventRegistry(gs, FireSystem)
     # Rifle Squads
     gs.add_entity(
         InitiativeState(),
@@ -58,14 +61,20 @@ def fixture() -> Fixture:
 
 
 def test_kill_one(fixture: Fixture) -> None:
-    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
+    fixture.gs.events.emit(
+        FireActionInput(fixture.attacker_id, fixture.target_id_1),
+    )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as objective not met"
 
 
 def test_kill_two(fixture: Fixture) -> None:
-    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
-    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_2)
+    fixture.gs.events.emit(
+        FireActionInput(fixture.attacker_id, fixture.target_id_1),
+    )
+    fixture.gs.events.emit(
+        FireActionInput(fixture.attacker_id, fixture.target_id_2),
+    )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert (
         winner == InitiativeState.Faction.RED

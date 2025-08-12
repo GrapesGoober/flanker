@@ -1,18 +1,11 @@
-from dataclasses import dataclass
 import random
 from core.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
+from core.events import FireActionInput, MoveStepEvent
 from core.gamestate import GameState
 from core.faction_system import InitiativeSystem
 from core.los_system import LosSystem
-
-
-@dataclass
-class FireResult:
-    """Result of a fire action as valid or successfully hit."""
-
-    is_valid: bool
-    is_hit: bool = False
+from test_event import EventRegistry
 
 
 class FireSystem:
@@ -21,8 +14,8 @@ class FireSystem:
     @staticmethod
     def _validate_fire_action(
         gs: GameState,
-        attacker_id: int,
         target_id: int,
+        attacker_id: int,
         is_reactive: bool,
     ) -> bool:
 
@@ -51,73 +44,104 @@ class FireSystem:
         return True
 
     @staticmethod
-    def fire(
+    def _fire(
         gs: GameState,
-        attacker_id: int,
         target_id: int,
-        is_reactive: bool = False,
-    ) -> FireResult:
-        """
-        Performs fire action from attacker unit to target unit.
-        Returns `True` if success.
-        """
-
-        if not FireSystem._validate_fire_action(
-            gs, attacker_id, target_id, is_reactive
-        ):
-            return FireResult(is_valid=False)
+        attacker_id: int,
+    ) -> FireControls.Outcomes:
 
         target_unit = gs.get_component(target_id, CombatUnit)
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         fire_controls = gs.get_component(attacker_id, FireControls)
 
         # Determine fire outcome, using overriden value if found
-        if fire_controls.override:
-            outcome = float(fire_controls.override)
+        override = fire_controls.override
+        if override:
+            outcome = float(override)
         else:
             outcome = random.random()
 
         # Apply outcome
         # TODO: for fire reaction, should support multiple shooter
         if outcome <= FireControls.Outcomes.MISS:
-            if is_reactive:
-                fire_controls.can_reactive_fire = False
             InitiativeSystem.set_initiative(gs, target_unit.faction)
-            return FireResult(is_valid=True, is_hit=False)
+            return FireControls.Outcomes.MISS
         elif outcome <= FireControls.Outcomes.PIN:
             if target_unit.status != CombatUnit.Status.SUPPRESSED:
                 target_unit.status = CombatUnit.Status.PINNED
             InitiativeSystem.set_initiative(gs, target_unit.faction)
-            return FireResult(is_valid=True, is_hit=True)
+            return FireControls.Outcomes.PIN
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target_unit.status = CombatUnit.Status.SUPPRESSED
             InitiativeSystem.set_initiative(gs, attacker_unit.faction)
-            return FireResult(is_valid=True, is_hit=True)
+            return FireControls.Outcomes.SUPPRESS
         elif outcome <= FireControls.Outcomes.KILL:
             CommandSystem.kill_unit(gs, target_id)
             InitiativeSystem.set_initiative(gs, attacker_unit.faction)
-            return FireResult(is_valid=True, is_hit=True)
-        return FireResult(is_valid=False)
+            return FireControls.Outcomes.KILL
 
+        raise Exception(f"Invalid fire outcome {outcome=}")
+
+    @EventRegistry.on(FireActionInput)
     @staticmethod
-    def get_spotter(gs: GameState, unit_id: int) -> int | None:
-        """Get the a valid spotter for reactive fire, including LOS check."""
+    def fire(gs: GameState, input: FireActionInput) -> None:
+        """
+        Performs fire action from attacker unit to target unit.
+        Returns `True` if success.
+        """
+        if not FireSystem._validate_fire_action(
+            gs=gs,
+            target_id=input.target_id,
+            attacker_id=input.attacker_id,
+            is_reactive=False,
+        ):
+            return
+        FireSystem._fire(
+            gs=gs,
+            target_id=input.target_id,
+            attacker_id=input.attacker_id,
+        )
 
-        unit = gs.get_component(unit_id, CombatUnit)
+    @EventRegistry.on(MoveStepEvent)
+    @staticmethod
+    def reactive_fire(gs: GameState, event: MoveStepEvent) -> None:
+        unit = gs.get_component(event.unit_id, CombatUnit)
+        valid_spotter_id: int | None = None
+        valid_fire_controls: FireControls | None = None
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
 
             # Check that spotter is a valid spotter for reactive fire
-            if spotter_id == unit_id:
+            if spotter_id == event.unit_id:
                 continue
             if unit.faction == spotter_unit.faction:
                 continue
             if fire_controls.can_reactive_fire == False:
                 continue
-            if not LosSystem.check(gs, spotter_id, unit_id):
+            if not LosSystem.check(gs, spotter_id, event.unit_id):
                 continue
 
-            return spotter_id
+            if not FireSystem._validate_fire_action(
+                gs=gs,
+                target_id=event.unit_id,
+                attacker_id=spotter_id,
+                is_reactive=True,
+            ):
+                continue
 
-        return None
+            valid_spotter_id = spotter_id
+            valid_fire_controls = fire_controls
+
+        if valid_spotter_id != None and valid_fire_controls != None:
+            result = FireSystem._fire(
+                gs=gs,
+                target_id=event.unit_id,
+                attacker_id=valid_spotter_id,
+            )
+
+            if result >= FireControls.Outcomes.PIN:
+                event.is_interrupted = True
+
+            if result == FireControls.Outcomes.MISS:
+                valid_fire_controls.can_reactive_fire = False

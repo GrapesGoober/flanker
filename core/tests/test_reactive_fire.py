@@ -11,6 +11,7 @@ from core.components import (
     TerrainFeature,
     CombatUnit,
 )
+from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.los_system import Transform
 from core.move_system import MoveSystem
@@ -29,7 +30,7 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    gs.events = EventRegistry(gs, MoveSystem)
+    gs.events = EventRegistry(gs, MoveSystem, FireSystem)
 
     # Rifle Squads
     gs.add_entity(InitiativeState())
