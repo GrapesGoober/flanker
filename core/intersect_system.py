@@ -31,6 +31,7 @@ class IntersectSystem:
         # Cast a line from the ent to the right
         # The end point must be further (outside) of polygon
         vertices = LinearTransform.apply(terrain.vertices, terrain_transform)
+        vertices.append(vertices[0])
         max_x = max(vertices, key=lambda v: v.x).x
         start = ent_transform.position
         end = Vec2(max_x + 1, ent_transform.position.y)
