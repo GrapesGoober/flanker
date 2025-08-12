@@ -91,6 +91,13 @@ class AssaultControls:
         FAIL = "FAIL"
         SUCCESS = "SUCCESS"
 
+    class SuccessChances(float, Enum):
+        """Chance of successful assault per each target status."""
+
+        ACTIVE = 0.5
+        PINNED = 0.7
+        SUPPRESSED = 0.95
+
     override: Outcomes | None = None
 
 

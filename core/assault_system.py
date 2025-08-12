@@ -42,16 +42,13 @@ class AssaultSystem:
             case AssaultControls.Outcomes.SUCCESS:
                 attacker_roll = 1  # Target never rolls above 1
 
-        match target_unit.status:
-            case CombatUnit.Status.ACTIVE:
-                target_roll_multiplier = 1
-            case CombatUnit.Status.PINNED:
-                target_roll_multiplier = 0.3
-            case CombatUnit.Status.SUPPRESSED:
-                target_roll_multiplier = 0.05
-        target_roll = random.uniform(0, target_roll_multiplier)
+        threshold = {
+            CombatUnit.Status.ACTIVE: AssaultControls.SuccessChances.ACTIVE,
+            CombatUnit.Status.PINNED: AssaultControls.SuccessChances.PINNED,
+            CombatUnit.Status.SUPPRESSED: AssaultControls.SuccessChances.SUPPRESSED,
+        }[target_unit.status]
 
-        if attacker_roll >= target_roll:
+        if attacker_roll >= threshold:
             CommandSystem.kill_unit(gs, target_id)
         else:
             CommandSystem.kill_unit(gs, attacker_id)
