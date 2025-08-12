@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 import pytest
 
+from core.event_registry import EventRegistry
+from core.events import MoveActionInput
 from core.faction_system import InitiativeSystem
 from core.components import (
     InitiativeState,
@@ -27,6 +29,8 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    gs.events = EventRegistry(gs, MoveSystem)
+
     # Rifle Squads
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
@@ -71,7 +75,7 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_move, Vec2(5, -15)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         5, -15
@@ -83,7 +87,7 @@ def test_move(fixture: Fixture) -> None:
 
 def test_interrupt_miss(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.MISS
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         20, -10
@@ -103,7 +107,7 @@ def test_interrupt_miss(fixture: Fixture) -> None:
 
 def test_interrupt_pin(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.PIN
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         8, -10
@@ -120,7 +124,7 @@ def test_interrupt_pin(fixture: Fixture) -> None:
 
 def test_interrupt_suppress(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         8, -10
@@ -136,7 +140,7 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
 
 def test_interrupt_kill(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.try_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
     assert (

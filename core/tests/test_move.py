@@ -4,7 +4,8 @@ import pytest
 from core.components import InitiativeState, MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
 from core.los_system import Transform
-from core.move_system import MoveSystem
+from core.move_system import EventRegistry, MoveSystem
+from core.tests.test_initiative import MoveActionInput
 from core.utils.vec2 import Vec2
 
 
@@ -17,6 +18,8 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    gs.events = EventRegistry(gs, MoveSystem)
+
     gs.add_entity(InitiativeState())
     # Rifle Squad
     id = gs.add_entity(
@@ -58,12 +61,12 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_id, Vec2(5, -15)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.position == Vec2(5, -15), "Unit expects at Vec2(5, -15)"
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(6, 6))
+    fixture.gs.events.emit(MoveActionInput(fixture.unit_id, Vec2(6, 6)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.position == Vec2(0, -10), "Unit expects to not move"
