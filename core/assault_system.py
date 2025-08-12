@@ -1,0 +1,57 @@
+import random
+from core.components import (
+    AssaultControls,
+    CombatUnit,
+    Transform,
+)
+from core.gamestate import GameState
+from core.faction_system import InitiativeSystem
+from core.move_system import MoveSystem
+from core.tests.test_hierarchy import CommandSystem
+
+
+class AssaultSystem:
+    """Static system class for handling movement action of combat units."""
+
+    @staticmethod
+    def assault(gs: GameState, attacker_id: int, target_id: int) -> None:
+        """Performs assault action to target; may trigger reactive fire."""
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        target_unit = gs.get_component(target_id, CombatUnit)
+        attacker_assault = gs.get_component(attacker_id, AssaultControls)
+        target_transform = gs.get_component(target_id, Transform)
+
+        # Check assault action valid
+        if attacker_unit.status != CombatUnit.Status.ACTIVE:
+            return
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
+            return
+        if attacker_unit.faction == target_unit.faction:
+            return
+
+        # Moves the unit to target position (allow reactive fire)
+        MoveSystem.move(gs, attacker_id, target_transform.position)
+
+        # Once at location, do dice roll; only one can survive
+        match attacker_assault.override:
+            case None:
+                attacker_roll = random.uniform(0, 1)
+            # Allow for override to bypass RNG
+            case AssaultControls.Outcomes.FAIL:
+                attacker_roll = -1  # Target never rolls below 0
+            case AssaultControls.Outcomes.SUCCESS:
+                attacker_roll = 1  # Target never rolls above 1
+
+        match target_unit.status:
+            case CombatUnit.Status.ACTIVE:
+                target_roll_multiplier = 1
+            case CombatUnit.Status.PINNED:
+                target_roll_multiplier = 0.3
+            case CombatUnit.Status.SUPPRESSED:
+                target_roll_multiplier = 0.05
+        target_roll = random.uniform(0, target_roll_multiplier)
+
+        if attacker_roll >= target_roll:
+            CommandSystem.kill_unit(gs, target_id)
+        else:
+            CommandSystem.kill_unit(gs, attacker_id)

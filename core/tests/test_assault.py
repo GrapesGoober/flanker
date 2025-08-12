@@ -9,7 +9,7 @@ from core.components import (
     Transform,
 )
 from core.gamestate import GameState
-from core.move_system import MoveSystem
+from core.assault_system import AssaultSystem
 from core.utils.vec2 import Vec2
 
 
@@ -51,13 +51,13 @@ def fixture() -> Fixture:
 
 def test_assault_fail(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultControls.Outcomes.FAIL
-    MoveSystem.assault(fixture.gs, fixture.attacker_id, fixture.target_id)
+    AssaultSystem.assault(fixture.gs, fixture.attacker_id, fixture.target_id)
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
     assert attacker == None, "Failed assault should destroy attacker"
 
 
 def test_assault_success(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultControls.Outcomes.SUCCESS
-    MoveSystem.assault(fixture.gs, fixture.attacker_id, fixture.target_id)
+    AssaultSystem.assault(fixture.gs, fixture.attacker_id, fixture.target_id)
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
     assert attacker != None, "Successful assault should destroy attacker"
