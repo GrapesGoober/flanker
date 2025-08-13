@@ -52,7 +52,7 @@ class AssaultSystem:
             CombatUnit.Status.SUPPRESSED: AssaultControls.SuccessChances.SUPPRESSED,
         }[target_unit.status]
 
-        if attacker_roll >= threshold:
+        if attacker_roll <= threshold:
             CommandSystem.kill_unit(gs, target_id)
         else:
             CommandSystem.kill_unit(gs, attacker_id)
