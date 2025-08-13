@@ -99,3 +99,17 @@ export async function performFireActionAsync(
 	if (error) throw new Error(JSON.stringify(error));
 	return ParseUnitStatesData(data);
 }
+
+export async function performAssaultActionAsync(
+	unit_id: number,
+	target_id: number
+): Promise<CombatUnitsData> {
+	const { data, error } = await client.POST('/api/assault', {
+		body: {
+			unit_id: unit_id,
+			target_id: target_id
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return ParseUnitStatesData(data);
+}

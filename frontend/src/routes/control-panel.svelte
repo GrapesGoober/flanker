@@ -8,21 +8,15 @@
 
 	let { controller = $bindable() }: Props = $props();
 
-	async function confirmMarker() {
-		if (controller.isFetching) return;
-		await controller.confirmMarkerAsync();
-	}
-
 	function closeSelection() {
 		controller.closeSelection();
 	}
 
 	async function onKeyDown(event: KeyboardEvent) {
-		if (controller.isFetching == true) return;
 		const key = event.key.toLowerCase();
 		if (key === 'c') controller.closeSelection();
-		else if (key === 'm' && controller.isMoveValid()) await controller.confirmMarkerAsync();
-		else if (key === 'f' && controller.isFireValid()) await controller.confirmMarkerAsync();
+		else if (key === 'm') await controller.moveActionAsync();
+		else if (key === 'f') await controller.fireActionAsync();
 	}
 </script>
 
@@ -44,10 +38,18 @@
 
 	<!-- there's a bit flicker with loading opacity css, might wanna fade that -->
 	<div class="action-box {controller.isFetching ? 'loading' : ''}">
-		<button class="action-button" onclick={confirmMarker} disabled={!controller.isMoveValid()}>
+		<button
+			class="action-button"
+			onclick={controller.moveActionAsync}
+			disabled={!controller.isMoveActionValid()}
+		>
 			Move (m)
 		</button>
-		<button class="action-button" onclick={confirmMarker} disabled={!controller.isFireValid()}>
+		<button
+			class="action-button"
+			onclick={controller.fireActionAsync}
+			disabled={!controller.isFireActionValid()}
+		>
 			Fire (f)
 		</button>
 		{#if controller.isFetching}

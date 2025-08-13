@@ -31,7 +31,7 @@
 			{@const moveMarker = controller.state.moveMarker}
 			<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankUnit /></g>
 			<Arrow start={selectedUnit.position} end={controller.state.moveMarker} offset={15} />
-		{:else if controller.state.type == 'fireMarked'}
+		{:else if controller.state.type == 'attackMarked'}
 			{@const target = controller.state.target.position}
 			<Arrow start={selectedUnit.position} end={target} offset={15} />
 		{/if}
