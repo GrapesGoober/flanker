@@ -30,7 +30,11 @@ class AssaultSystem:
             return
 
         # Moves the unit to target position (allow reactive fire)
-        MoveSystem.move(gs, attacker_id, target_transform.position)
+        result = MoveSystem.move(gs, attacker_id, target_transform.position)
+        if not result.is_valid:
+            return
+        if result.is_interrupted:
+            return
 
         # Once at location, do dice roll; only one can survive
         match attacker_assault.override:
