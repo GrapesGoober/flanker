@@ -42,6 +42,13 @@ class FireActionRequest(BaseModel):
     target_id: int
 
 
+class AssaultActionRequest(BaseModel):
+    """Request model for a unit's assault action."""
+
+    unit_id: int
+    target_id: int
+
+
 class TerrainModel(BaseModel):
     """Represents a view of terrain feature in the game."""
 
