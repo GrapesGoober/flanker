@@ -1,6 +1,7 @@
 import {
 	getTerrainData,
 	getUnitStatesData,
+	performAssaultActionAsync,
 	performFireActionAsync,
 	performMoveActionAsync,
 	type CombatUnitsData,
@@ -97,6 +98,15 @@ export class PlayerController {
 		return true;
 	}
 
+	isAssaultActionValid(): boolean {
+		if (this.isFetching) return false;
+		if (this.state.type !== 'attackMarked') return false;
+		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
+		if (!this.unitData.hasInitiative) return false;
+		return true;
+	}
+
 	async moveActionAsync() {
 		if (!this.isMoveActionValid()) return;
 		if (this.state.type !== 'moveMarked') return false;
@@ -113,6 +123,16 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
+		this.isFetching = false;
+		this.reselectUnit(unitId);
+	}
+
+	async assaultActionAsync() {
+		if (!this.isAssaultActionValid()) return;
+		if (this.state.type !== 'attackMarked') return;
+		let unitId = this.state.selectedUnit.unitId;
+		this.isFetching = true;
+		this.unitData = await performAssaultActionAsync(unitId, this.state.target.unitId);
 		this.isFetching = false;
 		this.reselectUnit(unitId);
 	}

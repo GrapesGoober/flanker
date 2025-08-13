@@ -17,6 +17,7 @@
 		if (key === 'c') controller.closeSelection();
 		else if (key === 'm') await controller.moveActionAsync();
 		else if (key === 'f') await controller.fireActionAsync();
+		else if (key === 'a') await controller.assaultActionAsync();
 	}
 </script>
 
@@ -51,6 +52,13 @@
 			disabled={!controller.isFireActionValid()}
 		>
 			Fire (f)
+		</button>
+		<button
+			class="action-button"
+			onclick={controller.assaultActionAsync}
+			disabled={!controller.isAssaultActionValid()}
+		>
+			Assault (a)
 		</button>
 		{#if controller.isFetching}
 			<div class="loading-spinner">
