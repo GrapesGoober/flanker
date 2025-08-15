@@ -7,7 +7,7 @@ from core.components import (
 from core.gamestate import GameState
 from core.initiative_system import InitiativeSystem
 from core.move_system import MoveSystem
-from core.tests.test_hierarchy import CommandSystem
+from core.command_system import CommandSystem
 
 
 class AssaultSystem:
