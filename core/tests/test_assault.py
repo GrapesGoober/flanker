@@ -53,11 +53,13 @@ def test_assault_fail(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultControls.Outcomes.FAIL
     AssaultSystem.assault(fixture.gs, fixture.attacker_id, fixture.target_id)
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
-    assert attacker == None, "Failed assault should destroy attacker"
+    assert attacker == None, "Failed assault must destroy attacker"
 
 
 def test_assault_success(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultControls.Outcomes.SUCCESS
     AssaultSystem.assault(fixture.gs, fixture.attacker_id, fixture.target_id)
-    attacker = fixture.gs.try_component(fixture.target_id, CombatUnit)
-    assert attacker != None, "Successful assault should destroy target"
+    attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
+    assert attacker != None, "Successful assault mustn't destroy attacker"
+    target = fixture.gs.try_component(fixture.target_id, CombatUnit)
+    assert target == None, "Successful assault must destroy target"
