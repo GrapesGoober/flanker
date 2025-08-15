@@ -74,7 +74,7 @@ class FireControls:
         SUPPRESS = 0.95
         KILL = 1.0
 
-    override: float | None = None
+    override: Outcomes | None = None
     can_reactive_fire: bool = True
 
 
