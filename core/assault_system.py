@@ -5,7 +5,7 @@ from core.components import (
     Transform,
 )
 from core.gamestate import GameState
-from core.faction_system import InitiativeSystem
+from core.initiative_system import InitiativeSystem
 from core.move_system import MoveSystem
 from core.tests.test_hierarchy import CommandSystem
 

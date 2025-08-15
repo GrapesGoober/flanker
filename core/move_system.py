@@ -7,7 +7,7 @@ from core.components import (
 )
 from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.faction_system import InitiativeSystem
+from core.initiative_system import InitiativeSystem
 from core.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
 

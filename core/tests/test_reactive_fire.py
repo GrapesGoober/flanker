@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.faction_system import InitiativeSystem
+from core.initiative_system import InitiativeSystem
 from core.components import (
     InitiativeState,
     FireControls,

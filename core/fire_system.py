@@ -3,7 +3,7 @@ import random
 from core.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
-from core.faction_system import InitiativeSystem
+from core.initiative_system import InitiativeSystem
 from core.los_system import LosSystem
 
 

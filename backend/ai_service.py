@@ -1,5 +1,5 @@
 from core.components import InitiativeState
-from core.faction_system import InitiativeSystem
+from core.initiative_system import InitiativeSystem
 from core.gamestate import GameState
 
 
