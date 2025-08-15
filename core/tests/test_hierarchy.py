@@ -10,7 +10,7 @@ from core.gamestate import GameState
 @dataclass
 class Fixture:
     gs: GameState
-    faction: InitiativeState
+    initiative: InitiativeState
     unit_root: int
     unit_id_1: int
     unit_id_2: int
@@ -21,7 +21,7 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     gs.add_entity(
-        faction := InitiativeState(),
+        initiative := InitiativeState(),
     )
     unit_root = gs.add_entity(
         CombatUnit(
@@ -49,7 +49,7 @@ def fixture() -> Fixture:
 
     return Fixture(
         gs=gs,
-        faction=faction,
+        initiative=initiative,
         unit_root=unit_root,
         unit_id_1=unit_id_1,
         unit_id_2=unit_id_2,
@@ -66,7 +66,7 @@ def test_initiative(fixture: Fixture) -> None:
 
 
 def test_no_initiative(fixture: Fixture) -> None:
-    fixture.faction.faction = InitiativeState.Faction.RED
+    fixture.initiative.faction = InitiativeState.Faction.RED
 
     has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == False, "Expects faction BLUE to no longer have initiative"
