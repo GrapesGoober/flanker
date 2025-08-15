@@ -40,11 +40,11 @@ class AssaultSystem:
         match attacker_assault.override:
             case None:
                 attacker_roll = random.uniform(0, 1)
-            # Allow for override to bypass RNG
+            # Allow for override to bypass RNG by fixing roll beyond threshold
             case AssaultControls.Outcomes.FAIL:
-                attacker_roll = -1  # Target never rolls below 0
+                attacker_roll = 1
             case AssaultControls.Outcomes.SUCCESS:
-                attacker_roll = 1  # Target never rolls above 1
+                attacker_roll = 0
 
         threshold = {
             CombatUnit.Status.ACTIVE: AssaultControls.SuccessChances.ACTIVE,
