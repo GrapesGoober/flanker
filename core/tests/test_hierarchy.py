@@ -59,20 +59,20 @@ def fixture() -> Fixture:
 
 def test_initiative(fixture: Fixture) -> None:
     has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
-    assert has_initiative == True, "Expects FACTION_A to have initiative"
+    assert has_initiative == True, "Expects faction BLUE to have initiative"
 
     has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_2)
-    assert has_initiative == True, "Expects FACTION_A to have initiative"
+    assert has_initiative == True, "Expects faction BLUE to have initiative"
 
 
 def test_no_initiative(fixture: Fixture) -> None:
     fixture.faction.faction = InitiativeState.Faction.RED
 
     has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
-    assert has_initiative == False, "Expects FACTION_A to no longer have initiative"
+    assert has_initiative == False, "Expects faction BLUE to no longer have initiative"
 
     has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_2)
-    assert has_initiative == False, "Expects FACTION_A to no longer have initiative"
+    assert has_initiative == False, "Expects faction BLUE to no longer have initiative"
 
 
 def test_chain_command(fixture: Fixture) -> None:
