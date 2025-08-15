@@ -1,4 +1,4 @@
-from core.command_system import ObjectiveSystem
+from core.objective_system import ObjectiveSystem
 from core.initiative_system import InitiativeSystem
 from core.components import (
     CombatUnit,
