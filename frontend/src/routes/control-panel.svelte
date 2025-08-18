@@ -37,7 +37,6 @@
 		</span>
 	</div>
 
-	<!-- there's a bit flicker with loading opacity css, might wanna fade that -->
 	<div class="action-box {controller.isFetching ? 'loading' : ''}">
 		<button
 			class="action-button"
