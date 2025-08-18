@@ -18,6 +18,12 @@ class SquadModel(BaseModel):
 class CombatUnitsViewState(BaseModel):
     """View state for all combat units in the game."""
 
+    class ObjectiveState(Enum):
+        INCOMPLETE = "INCOMPLETE"
+        COMPLETED = "COMPLETED"
+        FAILED = "FAILED"
+
+    objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
 
@@ -36,10 +42,17 @@ class FireActionRequest(BaseModel):
     target_id: int
 
 
+class AssaultActionRequest(BaseModel):
+    """Request model for a unit's assault action."""
+
+    unit_id: int
+    target_id: int
+
+
 class TerrainModel(BaseModel):
     """Represents a view of terrain feature in the game."""
 
-    feature_id: int
+    terrain_id: int
     position: Vec2
     degrees: float
     vertices: list[Vec2]

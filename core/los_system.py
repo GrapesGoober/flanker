@@ -12,11 +12,23 @@ class LosSystem:
         source_transform = gs.get_component(source_ent, Transform)
         target_transform = gs.get_component(target_ent, Transform)
 
-        # If any OPAQUE terrain exists in the way, return False
         intersects = IntersectSystem.get(
             gs=gs,
             start=source_transform.position,
             end=target_transform.position,
             mask=TerrainFeature.Flag.OPAQUE,
         )
-        return not any(intersects)
+
+        # Can see into one other terrain polygon
+        passed_one_terrain = False
+        for intersect in intersects:
+            # Doesn't count current terrain
+            if IntersectSystem.is_inside(gs, intersect.terrain_id, source_ent):
+                continue
+            if not passed_one_terrain:
+                passed_one_terrain = True
+                continue
+            # Can only see into one polygon
+            if passed_one_terrain:
+                return False
+        return True

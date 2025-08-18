@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from core.components import (
     CombatUnit,
     TerrainFeature,
@@ -6,17 +7,25 @@ from core.components import (
 )
 from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.faction_system import FactionSystem
+from core.initiative_system import InitiativeSystem
 from core.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
+
+
+@dataclass
+class MoveActionResult:
+    """Result of a move action whether is valid or interrupted."""
+
+    is_valid: bool
+    is_interrupted: bool = False
 
 
 class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
     @staticmethod
-    def move(gs: GameState, unit_id: int, to: Vec2) -> None:
-        """Actively moves a unit to a positon. Susceptible to reactive fire."""
+    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
+        """Performs move action to position; may trigger reactive fire."""
 
         # Check move action is valid
         transform = gs.get_component(unit_id, Transform)
@@ -24,9 +33,9 @@ class MoveSystem:
         move_controls = gs.get_component(unit_id, MoveControls)
 
         if unit.status != CombatUnit.Status.ACTIVE:
-            return
-        if not FactionSystem.has_initiative(gs, unit_id):
-            return
+            return MoveActionResult(is_valid=False)
+        if not InitiativeSystem.has_initiative(gs, unit_id):
+            return MoveActionResult(is_valid=False)
 
         # Check move action though correct terrain type
         terrain_type = 0
@@ -35,8 +44,8 @@ class MoveSystem:
                 terrain_type = TerrainFeature.Flag.WALKABLE
 
         for intersect in IntersectSystem.get(gs, transform.position, to):
-            if not (intersect.feature.flag & terrain_type):
-                return
+            if not (intersect.terrain.flag & terrain_type):
+                return MoveActionResult(is_valid=False)
 
         # For each subdivision step of move line, check interrupt
         STEP_SIZE = 1
@@ -58,4 +67,11 @@ class MoveSystem:
                     is_reactive=True,
                 )
                 if fire_result.is_hit:
-                    return
+                    return MoveActionResult(
+                        is_valid=True,
+                        is_interrupted=True,
+                    )
+        return MoveActionResult(
+            is_valid=True,
+            is_interrupted=False,
+        )

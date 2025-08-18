@@ -88,6 +88,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/assault": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Action Assault
+         * @description Move a unit and return updated rifle squads.
+         */
+        post: operations["action_assault_api_assault_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reset": {
         parameters: {
             query?: never;
@@ -113,10 +133,21 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
+         * AssaultActionRequest
+         * @description Request model for a unit's assault action.
+         */
+        AssaultActionRequest: {
+            /** Unit Id */
+            unit_id: number;
+            /** Target Id */
+            target_id: number;
+        };
+        /**
          * CombatUnitsViewState
          * @description View state for all combat units in the game.
          */
         CombatUnitsViewState: {
+            objective_state: components["schemas"]["ObjectiveState"];
             /** Has Initiative */
             has_initiative: boolean;
             /** Squads */
@@ -147,6 +178,11 @@ export interface components {
             to: components["schemas"]["Vec2"];
         };
         /**
+         * ObjectiveState
+         * @enum {string}
+         */
+        ObjectiveState: "INCOMPLETE" | "COMPLETED" | "FAILED";
+        /**
          * SquadModel
          * @description Represents a view of a single squad in the game.
          */
@@ -170,8 +206,8 @@ export interface components {
          * @description Represents a view of terrain feature in the game.
          */
         TerrainModel: {
-            /** Feature Id */
-            feature_id: number;
+            /** Terrain Id */
+            terrain_id: number;
             position: components["schemas"]["Vec2"];
             /** Degrees */
             degrees: number;
@@ -326,6 +362,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["FireActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CombatUnitsViewState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    action_assault_api_assault_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssaultActionRequest"];
             };
         };
         responses: {

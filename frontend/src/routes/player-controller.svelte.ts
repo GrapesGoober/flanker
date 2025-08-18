@@ -1,6 +1,7 @@
 import {
 	getTerrainData,
 	getUnitStatesData,
+	performAssaultActionAsync,
 	performFireActionAsync,
 	performMoveActionAsync,
 	type CombatUnitsData,
@@ -13,20 +14,23 @@ type PlayerControllerState =
 	| { type: 'default' }
 	| { type: 'selected'; selectedUnit: RifleSquadData }
 	| { type: 'moveMarked'; selectedUnit: RifleSquadData; moveMarker: Vec2 }
-	| { type: 'fireMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
+	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
 
 export class PlayerController {
 	terrainData: TerrainFeatureData[] = $state([]);
 	unitData: CombatUnitsData = $state({
+		objectivesState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []
 	});
-
+	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
 
 	async initializeAsync() {
+		this.isFetching = true;
 		this.terrainData = await getTerrainData();
 		this.unitData = await getUnitStatesData();
+		this.isFetching = false;
 	}
 
 	selectUnit(unitId: number) {
@@ -64,7 +68,7 @@ export class PlayerController {
 		if (this.state.type == 'default') return;
 		if (target.isFriendly) return;
 		this.state = {
-			type: 'fireMarked',
+			type: 'attackMarked',
 			target: target,
 			selectedUnit: this.state.selectedUnit
 		};
@@ -76,46 +80,70 @@ export class PlayerController {
 		};
 	}
 
-	async confirmMarkerAsync() {
-		if (!this.unitData.hasInitiative) return;
-		if (this.state.type === 'default') return;
+	isMoveActionValid(): boolean {
+		if (this.isFetching) return false;
+		if (this.state.type !== 'moveMarked') return false;
+		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
+		if (!this.unitData.hasInitiative) return false;
+		return true;
+	}
+
+	isFireActionValid(): boolean {
+		if (this.isFetching) return false;
+		if (this.state.type !== 'attackMarked') return false;
+		if (this.state.selectedUnit.status === 'SUPPRESSED') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
+		if (!this.unitData.hasInitiative) return false;
+		return true;
+	}
+
+	isAssaultActionValid(): boolean {
+		if (this.isFetching) return false;
+		if (this.state.type !== 'attackMarked') return false;
+		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
+		if (!this.unitData.hasInitiative) return false;
+		return true;
+	}
+
+	async moveActionAsync() {
+		if (!this.isMoveActionValid()) return;
+		if (this.state.type !== 'moveMarked') return false;
 		let unitId = this.state.selectedUnit.unitId;
+		this.isFetching = true;
+		this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
+		this.isFetching = false;
+		this.reselectUnit(unitId);
+	}
 
-		switch (this.state.type) {
-			case 'moveMarked':
-				if (!this.isMoveValid()) return;
-				this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
-				break;
-			case 'fireMarked':
-				if (!this.isFireValid()) return;
-				this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
-				break;
-		}
+	async fireActionAsync() {
+		if (!this.isFireActionValid()) return;
+		if (this.state.type !== 'attackMarked') return;
+		let unitId = this.state.selectedUnit.unitId;
+		this.isFetching = true;
+		this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
+		this.isFetching = false;
+		this.reselectUnit(unitId);
+	}
 
-		// Reselect the unit again, if exists
+	async assaultActionAsync() {
+		if (!this.isAssaultActionValid()) return;
+		if (this.state.type !== 'attackMarked') return;
+		let unitId = this.state.selectedUnit.unitId;
+		this.isFetching = true;
+		this.unitData = await performAssaultActionAsync(unitId, this.state.target.unitId);
+		this.isFetching = false;
+		this.reselectUnit(unitId);
+	}
+
+	private reselectUnit(unitId: number) {
 		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
 		if (currentUnit)
 			this.state = {
 				type: 'selected',
 				selectedUnit: currentUnit
 			};
-		else
-			this.state = {
-				type: 'default'
-			};
-	}
-
-	isMoveValid(): boolean {
-		if (this.state.type !== 'moveMarked') return false;
-		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
-		if (!this.state.selectedUnit.isFriendly) return false;
-		return true;
-	}
-
-	isFireValid(): boolean {
-		if (this.state.type !== 'fireMarked') return false;
-		if (this.state.selectedUnit.status === 'SUPPRESSED') return false;
-		if (!this.state.selectedUnit.isFriendly) return false;
-		return true;
+		else this.state = { type: 'default' };
 	}
 }

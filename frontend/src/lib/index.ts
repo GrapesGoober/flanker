@@ -5,7 +5,7 @@ const client = createClient<paths>();
 export type Vec2 = { x: number; y: number };
 
 export type TerrainFeatureData = {
-	featureId: number;
+	terrainId: number;
 	terrainType: 'FOREST' | 'ROAD' | 'FIELD' | 'WATER' | 'BUILDING';
 	position: Vec2;
 	degrees: number;
@@ -18,7 +18,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 
 	// Convert to a custom type in case API and types diverge
 	const terrainData: TerrainFeatureData[] = data.map((element) => ({
-		featureId: element.feature_id,
+		terrainId: element.terrain_id,
 		terrainType: element.terrain_type,
 		position: element.position,
 		degrees: element.degrees,
@@ -31,7 +31,7 @@ export async function getTerrainData(): Promise<TerrainFeatureData[]> {
 export async function updateTerrainData(terrain: TerrainFeatureData) {
 	const { data, error } = await client.PUT('/api/terrain', {
 		body: {
-			feature_id: terrain.featureId,
+			terrain_id: terrain.terrainId,
 			terrain_type: terrain.terrainType,
 			position: terrain.position,
 			degrees: terrain.degrees,
@@ -42,6 +42,7 @@ export async function updateTerrainData(terrain: TerrainFeatureData) {
 }
 
 export type CombatUnitsData = {
+	objectivesState: 'INCOMPLETE' | 'COMPLETED' | 'FAILED';
 	hasInitiative: boolean;
 	squads: RifleSquadData[];
 };
@@ -56,6 +57,7 @@ export type RifleSquadData = {
 
 function ParseUnitStatesData(data: components['schemas']['CombatUnitsViewState']): CombatUnitsData {
 	return {
+		objectivesState: data.objective_state,
 		hasInitiative: data.has_initiative,
 		squads: data.squads.map((squad) => ({
 			unitId: squad.unit_id,
@@ -89,6 +91,20 @@ export async function performFireActionAsync(
 	target_id: number
 ): Promise<CombatUnitsData> {
 	const { data, error } = await client.POST('/api/fire', {
+		body: {
+			unit_id: unit_id,
+			target_id: target_id
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return ParseUnitStatesData(data);
+}
+
+export async function performAssaultActionAsync(
+	unit_id: number,
+	target_id: number
+): Promise<CombatUnitsData> {
+	const { data, error } = await client.POST('/api/assault', {
 		body: {
 			unit_id: unit_id,
 			target_id: target_id

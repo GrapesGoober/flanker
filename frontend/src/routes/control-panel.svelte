@@ -1,11 +1,12 @@
 <script lang="ts">
+	import LoadingSpinner from '$lib/svg-icons/loading-spinner.svelte';
 	import { PlayerController } from './player-controller.svelte';
 
-	let { controller = $bindable<PlayerController>() } = $props();
+	type Props = {
+		controller: PlayerController;
+	};
 
-	async function confirmMarker() {
-		await controller.confirmMarkerAsync();
-	}
+	let { controller = $bindable() }: Props = $props();
 
 	function closeSelection() {
 		controller.closeSelection();
@@ -14,8 +15,9 @@
 	async function onKeyDown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
 		if (key === 'c') controller.closeSelection();
-		else if (key === 'm' && controller.isMoveValid()) await controller.confirmMarkerAsync();
-		else if (key === 'f' && controller.isFireValid()) await controller.confirmMarkerAsync();
+		else if (key === 'm') await controller.moveActionAsync();
+		else if (key === 'f') await controller.fireActionAsync();
+		else if (key === 'a') await controller.assaultActionAsync();
 	}
 </script>
 
@@ -35,19 +37,33 @@
 		</span>
 	</div>
 
-	<div class="action-box">
+	<div class="action-box {controller.isFetching ? 'loading' : ''}">
 		<button
-			onclick={confirmMarker}
-			class={controller.isMoveValid() ? 'valid-button' : 'invalid-button'}
+			class="action-button"
+			onclick={controller.moveActionAsync}
+			disabled={!controller.isMoveActionValid()}
 		>
 			Move (m)
 		</button>
 		<button
-			onclick={confirmMarker}
-			class={controller.isFireValid() ? 'valid-button' : 'invalid-button'}
+			class="action-button"
+			onclick={controller.fireActionAsync}
+			disabled={!controller.isFireActionValid()}
 		>
 			Fire (f)
 		</button>
+		<button
+			class="action-button"
+			onclick={controller.assaultActionAsync}
+			disabled={!controller.isAssaultActionValid()}
+		>
+			Assault (a)
+		</button>
+		{#if controller.isFetching}
+			<div class="loading-spinner">
+				<LoadingSpinner />
+			</div>
+		{/if}
 	</div>
 {/if}
 
@@ -100,14 +116,18 @@
 		background-color: @background-color;
 		border: @border;
 	}
-	.valid-button {
+	.loading {
+		opacity: 0.5;
+		transition: opacity 0.3s ease;
+	}
+	.action-button {
 		display: block;
 		margin: @spacing;
 	}
-	.invalid-button {
-		display: block;
-		margin: @spacing;
+	.loading-spinner {
+		position: absolute;
 		opacity: 0.5;
-		text-decoration: line-through;
+		transition: opacity 0.3s ease;
+		transform: translate(100%, -150%);
 	}
 </style>

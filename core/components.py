@@ -16,6 +16,19 @@ class Transform:
 
 
 @dataclass
+class InitiativeState:
+    """
+    Singleton component that keeps track of faction & initiatives.
+    """
+
+    class Faction(Enum):
+        BLUE = "BLUE"
+        RED = "RED"
+
+    faction: Faction = Faction.BLUE
+
+
+@dataclass
 class CombatUnit:
     """
     Marks an entity as a direct combat-capable unit.
@@ -27,18 +40,9 @@ class CombatUnit:
         PINNED = "PINNED"
         SUPPRESSED = "SUPPRESSED"
 
-    command_id: int
+    faction: InitiativeState.Faction
+    command_id: int | None = None
     status: Status = Status.ACTIVE
-
-
-@dataclass
-class Faction:
-    """
-    Marks a unit as a faction commander. Entity with this component
-    is expected to be the root node of the command hierarchy tree.
-    """
-
-    has_initiative: bool
 
 
 @dataclass
@@ -59,10 +63,12 @@ class MoveControls:
 class FireControls:
     """
     Marks an entity as capable for fire action.
-    Defines the fire type and set of outcomes.
+    Defines the set of outcomes and override.
     """
 
     class Outcomes(float, Enum):
+        """Each fire outcome and its probability range"""
+
         MISS = 0.3
         PIN = 0.7
         SUPPRESS = 0.95
@@ -73,6 +79,29 @@ class FireControls:
 
 
 @dataclass
+class AssaultControls:
+    """
+    Marks an entity as capable for assault action.
+    Defines the RNG roll multiplier.
+    """
+
+    class Outcomes(Enum):
+        """Each assault outcome result"""
+
+        FAIL = "FAIL"
+        SUCCESS = "SUCCESS"
+
+    class SuccessChances(float, Enum):
+        """Chance of successful assault per each target status."""
+
+        ACTIVE = 0.5
+        PINNED = 0.7
+        SUPPRESSED = 0.95
+
+    override: Outcomes | None = None
+
+
+@dataclass
 class TerrainFeature:
     """
     Represents a polygonal terrain feature with terrain type bit flags.
@@ -80,6 +109,7 @@ class TerrainFeature:
     """
 
     vertices: list[Vec2]
+    is_closed_loop: bool = True
     flag: int = -1
 
     class Flag(IntFlag):
@@ -91,3 +121,15 @@ class TerrainFeature:
         DRIVABLE = auto()
         WATER = auto()
         HILL = auto()
+
+
+@dataclass
+class EliminationObjective:
+    """
+    Represents the enemy elimination objective for a given faction.
+    """
+
+    target_faction: InitiativeState.Faction
+    winning_faction: InitiativeState.Faction
+    units_to_destroy: int
+    units_destroyed_counter: int

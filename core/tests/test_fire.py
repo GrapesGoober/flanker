@@ -2,12 +2,13 @@ from dataclasses import dataclass
 import pytest
 
 from core.components import (
-    Faction,
+    InitiativeState,
     FireControls,
     TerrainFeature,
     CombatUnit,
     Transform,
 )
+from core.initiative_system import InitiativeSystem
 from core.fire_system import FireSystem
 from core.gamestate import GameState
 from core.utils.vec2 import Vec2
@@ -19,7 +20,6 @@ class Fixture:
     attacker_id: int
     target_id: int
     fire_controls: FireControls
-    attacker_faction: Faction
     attacker_unit: CombatUnit
 
 
@@ -27,19 +27,18 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
-    attacker_faction_id = gs.add_entity(
-        faction := Faction(has_initiative=True),
-    )
-    target_faction_id = gs.add_entity(
-        Faction(has_initiative=False),
-    )
+    gs.add_entity(InitiativeState())
     attacker_id = gs.add_entity(
-        attacker_unit := CombatUnit(command_id=attacker_faction_id),
+        attacker_unit := CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+        ),
         fire_controls := FireControls(),
         Transform(position=Vec2(7.6, -10)),
     )
     target_id = gs.add_entity(
-        CombatUnit(command_id=target_faction_id),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+        ),
         Transform(position=Vec2(15, 20)),
     )
     # 10x10 opaque box
@@ -61,7 +60,6 @@ def fixture() -> Fixture:
         attacker_id=attacker_id,
         target_id=target_id,
         fire_controls=fire_controls,
-        attacker_faction=faction,
         attacker_unit=attacker_unit,
     )
 
@@ -85,7 +83,7 @@ def test_no_los(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as it is obstructed"
     assert (
-        fixture.attacker_faction.has_initiative == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects shooter to retain initiative"
 
 
@@ -102,7 +100,7 @@ def test_no_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as fire action MISS"
     assert (
-        fixture.attacker_faction.has_initiative == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
@@ -119,7 +117,7 @@ def test_pin_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.PINNED
     ), "Target expects to be PINNED as it is shot"
     assert (
-        fixture.attacker_faction.has_initiative == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
@@ -136,8 +134,22 @@ def test_suppress_fire(fixture: Fixture) -> None:
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be SUPPRESSED as it is shot"
     assert (
-        fixture.attacker_faction.has_initiative == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
+
+    fixture.fire_controls.override = FireControls.Outcomes.PIN
+    fire_result = FireSystem.fire(
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
+    )
+    assert fire_result.is_hit == True, "Fire action must occur"
+    assert (
+        target.status == CombatUnit.Status.SUPPRESSED
+    ), "Expects PIN outcome to not overwrite SUPPRESSED status."
+    assert (
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
+    ), "Expects attacker to lose initiative"
 
 
 def test_kill_fire(fixture: Fixture) -> None:
@@ -151,7 +163,7 @@ def test_kill_fire(fixture: Fixture) -> None:
     target = fixture.gs.try_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
-        fixture.attacker_faction.has_initiative == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
 

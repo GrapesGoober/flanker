@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from backend.action_service import ActionService
 from backend.ai_service import AiService
 from backend.models import (
+    AssaultActionRequest,
     FireActionRequest,
     TerrainModel,
     MoveActionRequest,
@@ -40,6 +41,14 @@ async def action_move(body: MoveActionRequest) -> CombatUnitsViewState:
 async def action_fire(body: FireActionRequest) -> CombatUnitsViewState:
     """Move a unit and return updated rifle squads."""
     ActionService.fire(gs, body)
+    AiService.play(gs)
+    return CombatUnitService.get_units(gs)
+
+
+@app.post("/api/assault")
+async def action_assault(body: AssaultActionRequest) -> CombatUnitsViewState:
+    """Move a unit and return updated rifle squads."""
+    ActionService.assault(gs, body)
     AiService.play(gs)
     return CombatUnitService.get_units(gs)
 

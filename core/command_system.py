@@ -1,5 +1,6 @@
 from core.gamestate import GameState
 from core.components import CombatUnit
+from core.objective_system import ObjectiveSystem
 
 
 class CommandSystem:
@@ -25,4 +26,5 @@ class CommandSystem:
             else:
                 child_unit.command_id = next_command
 
+        ObjectiveSystem.count_kill(gs, unit_id)
         gs.delete_entity(unit_id)
