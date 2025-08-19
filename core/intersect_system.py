@@ -7,11 +7,14 @@ from core.gamestate import GameState
 from core.utils.vec2 import Vec2
 from core.utils.linear_transform import LinearTransform
 from shapely import (
+    MultiLineString,
     MultiPoint,
     Point,
     Polygon,
     LineString,
 )
+
+_compiled_polygons: MultiLineString | None = None
 
 
 @dataclass
@@ -21,6 +24,20 @@ class Intersection:
     point: Vec2
     terrain: TerrainFeature
     terrain_id: int
+
+
+class IntersectSystem:
+    @staticmethod
+    def is_inside(gs: GameState, terrain_id: int, ent: int) -> bool:
+        """Checks whether the entity is inside the closed terrain feature."""
+        return OldIntersectSystem.is_inside(gs, terrain_id, ent)
+
+    @staticmethod
+    def get(
+        gs: GameState, start: Vec2, end: Vec2, mask: int = -1
+    ) -> Iterable[Intersection]:
+        """Yields intersections between the line segment and terrain."""
+        return OldIntersectSystem.get(gs, start, end, mask)
 
 
 class NewIntersectSystem:
@@ -72,7 +89,7 @@ class NewIntersectSystem:
                     yield Intersection(p, terrain, id)
 
 
-class IntersectSystem:
+class OldIntersectSystem:
     """ECS system for finding line and terrain feature intersections."""
 
     @staticmethod
@@ -94,7 +111,7 @@ class IntersectSystem:
 
         is_inside = False
         for b1, b2 in pairwise(vertices):
-            point = IntersectSystem._get_intersect(start, end, b1, b2)
+            point = OldIntersectSystem._get_intersect(start, end, b1, b2)
             if point is not None:
                 is_inside = not is_inside
         return is_inside
@@ -110,7 +127,7 @@ class IntersectSystem:
                 if terrain.is_closed_loop:
                     vertices.append(vertices[0])
                 for b1, b2 in pairwise(vertices):
-                    point = IntersectSystem._get_intersect(start, end, b1, b2)
+                    point = OldIntersectSystem._get_intersect(start, end, b1, b2)
                     if point is not None:
                         yield Intersection(point, terrain, id)
 
