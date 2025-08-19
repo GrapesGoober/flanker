@@ -1,0 +1,29 @@
+from dataclasses import is_dataclass
+from inspect import isclass
+from timeit import timeit
+from typing import Any
+from backend.terrain_service import TerrainTypeTag
+from core import components
+from core.gamestate import GameState
+from core.move_system import MoveSystem
+from core.utils.vec2 import Vec2
+
+
+component_types: list[type[Any]] = []
+for _, cls in vars(components).items():
+    if isclass(cls) and is_dataclass(cls):
+        component_types.append(cls)
+component_types.append(TerrainTypeTag)
+
+path = "./scenes/demo.json"
+
+with open(path, "r") as f:
+    gs = GameState.load(f.read(), component_types)
+
+
+def normal_move() -> None:
+    MoveSystem.move(gs, 1, Vec2(-50, -200))
+
+
+exec_time = timeit(normal_move, number=1)
+print(f"Execution time: {exec_time:.6f} seconds")
