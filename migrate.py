@@ -1,9 +1,10 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from typing import Any
 from backend.terrain_service import TerrainTypeTag
 from core import components
 from core.gamestate import GameState
-from core.serializer import Any, Serializer
+from core.serializer import Serializer
 from core.utils.vec2 import Vec2
 
 

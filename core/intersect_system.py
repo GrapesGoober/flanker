@@ -6,7 +6,6 @@ from core.gamestate import GameState
 from core.utils.vec2 import Vec2
 from core.utils.linear_transform import LinearTransform
 from shapely import (
-    MultiLineString,
     MultiPoint,
     Point,
     Polygon,
@@ -52,9 +51,8 @@ class IntersectSystem:
             if terrain.flag & mask:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
                 if terrain.is_closed_loop:
-                    poly = Polygon([(v.x, v.y) for v in vertices])
-                else:
-                    poly = LineString([(v.x, v.y) for v in vertices])
+                    vertices.append(vertices[0])
+                poly = LineString([(v.x, v.y) for v in vertices])
                 line = LineString([(start.x, start.y), (end.x, end.y)])
                 intersection = line.intersection(poly)
                 points: list[Vec2] = []
@@ -66,13 +64,6 @@ class IntersectSystem:
                     points.append(Vec2(intersection.x, intersection.y))
                 elif isinstance(intersection, MultiPoint):
                     points += [Vec2(pt.x, pt.y) for pt in intersection.geoms]
-                elif isinstance(intersection, LineString):
-                    points += [
-                        Vec2(coord[0], coord[1]) for coord in intersection.coords
-                    ]
-                elif isinstance(intersection, MultiLineString):
-                    for ls in intersection.geoms:
-                        points += [Vec2(coord[0], coord[1]) for coord in ls.coords]
 
                 for p in points:
                     if p == start or p == end:
