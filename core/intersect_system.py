@@ -59,8 +59,6 @@ class NewIntersectSystem:
         if not terrain.is_closed_loop:
             return False
 
-        # Cast a line from the ent to the right
-        # The end point must be further (outside) of polygon
         vertices = LinearTransform.apply(terrain.vertices, terrain_transform)
         geom = Polygon([(v.x, v.y) for v in vertices])
         point = Point((ent_transform.position.x, ent_transform.position.y))
