@@ -7,14 +7,21 @@ from core.gamestate import GameState
 from core.utils.vec2 import Vec2
 from core.utils.linear_transform import LinearTransform
 from shapely import (
-    MultiLineString,
     MultiPoint,
     Point,
     Polygon,
     LineString,
 )
 
-_compiled_polygons: MultiLineString | None = None
+
+@dataclass
+class CompiledPolygon:
+    poly: LineString
+    terrain: TerrainFeature
+    terrain_id: int
+
+
+_compiled_polygons: dict[int, list[CompiledPolygon]] = {}
 
 
 @dataclass
@@ -30,14 +37,14 @@ class IntersectSystem:
     @staticmethod
     def is_inside(gs: GameState, terrain_id: int, ent: int) -> bool:
         """Checks whether the entity is inside the closed terrain feature."""
-        return OldIntersectSystem.is_inside(gs, terrain_id, ent)
+        return NewIntersectSystem.is_inside(gs, terrain_id, ent)
 
     @staticmethod
     def get(
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
-        return OldIntersectSystem.get(gs, start, end, mask)
+        return NewIntersectSystem.get(gs, start, end, mask)
 
 
 class NewIntersectSystem:
@@ -65,28 +72,34 @@ class NewIntersectSystem:
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
-        for id, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                vertices = LinearTransform.apply(terrain.vertices, transform)
-                if terrain.is_closed_loop:
-                    vertices.append(vertices[0])
-                poly = LineString([(v.x, v.y) for v in vertices])
-                line = LineString([(start.x, start.y), (end.x, end.y)])
-                intersection = line.intersection(poly)
-                points: list[Vec2] = []
+        global _compiled_polygons
+        _poly_list = _compiled_polygons.setdefault(mask, [])
+        if _poly_list == []:
+            for id, terrain, transform in gs.query(TerrainFeature, Transform):
+                if terrain.flag & mask:
+                    vertices = LinearTransform.apply(terrain.vertices, transform)
+                    if terrain.is_closed_loop:
+                        vertices.append(vertices[0])
+                    poly = LineString([(v.x, v.y) for v in vertices])
+                    _poly_list.append(CompiledPolygon(poly, terrain, id))
 
-                if intersection.is_empty:
+        line = LineString([(start.x, start.y), (end.x, end.y)])
+        for poly in _poly_list:
+            intersection = line.intersection(poly.poly)
+            points: list[Vec2] = []
+
+            if intersection.is_empty:
+                continue
+
+            if isinstance(intersection, Point):
+                points.append(Vec2(intersection.x, intersection.y))
+            elif isinstance(intersection, MultiPoint):
+                points += [Vec2(pt.x, pt.y) for pt in intersection.geoms]
+
+            for p in points:
+                if p == start or p == end:
                     continue
-
-                if isinstance(intersection, Point):
-                    points.append(Vec2(intersection.x, intersection.y))
-                elif isinstance(intersection, MultiPoint):
-                    points += [Vec2(pt.x, pt.y) for pt in intersection.geoms]
-
-                for p in points:
-                    if p == start or p == end:
-                        continue
-                    yield Intersection(p, terrain, id)
+                yield Intersection(p, poly.terrain, poly.terrain_id)
 
 
 class OldIntersectSystem:
