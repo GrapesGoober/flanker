@@ -1,25 +1,40 @@
-from numpy.typing import NDArray
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
 from core.intersect_system import IntersectSystem
 import numpy as np
+from numpy.typing import NDArray
 
 from core.utils.linear_transform import LinearTransform
 
 _cached_edges: dict[int, tuple[NDArray[np.float64], NDArray[np.float64]]] = {}
 
+# Technically, the entity-to-terrain shouldn't be cached
+# Instead, the caller (move action and fire action) should get source's terrain once
+# This cache is just to simulate that effect
+_cached_source_ent: dict[int, int] = {}
+
 
 class LosSystem:
+    @staticmethod
+    def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
+        return OldLosSystem.check(gs, source_ent, target_ent)
+
+
+class NewLosSystem:
 
     @staticmethod
     def _get_poly(
         gs: GameState, source_ent: int
     ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        excluded_terrain_id = -1
-        for id, terrain, _ in gs.query(TerrainFeature, Transform):
-            if terrain.flag & TerrainFeature.Flag.OPAQUE:
-                if IntersectSystem.is_inside(gs, id, source_ent):
-                    excluded_terrain_id = id
+
+        if source_ent not in _cached_source_ent:
+            _cached_source_ent[source_ent] = -1
+            for id, terrain, _ in gs.query(TerrainFeature, Transform):
+                if terrain.flag & TerrainFeature.Flag.OPAQUE:
+                    if IntersectSystem.is_inside(gs, id, source_ent):
+                        _cached_source_ent[source_ent] = id
+
+        excluded_terrain_id = _cached_source_ent[source_ent]
 
         if excluded_terrain_id not in _cached_edges:
             coords_list: list[list[list[float]]] = []
@@ -58,7 +73,7 @@ class LosSystem:
         line_vector = target - source
 
         # Create a vector of edges
-        edge_source, edge_vectors = LosSystem._get_poly(gs, source_ent)
+        edge_source, edge_vectors = NewLosSystem._get_poly(gs, source_ent)
 
         # Compute two parametric values t & u of intersect point
         line_cross_edge = np.cross(line_vector, edge_vectors)

@@ -23,6 +23,11 @@ with open(path, "r") as f:
 
 def normal_move() -> None:
     MoveSystem.move(gs, 1, Vec2(-50, -200))
+    MoveSystem.move(gs, 2, Vec2(-50, -200))
+    MoveSystem.move(gs, 3, Vec2(-50, -200))
+    MoveSystem.move(gs, 4, Vec2(-50, -200))
+    MoveSystem.move(gs, 5, Vec2(-50, -200))
+    MoveSystem.move(gs, 6, Vec2(-50, -200))
 
 
 exec_time = timeit(normal_move, number=1)
