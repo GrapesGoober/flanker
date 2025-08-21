@@ -75,3 +75,23 @@ class MoveSystem:
             is_valid=True,
             is_interrupted=False,
         )
+
+    @staticmethod
+    def batch_interrupt_check(gs: GameState):
+        # STEP 1
+        # Generate arrays of source and target points, [a] and [b]
+        #   - Ideally the source (spotter) can be kept since it doesnt change much
+        # STEP 2
+        # gs.query all terrain data, prepare terrain arrays
+        #   - excluding and including as masks and source terrain
+        #   - might prefer a call-level cache, say, context object
+        # STEP 3
+        # pass this to separate njit func to process all arrays
+        #   - python loops are possible, since njit can compile that
+        #   - doesn't need all operations done in numpy's loop
+        #   - return the index (either as np mask or py loop)
+        #   - this index can be used to infer the interrupted position
+        #
+        # Might wanna try using cuda too once batch processing is done
+
+        ...

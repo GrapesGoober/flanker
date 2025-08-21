@@ -32,16 +32,16 @@ def normal_move() -> None:
     MoveSystem.move(gs, 9, Vec2(-50, -200))
 
 
-# from timeit import timeit
+from timeit import timeit
 
-# exec_time = timeit(normal_move, number=1)
-# print(f"Execution time: {exec_time:.6f} seconds")
+exec_time = timeit(normal_move, number=1)
+print(f"Execution time: {exec_time:.6f} seconds")
 
 
-import cProfile
-import pstats
+# import cProfile
+# import pstats
 
-cProfile.run("normal_move()", sort="tottime", filename="perftest.txt")
-p = pstats.Stats("perftest.txt")
-p.sort_stats("tottime")
-p.print_stats(10)
+# cProfile.run("normal_move()", sort="tottime", filename="perftest.txt")
+# p = pstats.Stats("perftest.txt")
+# p.sort_stats("tottime")
+# p.print_stats(10)

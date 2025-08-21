@@ -7,11 +7,14 @@ from numpy.typing import NDArray
 
 from core.utils.linear_transform import LinearTransform
 
+# TODO: this global cache is breaking tests,
+# running one test at a time solves this
 _cached_edges: dict[int, tuple[NDArray[np.float64], NDArray[np.float64]]] = {}
 
 # Technically, the entity-to-terrain shouldn't be cached
 # Instead, the caller (move action and fire action) should get source's terrain once
 # This cache is just to simulate that effect
+# TODO: move action batch all sources and targets
 _cached_source_ent: dict[int, int] = {}
 
 
@@ -51,8 +54,8 @@ class NewLosSystem:
 
             if edge_sources == [] or edge_targets == []:
                 return (
-                    np.array([[]], dtype=np.float64),
-                    np.array([[]], dtype=np.float64),
+                    np.array([[0, 0, 0]], dtype=np.float64),
+                    np.array([[0, 0, 0]], dtype=np.float64),
                 )
             edge_source = np.vstack(edge_sources)
             edge_target = np.vstack(edge_targets)
