@@ -1,3 +1,4 @@
+from numba import njit  # type: ignore
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
 from core.intersect_system import IntersectSystem
@@ -17,7 +18,7 @@ _cached_source_ent: dict[int, int] = {}
 class LosSystem:
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
-        return OldLosSystem.check(gs, source_ent, target_ent)
+        return NewLosSystem.check(gs, source_ent, target_ent)
 
 
 class NewLosSystem:
@@ -70,10 +71,22 @@ class NewLosSystem:
         # Explicitly tell numpy that we're working with 2d vectors with z=0
         source = np.array([source_pos.x, source_pos.y, 0], dtype=np.float64)
         target = np.array([target_pos.x, target_pos.y, 0], dtype=np.float64)
-        line_vector = target - source
 
         # Create a vector of edges
         edge_source, edge_vectors = NewLosSystem._get_poly(gs, source_ent)
+
+        return NewLosSystem._check(source, target, edge_source, edge_vectors)
+
+    @staticmethod
+    @njit
+    def _check(
+        source: NDArray[np.float64],
+        target: NDArray[np.float64],
+        edge_source: NDArray[np.float64],
+        edge_vectors: NDArray[np.float64],
+    ) -> bool:
+        # Explicitly tell numpy that we're working with 2d vectors with z=0
+        line_vector = target - source
 
         # Compute two parametric values t & u of intersect point
         line_cross_edge = np.cross(line_vector, edge_vectors)[:, 2]
@@ -81,7 +94,8 @@ class NewLosSystem:
         t = np.cross(q1_p1, edge_vectors)[:, 2] / line_cross_edge
         u = np.cross(q1_p1, line_vector)[:, 2] / line_cross_edge
 
-        parallel = np.isclose(line_cross_edge, 0)
+        # parallel = np.isclose(line_cross_edge, 0)
+        parallel = np.abs(line_cross_edge) <= 1e-8
         intersect_mask = (~parallel) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
 
         return int(np.count_nonzero(intersect_mask)) <= 1
