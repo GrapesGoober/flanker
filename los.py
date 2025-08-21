@@ -17,8 +17,8 @@ def line_of_sight(
     # Create a vector of edges
     shifted_polygons = np.roll(polygons, shift=-1, axis=1)
     edge_source = polygons.reshape(-1, 2)
-    edge_end = shifted_polygons.reshape(-1, 2)
-    edge_vectors = edge_end - edge_source
+    edge_target = shifted_polygons.reshape(-1, 2)
+    edge_vectors = edge_target - edge_source
 
     # Compute two parametric values t & u of intersect point
     line_cross_edge = np.cross(line_vector, edge_vectors)
