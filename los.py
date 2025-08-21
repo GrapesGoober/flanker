@@ -7,41 +7,26 @@ def line_of_sight(
     target: NDArray[np.float64],
     polygons: NDArray[np.float64],
 ) -> bool:
-    """
-    Check if the line from source to target intersects any polygon.
+    """Check if the line from source to target intersects any polygon."""
 
-    Parameters:
-        source: Array of shape (2,) representing the source point.
-        target: Array of shape (2,) representing the target point.
-        polygons: Array of shape (N, M, 2), where N is the number of polygons,
-                  and M is the number of vertices per polygon.
-
-    Returns:
-        True if there is line of sight (no intersection), False otherwise.
-    """
+    # Ensure two points are float points for a single line vector
     source = np.asarray(source, dtype=np.float64)
     target = np.asarray(target, dtype=np.float64)
+    line_vector = target - source
 
-    p1 = source
-    p2 = target
+    # Create a vector of edges
+    shifted_polygons = np.roll(polygons, shift=-1, axis=1)
+    edge_source = polygons.reshape(-1, 2)
+    edge_end = shifted_polygons.reshape(-1, 2)
+    edge_vectors = edge_end - edge_source
 
-    v0 = polygons
-    v1 = np.roll(polygons, shift=-1, axis=1)
+    # Compute two parametric values t & u of intersect point
+    line_cross_edge = np.cross(line_vector, edge_vectors)
+    q1_p1 = edge_source - source
+    t = np.cross(q1_p1, edge_vectors) / line_cross_edge
+    u = np.cross(q1_p1, line_vector) / line_cross_edge
 
-    q1 = v0.reshape(-1, 2)
-    q2 = v1.reshape(-1, 2)
-
-    r = p2 - p1
-    s = q2 - q1
-
-    r_cross_s = np.cross(r, s)
-    q1_p1 = q1 - p1
-
-    t = np.cross(q1_p1, s) / r_cross_s
-    u = np.cross(q1_p1, r) / r_cross_s
-
-    parallel = np.isclose(r_cross_s, 0)
-
+    parallel = np.isclose(line_cross_edge, 0)
     intersect_mask = (~parallel) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
 
     return not np.any(intersect_mask)
@@ -56,7 +41,7 @@ polygons = np.array(
 )
 
 source = np.array([0, 0])
-target = np.array([6, 1.9])
+target = np.array([6, 1.999])
 
 visible = line_of_sight(source, target, polygons)
 print("Line of sight:", visible)
