@@ -6,8 +6,8 @@ import numpy as np
 
 from core.utils.linear_transform import LinearTransform
 
-# TODO: refactor this such that it only cache homogenous edge pairs, not polys
 _cached_polys: dict[int, NDArray[np.float64]] = {}
+_cached_edges: dict[int, tuple[NDArray[np.float64], NDArray[np.float64]]] = {}
 
 
 class LosSystem:
@@ -22,10 +22,24 @@ class LosSystem:
 
         if excluded_terrain_id not in _cached_polys:
             coords_list: list[list[list[float]]] = []
+            edge_sources: list[NDArray[np.float64]] = []
+            edge_targets: list[NDArray[np.float64]] = []
             for id, terrain, transform in gs.query(TerrainFeature, Transform):
                 if terrain.flag & TerrainFeature.Flag.OPAQUE:
                     vertices = LinearTransform.apply(terrain.vertices, transform)
                     coords_list.append([[v.x, v.y] for v in vertices])
+                    poly = np.array([[v.x, v.y] for v in vertices], dtype=np.float64)
+                    shifted_poly = np.roll(poly, shift=-1, axis=0)
+                    edge_sources.append(poly)
+                    edge_targets.append(shifted_poly)
+
+            if edge_sources == [] or edge_targets == []:
+                return np.array([[]], dtype=np.float64)
+            edge_source = np.vstack(edge_sources)
+            edge_target = np.vstack(edge_targets)
+            edge_vectors = edge_target - edge_source
+
+            _cached_edges[excluded_terrain_id] = edge_source, edge_vectors
             _cached_polys[excluded_terrain_id] = np.array(coords_list, dtype=np.float64)
 
         return _cached_polys[excluded_terrain_id]
