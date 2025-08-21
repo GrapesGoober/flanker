@@ -37,14 +37,14 @@ class IntersectSystem:
     @staticmethod
     def is_inside(gs: GameState, terrain_id: int, ent: int) -> bool:
         """Checks whether the entity is inside the closed terrain feature."""
-        return NewIntersectSystem.is_inside(gs, terrain_id, ent)
+        return OldIntersectSystem.is_inside(gs, terrain_id, ent)
 
     @staticmethod
     def get(
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
-        return NewIntersectSystem.get(gs, start, end, mask)
+        return OldIntersectSystem.get(gs, start, end, mask)
 
 
 class NewIntersectSystem:

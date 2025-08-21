@@ -6,21 +6,22 @@ import numpy as np
 
 from core.utils.linear_transform import LinearTransform
 
-_cached_polys: dict[int, NDArray[np.float64]] = {}
 _cached_edges: dict[int, tuple[NDArray[np.float64], NDArray[np.float64]]] = {}
 
 
 class LosSystem:
 
     @staticmethod
-    def _get_poly(gs: GameState, source_ent: int) -> NDArray[np.float64]:
+    def _get_poly(
+        gs: GameState, source_ent: int
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         excluded_terrain_id = -1
         for id, terrain, _ in gs.query(TerrainFeature, Transform):
             if terrain.flag & TerrainFeature.Flag.OPAQUE:
                 if IntersectSystem.is_inside(gs, id, source_ent):
                     excluded_terrain_id = id
 
-        if excluded_terrain_id not in _cached_polys:
+        if excluded_terrain_id not in _cached_edges:
             coords_list: list[list[list[float]]] = []
             edge_sources: list[NDArray[np.float64]] = []
             edge_targets: list[NDArray[np.float64]] = []
@@ -34,15 +35,17 @@ class LosSystem:
                     edge_targets.append(shifted_poly)
 
             if edge_sources == [] or edge_targets == []:
-                return np.array([[]], dtype=np.float64)
+                return (
+                    np.array([[]], dtype=np.float64),
+                    np.array([[]], dtype=np.float64),
+                )
             edge_source = np.vstack(edge_sources)
             edge_target = np.vstack(edge_targets)
             edge_vectors = edge_target - edge_source
 
             _cached_edges[excluded_terrain_id] = edge_source, edge_vectors
-            _cached_polys[excluded_terrain_id] = np.array(coords_list, dtype=np.float64)
 
-        return _cached_polys[excluded_terrain_id]
+        return _cached_edges[excluded_terrain_id]
 
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
@@ -55,11 +58,7 @@ class LosSystem:
         line_vector = target - source
 
         # Create a vector of edges
-        polygons = LosSystem._get_poly(gs, source_ent)
-        shifted_polygons = np.roll(polygons, shift=-1, axis=1)
-        edge_source = polygons.reshape(-1, 2)
-        edge_target = shifted_polygons.reshape(-1, 2)
-        edge_vectors = edge_target - edge_source
+        edge_source, edge_vectors = LosSystem._get_poly(gs, source_ent)
 
         # Compute two parametric values t & u of intersect point
         line_cross_edge = np.cross(line_vector, edge_vectors)
