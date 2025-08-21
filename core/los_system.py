@@ -37,14 +37,13 @@ class NewLosSystem:
         excluded_terrain_id = _cached_source_ent[source_ent]
 
         if excluded_terrain_id not in _cached_edges:
-            coords_list: list[list[list[float]]] = []
             edge_sources: list[NDArray[np.float64]] = []
             edge_targets: list[NDArray[np.float64]] = []
             for id, terrain, transform in gs.query(TerrainFeature, Transform):
                 if terrain.flag & TerrainFeature.Flag.OPAQUE:
                     vertices = LinearTransform.apply(terrain.vertices, transform)
-                    coords_list.append([[v.x, v.y] for v in vertices])
-                    poly = np.array([[v.x, v.y] for v in vertices], dtype=np.float64)
+                    # Explicitly tell numpy that we're working with 2d vectors with z=0
+                    poly = np.array([[v.x, v.y, 0] for v in vertices], dtype=np.float64)
                     shifted_poly = np.roll(poly, shift=-1, axis=0)
                     edge_sources.append(poly)
                     edge_targets.append(shifted_poly)
@@ -68,18 +67,19 @@ class NewLosSystem:
         # Ensure two points are float points for a single line vector
         source_pos = gs.get_component(source_ent, Transform).position
         target_pos = gs.get_component(target_ent, Transform).position
-        source = np.array([source_pos.x, source_pos.y], dtype=np.float64)
-        target = np.array([target_pos.x, target_pos.y], dtype=np.float64)
+        # Explicitly tell numpy that we're working with 2d vectors with z=0
+        source = np.array([source_pos.x, source_pos.y, 0], dtype=np.float64)
+        target = np.array([target_pos.x, target_pos.y, 0], dtype=np.float64)
         line_vector = target - source
 
         # Create a vector of edges
         edge_source, edge_vectors = NewLosSystem._get_poly(gs, source_ent)
 
         # Compute two parametric values t & u of intersect point
-        line_cross_edge = np.cross(line_vector, edge_vectors)
+        line_cross_edge = np.cross(line_vector, edge_vectors)[:, 2]
         q1_p1 = edge_source - source
-        t = np.cross(q1_p1, edge_vectors) / line_cross_edge
-        u = np.cross(q1_p1, line_vector) / line_cross_edge
+        t = np.cross(q1_p1, edge_vectors)[:, 2] / line_cross_edge
+        u = np.cross(q1_p1, line_vector)[:, 2] / line_cross_edge
 
         parallel = np.isclose(line_cross_edge, 0)
         intersect_mask = (~parallel) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
