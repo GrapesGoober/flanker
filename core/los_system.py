@@ -70,30 +70,32 @@ class NewLosSystem:
 
     @staticmethod
     def build_filter_cache(gs: GameState, source_ent: int) -> None:
-
-        filter: list[bool] = []
-        _cache_inside: dict[int, bool] = {}
-        for terrain_id in _cache.edge_ids:
-            if terrain_id not in _cache_inside:
-                if IntersectSystem.is_inside(gs, terrain_id, source_ent):
-                    _cache_inside[terrain_id] = False
-                else:
-                    _cache_inside[terrain_id] = True
-            filter.append(_cache_inside[terrain_id])
-        _cache.terrain_filter[source_ent] = np.array(filter, dtype=np.bool)
+        if source_ent not in _cache.terrain_filter:
+            filter: list[bool] = []
+            _cache_inside: dict[int, bool] = {}
+            for terrain_id in _cache.edge_ids:
+                if terrain_id not in _cache_inside:
+                    if IntersectSystem.is_inside(gs, terrain_id, source_ent):
+                        _cache_inside[terrain_id] = False
+                    else:
+                        _cache_inside[terrain_id] = True
+                filter.append(_cache_inside[terrain_id])
+            _cache.terrain_filter[source_ent] = np.array(filter, dtype=np.bool)
 
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
 
         source = gs.get_component(source_ent, Transform).position
         target = gs.get_component(target_ent, Transform).position
+        global _cache_init
         if _cache_init == False:
             NewLosSystem.build_poly_cache(gs, source_ent)
-            NewLosSystem.build_filter_cache(gs, source_ent)
+            _cache_init = True
+        NewLosSystem.build_filter_cache(gs, source_ent)
 
         edge_source, edge_vectors = _cache.terrain
         filter = _cache.terrain_filter[source_ent]
-        return NewLosSystem._check(
+        return NewLosSystem.njit_check(
             (source.x, source.y),
             (target.x, target.y),
             edge_source,
@@ -103,7 +105,8 @@ class NewLosSystem:
         )
 
     @staticmethod
-    def _check(
+    @njit
+    def njit_check(
         source_pos: tuple[float, float],
         target_pos: tuple[float, float],
         edge_source: NDArray[np.float64],
