@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from numba import njit  # type: ignore
 from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
@@ -7,15 +8,28 @@ from numpy.typing import NDArray
 
 from core.utils.linear_transform import LinearTransform
 
-# TODO: this global cache is breaking tests, opt to use game state or action level cache
-# This is a no-exclusion terrain data
-_cached_terrain: tuple[NDArray[np.float64], NDArray[np.float64]] | None = None
-_cached_edge_ids: list[int] = []
-_cached_edge_ids_array: NDArray[np.int64] | None = None
 
-# TODO: move system should be responsible for tracking this is_inside
-# for each entity. Simulate for now using cache
-_terrain_filter: dict[int, NDArray[np.bool]] = {}
+@dataclass
+class _Cache:
+
+    # This is a no-exclusion terrain data
+    terrain: tuple[NDArray[np.float64], NDArray[np.float64]]
+    edge_ids: list[int]
+    edge_ids_array: NDArray[np.int64]
+
+    # TODO: move system should be responsible for tracking this is_inside
+    # for each entity. Simulate for now using cache
+    terrain_filter: dict[int, NDArray[np.bool]]
+
+
+# TODO: this global cache is breaking tests, opt to use game state or action level cache
+_cache_init = False
+_cache = _Cache(
+    terrain=(np.array([], dtype=np.float64), np.array([], dtype=np.float64)),
+    edge_ids=[],
+    edge_ids_array=np.array([], dtype=np.int64),
+    terrain_filter={},
+)
 
 
 class LosSystem:
@@ -27,17 +41,10 @@ class LosSystem:
 class NewLosSystem:
 
     @staticmethod
-    def _get_poly(
-        gs: GameState, source_ent: int
-    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-
-        global _cached_terrain, _cached_edge_ids
-        if _cached_terrain != None:
-            return _cached_terrain
+    def build_poly_cache(gs: GameState, source_ent: int) -> None:
 
         edge_sources: list[NDArray[np.float64]] = []
         edge_targets: list[NDArray[np.float64]] = []
-        _cached_edge_ids = []
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & TerrainFeature.Flag.OPAQUE:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
@@ -46,13 +53,12 @@ class NewLosSystem:
                 shifted_poly = np.roll(poly, shift=-1, axis=0)
                 edge_sources.append(poly)
                 edge_targets.append(shifted_poly)
-                _cached_edge_ids += [id for _ in vertices]
+                _cache.edge_ids += [id for _ in vertices]
 
-        global _cached_edge_ids_array
-        _cached_edge_ids_array = np.array(_cached_edge_ids)
+        _cache.edge_ids_array = np.array(_cache.edge_ids)
 
         if edge_sources == [] or edge_targets == []:
-            return (
+            _cache.terrain = (
                 np.array([[0, 0, 0]], dtype=np.float64),
                 np.array([[0, 0, 0]], dtype=np.float64),
             )
@@ -60,50 +66,50 @@ class NewLosSystem:
         edge_target = np.vstack(edge_targets)
         edge_vectors = edge_target - edge_source
 
-        _cached_terrain = edge_source, edge_vectors
-
-        return _cached_terrain
+        _cache.terrain = edge_source, edge_vectors
 
     @staticmethod
-    def _get_terrain_filter(gs: GameState, source_ent: int) -> NDArray[np.bool]:
-        if source_ent in _terrain_filter:
-            return _terrain_filter[source_ent]
+    def build_filter_cache(gs: GameState, source_ent: int) -> None:
 
         filter: list[bool] = []
         _cache_inside: dict[int, bool] = {}
-        for terrain_id in _cached_edge_ids:
+        for terrain_id in _cache.edge_ids:
             if terrain_id not in _cache_inside:
                 if IntersectSystem.is_inside(gs, terrain_id, source_ent):
                     _cache_inside[terrain_id] = False
                 else:
                     _cache_inside[terrain_id] = True
             filter.append(_cache_inside[terrain_id])
-        _terrain_filter[source_ent] = np.array(filter, dtype=np.bool)
-        return _terrain_filter[source_ent]
+        _cache.terrain_filter[source_ent] = np.array(filter, dtype=np.bool)
 
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
 
         source = gs.get_component(source_ent, Transform).position
         target = gs.get_component(target_ent, Transform).position
-        edge_source, edge_vectors = NewLosSystem._get_poly(gs, source_ent)
-        filter = NewLosSystem._get_terrain_filter(gs, source_ent)
+        if _cache_init == False:
+            NewLosSystem.build_poly_cache(gs, source_ent)
+            NewLosSystem.build_filter_cache(gs, source_ent)
+
+        edge_source, edge_vectors = _cache.terrain
+        filter = _cache.terrain_filter[source_ent]
         return NewLosSystem._check(
             (source.x, source.y),
             (target.x, target.y),
             edge_source,
             edge_vectors,
             filter,
+            _cache.edge_ids_array,
         )
 
     @staticmethod
-    @njit
     def _check(
         source_pos: tuple[float, float],
         target_pos: tuple[float, float],
         edge_source: NDArray[np.float64],
         edge_vectors: NDArray[np.float64],
         filter: NDArray[np.bool],
+        edge_ids_array: NDArray[np.int64],
     ) -> bool:
         # Explicitly tell numpy that we're working with 2d vectors with z=0
         source = np.array([source_pos[0], source_pos[1], 0], dtype=np.float64)
@@ -123,8 +129,7 @@ class NewLosSystem:
         # parallel = np.isclose(line_cross_edge, 0)
         parallel = np.abs(line_cross_edge) <= 1e-8
         intersect_mask = (~parallel) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
-        assert _cached_edge_ids_array is not None
-        intersect_ids = _cached_edge_ids_array[filter][intersect_mask]
+        intersect_ids = edge_ids_array[filter][intersect_mask]
 
         return int(np.count_nonzero(intersect_mask)) <= 1
 
