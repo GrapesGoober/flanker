@@ -61,7 +61,7 @@ class MoveInterruptSystem:
                 np.array([v.x, v.y, 0], dtype=np.float64) for v in spotter_coords
             ],
             terrain=terrain_data,
-            targets=list(
+            move_steps=list(
                 [np.array([v.x, v.y, 0], dtype=np.float64) for v in move_coords]
             ),
         )
@@ -146,7 +146,7 @@ class MoveInterruptSystem:
             vertices = LinearTransform.apply(terrain.vertices, transform)
             # Explicitly tell numpy that we're working with 2d vectors with z=0
             poly = np.array([[v.x, v.y, 0] for v in vertices], dtype=np.float64)
-            edge_targets.append(poly)
+            edge_sources.append(poly)
             edge_targets.append(np.roll(poly, shift=-1, axis=0))
 
         if edge_sources == [] or edge_targets == []:
@@ -164,11 +164,11 @@ class MoveInterruptSystem:
         spotter_ids: list[int],
         spotters: list[NDArray[np.float64]],
         terrain: tuple[NDArray[np.float64], NDArray[np.float64]],
-        targets: list[NDArray[np.float64]],
+        move_steps: list[NDArray[np.float64]],
     ) -> list[tuple[int, int]]:
         """Returns list of interrupt, using (spotter_id, move_step index)"""
         interrupts: list[tuple[int, int]] = []
-        for move_step_index, move_step in enumerate(targets):
+        for move_step_index, move_step in enumerate(move_steps):
             for i, spotter_id in enumerate(spotter_ids):
                 spotter = spotters[i]
                 edge_sources, edge_targets = terrain
