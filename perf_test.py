@@ -4,7 +4,6 @@ from typing import Any
 from backend.terrain_service import TerrainTypeTag
 from core import components
 from core.gamestate import GameState
-from core.move_interrupt_system import MoveInterruptSystem
 
 from core.utils.vec2 import Vec2
 
@@ -19,32 +18,33 @@ path = "./scenes/demo.json"
 with open(path, "r") as f:
     gs = GameState.load(f.read(), component_types)
 
+# from core.move_interrupt_system import MoveInterruptSystem
+# MoveInterruptSystem.batch_interrupt_check(gs, 1, Vec2(-50, -200))
+# def test() -> None:
+#     MoveInterruptSystem.batch_interrupt_check(gs, 2, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 3, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 4, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 5, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 6, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 7, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 8, Vec2(-50, -200))
+#     MoveInterruptSystem.batch_interrupt_check(gs, 9, Vec2(-50, -200))
 
-MoveInterruptSystem.batch_interrupt_check(gs, 1, Vec2(-50, -200))
+
+from core.move_system import MoveSystem
+
+MoveSystem.move(gs, 1, Vec2(-50, -200))
 
 
 def test() -> None:
-    MoveInterruptSystem.batch_interrupt_check(gs, 2, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 3, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 4, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 5, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 6, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 7, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 8, Vec2(-50, -200))
-    MoveInterruptSystem.batch_interrupt_check(gs, 9, Vec2(-50, -200))
-
-
-# from core.move_system import MoveSystem
-# MoveSystem.move(gs, 1, Vec2(-50, -200))
-# def test() -> None:
-#     MoveSystem.move(gs, 2, Vec2(-50, -200))
-#     MoveSystem.move(gs, 3, Vec2(-50, -200))
-#     MoveSystem.move(gs, 4, Vec2(-50, -200))
-#     MoveSystem.move(gs, 5, Vec2(-50, -200))
-#     MoveSystem.move(gs, 6, Vec2(-50, -200))
-#     MoveSystem.move(gs, 7, Vec2(-50, -200))
-#     MoveSystem.move(gs, 8, Vec2(-50, -200))
-#     MoveSystem.move(gs, 9, Vec2(-50, -200))
+    MoveSystem.move(gs, 2, Vec2(-50, -200))
+    MoveSystem.move(gs, 3, Vec2(-50, -200))
+    MoveSystem.move(gs, 4, Vec2(-50, -200))
+    MoveSystem.move(gs, 5, Vec2(-50, -200))
+    MoveSystem.move(gs, 6, Vec2(-50, -200))
+    MoveSystem.move(gs, 7, Vec2(-50, -200))
+    MoveSystem.move(gs, 8, Vec2(-50, -200))
+    MoveSystem.move(gs, 9, Vec2(-50, -200))
 
 
 # from timeit import timeit

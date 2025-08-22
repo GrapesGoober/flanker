@@ -69,26 +69,31 @@ class NewLosSystem:
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
 
         # Ensure two points are float points for a single line vector
-        source_pos = gs.get_component(source_ent, Transform).position
-        target_pos = gs.get_component(target_ent, Transform).position
-        # Explicitly tell numpy that we're working with 2d vectors with z=0
-        source = np.array([source_pos.x, source_pos.y, 0], dtype=np.float64)
-        target = np.array([target_pos.x, target_pos.y, 0], dtype=np.float64)
+        source = gs.get_component(source_ent, Transform).position
+        target = gs.get_component(target_ent, Transform).position
 
         # Create a vector of edges
         edge_source, edge_vectors = NewLosSystem._get_poly(gs, source_ent)
 
-        return NewLosSystem._check(source, target, edge_source, edge_vectors)
+        return NewLosSystem._check(
+            (source.x, source.y),
+            (target.x, target.y),
+            edge_source,
+            edge_vectors,
+        )
 
     @staticmethod
     @njit
     def _check(
-        source: NDArray[np.float64],
-        target: NDArray[np.float64],
+        source_pos: tuple[float, float],
+        target_pos: tuple[float, float],
         edge_source: NDArray[np.float64],
         edge_vectors: NDArray[np.float64],
     ) -> bool:
         # Explicitly tell numpy that we're working with 2d vectors with z=0
+        source = np.array([source_pos[0], source_pos[1], 0], dtype=np.float64)
+        target = np.array([target_pos[0], target_pos[1], 0], dtype=np.float64)
+
         line_vector = target - source
 
         # Compute two parametric values t & u of intersect point

@@ -52,7 +52,7 @@ class GameState:
         """Yields all entities with a specific component type."""
         component_types = tuple(filter(None, (t, u, v)))
         if component_types in self._cache:
-            yield from self._cache[component_types]
+            return self._cache[component_types]
         else:
             for entity_id, components in self._entities.items():
                 if all(
