@@ -11,6 +11,7 @@ from core.utils.linear_transform import LinearTransform
 # This is a no-exclusion terrain data
 _cached_terrain: tuple[NDArray[np.float64], NDArray[np.float64]] | None = None
 _cached_edge_ids: list[int] = []
+_cached_edge_ids_array: NDArray[np.int64] | None = None
 
 # TODO: move system should be responsible for tracking this is_inside
 # for each entity. Simulate for now using cache
@@ -46,6 +47,9 @@ class NewLosSystem:
                 edge_sources.append(poly)
                 edge_targets.append(shifted_poly)
                 _cached_edge_ids += [id for _ in vertices]
+
+        global _cached_edge_ids_array
+        _cached_edge_ids_array = np.array(_cached_edge_ids)
 
         if edge_sources == [] or edge_targets == []:
             return (
@@ -84,7 +88,6 @@ class NewLosSystem:
         target = gs.get_component(target_ent, Transform).position
         edge_source, edge_vectors = NewLosSystem._get_poly(gs, source_ent)
         filter = NewLosSystem._get_terrain_filter(gs, source_ent)
-
         return NewLosSystem._check(
             (source.x, source.y),
             (target.x, target.y),
@@ -120,6 +123,8 @@ class NewLosSystem:
         # parallel = np.isclose(line_cross_edge, 0)
         parallel = np.abs(line_cross_edge) <= 1e-8
         intersect_mask = (~parallel) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
+        assert _cached_edge_ids_array is not None
+        intersect_ids = _cached_edge_ids_array[filter][intersect_mask]
 
         return int(np.count_nonzero(intersect_mask)) <= 1
 
