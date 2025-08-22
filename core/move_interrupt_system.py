@@ -1,3 +1,4 @@
+from numba import njit  # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from core.components import (
@@ -8,6 +9,7 @@ from core.components import (
     Transform,
 )
 from core.gamestate import GameState
+from core.los_system import IntersectSystem
 from core.utils.linear_transform import LinearTransform
 from core.utils.vec2 import Vec2
 
@@ -15,7 +17,11 @@ from core.utils.vec2 import Vec2
 class MoveInterruptSystem:
 
     @staticmethod
-    def batch_interrupt_check(gs: GameState, unit_id: int, to: Vec2) -> None:
+    def batch_interrupt_check(
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
+    ) -> list[tuple[int, int]]:
         # STEP 1
         # Generate arrays of source and target points, [a] and [b]
         # STEP 2
@@ -41,9 +47,21 @@ class MoveInterruptSystem:
             case InitiativeState.Faction.RED:
                 hostile_faction = InitiativeState.Faction.BLUE
 
-        _, spotter_coords = MoveInterruptSystem.get_spotter(gs, hostile_faction)
         move_coords = MoveInterruptSystem.get_move_steps(transform.position, to)
-        edge_source, edge_vectors = MoveInterruptSystem.get_terrains(gs)
+        spotter_ids, spotter_coords = MoveInterruptSystem.get_spotter(
+            gs, hostile_faction
+        )
+        excluded_terrains = MoveInterruptSystem.get_excluded_terrains(gs, spotter_ids)
+        terrain_data = MoveInterruptSystem.compile_terrain(gs, excluded_terrains)
+        # TODO: merge list[array] coordinates into just one large array
+        # TODO: wanna try using parallel terrain IDs instead? Building these terrains are hard
+        interrupts = MoveInterruptSystem.get_interrupts(
+            spotter_ids=spotter_ids,
+            spotters=[np.array([v.x, v.y], dtype=np.float64) for v in spotter_coords],
+            terrains=terrain_data,
+            targets=list([np.array([v.x, v.y], dtype=np.float64) for v in move_coords]),
+        )
+        return interrupts
 
     @staticmethod
     def get_spotter(
@@ -64,7 +82,7 @@ class MoveInterruptSystem:
             spotters.append(spotter_id)
             coords.append(transform.position)
 
-        return [], []
+        return spotters, coords
 
     @staticmethod
     def get_move_steps(start: Vec2, to: Vec2) -> list[Vec2]:
@@ -86,27 +104,100 @@ class MoveInterruptSystem:
         return coords
 
     @staticmethod
-    def get_terrains(
+    def get_excluded_terrains(
         gs: GameState,
-    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        edge_sources: list[NDArray[np.float64]] = []
-        edge_targets: list[NDArray[np.float64]] = []
-        for id, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & TerrainFeature.Flag.OPAQUE:
-                vertices = LinearTransform.apply(terrain.vertices, transform)
-                # Explicitly tell numpy that we're working with 2d vectors with z=0
-                poly = np.array([[v.x, v.y, 0] for v in vertices], dtype=np.float64)
+        spotter_ids: list[int],
+    ) -> list[list[int]]:
+        """
+        gs.query all terrain data, prepare terrain arrays
+          - masked OPAQUE
+          - might prefer a call-level cache, say, context object
+          - thus, per move action, there is n=hostile_count terrain datasets
+        """
+        terrains: list[list[int]] = []
+        for terrain_id, terrain, _ in gs.query(TerrainFeature, Transform):
+            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
+                continue
+            new_terrain_ids: list[int] = []
+            for ent_id in spotter_ids:
+                if IntersectSystem.is_inside(gs, terrain_id, ent_id):
+                    continue
+                new_terrain_ids.append(terrain_id)
+            terrains.append(new_terrain_ids)
+
+        return terrains
+
+    @staticmethod
+    def compile_terrain(
+        gs: GameState,
+        excluded_terrains: list[list[int]],
+    ) -> list[tuple[NDArray[np.float64], NDArray[np.float64]]]:
+        """Compile terrain feature into numpy array for edges, per spotter."""
+
+        # Compile each terrain's data, key=terrain_id, val=polygon array
+        compiled_terrain: dict[int, NDArray[np.float64]] = {}
+        for source_id, terrain, transform in gs.query(TerrainFeature, Transform):
+            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
+                continue
+            vertices = LinearTransform.apply(terrain.vertices, transform)
+            # Explicitly tell numpy that we're working with 2d vectors with z=0
+            poly = np.array([[v.x, v.y, 0] for v in vertices], dtype=np.float64)
+            compiled_terrain[source_id] = poly
+
+        # From that compiled data, assemble terrain data per each spotter
+        compiled_terrains_per_spotter: list[
+            tuple[
+                NDArray[np.float64],
+                NDArray[np.float64],
+            ]
+        ] = []
+        for terrain_ids in excluded_terrains:
+            edge_sources: list[NDArray[np.float64]] = []
+            edge_targets: list[NDArray[np.float64]] = []
+            for terrain_id in terrain_ids:
+                poly = compiled_terrain[terrain_id]
                 shifted_poly = np.roll(poly, shift=-1, axis=0)
                 edge_sources.append(poly)
                 edge_targets.append(shifted_poly)
 
-        if edge_sources == [] or edge_targets == []:
-            return (
-                np.array([[0, 0, 0]], dtype=np.float64),
-                np.array([[0, 0, 0]], dtype=np.float64),
-            )
-        edge_source = np.vstack(edge_sources)
-        edge_target = np.vstack(edge_targets)
-        edge_vectors = edge_target - edge_source
+            if edge_sources == [] or edge_targets == []:
+                edge_sources = [np.array([[0, 0, 0]], dtype=np.float64)]
+                edge_targets = [np.array([[0, 0, 0]], dtype=np.float64)]
+            edge_source = np.vstack(edge_sources)
+            edge_target = np.vstack(edge_targets)
 
-        return edge_source, edge_vectors
+            compiled_terrains_per_spotter.append((edge_source, edge_target))
+
+        return compiled_terrains_per_spotter
+
+    @staticmethod
+    @njit
+    def get_interrupts(
+        spotter_ids: list[int],
+        spotters: list[NDArray[np.float64]],
+        terrains: list[tuple[NDArray[np.float64], NDArray[np.float64]]],
+        targets: list[NDArray[np.float64]],
+    ) -> list[tuple[int, int]]:
+        """Returns list of interrupt, using (spotter_id, move_step index)"""
+        interrupts: list[tuple[int, int]] = []
+        for move_step_index, move_step in enumerate(targets):
+            for i, spotter_id in enumerate(spotter_ids):
+                spotter = spotters[i]
+                terrain = terrains[i]
+                edge_sources, edge_targets = terrain
+                edge_vectors = edge_targets - edge_sources
+                line_vector = move_step - spotter
+
+                # Compute two parametric values t & u of intersect point
+                line_cross_edge = np.cross(line_vector, edge_vectors)[:, 2]
+                q1_p1 = edge_sources - spotter
+                t = np.cross(q1_p1, edge_vectors)[:, 2] / line_cross_edge
+                u = np.cross(q1_p1, line_vector)[:, 2] / line_cross_edge
+
+                # parallel = np.isclose(line_cross_edge, 0)
+                parallel = np.abs(line_cross_edge) <= 1e-8
+                intersect_mask = (~parallel) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
+
+                if int(np.count_nonzero(intersect_mask)) <= 1:
+                    interrupts.append((spotter_id, move_step_index))
+        return interrupts
