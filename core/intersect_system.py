@@ -66,7 +66,7 @@ class IntersectSystem:
         for terrain_id in intersects:
             yield Intersection(
                 gs.get_component(terrain_id, TerrainFeature),
-                terrain_id,
+                int(terrain_id),
             )
 
     @staticmethod
@@ -99,23 +99,25 @@ class IntersectSystem:
     @staticmethod
     def _compile_terrain(gs: GameState, mask: int = -1) -> _TerrainData:
         """Compile all terrain with specified masks into numpy arrays."""
-        np_verts_list: list[tuple[float, float, float]] = []
+
+        np_verts: list[tuple[float, float, float]] = []
+        np_verts_shift: list[tuple[float, float, float]] = []
         vert_ids: list[int] = []
-
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask == 0:
+            if (terrain.flag & mask) == 0:
                 continue
-
             vertices = LinearTransform.apply(terrain.vertices, transform)
-            np_vert = [(v.x, v.y, 0) for v in vertices]
-            np_verts_list.extend(np_vert)
+            # Explicitly tell numpy that we're working with 2d vectors with z=0
+            verts3d = [(v.x, v.y, 0) for v in vertices]
+            np_verts.extend(verts3d)
+            np_verts_shift.extend([verts3d[-1]] + verts3d[:-1])  # rolled list
             vert_ids.extend([id] * len(vertices))
 
-        if not np_verts_list:  # fallback if no terrain matched
-            np_verts_list = [(0, 0, 0)]
-
-        edge_start = np.array(np_verts_list, dtype=np.float64)
-        edge_end = np.roll(edge_start, shift=-1, axis=0)
+        if not np_verts:
+            np_verts = [(0, 0, 0)]
+            np_verts_shift = [(0, 0, 0)]
+        edge_start = np.vstack(np_verts, dtype=np.float64)
+        edge_end = np.vstack(np_verts_shift, dtype=np.float64)
         edge_vectors = edge_end - edge_start
 
         return _TerrainData(
