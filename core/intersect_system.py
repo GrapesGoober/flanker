@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import pairwise
 from typing import Iterable
 
@@ -13,7 +13,7 @@ from core.utils.linear_transform import LinearTransform
 
 
 @dataclass
-class _Context:
+class _TerrainData:
 
     # This is a no-exclusion terrain data
     np_verts: NDArray[np.float64]
@@ -22,8 +22,9 @@ class _Context:
     np_vert_ids: NDArray[np.int64]
 
 
-# TODO: this global cache is breaking tests, opt to use game state or action level cache
-_cache: dict[int, _Context] = {}
+@dataclass
+class _Context:
+    masked_terrains: dict[int, _TerrainData]
 
 
 @dataclass
@@ -81,9 +82,12 @@ class IntersectSystem:
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
 
-        if mask not in _cache:
-            _cache[mask] = IntersectSystem.build_context(gs, mask)
-        context = _cache[mask]
+        _, context = next(gs.query(_Context), (None, _Context({})))
+        masked_terrains = context.masked_terrains
+
+        if mask not in masked_terrains:
+            masked_terrains[mask] = IntersectSystem.build_context(gs, mask)
+        context = masked_terrains[mask]
 
         intersects = IntersectSystem.njit_check(
             (start.x, start.y),
@@ -126,8 +130,8 @@ class IntersectSystem:
         return intersect_ids
 
     @staticmethod
-    def build_context(gs: GameState, mask: int = -1) -> _Context:
-        context = _Context(
+    def build_context(gs: GameState, mask: int = -1) -> _TerrainData:
+        context = _TerrainData(
             np_verts=np.array([], dtype=np.float64),
             np_vectors=np.array([], dtype=np.float64),
             vert_ids=[],
