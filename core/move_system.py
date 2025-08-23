@@ -47,6 +47,8 @@ class MoveSystem:
             if not (intersect.terrain.flag & terrain_type):
                 return MoveActionResult(is_valid=False)
 
+        spotter_candidates = list(FireSystem.get_spotters(gs, unit_id))
+
         # For each subdivision step of move line, check interrupt
         STEP_SIZE = 1
         length = (to - transform.position).length()
@@ -58,7 +60,7 @@ class MoveSystem:
 
             # Check for interrupt
             # TODO: for fire reaction, should support multiple shooter
-            if (spotter_id := FireSystem.get_spotter(gs, unit_id)) != None:
+            for spotter_id in spotter_candidates:
                 # Interrupt valid, perform the fire action
                 fire_result = FireSystem.fire(
                     gs=gs,

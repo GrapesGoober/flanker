@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import random
+from typing import Iterable
 from core.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
@@ -100,24 +101,20 @@ class FireSystem:
         return FireResult(is_valid=False)
 
     @staticmethod
-    def get_spotter(gs: GameState, unit_id: int) -> int | None:
-        """Get the a valid spotter for reactive fire, including LOS check."""
+    def get_spotters(gs: GameState, target_id: int) -> Iterable[int]:
+        """Get the a valid spotter for reactive fire. Doesn't check LOS."""
 
-        unit = gs.get_component(unit_id, CombatUnit)
+        unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
 
             # Check that spotter is a valid spotter for reactive fire
-            if spotter_id == unit_id:
+            if spotter_id == target_id:
                 continue
             if unit.faction == spotter_unit.faction:
                 continue
             if fire_controls.can_reactive_fire == False:
                 continue
-            if not LosSystem.check(gs, spotter_id, unit_id):
-                continue
 
-            return spotter_id
-
-        return None
+            yield spotter_id
