@@ -51,6 +51,7 @@ class MoveSystem:
 
         # For each subdivision step of move line, check interrupt
         STEP_SIZE = 1
+        start = transform.position
         length = (to - transform.position).length()
         direction = (to - transform.position).normalized()
         for i in range(0, int(length / STEP_SIZE) + 1):
@@ -62,6 +63,7 @@ class MoveSystem:
             # TODO: for fire reaction, should support multiple shooter
             for spotter_id in spotter_candidates:
                 # Interrupt valid, perform the fire action
+                MoveSystem.update_terrain_inside(gs, unit_id, start)
                 fire_result = FireSystem.fire(
                     gs=gs,
                     attacker_id=spotter_id,
@@ -73,7 +75,22 @@ class MoveSystem:
                         is_valid=True,
                         is_interrupted=True,
                     )
+        MoveSystem.update_terrain_inside(gs, unit_id, start)
         return MoveActionResult(
             is_valid=True,
             is_interrupted=False,
         )
+
+    @staticmethod
+    def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
+        """Updates CombatUnit's inside_terrains list."""
+
+        transform = gs.get_component(unit_id, Transform)
+        unit = gs.get_component(unit_id, CombatUnit)
+        unit.inside_terrains = unit.inside_terrains or []  # Remove None
+        for intersect in IntersectSystem.get(gs, start, transform.position):
+            tid = intersect.terrain_id
+            if tid in unit.inside_terrains:
+                unit.inside_terrains.remove(tid)
+            else:
+                unit.inside_terrains.append(tid)
