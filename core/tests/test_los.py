@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import TerrainFeature, Transform
+from core.components import CombatUnit, TerrainFeature, Transform, InitiativeState
 from core.gamestate import GameState
 from core.los_system import LosSystem
 from core.utils.vec2 import Vec2
@@ -18,8 +18,14 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     # Two entities
-    target = gs.add_entity(Transform(position=Vec2(0, -10)))
-    source = gs.add_entity(Transform(position=Vec2(15, 10)))
+    target = gs.add_entity(
+        Transform(position=Vec2(0, -10)),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
+    )
+    source = gs.add_entity(
+        Transform(position=Vec2(15, 10)),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
+    )
     # 10x10 opaque box
     gs.add_entity(
         Transform(position=Vec2(0, 0), degrees=0),
