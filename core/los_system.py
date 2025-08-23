@@ -1,31 +1,31 @@
 from core.components import CombatUnit, TerrainFeature, Transform
 from core.gamestate import GameState
 from core.intersect_system import IntersectSystem
+from core.utils.vec2 import Vec2
 
 
 class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) for entities."""
 
     @staticmethod
-    def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
+    def check(gs: GameState, spotter_ent: int, target_pos: Vec2) -> bool:
         """Returns `True` if entity `source_id` can see entity `target_id`."""
-        source_transform = gs.get_component(source_ent, Transform)
-        target_transform = gs.get_component(target_ent, Transform)
-        source_unit = gs.get_component(source_ent, CombatUnit)
+        spotter_transform = gs.get_component(spotter_ent, Transform)
+        spotter_unit = gs.get_component(spotter_ent, CombatUnit)
 
         intersects = IntersectSystem.get(
             gs=gs,
-            start=source_transform.position,
-            end=target_transform.position,
+            start=spotter_transform.position,
+            end=target_pos,
             mask=TerrainFeature.Flag.OPAQUE,
         )
 
         # Can see into one other terrain polygon
         passed_one_terrain = False
-        current_terrain = source_unit.inside_terrains or []
+        spotter_terrain = spotter_unit.inside_terrains or []
         for intersect in intersects:
-            # Doesn't count current terrain
-            if intersect.terrain_id in current_terrain:
+            # Doesn't count spotter's terrain
+            if intersect.terrain_id in spotter_terrain:
                 continue
             if not passed_one_terrain:
                 passed_one_terrain = True

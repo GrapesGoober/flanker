@@ -19,6 +19,7 @@ class Fixture:
     gs: GameState
     source_id: int
     target_id: int
+    target_transform: Transform
 
 
 @pytest.fixture
@@ -27,7 +28,7 @@ def fixture() -> Fixture:
     gs.add_entity(InitiativeState())
     # Two entities
     target = gs.add_entity(
-        Transform(position=Vec2(0, -10)),
+        target_transform := Transform(position=Vec2(0, -10)),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         MoveControls(),
     )
@@ -65,34 +66,44 @@ def fixture() -> Fixture:
         ),
     )
 
-    return Fixture(gs, source, target)
+    return Fixture(gs, source, target, target_transform)
 
 
 def test_no_los(fixture: Fixture) -> None:
-    has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
+    has_los = LosSystem.check(
+        fixture.gs, fixture.source_id, fixture.target_transform.position
+    )
     assert has_los == False, "Expects no LOS found"
 
 
 def test_los(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.target_id, Vec2(6, -10))
-    has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
+    has_los = LosSystem.check(
+        fixture.gs, fixture.source_id, fixture.target_transform.position
+    )
     assert has_los == True, "Expects LOS as target in open view"
 
 
 def test_los_target_inside_terrain(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.target_id, Vec2(5, 1))
-    has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
+    has_los = LosSystem.check(
+        fixture.gs, fixture.source_id, fixture.target_transform.position
+    )
     assert has_los == True, "Expects LOS as target in terrain"
 
 
 def test_los_source_inside_terrain(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.source_id, Vec2(9, 9))
-    has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
+    has_los = LosSystem.check(
+        fixture.gs, fixture.source_id, fixture.target_transform.position
+    )
     assert has_los == True, "Expects LOS as source in terrain"
 
 
 def test_los_both_inside_terrain(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.source_id, Vec2(9, 9))
     MoveSystem.move(fixture.gs, fixture.target_id, Vec2(-6, 4))
-    has_los = LosSystem.check(fixture.gs, fixture.source_id, fixture.target_id)
+    has_los = LosSystem.check(
+        fixture.gs, fixture.source_id, fixture.target_transform.position
+    )
     assert has_los == True, "Expects LOS as both are in terrain"
