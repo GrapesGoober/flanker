@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from core.components import (
     CombatUnit,
+    FireControls,
     TerrainFeature,
     MoveControls,
     Transform,
@@ -63,7 +64,6 @@ class MoveSystem:
             # TODO: for fire reaction, should support multiple shooter
             for spotter_id in spotter_candidates:
                 # Interrupt valid, perform the fire action
-                MoveSystem.update_terrain_inside(gs, unit_id, start)
                 fire_result = FireSystem.fire(
                     gs=gs,
                     attacker_id=spotter_id,
@@ -71,6 +71,8 @@ class MoveSystem:
                     is_reactive=True,
                 )
                 if fire_result.is_hit:
+                    if fire_result.outcome != FireControls.Outcomes.KILL:
+                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                     return MoveActionResult(
                         is_valid=True,
                         is_interrupted=True,
