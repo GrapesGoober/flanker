@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from itertools import pairwise
 from typing import Iterable
 
@@ -14,8 +14,8 @@ from core.utils.linear_transform import LinearTransform
 
 @dataclass
 class _TerrainData:
+    """Compiled terrain vertices data as numpy arrays and ids"""
 
-    # This is a no-exclusion terrain data
     np_verts: NDArray[np.float64]
     np_vectors: NDArray[np.float64]
     vert_ids: list[int]
@@ -24,7 +24,9 @@ class _TerrainData:
 
 @dataclass
 class _Context:
-    masked_terrains: dict[int, _TerrainData]
+    """Private singleton component for intersect getter."""
+
+    compiled_terrains_by_mask: dict[int, _TerrainData]
 
 
 @dataclass
@@ -83,18 +85,18 @@ class IntersectSystem:
         """Yields intersections between the line segment and terrain."""
 
         _, context = next(gs.query(_Context), (None, _Context({})))
-        masked_terrains = context.masked_terrains
+        terrain_datas = context.compiled_terrains_by_mask
 
-        if mask not in masked_terrains:
-            masked_terrains[mask] = IntersectSystem.build_context(gs, mask)
-        context = masked_terrains[mask]
+        if mask not in terrain_datas:
+            terrain_datas[mask] = IntersectSystem._compile_terrain(gs, mask)
+        terrain_data = terrain_datas[mask]
 
-        intersects = IntersectSystem.njit_check(
+        intersects = IntersectSystem._njit_get_intersect(
             (start.x, start.y),
             (end.x, end.y),
-            context.np_verts,
-            context.np_vectors,
-            context.np_vert_ids,
+            terrain_data.np_verts,
+            terrain_data.np_vectors,
+            terrain_data.np_vert_ids,
         )
 
         for terrain_id in intersects:
@@ -105,13 +107,14 @@ class IntersectSystem:
 
     @staticmethod
     @njit
-    def njit_check(
+    def _njit_get_intersect(
         start_pos: tuple[float, float],
         end_pos: tuple[float, float],
         edge_verts: NDArray[np.float64],
         edge_vectors: NDArray[np.float64],
         vert_ids: NDArray[np.int64],
     ) -> NDArray[np.int64]:
+        """Returns NDArray of intersected terrain ids."""
         # Explicitly tell numpy that we're working with 2d vectors with z=0
         start = np.array([start_pos[0], start_pos[1], 0], dtype=np.float64)
         end = np.array([end_pos[0], end_pos[1], 0], dtype=np.float64)
@@ -130,8 +133,9 @@ class IntersectSystem:
         return intersect_ids
 
     @staticmethod
-    def build_context(gs: GameState, mask: int = -1) -> _TerrainData:
-        context = _TerrainData(
+    def _compile_terrain(gs: GameState, mask: int = -1) -> _TerrainData:
+        """Compile all terrain with specified masks into numpy arrays."""
+        terrain_data = _TerrainData(
             np_verts=np.array([], dtype=np.float64),
             np_vectors=np.array([], dtype=np.float64),
             vert_ids=[],
@@ -151,8 +155,8 @@ class IntersectSystem:
             np_verts_shift += [np_vert[-1]] + np_vert[:-1]  # rolled list
             vert_ids += [id for _ in vertices]
 
-        context.vert_ids = vert_ids
-        context.np_vert_ids = np.array(vert_ids)
+        terrain_data.vert_ids = vert_ids
+        terrain_data.np_vert_ids = np.array(vert_ids)
 
         if np_verts == [] or np_verts_shift == []:
             np_verts = [(0, 0, 0)]
@@ -161,7 +165,7 @@ class IntersectSystem:
         edge_end = np.vstack(np_verts_shift, dtype=np.float64)
         edge_vectors = edge_end - edge_start
 
-        context.np_verts = edge_start
-        context.np_vectors = edge_vectors
+        terrain_data.np_verts = edge_start
+        terrain_data.np_vectors = edge_vectors
 
-        return context
+        return terrain_data
