@@ -45,8 +45,8 @@ class IntersectSystem:
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
 
-        if (result := next(gs.query(_Context), None)) is not None:
-            _, context = result
+        if results := gs.query(_Context):
+            _, context = results[0]
         else:
             gs.add_entity(context := _Context({}))
         terrain_datas = context.compiled_terrains_by_mask
