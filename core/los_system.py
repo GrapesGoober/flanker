@@ -37,7 +37,7 @@ _cache = _Cache(
 class LosSystem:
     @staticmethod
     def check(gs: GameState, source_ent: int, target_ent: int) -> bool:
-        return NewLosSystem.check(gs, source_ent, target_ent)
+        return OldLosSystem.check(gs, source_ent, target_ent)
 
 
 class NewLosSystem:
