@@ -1,4 +1,4 @@
-from core.components import TerrainFeature, Transform
+from core.components import CombatUnit, TerrainFeature, Transform
 from core.gamestate import GameState
 from core.intersect_system import IntersectSystem
 
@@ -11,6 +11,7 @@ class LosSystem:
         """Returns `True` if entity `source_id` can see entity `target_id`."""
         source_transform = gs.get_component(source_ent, Transform)
         target_transform = gs.get_component(target_ent, Transform)
+        source_unit = gs.get_component(source_ent, CombatUnit)
 
         intersects = IntersectSystem.get(
             gs=gs,
@@ -21,9 +22,10 @@ class LosSystem:
 
         # Can see into one other terrain polygon
         passed_one_terrain = False
+        current_terrain = source_unit.inside_terrains or []
         for intersect in intersects:
             # Doesn't count current terrain
-            if IntersectSystem.is_inside(gs, intersect.terrain_id, source_ent):
+            if intersect.terrain_id in current_terrain:
                 continue
             if not passed_one_terrain:
                 passed_one_terrain = True

@@ -39,7 +39,6 @@ from timeit import timeit
 exec_time = timeit(test, number=1)
 print(f"Execution time: {exec_time:.6f} seconds")
 
-
 # import cProfile
 # import pstats
 
