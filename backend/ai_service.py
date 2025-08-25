@@ -16,3 +16,45 @@ class AiService:
 
         # For now, pass on initiative without any actions
         InitiativeSystem.flip_initiative(gs)
+
+    @staticmethod
+    def get_moves(gs: GameState): ...
+
+    @staticmethod
+    def evaluate(gs: GameState) -> float: ...
+
+    @staticmethod
+    def make_move(gs: GameState) -> float: ...
+
+    @staticmethod
+    def play_minimax(
+        gs: GameState,
+        depth: int,
+        is_maximizing: bool = True,
+    ) -> float:
+        if depth == 0 or len(AiService.get_moves(gs)) == 0:
+            return AiService.evaluate(gs)
+
+        if is_maximizing:
+            best_score = float("-inf")
+            for move in AiService.get_moves(gs):
+                new_gs = gs.copy()
+                AiService.make_move(gs, move)
+                score = AiService.play_minimax(
+                    new_gs,
+                    depth - 1,
+                    False,
+                )
+                best_score = max(best_score, score)
+            return best_score
+        else:
+            best_score = float("inf")
+            for move in AiService.get_moves(gs):
+                AiService.make_move(gs, move)
+                score = AiService.play_minimax(
+                    new_gs,
+                    depth - 1,
+                    True,
+                )
+                best_score = min(best_score, score)
+            return best_score
