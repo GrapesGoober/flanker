@@ -9,7 +9,7 @@ from core.los_system import LosSystem
 
 
 @dataclass
-class FireResult:
+class FireActionResult:
     """Result of a fire action as valid or successfully hit."""
 
     is_valid: bool
@@ -59,7 +59,7 @@ class FireSystem:
         attacker_id: int,
         target_id: int,
         is_reactive: bool = False,
-    ) -> FireResult:
+    ) -> FireActionResult:
         """
         Performs fire action from attacker unit to target unit.
         Returns `True` if success.
@@ -68,7 +68,7 @@ class FireSystem:
         if not FireSystem._validate_fire_action(
             gs, attacker_id, target_id, is_reactive
         ):
-            return FireResult(is_valid=False)
+            return FireActionResult(is_valid=False)
 
         target_unit = gs.get_component(target_id, CombatUnit)
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
@@ -86,7 +86,7 @@ class FireSystem:
             if is_reactive:
                 fire_controls.can_reactive_fire = False
             InitiativeSystem.set_initiative(gs, target_unit.faction)
-            return FireResult(
+            return FireActionResult(
                 is_valid=True,
                 is_hit=False,
                 outcome=FireControls.Outcomes.MISS,
@@ -95,7 +95,7 @@ class FireSystem:
             if target_unit.status != CombatUnit.Status.SUPPRESSED:
                 target_unit.status = CombatUnit.Status.PINNED
             InitiativeSystem.set_initiative(gs, target_unit.faction)
-            return FireResult(
+            return FireActionResult(
                 is_valid=True,
                 is_hit=True,
                 outcome=FireControls.Outcomes.PIN,
@@ -103,7 +103,7 @@ class FireSystem:
         elif outcome <= FireControls.Outcomes.SUPPRESS:
             target_unit.status = CombatUnit.Status.SUPPRESSED
             InitiativeSystem.set_initiative(gs, attacker_unit.faction)
-            return FireResult(
+            return FireActionResult(
                 is_valid=True,
                 is_hit=True,
                 outcome=FireControls.Outcomes.SUPPRESS,
@@ -111,12 +111,12 @@ class FireSystem:
         elif outcome <= FireControls.Outcomes.KILL:
             CommandSystem.kill_unit(gs, target_id)
             InitiativeSystem.set_initiative(gs, attacker_unit.faction)
-            return FireResult(
+            return FireActionResult(
                 is_valid=True,
                 is_hit=True,
                 outcome=FireControls.Outcomes.KILL,
             )
-        return FireResult(is_valid=False)
+        return FireActionResult(is_valid=False)
 
     @staticmethod
     def get_spotters(gs: GameState, target_id: int) -> Iterable[int]:

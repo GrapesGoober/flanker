@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import random
 from core.components import (
     AssaultControls,
@@ -8,6 +9,11 @@ from core.gamestate import GameState
 from core.initiative_system import InitiativeSystem
 from core.move_system import MoveSystem
 from core.command_system import CommandSystem
+
+
+@dataclass
+class AssaultActionResult:
+    result: AssaultControls.Outcomes
 
 
 class AssaultSystem:
