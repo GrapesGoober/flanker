@@ -1,5 +1,5 @@
 {
-  "id_counter": 57,
+  "id_counter": 58,
   "entities": {
     "0": {
       "InitiativeState": {
@@ -22,7 +22,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -42,7 +43,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -62,7 +64,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -82,7 +85,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -102,7 +106,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -122,7 +127,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -142,7 +148,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -162,7 +169,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -182,7 +190,8 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "inside_terrains": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -205,7 +214,8 @@
         "status": "ACTIVE"
       },
       "MoveControls": {
-        "move_type": "FOOT"
+        "move_type": "FOOT",
+        "inside_terrains": [14]
       },
       "FireControls": {
         "can_reactive_fire": true
@@ -213,6 +223,48 @@
       "AssaultControls": {}
     },
     "11": {
+      "Transform": {
+        "position": {
+          "x": 169.0,
+          "y": 232.0
+        },
+        "degrees": 0.0
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE",
+        "inside_terrains": [15]
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "can_reactive_fire": true
+      },
+      "AssaultControls": {}
+    },
+    "12": {
+      "Transform": {
+        "position": {
+          "x": 225,
+          "y": 175
+        },
+        "degrees": 0.0
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE",
+        "inside_terrains": [13]
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "can_reactive_fire": true
+      },
+      "AssaultControls": {}
+    },
+    "13": {
       "Transform": {
         "position": {
           "x": 225.0,
@@ -246,7 +298,7 @@
         "type": "BUILDING"
       }
     },
-    "12": {
+    "14": {
       "Transform": {
         "position": {
           "x": 190.0,
@@ -280,7 +332,7 @@
         "type": "BUILDING"
       }
     },
-    "13": {
+    "15": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -314,7 +366,7 @@
         "type": "BUILDING"
       }
     },
-    "14": {
+    "16": {
       "Transform": {
         "position": {
           "x": 257.0,
@@ -348,7 +400,7 @@
         "type": "BUILDING"
       }
     },
-    "15": {
+    "17": {
       "Transform": {
         "position": {
           "x": 293.5,
@@ -382,7 +434,7 @@
         "type": "BUILDING"
       }
     },
-    "16": {
+    "18": {
       "Transform": {
         "position": {
           "x": 266.0,
@@ -416,7 +468,7 @@
         "type": "BUILDING"
       }
     },
-    "17": {
+    "19": {
       "Transform": {
         "position": {
           "x": 306.0,
@@ -450,7 +502,7 @@
         "type": "BUILDING"
       }
     },
-    "18": {
+    "20": {
       "Transform": {
         "position": {
           "x": 203.0,
@@ -484,7 +536,7 @@
         "type": "BUILDING"
       }
     },
-    "19": {
+    "21": {
       "Transform": {
         "position": {
           "x": 297.0,
@@ -518,7 +570,7 @@
         "type": "BUILDING"
       }
     },
-    "20": {
+    "22": {
       "Transform": {
         "position": {
           "x": 213.0,
@@ -552,7 +604,7 @@
         "type": "BUILDING"
       }
     },
-    "21": {
+    "23": {
       "Transform": {
         "position": {
           "x": 453.0,
@@ -638,7 +690,7 @@
         "type": "ROAD"
       }
     },
-    "22": {
+    "24": {
       "Transform": {
         "position": {
           "x": 192.5,
@@ -712,7 +764,7 @@
         "type": "ROAD"
       }
     },
-    "23": {
+    "25": {
       "Transform": {
         "position": {
           "x": 231.5,
@@ -778,7 +830,7 @@
         "type": "ROAD"
       }
     },
-    "24": {
+    "26": {
       "Transform": {
         "position": {
           "x": -4.0,
@@ -860,7 +912,7 @@
         "type": "FOREST"
       }
     },
-    "25": {
+    "27": {
       "Transform": {
         "position": {
           "x": 65.0,
@@ -922,7 +974,7 @@
         "type": "FOREST"
       }
     },
-    "26": {
+    "28": {
       "Transform": {
         "position": {
           "x": 141.0,
@@ -996,7 +1048,7 @@
         "type": "FOREST"
       }
     },
-    "27": {
+    "29": {
       "Transform": {
         "position": {
           "x": 113.5,
@@ -1094,7 +1146,7 @@
         "type": "FOREST"
       }
     },
-    "28": {
+    "30": {
       "Transform": {
         "position": {
           "x": 381.0,
@@ -1172,7 +1224,7 @@
         "type": "FOREST"
       }
     },
-    "29": {
+    "31": {
       "Transform": {
         "position": {
           "x": 265.5,
@@ -1258,7 +1310,7 @@
         "type": "FOREST"
       }
     },
-    "30": {
+    "32": {
       "Transform": {
         "position": {
           "x": 318.5,
@@ -1336,7 +1388,7 @@
         "type": "FOREST"
       }
     },
-    "31": {
+    "33": {
       "Transform": {
         "position": {
           "x": 370.0,
@@ -1398,7 +1450,7 @@
         "type": "FOREST"
       }
     },
-    "32": {
+    "34": {
       "Transform": {
         "position": {
           "x": 276.0,
@@ -1468,7 +1520,7 @@
         "type": "FOREST"
       }
     },
-    "33": {
+    "35": {
       "Transform": {
         "position": {
           "x": 238.0,
@@ -1526,7 +1578,7 @@
         "type": "FOREST"
       }
     },
-    "34": {
+    "36": {
       "Transform": {
         "position": {
           "x": 306.0,
@@ -1588,7 +1640,7 @@
         "type": "FOREST"
       }
     },
-    "35": {
+    "37": {
       "Transform": {
         "position": {
           "x": 368.5,
@@ -1670,7 +1722,7 @@
         "type": "FOREST"
       }
     },
-    "36": {
+    "38": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -1732,7 +1784,7 @@
         "type": "FIELD"
       }
     },
-    "37": {
+    "39": {
       "Transform": {
         "position": {
           "x": 204.0,
@@ -1802,7 +1854,7 @@
         "type": "FIELD"
       }
     },
-    "38": {
+    "40": {
       "Transform": {
         "position": {
           "x": 179.0,
@@ -1876,7 +1928,7 @@
         "type": "FIELD"
       }
     },
-    "39": {
+    "41": {
       "Transform": {
         "position": {
           "x": 192.5,
@@ -1966,7 +2018,7 @@
         "type": "FOREST"
       }
     },
-    "40": {
+    "42": {
       "Transform": {
         "position": {
           "x": 139.0,
@@ -2060,7 +2112,7 @@
         "type": "FIELD"
       }
     },
-    "41": {
+    "43": {
       "Transform": {
         "position": {
           "x": 196.0,
@@ -2162,7 +2214,7 @@
         "type": "FIELD"
       }
     },
-    "42": {
+    "44": {
       "Transform": {
         "position": {
           "x": 270.0,
@@ -2248,7 +2300,7 @@
         "type": "FIELD"
       }
     },
-    "43": {
+    "45": {
       "Transform": {
         "position": {
           "x": 212.5,
@@ -2342,7 +2394,7 @@
         "type": "FIELD"
       }
     },
-    "44": {
+    "46": {
       "Transform": {
         "position": {
           "x": 338.0,
@@ -2456,7 +2508,7 @@
         "type": "FIELD"
       }
     },
-    "45": {
+    "47": {
       "Transform": {
         "position": {
           "x": 298.0,
@@ -2574,7 +2626,7 @@
         "type": "FIELD"
       }
     },
-    "46": {
+    "48": {
       "Transform": {
         "position": {
           "x": 390.0,
@@ -2688,7 +2740,7 @@
         "type": "FIELD"
       }
     },
-    "47": {
+    "49": {
       "Transform": {
         "position": {
           "x": 365.0,
@@ -2778,7 +2830,7 @@
         "type": "FIELD"
       }
     },
-    "48": {
+    "50": {
       "Transform": {
         "position": {
           "x": 208.0,
@@ -2812,7 +2864,7 @@
         "type": "BUILDING"
       }
     },
-    "49": {
+    "51": {
       "Transform": {
         "position": {
           "x": 285.0,
@@ -2846,7 +2898,7 @@
         "type": "BUILDING"
       }
     },
-    "50": {
+    "52": {
       "Transform": {
         "position": {
           "x": 277.5,
@@ -2936,7 +2988,7 @@
         "type": "FOREST"
       }
     },
-    "51": {
+    "53": {
       "Transform": {
         "position": {
           "x": 175.0,
@@ -3006,7 +3058,7 @@
         "type": "FOREST"
       }
     },
-    "52": {
+    "54": {
       "Transform": {
         "position": {
           "x": 155.0,
@@ -3084,7 +3136,7 @@
         "type": "FOREST"
       }
     },
-    "54": {
+    "55": {
       "Transform": {
         "position": {
           "x": 344.0,
@@ -3210,7 +3262,7 @@
         "type": "FOREST"
       }
     },
-    "55": {
+    "56": {
       "Transform": {
         "position": {
           "x": 302.0,
@@ -3276,7 +3328,7 @@
         "type": "FOREST"
       }
     },
-    "56": {
+    "57": {
       "Transform": {
         "position": {
           "x": 18.0,

@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Iterator, overload
+from typing import Any, overload
 from core.serializer import Serializer
 
 
@@ -36,29 +36,32 @@ class GameState:
         return self._entities.get(entity_id, {}).get(component_type, None)
 
     @overload
-    def query[T](self, t: type[T]) -> Iterator[tuple[int, T]]: ...
+    def query[T](self, t: type[T]) -> list[tuple[int, T]]: ...
 
     @overload
-    def query[T, U](self, t: type[T], u: type[U]) -> Iterator[tuple[int, T, U]]: ...
+    def query[T, U](self, t: type[T], u: type[U]) -> list[tuple[int, T, U]]: ...
 
     @overload
     def query[T, U, V](
         self, t: type[T], u: type[U], v: type[V]
-    ) -> Iterator[tuple[int, T, U, V]]: ...
+    ) -> list[tuple[int, T, U, V]]: ...
 
     def query(
         self, t: type, u: type | None = None, v: type | None = None
-    ) -> Iterable[tuple[Any, ...]]:
+    ) -> list[tuple[Any, ...]]:
         """Yields all entities with a specific component type."""
         component_types = tuple(filter(None, (t, u, v)))
         if component_types in self._cache:
-            yield from self._cache[component_types]
+            return self._cache[component_types]
         else:
+            result: list[tuple[Any, ...]] = []
             for entity_id, components in self._entities.items():
-                if all(
-                    ct in components for ct in component_types
-                ):  # Check all component types exist
-                    yield (entity_id, *(components[ct] for ct in component_types))
+                if all(ct in components for ct in component_types):
+                    result.append(
+                        (entity_id, *(components[ct] for ct in component_types))
+                    )
+            self._cache[component_types] = result
+            return result
 
     def save(self) -> str:
         """Saves game state to json string."""

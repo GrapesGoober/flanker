@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from core.components import (
     CombatUnit,
+    FireControls,
     TerrainFeature,
     MoveControls,
     Transform,
@@ -47,8 +48,11 @@ class MoveSystem:
             if not (intersect.terrain.flag & terrain_type):
                 return MoveActionResult(is_valid=False)
 
+        spotter_candidates = list(FireSystem.get_spotters(gs, unit_id))
+
         # For each subdivision step of move line, check interrupt
         STEP_SIZE = 1
+        start = transform.position
         length = (to - transform.position).length()
         direction = (to - transform.position).normalized()
         for i in range(0, int(length / STEP_SIZE) + 1):
@@ -58,7 +62,7 @@ class MoveSystem:
 
             # Check for interrupt
             # TODO: for fire reaction, should support multiple shooter
-            if (spotter_id := FireSystem.get_spotter(gs, unit_id)) != None:
+            for spotter_id in spotter_candidates:
                 # Interrupt valid, perform the fire action
                 fire_result = FireSystem.fire(
                     gs=gs,
@@ -67,11 +71,28 @@ class MoveSystem:
                     is_reactive=True,
                 )
                 if fire_result.is_hit:
+                    if fire_result.outcome != FireControls.Outcomes.KILL:
+                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                     return MoveActionResult(
                         is_valid=True,
                         is_interrupted=True,
                     )
+        MoveSystem.update_terrain_inside(gs, unit_id, start)
         return MoveActionResult(
             is_valid=True,
             is_interrupted=False,
         )
+
+    @staticmethod
+    def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
+        """Updates CombatUnit's inside_terrains list."""
+
+        transform = gs.get_component(unit_id, Transform)
+        unit = gs.get_component(unit_id, CombatUnit)
+        unit.inside_terrains = unit.inside_terrains or []  # Remove None
+        for intersect in IntersectSystem.get(gs, start, transform.position):
+            tid = intersect.terrain_id
+            if tid in unit.inside_terrains:
+                unit.inside_terrains.remove(tid)
+            else:
+                unit.inside_terrains.append(tid)

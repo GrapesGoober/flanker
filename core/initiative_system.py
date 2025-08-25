@@ -38,4 +38,4 @@ class InitiativeSystem:
     def get_initiative(gs: GameState) -> InitiativeState.Faction:
         for _, faction in gs.query(InitiativeState):
             return faction.faction
-        raise Exception("FactionManager component not found")
+        raise Exception("InitiativeState component not found")
