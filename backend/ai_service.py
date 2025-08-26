@@ -4,6 +4,7 @@ from backend.models import FireActionRequest, MoveActionRequest
 from core.components import InitiativeState
 from core.initiative_system import InitiativeSystem
 from core.gamestate import GameState
+from copy import deepcopy
 
 
 class AiService:
@@ -21,8 +22,9 @@ class AiService:
         InitiativeSystem.flip_initiative(gs)
 
     @staticmethod
-    def get_moves(gs: GameState) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]:
-        ...
+    def get_moves(
+        gs: GameState,
+    ) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]: ...
 
     @staticmethod
     def evaluate(gs: GameState) -> float: ...
@@ -39,7 +41,7 @@ class AiService:
         if is_maximizing:
             best_score = float("-inf")
             for move in AiService.get_moves(gs):
-                new_gs = gs.copy()
+                new_gs = deepcopy(gs)
                 ActionService.perform_action(gs, move)
                 score = AiService.play_minimax(
                     new_gs,
@@ -51,6 +53,7 @@ class AiService:
         else:
             best_score = float("inf")
             for move in AiService.get_moves(gs):
+                new_gs = deepcopy(gs)
                 ActionService.perform_action(gs, move)
                 score = AiService.play_minimax(
                     new_gs,
