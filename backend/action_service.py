@@ -26,3 +26,16 @@ class ActionService:
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform fire action and trigger AI response for the opponent."""
         AssaultSystem.assault(gs, body.unit_id, body.target_id)
+
+    @staticmethod
+    def perform_action(
+        gs: GameState,
+        body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
+    ) -> None:
+        if isinstance(body, MoveActionRequest):
+            ActionService.move(gs, body)
+        elif isinstance(body, FireActionRequest):
+            ActionService.fire(gs, body)
+        else:
+            ActionService.assault(gs, body)
+

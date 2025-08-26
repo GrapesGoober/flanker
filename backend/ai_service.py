@@ -1,3 +1,6 @@
+from backend import ActionService
+from backend.action_service import AssaultActionRequest
+from backend.models import FireActionRequest, MoveActionRequest
 from core.components import InitiativeState
 from core.initiative_system import InitiativeSystem
 from core.gamestate import GameState
@@ -18,13 +21,11 @@ class AiService:
         InitiativeSystem.flip_initiative(gs)
 
     @staticmethod
-    def get_moves(gs: GameState): ...
+    def get_moves(gs: GameState) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]:
+        ...
 
     @staticmethod
     def evaluate(gs: GameState) -> float: ...
-
-    @staticmethod
-    def make_move(gs: GameState) -> float: ...
 
     @staticmethod
     def play_minimax(
@@ -39,7 +40,7 @@ class AiService:
             best_score = float("-inf")
             for move in AiService.get_moves(gs):
                 new_gs = gs.copy()
-                AiService.make_move(gs, move)
+                ActionService.perform_action(gs, move)
                 score = AiService.play_minimax(
                     new_gs,
                     depth - 1,
@@ -50,7 +51,7 @@ class AiService:
         else:
             best_score = float("inf")
             for move in AiService.get_moves(gs):
-                AiService.make_move(gs, move)
+                ActionService.perform_action(gs, move)
                 score = AiService.play_minimax(
                     new_gs,
                     depth - 1,
