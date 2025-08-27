@@ -1,8 +1,10 @@
 from backend.log_models import ActionLog
 
+logs: list[ActionLog] = []
+
 
 class LoggingService:
-    def __init__(self) -> None:
-        self.logs: list[ActionLog] = []
 
-    def append(self, log: ActionLog): ...
+    @staticmethod
+    def log(log: ActionLog):
+        logs.append(log)

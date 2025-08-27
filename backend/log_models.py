@@ -18,21 +18,21 @@ class ActionType(str, Enum):
 
 
 class MoveActionLog(BaseModel):
-    type = ActionType.MOVE
+    type: ActionType = ActionType.MOVE
     body: MoveActionRequest
     result: MoveActionResult
     unit_state: CombatUnitsViewState
 
 
 class FireActionLog(BaseModel):
-    type = ActionType.FIRE
+    type: ActionType = ActionType.FIRE
     body: FireActionRequest
     result: FireActionResult
     unit_state: CombatUnitsViewState
 
 
 class AssaultActionLog(BaseModel):
-    type = ActionType.ASSAULT
+    type: ActionType = ActionType.ASSAULT
     body: AssaultActionRequest
     result: AssaultActionResult
     unit_state: CombatUnitsViewState
