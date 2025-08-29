@@ -17,6 +17,17 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- Draw combat units -->
+{#each controller.unitData.squads as unit, index}
+	<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+		{#if !unit.isFriendly}
+			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+		{/if}
+	</g>
+{/each}
+
 <!-- Defines overlay for gameplay icons -->
 <g class="transparent-icons">
 	{#if controller.state.type !== 'default'}
@@ -30,10 +41,10 @@
 		{#if controller.state.type == 'moveMarked'}
 			{@const moveMarker = controller.state.moveMarker}
 			<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankUnit /></g>
-			<Arrow start={selectedUnit.position} end={controller.state.moveMarker} offset={15} />
+			<Arrow start={selectedUnit.position} end={controller.state.moveMarker} offset={6} />
 		{:else if controller.state.type == 'attackMarked'}
 			{@const target = controller.state.target.position}
-			<Arrow start={selectedUnit.position} end={target} offset={15} />
+			<Arrow start={selectedUnit.position} end={target} offset={6} />
 		{/if}
 	{/if}
 </g>
@@ -43,7 +54,9 @@
 <!-- Draw combat units -->
 {#each controller.unitData.squads as unit, index}
 	<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-		<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+		{#if unit.isFriendly}
+			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+		{/if}
 	</g>
 {/each}
 
