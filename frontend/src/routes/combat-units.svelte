@@ -56,9 +56,6 @@
 		font-size: large;
 		font-family: Verdana, Geneva, Tahoma, sans-serif;
 	}
-	.select-circle {
-		fill: black;
-	}
 	.transparent-icons {
 		opacity: 0.5;
 	}
