@@ -68,6 +68,12 @@ index = <input type="number" class="number-input" bind:value={index} />
 	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
 </div>
 
+{#if action}
+	{action.type}
+	{JSON.stringify(action.body)}
+	{JSON.stringify(action.result)}
+{/if}
+
 <style lang="less">
 	.transparent-icons {
 		opacity: 0.5;
