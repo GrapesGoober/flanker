@@ -1,10 +1,13 @@
+import random
 from backend import ActionService
 from backend.action_service import AssaultActionRequest
 from backend.models import FireActionRequest, MoveActionRequest
-from core.components import InitiativeState
+from core.components import CombatUnit, InitiativeState, Transform
 from core.initiative_system import InitiativeSystem
 from core.gamestate import GameState
 from copy import deepcopy
+
+from core.utils.vec2 import Vec2
 
 
 class AiService:
@@ -24,10 +27,51 @@ class AiService:
     @staticmethod
     def get_moves(
         gs: GameState,
-    ) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]: ...
+    ) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]:
+        # Generate an action for each combat unit
+        actions: list[MoveActionRequest | FireActionRequest | AssaultActionRequest] = []
+        for unit_id, unit in gs.query(CombatUnit):
+            if unit.faction == InitiativeState.Faction.BLUE:
+                # 10 random actions for each unit
+                for _ in range(10):
+                    rand_x = random.randrange(-50, 50)
+                    rand_y = random.randrange(-50, 50)
+                    vec = Vec2(rand_x, rand_y)
+                    pos = gs.get_component(unit_id, Transform).position + vec
+                    actions.append(
+                        MoveActionRequest(
+                            unit_id=unit_id,
+                            to=pos,
+                        )
+                    )
+
+                # Fire and Assault actions for all permutations
+                for target_id, target in gs.query(CombatUnit):
+                    if target.faction == InitiativeState.Faction.RED:
+                        actions.append(
+                            FireActionRequest(
+                                unit_id=unit_id,
+                                target_id=target_id,
+                            )
+                        )
+                        actions.append(
+                            AssaultActionRequest(
+                                unit_id=unit_id,
+                                target_id=target_id,
+                            )
+                        )
+
+        return actions
 
     @staticmethod
-    def evaluate(gs: GameState) -> float: ...
+    def evaluate(gs: GameState) -> float:
+        score: float = 0.0
+        for _, unit in gs.query(CombatUnit):
+            if unit.faction == InitiativeState.Faction.BLUE:
+                score += 1
+            else:
+                score -= 1
+        return score
 
     @staticmethod
     def play_minimax(
@@ -42,7 +86,7 @@ class AiService:
             best_score = float("-inf")
             for move in AiService.get_moves(gs):
                 new_gs = deepcopy(gs)
-                ActionService.perform_action(gs, move)
+                ActionService.perform_action(new_gs, move)
                 score = AiService.play_minimax(
                     new_gs,
                     depth - 1,
@@ -54,7 +98,7 @@ class AiService:
             best_score = float("inf")
             for move in AiService.get_moves(gs):
                 new_gs = deepcopy(gs)
-                ActionService.perform_action(gs, move)
+                ActionService.perform_action(new_gs, move)
                 score = AiService.play_minimax(
                     new_gs,
                     depth - 1,
