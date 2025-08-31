@@ -76,6 +76,6 @@ async def get_logs() -> list[ActionLog]:
 
 @app.post("/api/ai-play")
 async def ai_play() -> None:
-    _, logs = AiService.play_minimax(gs, 3)
+    _, logs = AiService.play_minimax(gs, 4)
     for log in logs:
         LoggingService.log(log)

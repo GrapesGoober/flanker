@@ -14,7 +14,9 @@ from core.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 num_states: int = 0
-num_depth: int = 0
+num_depth: int = (
+    0  # TODO: this is a useless metric as tree search is depth first search
+)
 
 
 class AiService:
@@ -47,7 +49,7 @@ class AiService:
                         to=pos,
                     )
                 )
-                for _ in range(10):
+                for _ in range(5):
                     rand_x = random.randrange(-50, 50)
                     rand_y = random.randrange(-50, 50)
                     vec = Vec2(rand_x, rand_y)
@@ -104,7 +106,6 @@ class AiService:
     def play_minimax(
         gs: GameState,
         depth: int,
-        is_maximizing: bool = True,
     ) -> tuple[float, list[ActionLog]]:
         if depth == 0 or len(AiService.get_actions(gs)) == 0:
             return AiService.evaluate(gs), []
@@ -114,44 +115,24 @@ class AiService:
             num_depth = depth
         global num_states
 
-        if is_maximizing:
-            best_score = float("-inf")
-            best_logs: list[ActionLog] = []
-            for action in AiService.get_actions(gs):
-                new_gs = deepcopy(gs)
-                is_valid, log = AiService.perform_action(new_gs, action)
-                if not is_valid:
-                    continue
-                num_states += 1
-                print(f"Evaluated {num_depth=} with {num_states=}")
-                score, logs = AiService.play_minimax(
-                    new_gs,
-                    depth - 1,
-                    False,
-                )
-                if score > best_score:
-                    best_score = score
-                    best_logs = [log] + logs
-            return best_score, best_logs
-        else:
-            best_score = float("inf")
-            best_logs: list[ActionLog] = []
-            for action in AiService.get_actions(gs):
-                new_gs = deepcopy(gs)
-                is_valid, log = AiService.perform_action(new_gs, action)
-                if not is_valid:
-                    continue
-                num_states += 1
-                print(f"Evaluated {num_depth=} with {num_states=}")
-                score, logs = AiService.play_minimax(
-                    new_gs,
-                    depth - 1,
-                    True,
-                )
-                if score > best_score:
-                    best_score = score
-                    best_logs = [log] + logs
-            return best_score, best_logs
+        best_score = float("-inf")
+        best_logs: list[ActionLog] = []
+        for action in AiService.get_actions(gs):
+            new_gs = deepcopy(gs)
+            is_valid, log = AiService.perform_action(new_gs, action)
+            if not is_valid:
+                continue
+            num_states += 1
+            AiService.play(new_gs)
+            print(f"Evaluated {num_depth=} with {num_states=}")
+            score, logs = AiService.play_minimax(
+                new_gs,
+                depth - 1,
+            )
+            if score > best_score:
+                best_score = score
+                best_logs = [log] + logs
+        return best_score, best_logs
 
     @staticmethod
     def perform_action(
