@@ -29,7 +29,8 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "override": 0.95
       },
       "AssaultControls": {}
     },
@@ -50,7 +51,8 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "override": 0.95
       },
       "AssaultControls": {}
     },
@@ -71,7 +73,8 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "override": 0.95
       },
       "AssaultControls": {}
     },
@@ -91,7 +94,8 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "override": 0.7
       },
       "AssaultControls": {}
     },
@@ -112,7 +116,8 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "override": 0.7
       },
       "AssaultControls": {}
     },
@@ -133,7 +138,8 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "override": 0.7
       },
       "AssaultControls": {}
     },
