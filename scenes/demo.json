@@ -12,28 +12,6 @@
         "units_destroyed_counter": 0
       }
     },
-    "1": {
-      "Transform": {
-        "position": {
-          "x": 100.0,
-          "y": 30.0
-        },
-        "degrees": 0.0
-      },
-      "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "can_reactive_fire": true,
-        "override": 0.95
-      },
-      "AssaultControls": {}
-    },
     "2": {
       "Transform": {
         "position": {
@@ -111,28 +89,6 @@
         "faction": "RED",
         "status": "ACTIVE",
         "inside_terrains": [15]
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "can_reactive_fire": true,
-        "override": 0.7
-      },
-      "AssaultControls": {}
-    },
-    "12": {
-      "Transform": {
-        "position": {
-          "x": 225.0,
-          "y": 175.0
-        },
-        "degrees": 0.0
-      },
-      "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE",
-        "inside_terrains": [13]
       },
       "MoveControls": {
         "move_type": "FOOT"
