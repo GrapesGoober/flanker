@@ -83,9 +83,21 @@ class AiService:
         score: float = 0.0
         for _, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
-                score += 1
+                match unit.status:
+                    case CombatUnit.Status.ACTIVE:
+                        score += 3
+                    case CombatUnit.Status.PINNED:
+                        score += 2
+                    case CombatUnit.Status.SUPPRESSED:
+                        score += 1
             else:
-                score -= 1
+                match unit.status:
+                    case CombatUnit.Status.ACTIVE:
+                        score -= 3
+                    case CombatUnit.Status.PINNED:
+                        score -= 2
+                    case CombatUnit.Status.SUPPRESSED:
+                        score -= 1
         return score
 
     @staticmethod
@@ -111,7 +123,7 @@ class AiService:
                 if not is_valid:
                     continue
                 num_states += 1
-                print(f"Evaluated {num_depth=} with {num_states}")
+                print(f"Evaluated {num_depth=} with {num_states=}")
                 score, logs = AiService.play_minimax(
                     new_gs,
                     depth - 1,
@@ -130,7 +142,7 @@ class AiService:
                 if not is_valid:
                     continue
                 num_states += 1
-                print(f"Evaluated {num_depth=} with {num_states}")
+                print(f"Evaluated {num_depth=} with {num_states=}")
                 score, logs = AiService.play_minimax(
                     new_gs,
                     depth - 1,
