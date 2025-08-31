@@ -48,18 +48,20 @@ class AiService:
                 # Fire and Assault actions for all permutations
                 for target_id, target in gs.query(CombatUnit):
                     if target.faction == InitiativeState.Faction.RED:
-                        actions.append(
-                            FireActionRequest(
-                                unit_id=unit_id,
-                                target_id=target_id,
+                        if target.status == CombatUnit.Status.SUPPRESSED:
+                            actions.append(
+                                AssaultActionRequest(
+                                    unit_id=unit_id,
+                                    target_id=target_id,
+                                )
                             )
-                        )
-                        actions.append(
-                            AssaultActionRequest(
-                                unit_id=unit_id,
-                                target_id=target_id,
+                        else:
+                            actions.append(
+                                FireActionRequest(
+                                    unit_id=unit_id,
+                                    target_id=target_id,
+                                )
                             )
-                        )
 
         return actions
 
