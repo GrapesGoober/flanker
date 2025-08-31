@@ -9,6 +9,9 @@ from copy import deepcopy
 
 from core.utils.vec2 import Vec2
 
+num_states: int = 0
+num_depth: int = 0
+
 
 class AiService:
     """Provides static methods for basic AI behavior."""
@@ -33,15 +36,21 @@ class AiService:
         for unit_id, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
                 # 10 random actions for each unit
+                pos = gs.get_component(unit_id, Transform).position
+                actions.append(
+                    MoveActionRequest(
+                        unit_id=unit_id,
+                        to=pos,
+                    )
+                )
                 for _ in range(10):
                     rand_x = random.randrange(-50, 50)
                     rand_y = random.randrange(-50, 50)
                     vec = Vec2(rand_x, rand_y)
-                    pos = gs.get_component(unit_id, Transform).position + vec
                     actions.append(
                         MoveActionRequest(
                             unit_id=unit_id,
-                            to=pos,
+                            to=pos + vec,
                         )
                     )
 
@@ -84,11 +93,20 @@ class AiService:
         if depth == 0 or len(AiService.get_moves(gs)) == 0:
             return AiService.evaluate(gs)
 
+        global num_depth
+        if depth > num_depth:
+            num_depth = depth
+        global num_states
+
         if is_maximizing:
             best_score = float("-inf")
             for move in AiService.get_moves(gs):
                 new_gs = deepcopy(gs)
-                ActionService.perform_action(new_gs, move)
+                is_valid = ActionService.perform_action(new_gs, move)
+                if not is_valid:
+                    continue
+                num_states += 1
+                print(f"Evaluated {num_depth=} with {num_states}")
                 score = AiService.play_minimax(
                     new_gs,
                     depth - 1,
@@ -100,7 +118,11 @@ class AiService:
             best_score = float("inf")
             for move in AiService.get_moves(gs):
                 new_gs = deepcopy(gs)
-                ActionService.perform_action(new_gs, move)
+                is_valid = ActionService.perform_action(new_gs, move)
+                if not is_valid:
+                    continue
+                num_states += 1
+                print(f"Evaluated {num_depth=} with {num_states}")
                 score = AiService.play_minimax(
                     new_gs,
                     depth - 1,

@@ -16,7 +16,7 @@ class ActionService:
     """Provides static methods to process player actions."""
 
     @staticmethod
-    def move(gs: GameState, body: MoveActionRequest) -> None:
+    def move(gs: GameState, body: MoveActionRequest) -> bool:
         """Move a unit and trigger AI response for the opponent."""
         result = MoveSystem.move(gs, body.unit_id, body.to)
         LoggingService.log(
@@ -26,9 +26,10 @@ class ActionService:
                 unit_state=CombatUnitService.get_units(gs),
             )
         )
+        return result.is_valid
 
     @staticmethod
-    def fire(gs: GameState, body: FireActionRequest) -> None:
+    def fire(gs: GameState, body: FireActionRequest) -> bool:
         """Perform fire action and trigger AI response for the opponent."""
         result = FireSystem.fire(gs, body.unit_id, body.target_id)
         LoggingService.log(
@@ -38,9 +39,10 @@ class ActionService:
                 unit_state=CombatUnitService.get_units(gs),
             )
         )
+        return result.is_valid
 
     @staticmethod
-    def assault(gs: GameState, body: AssaultActionRequest) -> None:
+    def assault(gs: GameState, body: AssaultActionRequest) -> bool:
         """Perform fire action and trigger AI response for the opponent."""
         result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
         LoggingService.log(
@@ -50,15 +52,17 @@ class ActionService:
                 unit_state=CombatUnitService.get_units(gs),
             )
         )
+        return result.is_valid
 
     @staticmethod
     def perform_action(
         gs: GameState,
         body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> None:
+    ) -> bool:
         if isinstance(body, MoveActionRequest):
-            ActionService.move(gs, body)
+            result = ActionService.move(gs, body)
         elif isinstance(body, FireActionRequest):
-            ActionService.fire(gs, body)
+            result = ActionService.fire(gs, body)
         else:
-            ActionService.assault(gs, body)
+            result = ActionService.assault(gs, body)
+        return result

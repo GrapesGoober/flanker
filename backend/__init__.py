@@ -72,3 +72,8 @@ async def update_terrain(body: TerrainModel) -> None:
 @app.get("/api/logs")
 async def get_logs() -> list[ActionLog]:
     return logs
+
+
+@app.post("/api/ai-play")
+async def ai_play() -> None:
+    AiService.play_minimax(gs, 3)
