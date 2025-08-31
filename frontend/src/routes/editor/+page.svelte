@@ -51,6 +51,7 @@ mode = {controller.state.type}
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
 
 {#if controller.state.type == 'selected'}
+	id = {controller.state.terrain.terrainId}
 	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />
 	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
 	degrees =
