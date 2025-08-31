@@ -53,16 +53,3 @@ class ActionService:
             )
         )
         return result.is_valid
-
-    @staticmethod
-    def perform_action(
-        gs: GameState,
-        body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> bool:
-        if isinstance(body, MoveActionRequest):
-            result = ActionService.move(gs, body)
-        elif isinstance(body, FireActionRequest):
-            result = ActionService.fire(gs, body)
-        else:
-            result = ActionService.assault(gs, body)
-        return result

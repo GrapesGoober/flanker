@@ -1,12 +1,16 @@
 import random
-from backend import ActionService
 from backend.action_service import AssaultActionRequest
+from backend.combat_unit_service import CombatUnitService
+from backend.log_models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
 from backend.models import FireActionRequest, MoveActionRequest
+from core.assault_system import AssaultSystem
 from core.components import CombatUnit, InitiativeState, Transform
+from core.fire_system import FireSystem
 from core.initiative_system import InitiativeSystem
 from core.gamestate import GameState
 from copy import deepcopy
 
+from core.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 num_states: int = 0
@@ -28,7 +32,7 @@ class AiService:
         InitiativeSystem.flip_initiative(gs)
 
     @staticmethod
-    def get_moves(
+    def get_actions(
         gs: GameState,
     ) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]:
         # Generate an action for each combat unit
@@ -89,9 +93,9 @@ class AiService:
         gs: GameState,
         depth: int,
         is_maximizing: bool = True,
-    ) -> float:
-        if depth == 0 or len(AiService.get_moves(gs)) == 0:
-            return AiService.evaluate(gs)
+    ) -> tuple[float, list[ActionLog]]:
+        if depth == 0 or len(AiService.get_actions(gs)) == 0:
+            return AiService.evaluate(gs), []
 
         global num_depth
         if depth > num_depth:
@@ -100,33 +104,61 @@ class AiService:
 
         if is_maximizing:
             best_score = float("-inf")
-            for move in AiService.get_moves(gs):
+            best_logs: list[ActionLog] = []
+            for action in AiService.get_actions(gs):
                 new_gs = deepcopy(gs)
-                is_valid = ActionService.perform_action(new_gs, move)
+                is_valid, log = AiService.perform_action(new_gs, action)
                 if not is_valid:
                     continue
                 num_states += 1
                 print(f"Evaluated {num_depth=} with {num_states}")
-                score = AiService.play_minimax(
+                score, logs = AiService.play_minimax(
                     new_gs,
                     depth - 1,
                     False,
                 )
-                best_score = max(best_score, score)
-            return best_score
+                if score > best_score:
+                    best_score = score
+                    best_logs = [log] + logs
+            return best_score, best_logs
         else:
             best_score = float("inf")
-            for move in AiService.get_moves(gs):
+            best_logs: list[ActionLog] = []
+            for action in AiService.get_actions(gs):
                 new_gs = deepcopy(gs)
-                is_valid = ActionService.perform_action(new_gs, move)
+                is_valid, log = AiService.perform_action(new_gs, action)
                 if not is_valid:
                     continue
                 num_states += 1
                 print(f"Evaluated {num_depth=} with {num_states}")
-                score = AiService.play_minimax(
+                score, logs = AiService.play_minimax(
                     new_gs,
                     depth - 1,
                     True,
                 )
-                best_score = min(best_score, score)
-            return best_score
+                if score > best_score:
+                    best_score = score
+                    best_logs = [log] + logs
+            return best_score, best_logs
+
+    @staticmethod
+    def perform_action(
+        gs: GameState,
+        body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
+    ) -> tuple[bool, ActionLog]:
+        if isinstance(body, MoveActionRequest):
+            result = MoveSystem.move(gs, body.unit_id, body.to)
+            log = MoveActionLog(
+                body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+            )
+        elif isinstance(body, FireActionRequest):
+            result = FireSystem.fire(gs, body.unit_id, body.target_id)
+            log = FireActionLog(
+                body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+            )
+        else:
+            result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
+            log = AssaultActionLog(
+                body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+            )
+        return result.is_valid, log
