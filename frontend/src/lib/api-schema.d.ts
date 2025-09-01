@@ -128,10 +128,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Logs */
+        get: operations["get_logs_api_logs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * ActionType
+         * @enum {string}
+         */
+        ActionType: "move" | "fire" | "assault";
+        /** AssaultActionLog */
+        AssaultActionLog: {
+            /** @default assault */
+            type: components["schemas"]["ActionType"];
+            body: components["schemas"]["AssaultActionRequest"];
+            result: components["schemas"]["AssaultActionResult"];
+            unit_state: components["schemas"]["CombatUnitsViewState"];
+        };
         /**
          * AssaultActionRequest
          * @description Request model for a unit's assault action.
@@ -141,6 +171,20 @@ export interface components {
             unit_id: number;
             /** Target Id */
             target_id: number;
+        };
+        /** AssaultActionResult */
+        AssaultActionResult: {
+            /**
+             * Is Valid
+             * @default true
+             */
+            is_valid: boolean;
+            /**
+             * Is Interrupted
+             * @default false
+             */
+            is_interrupted: boolean;
+            result?: components["schemas"]["core__components__AssaultControls__Outcomes"] | null;
         };
         /**
          * CombatUnitsViewState
@@ -153,6 +197,14 @@ export interface components {
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
         };
+        /** FireActionLog */
+        FireActionLog: {
+            /** @default fire */
+            type: components["schemas"]["ActionType"];
+            body: components["schemas"]["FireActionRequest"];
+            result: components["schemas"]["FireActionResult"];
+            unit_state: components["schemas"]["CombatUnitsViewState"];
+        };
         /**
          * FireActionRequest
          * @description Request model for a unit's fire action.
@@ -163,10 +215,29 @@ export interface components {
             /** Target Id */
             target_id: number;
         };
+        /** FireActionResult */
+        FireActionResult: {
+            /** Is Valid */
+            is_valid: boolean;
+            /**
+             * Is Hit
+             * @default false
+             */
+            is_hit: boolean;
+            outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** MoveActionLog */
+        MoveActionLog: {
+            /** @default move */
+            type: components["schemas"]["ActionType"];
+            body: components["schemas"]["MoveActionRequest"];
+            result: components["schemas"]["MoveActionResult"];
+            unit_state: components["schemas"]["CombatUnitsViewState"];
         };
         /**
          * MoveActionRequest
@@ -176,6 +247,16 @@ export interface components {
             /** Unit Id */
             unit_id: number;
             to: components["schemas"]["Vec2"];
+        };
+        /** MoveActionResult */
+        MoveActionResult: {
+            /** Is Valid */
+            is_valid: boolean;
+            /**
+             * Is Interrupted
+             * @default false
+             */
+            is_interrupted: boolean;
         };
         /**
          * ObjectiveState
@@ -237,6 +318,18 @@ export interface components {
             /** Y */
             y: number;
         };
+        /**
+         * Outcomes
+         * @description Each assault outcome result
+         * @enum {string}
+         */
+        core__components__AssaultControls__Outcomes: "FAIL" | "SUCCESS";
+        /**
+         * Outcomes
+         * @description Each fire outcome and its probability range
+         * @enum {number}
+         */
+        core__components__FireControls__Outcomes: 0.3 | 0.7 | 0.95 | 1;
     };
     responses: never;
     parameters: never;
@@ -434,6 +527,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    get_logs_api_logs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": (components["schemas"]["MoveActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"])[];
                 };
             };
         };

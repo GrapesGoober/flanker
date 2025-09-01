@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from backend.action_service import ActionService
 from backend.ai_service import AiService
+from backend.log_models import ActionLog
 from backend.models import (
     AssaultActionRequest,
     FireActionRequest,
@@ -11,6 +12,7 @@ from backend.models import (
 from backend.combat_unit_service import CombatUnitService
 from backend.scene_service import SceneService
 from backend.terrain_service import TerrainService
+from backend.logging_service import LoggingService, logs
 
 SCENE_PATH = "./scenes/demo.json"
 gs = SceneService.load_scene(SCENE_PATH)
@@ -65,3 +67,15 @@ async def update_terrain(body: TerrainModel) -> None:
     """Edit the terrain polygon."""
     TerrainService.update_terrain(gs, body)
     SceneService.save_scene(SCENE_PATH, gs)
+
+
+@app.get("/api/logs")
+async def get_logs() -> list[ActionLog]:
+    return logs
+
+
+@app.post("/api/ai-play")
+async def ai_play() -> None:
+    _, logs = AiService.play_minimax(gs, 4)
+    for log in logs:
+        LoggingService.log(log)

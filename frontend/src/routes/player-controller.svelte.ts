@@ -1,10 +1,10 @@
 import {
-	getTerrainData,
-	getUnitStatesData,
+	GetTerrainData,
+	GetUnitStatesData,
 	performAssaultActionAsync,
 	performFireActionAsync,
 	performMoveActionAsync,
-	type CombatUnitsData,
+	type CombatUnitsViewState,
 	type RifleSquadData,
 	type TerrainFeatureData,
 	type Vec2
@@ -18,7 +18,7 @@ type PlayerControllerState =
 
 export class PlayerController {
 	terrainData: TerrainFeatureData[] = $state([]);
-	unitData: CombatUnitsData = $state({
+	unitData: CombatUnitsViewState = $state({
 		objectivesState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []
@@ -28,8 +28,8 @@ export class PlayerController {
 
 	async initializeAsync() {
 		this.isFetching = true;
-		this.terrainData = await getTerrainData();
-		this.unitData = await getUnitStatesData();
+		this.terrainData = await GetTerrainData();
+		this.unitData = await GetUnitStatesData();
 		this.isFetching = false;
 	}
 
