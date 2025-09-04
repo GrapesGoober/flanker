@@ -1,6 +1,6 @@
 from core.components import CombatUnit, TerrainFeature, Transform
 from core.gamestate import GameState
-from core.intersect_system import IntersectSystem
+from core.systems.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
 
 

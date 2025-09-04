@@ -6,10 +6,10 @@ from core.components import (
     MoveControls,
     Transform,
 )
-from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.initiative_system import InitiativeSystem
-from core.intersect_system import IntersectSystem
+from core.systems.fire_system import FireSystem
+from core.systems.initiative_system import InitiativeSystem
+from core.systems.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
 
 

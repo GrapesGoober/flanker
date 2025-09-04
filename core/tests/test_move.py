@@ -3,8 +3,8 @@ import pytest
 
 from core.components import InitiativeState, MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
-from core.los_system import Transform
-from core.move_system import MoveSystem
+from core.systems.los_system import Transform
+from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 

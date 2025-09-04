@@ -8,8 +8,8 @@ from core.components import (
     CombatUnit,
     Transform,
 )
-from core.initiative_system import InitiativeSystem
-from core.fire_system import FireSystem
+from core.systems.initiative_system import InitiativeSystem
+from core.systems.fire_system import FireSystem
 from core.gamestate import GameState
 from core.utils.vec2 import Vec2
 

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 import pytest
 
-from core.command_system import CommandSystem
-from core.initiative_system import InitiativeSystem
+from core.systems.command_system import CommandSystem
+from core.systems.initiative_system import InitiativeSystem
 from core.components import CombatUnit, InitiativeState
 from core.gamestate import GameState
 

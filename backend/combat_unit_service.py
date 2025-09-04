@@ -1,5 +1,5 @@
-from core.objective_system import ObjectiveSystem
-from core.initiative_system import InitiativeSystem
+from core.systems.objective_system import ObjectiveSystem
+from core.systems.initiative_system import InitiativeSystem
 from core.components import (
     CombatUnit,
     InitiativeState,

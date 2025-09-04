@@ -1,6 +1,6 @@
 from core.gamestate import GameState
 from core.components import CombatUnit
-from core.objective_system import ObjectiveSystem
+from core.systems.objective_system import ObjectiveSystem
 
 
 class CommandSystem:
