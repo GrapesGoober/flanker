@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 import pytest
 
+from core.actions import ActionHandler, MoveAction
 from core.components import InitiativeState, MoveControls, TerrainFeature, CombatUnit
 from core.gamestate import GameState
 from core.systems.los_system import Transform
-from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 
@@ -58,12 +58,12 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
+    ActionHandler.move(fixture.gs, MoveAction(fixture.unit_id, Vec2(5, -15)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.position == Vec2(5, -15), "Unit expects at Vec2(5, -15)"
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(6, 6))
+    ActionHandler.move(fixture.gs, MoveAction(fixture.unit_id, Vec2(6, 6)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.position == Vec2(0, -10), "Unit expects to not move"

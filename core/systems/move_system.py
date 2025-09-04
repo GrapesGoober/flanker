@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Iterable
 from core.components import (
     CombatUnit,
     FireControls,
@@ -25,8 +26,7 @@ class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
     @staticmethod
-    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
-        """Performs move action to position; may trigger reactive fire."""
+    def is_move_valid(gs: GameState, unit_id: int, to: Vec2) -> bool:
 
         # Check move action is valid
         transform = gs.get_component(unit_id, Transform)
@@ -34,9 +34,9 @@ class MoveSystem:
         move_controls = gs.get_component(unit_id, MoveControls)
 
         if unit.status != CombatUnit.Status.ACTIVE:
-            return MoveActionResult(is_valid=False)
+            return False
         if not InitiativeSystem.has_initiative(gs, unit_id):
-            return MoveActionResult(is_valid=False)
+            return False
 
         # Check move action though correct terrain type
         terrain_type = 0
@@ -46,8 +46,31 @@ class MoveSystem:
 
         for intersect in IntersectSystem.get(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
-                return MoveActionResult(is_valid=False)
+                return False
 
+        return True
+
+    @staticmethod
+    def get_move_steps(gs: GameState, unit_id: int, to: Vec2) -> Iterable[Vec2]:
+        transform = gs.get_component(unit_id, Transform)
+        STEP_SIZE = 1
+        start = transform.position
+        length = (to - transform.position).length()
+        direction = (to - transform.position).normalized()
+        for i in range(0, int(length / STEP_SIZE)):
+            yield start + direction * (i * STEP_SIZE)
+        # last point is the destination
+        yield to
+
+    @staticmethod
+    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
+        """Performs move action to position; may trigger reactive fire."""
+
+        # Check move action is valid
+        if not MoveSystem.is_move_valid(gs, unit_id, to):
+            return MoveActionResult(is_valid=False)
+
+        transform = gs.get_component(unit_id, Transform)
         spotter_candidates = list(FireSystem.get_spotters(gs, unit_id))
 
         # For each subdivision step of move line, check interrupt
