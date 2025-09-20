@@ -29,6 +29,7 @@ class FireSystem:
     ) -> bool:
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        fire_controls = gs.get_component(attacker_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
 
@@ -37,6 +38,8 @@ class FireSystem:
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
+            return False
+        if is_reactive and not fire_controls.can_reactive_fire:
             return False
         if is_reactive and InitiativeSystem.has_initiative(gs, attacker_id):
             return False  # No initiative for reactive fire
@@ -140,8 +143,8 @@ class FireSystem:
         return FireActionResult(is_valid=False)
 
     @staticmethod
-    def get_spotters(gs: GameState, target_id: int) -> Iterable[int]:
-        """Get the a valid spotter for reactive fire. Doesn't check LOS."""
+    def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
+        """Get the valid spotters for reactive fire. Doesn't check LOS."""
 
         unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
