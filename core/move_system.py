@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from core.command_system import CommandSystem
 from core.components import (
     CombatUnit,
     FireControls,
@@ -25,29 +26,38 @@ class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
     @staticmethod
-    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
-        """Performs move action to position; may trigger reactive fire."""
+    def _validate_move(gs: GameState, unit_id: int, to: Vec2) -> bool:
 
-        # Check move action is valid
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
         move_controls = gs.get_component(unit_id, MoveControls)
 
+        # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
-            return MoveActionResult(is_valid=False)
+            return False
         if not InitiativeSystem.has_initiative(gs, unit_id):
-            return MoveActionResult(is_valid=False)
+            return False
 
         # Check move action though correct terrain type
         terrain_type = 0
         match move_controls.move_type:
             case MoveControls.MoveType.FOOT:
                 terrain_type = TerrainFeature.Flag.WALKABLE
-
         for intersect in IntersectSystem.get(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
-                return MoveActionResult(is_valid=False)
+                return False
 
+        return True
+
+    @staticmethod
+    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
+        """Performs move action to position; may trigger reactive fire."""
+
+        if not MoveSystem._validate_move(gs, unit_id, to):
+            return MoveActionResult(is_valid=False)
+
+        transform = gs.get_component(unit_id, Transform)
+        unit = gs.get_component(unit_id, CombatUnit)
         spotter_candidates = list(FireSystem.get_spotters(gs, unit_id))
 
         # For each subdivision step of move line, check interrupt
@@ -61,22 +71,44 @@ class MoveSystem:
             transform.position += direction * step
 
             # Check for interrupt
-            # TODO: for fire reaction, should support multiple shooter
             for spotter_id in spotter_candidates:
-                # Interrupt valid, perform the fire action
-                fire_result = FireSystem.fire(
-                    gs=gs,
-                    attacker_id=spotter_id,
-                    target_id=unit_id,
-                    is_reactive=True,
-                )
-                if fire_result.is_hit:
-                    if fire_result.outcome != FireControls.Outcomes.KILL:
+
+                # Validate reactive fire
+                fire_controls = gs.get_component(spotter_id, FireControls)
+                spotter_unit = gs.get_component(spotter_id, CombatUnit)
+                if not fire_controls.can_reactive_fire:
+                    continue
+                if not FireSystem.validate_fire_action(
+                    gs, spotter_id, unit_id, is_reactive=True
+                ):
+                    continue
+
+                # Interrupt valid, perform the reactive fire
+                match FireSystem.get_fire_outcome(gs, spotter_id):
+                    case FireControls.Outcomes.MISS:
+                        fire_controls.can_reactive_fire = False
+                    case FireControls.Outcomes.PIN:
+                        unit.status = CombatUnit.Status.PINNED
+                        return MoveActionResult(
+                            is_valid=True,
+                            is_interrupted=True,
+                        )
+                    case FireControls.Outcomes.SUPPRESS:
+                        unit.status = CombatUnit.Status.SUPPRESSED
+                        InitiativeSystem.set_initiative(gs, spotter_unit.faction)
+                        return MoveActionResult(
+                            is_valid=True,
+                            is_interrupted=True,
+                        )
+                    case FireControls.Outcomes.KILL:
                         MoveSystem.update_terrain_inside(gs, unit_id, start)
-                    return MoveActionResult(
-                        is_valid=True,
-                        is_interrupted=True,
-                    )
+                        CommandSystem.kill_unit(gs, unit_id)
+                        InitiativeSystem.set_initiative(gs, spotter_unit.faction)
+                        return MoveActionResult(
+                            is_valid=True,
+                            is_interrupted=True,
+                        )
+
         MoveSystem.update_terrain_inside(gs, unit_id, start)
         return MoveActionResult(
             is_valid=True,

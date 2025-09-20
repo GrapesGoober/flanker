@@ -21,7 +21,7 @@ class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
-    def _validate_fire_action(
+    def validate_fire_action(
         gs: GameState,
         attacker_id: int,
         target_id: int,
@@ -54,24 +54,15 @@ class FireSystem:
         return True
 
     @staticmethod
-    def fire(
+    def get_fire_outcome(
         gs: GameState,
         attacker_id: int,
-        target_id: int,
-        is_reactive: bool = False,
-    ) -> FireActionResult:
+    ) -> FireControls.Outcomes:
         """
-        Performs fire action from attacker unit to target unit.
-        Returns `True` if success.
+        Returns a randomized fire outcome,
+        or a overriden outcome if `FireControls`'s override is set.
         """
 
-        if not FireSystem._validate_fire_action(
-            gs, attacker_id, target_id, is_reactive
-        ):
-            return FireActionResult(is_valid=False)
-
-        target_unit = gs.get_component(target_id, CombatUnit)
-        attacker_unit = gs.get_component(attacker_id, CombatUnit)
         fire_controls = gs.get_component(attacker_id, FireControls)
 
         # Determine fire outcome, using overriden value if found
@@ -81,41 +72,71 @@ class FireSystem:
             outcome = random.uniform(0, 1)
 
         # Apply outcome
-        # TODO: for fire reaction, should support multiple shooter
         if outcome <= FireControls.Outcomes.MISS:
-            if is_reactive:
-                fire_controls.can_reactive_fire = False
-            InitiativeSystem.set_initiative(gs, target_unit.faction)
-            return FireActionResult(
-                is_valid=True,
-                is_hit=False,
-                outcome=FireControls.Outcomes.MISS,
-            )
+            return FireControls.Outcomes.MISS
         elif outcome <= FireControls.Outcomes.PIN:
-            if target_unit.status != CombatUnit.Status.SUPPRESSED:
-                target_unit.status = CombatUnit.Status.PINNED
-            InitiativeSystem.set_initiative(gs, target_unit.faction)
-            return FireActionResult(
-                is_valid=True,
-                is_hit=True,
-                outcome=FireControls.Outcomes.PIN,
-            )
+            return FireControls.Outcomes.PIN
         elif outcome <= FireControls.Outcomes.SUPPRESS:
-            target_unit.status = CombatUnit.Status.SUPPRESSED
-            InitiativeSystem.set_initiative(gs, attacker_unit.faction)
-            return FireActionResult(
-                is_valid=True,
-                is_hit=True,
-                outcome=FireControls.Outcomes.SUPPRESS,
-            )
+            return FireControls.Outcomes.SUPPRESS
         elif outcome <= FireControls.Outcomes.KILL:
-            CommandSystem.kill_unit(gs, target_id)
-            InitiativeSystem.set_initiative(gs, attacker_unit.faction)
-            return FireActionResult(
-                is_valid=True,
-                is_hit=True,
-                outcome=FireControls.Outcomes.KILL,
-            )
+            return FireControls.Outcomes.KILL
+
+        raise Exception(f"Invalid value {outcome=}")
+
+    @staticmethod
+    def fire(
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
+    ) -> FireActionResult:
+        """
+        Performs fire action from attacker unit to target unit.
+        Returns `True` if success.
+        """
+
+        # Validate
+        if not FireSystem.validate_fire_action(
+            gs, attacker_id, target_id, is_reactive=False
+        ):
+            return FireActionResult(is_valid=False)
+
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        target_unit = gs.get_component(target_id, CombatUnit)
+
+        # Apply outcome
+        match FireSystem.get_fire_outcome(gs, attacker_id):
+            case FireControls.Outcomes.MISS:
+                InitiativeSystem.set_initiative(gs, target_unit.faction)
+                return FireActionResult(
+                    is_valid=True,
+                    is_hit=False,
+                    outcome=FireControls.Outcomes.MISS,
+                )
+            case FireControls.Outcomes.PIN:
+                if target_unit.status != CombatUnit.Status.SUPPRESSED:
+                    target_unit.status = CombatUnit.Status.PINNED
+                InitiativeSystem.set_initiative(gs, target_unit.faction)
+                return FireActionResult(
+                    is_valid=True,
+                    is_hit=True,
+                    outcome=FireControls.Outcomes.PIN,
+                )
+            case FireControls.Outcomes.SUPPRESS:
+                target_unit.status = CombatUnit.Status.SUPPRESSED
+                InitiativeSystem.set_initiative(gs, attacker_unit.faction)
+                return FireActionResult(
+                    is_valid=True,
+                    is_hit=True,
+                    outcome=FireControls.Outcomes.SUPPRESS,
+                )
+            case FireControls.Outcomes.KILL:
+                CommandSystem.kill_unit(gs, target_id)
+                InitiativeSystem.set_initiative(gs, attacker_unit.faction)
+                return FireActionResult(
+                    is_valid=True,
+                    is_hit=True,
+                    outcome=FireControls.Outcomes.KILL,
+                )
         return FireActionResult(is_valid=False)
 
     @staticmethod
