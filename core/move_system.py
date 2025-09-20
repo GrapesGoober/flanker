@@ -94,27 +94,20 @@ class MoveSystem:
                 match FireSystem.get_fire_outcome(gs, spotter_id):
                     case FireControls.Outcomes.MISS:
                         fire_controls.can_reactive_fire = False
+                        continue
                     case FireControls.Outcomes.PIN:
                         unit.status = CombatUnit.Status.PINNED
-                        return MoveActionResult(
-                            is_valid=True,
-                            is_interrupted=True,
-                        )
                     case FireControls.Outcomes.SUPPRESS:
                         unit.status = CombatUnit.Status.SUPPRESSED
                         InitiativeSystem.set_initiative(gs, spotter_unit.faction)
-                        return MoveActionResult(
-                            is_valid=True,
-                            is_interrupted=True,
-                        )
                     case FireControls.Outcomes.KILL:
                         MoveSystem.update_terrain_inside(gs, unit_id, start)
                         CommandSystem.kill_unit(gs, unit_id)
                         InitiativeSystem.set_initiative(gs, spotter_unit.faction)
-                        return MoveActionResult(
-                            is_valid=True,
-                            is_interrupted=True,
-                        )
+                return MoveActionResult(
+                    is_valid=True,
+                    is_interrupted=True,
+                )
 
         MoveSystem.update_terrain_inside(gs, unit_id, start)
         return MoveActionResult(
