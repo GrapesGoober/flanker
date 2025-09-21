@@ -28,6 +28,7 @@ class MoveSystem:
 
     @staticmethod
     def _validate_move(gs: GameState, unit_id: int, to: Vec2) -> bool:
+        """Returns `True` if move action can be performed."""
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
@@ -52,9 +53,7 @@ class MoveSystem:
 
     @staticmethod
     def _get_move_steps(start: Vec2, to: Vec2, step_size: int = 1) -> Iterable[Vec2]:
-        """
-        Yields position from `start` to `to` in increments of `step_size`.
-        """
+        """Yields position from `start` to `to` in increments of `step_size`."""
         current = start
         direction = (to - start).normalized()
         total_length = (to - start).length()
@@ -83,11 +82,12 @@ class MoveSystem:
 
             # Check for interrupt
             for spotter_id in spotter_candidates:
-                # Validate reactive fire
-                if not FireSystem.validate_fire_action(
-                    gs, spotter_id, unit_id, is_reactive=True
+                # Validate reactive fire actors
+                if FireSystem.validate_fire_actors(
+                    gs, spotter_id, unit_id, require_reactive_fire=True
                 ):
                     continue
+
                 # Interrupt valid, perform the reactive fire
                 fire_controls = gs.get_component(spotter_id, FireControls)
                 spotter_unit = gs.get_component(spotter_id, CombatUnit)
