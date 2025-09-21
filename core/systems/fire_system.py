@@ -101,7 +101,7 @@ class FireSystem:
         """
 
         # Validate fire actors
-        if FireSystem.validate_fire_actors(
+        if not FireSystem.validate_fire_actors(
             gs, attacker_id, target_id, require_initiative=True
         ):
             return FireActionResult(is_valid=False)
