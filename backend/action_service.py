@@ -6,10 +6,10 @@ from backend.models import (
     FireActionRequest,
     MoveActionRequest,
 )
-from core.assault_system import AssaultSystem
-from core.fire_system import FireSystem
+from core.systems.assault_system import AssaultSystem
+from core.systems.fire_system import FireSystem
+from core.systems.move_system import MoveSystem
 from core.gamestate import GameState
-from core.move_system import MoveSystem
 
 
 class ActionService:

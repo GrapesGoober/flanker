@@ -3,14 +3,14 @@ from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
 from backend.log_models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
 from backend.models import FireActionRequest, MoveActionRequest
-from core.assault_system import AssaultSystem
 from core.components import CombatUnit, InitiativeState, Transform
-from core.fire_system import FireSystem
-from core.initiative_system import InitiativeSystem
+from core.systems.assault_system import AssaultSystem
+from core.systems.fire_system import FireSystem
+from core.systems.initiative_system import InitiativeSystem
+from core.systems.move_system import MoveSystem
 from core.gamestate import GameState
 from copy import deepcopy
 
-from core.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 num_states: int = 0

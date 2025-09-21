@@ -9,9 +9,9 @@ from core.components import (
     InitiativeState,
 )
 from core.gamestate import GameState
-from core.los_system import LosSystem
+from core.systems.los_system import LosSystem
+from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
-from core.move_system import MoveSystem
 
 
 @dataclass

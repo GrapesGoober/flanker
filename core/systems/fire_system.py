@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 import random
 from typing import Iterable
-from core.command_system import CommandSystem
+from core.systems.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
-from core.initiative_system import InitiativeSystem
-from core.los_system import LosSystem
+from core.systems.initiative_system import InitiativeSystem
+from core.systems.los_system import LosSystem
 
 
 @dataclass

@@ -2,10 +2,10 @@ from dataclasses import dataclass
 import pytest
 
 from core.components import InitiativeState, MoveControls, CombatUnit
-from core.initiative_system import InitiativeSystem
 from core.gamestate import GameState
-from core.los_system import Transform
-from core.move_system import MoveSystem
+from core.systems.initiative_system import InitiativeSystem
+from core.systems.los_system import Transform
+from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 

@@ -7,10 +7,10 @@ from core.components import (
     FireControls,
     CombatUnit,
 )
-from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.los_system import Transform
-from core.objective_system import ObjectiveSystem
+from core.systems.fire_system import FireSystem
+from core.systems.los_system import Transform
+from core.systems.objective_system import ObjectiveSystem
 from core.utils.vec2 import Vec2
 
 

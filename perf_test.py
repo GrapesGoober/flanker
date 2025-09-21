@@ -13,12 +13,12 @@ for _, cls in vars(components).items():
         component_types.append(cls)
 component_types.append(TerrainTypeTag)
 
-path = "./scenes/demo.json"
+path = "./scenes/demo-old.json"
 
 with open(path, "r") as f:
     gs = GameState.load(f.read(), component_types)
 
-from core.move_system import MoveSystem
+from core.systems.move_system import MoveSystem
 
 MoveSystem.move(gs, 1, Vec2(-50, -200))
 

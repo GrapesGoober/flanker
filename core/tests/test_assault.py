@@ -9,7 +9,7 @@ from core.components import (
     Transform,
 )
 from core.gamestate import GameState
-from core.assault_system import AssaultSystem
+from core.systems.assault_system import AssaultSystem
 from core.utils.vec2 import Vec2
 
 
