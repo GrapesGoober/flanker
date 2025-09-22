@@ -1,5 +1,5 @@
 from typing import Iterable
-from core.actions import MoveActionResult
+from core.actions import MoveAction, MoveActionResult
 from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
@@ -57,53 +57,61 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
-        """Performs move action mutation to position. May trigger reactive fire."""
+    def _move_single_unit(gs: GameState, action: MoveAction) -> MoveActionResult:
+        """Performs move action mutation of a single unit. Doesn't flip initiative."""
 
-        if not MoveSystem._validate_move(gs, unit_id, to):
+        if not MoveSystem._validate_move(gs, action.unit_id, action.to):
             return MoveActionResult(is_valid=False)
 
-        transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
-        spotter_candidates = list(FireSystem.get_spotter_candidates(gs, unit_id))
+        transform = gs.get_component(action.unit_id, Transform)
+        unit = gs.get_component(action.unit_id, CombatUnit)
+        spotter_candidates = list(FireSystem.get_spotter_candidates(gs, action.unit_id))
         start = transform.position
 
         # For each subdivision step of move line, check interrupt
-        for step in MoveSystem._get_move_steps(transform.position, to):
+        for step in MoveSystem._get_move_steps(transform.position, action.to):
             transform.position = step
 
             # Check for interrupt
             for spotter_id in spotter_candidates:
                 # Validate reactive fire actors
-                if not FireSystem.validate_fire_actors(gs, spotter_id, unit_id):
+                if not FireSystem.validate_fire_actors(gs, spotter_id, action.unit_id):
                     continue
 
                 # Interrupt valid, perform the reactive fire
-                fire_controls = gs.get_component(spotter_id, FireControls)
-                spotter_unit = gs.get_component(spotter_id, CombatUnit)
-                match FireSystem.get_fire_outcome(gs, spotter_id):
+                outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+                match outcome:
                     case FireControls.Outcomes.MISS:
+                        fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
                         continue
                     case FireControls.Outcomes.PIN:
                         unit.status = CombatUnit.Status.PINNED
+                        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                     case FireControls.Outcomes.SUPPRESS:
                         unit.status = CombatUnit.Status.SUPPRESSED
-                        InitiativeSystem.set_initiative(gs, spotter_unit.faction)
+                        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                     case FireControls.Outcomes.KILL:
-                        MoveSystem.update_terrain_inside(gs, unit_id, start)
-                        CommandSystem.kill_unit(gs, unit_id)
-                        InitiativeSystem.set_initiative(gs, spotter_unit.faction)
+                        CommandSystem.kill_unit(gs, action.unit_id)
                 return MoveActionResult(
                     is_valid=True,
-                    is_interrupted=True,
+                    reactive_fire_outcome=outcome,
                 )
 
-        MoveSystem.update_terrain_inside(gs, unit_id, start)
-        return MoveActionResult(
-            is_valid=True,
-            is_interrupted=False,
-        )
+        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
+        return MoveActionResult(is_valid=True)
+
+    @staticmethod
+    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
+        """Performs move action mutation to position. May trigger reactive fire."""
+
+        result = MoveSystem._move_single_unit(gs, MoveAction(unit_id, to))
+        if result.reactive_fire_outcome in (
+            FireControls.Outcomes.SUPPRESS,
+            FireControls.Outcomes.KILL,
+        ):
+            InitiativeSystem.flip_initiative(gs)
+        return result
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:

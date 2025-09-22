@@ -45,7 +45,7 @@ class AssaultSystem:
         result = MoveSystem.move(gs, attacker_id, target_transform.position)
         if not result.is_valid:
             return AssaultActionResult(is_valid=False)
-        if result.is_interrupted:
+        if result.reactive_fire_outcome:
             return AssaultActionResult(is_interrupted=True)
 
         # Once at location, do dice roll; only one can survive
