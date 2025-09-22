@@ -15,7 +15,7 @@ class MoveAction:
 class GroupMoveAction:
     """Body a group move action consisting of multiple move actions."""
 
-    actions: list[MoveAction]
+    moves: list[MoveAction]
 
 
 @dataclass

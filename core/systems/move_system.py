@@ -1,5 +1,11 @@
 from typing import Iterable
-from core.action_models import MoveAction, MoveActionResult
+from core.action_models import (
+    GroupMoveAction,
+    GroupMoveActionLog,
+    MoveAction,
+    MoveActionLog,
+    MoveActionResult,
+)
 from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
@@ -103,7 +109,7 @@ class MoveSystem:
 
     @staticmethod
     def move(gs: GameState, action: MoveAction) -> MoveActionResult:
-        """Performs move action mutation to position. May trigger reactive fire."""
+        """Performs move action mutation with reactive fire."""
 
         result = MoveSystem._move_single_unit(gs, action)
         if result.reactive_fire_outcome in (
@@ -114,6 +120,27 @@ class MoveSystem:
 
         # TODO: implement core-level logging here
         return result
+
+    @staticmethod
+    def group_move(gs: GameState, action: GroupMoveAction) -> GroupMoveActionLog:
+        """Performs group move action mutation with reactive fire."""
+
+        logs: list[MoveActionLog] = []
+        interrupt_count = 0
+        # TODO: group move validation
+        for move in action.moves:
+            result = MoveSystem._move_single_unit(gs, move)
+            if result.reactive_fire_outcome in (
+                FireControls.Outcomes.SUPPRESS,
+                FireControls.Outcomes.KILL,
+            ):
+                interrupt_count += 1
+
+        if interrupt_count >= len(action.moves):
+            InitiativeSystem.flip_initiative(gs)
+
+        # TODO: implement core-level logging here
+        return GroupMoveActionLog(logs)
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
