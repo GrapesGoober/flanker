@@ -65,7 +65,7 @@ class FireSystem:
         attacker_id: int,
     ) -> FireControls.Outcomes:
         """
-        Returns a randomized fire outcome,
+        Returns a new randomized fire outcome,
         or a overriden outcome if `FireControls`'s override is set.
         """
 
@@ -95,10 +95,7 @@ class FireSystem:
         attacker_id: int,
         target_id: int,
     ) -> FireActionResult:
-        """
-        Performs fire action from attacker unit to target unit.
-        Returns `True` if success.
-        """
+        """Performs fire action mutation from attacker unit to target unit."""
 
         # Validate fire actors
         if not FireSystem.validate_fire_actors(
@@ -143,7 +140,7 @@ class FireSystem:
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
-        """Get the valid spotters for reactive fire. Doesn't check LOS."""
+        """Get a list of valid spotters for reactive fire. Doesn't check LOS."""
 
         unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, fire_controls in gs.query(

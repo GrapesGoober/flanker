@@ -66,7 +66,7 @@ class MoveSystem:
 
     @staticmethod
     def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
-        """Performs move action to position; may trigger reactive fire."""
+        """Performs move action mutation to position. May trigger reactive fire."""
 
         if not MoveSystem._validate_move(gs, unit_id, to):
             return MoveActionResult(is_valid=False)
@@ -117,7 +117,7 @@ class MoveSystem:
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
-        """Updates CombatUnit's inside_terrains list."""
+        """Checks terrain and mutates CombatUnit's inside_terrains list."""
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
