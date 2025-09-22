@@ -21,39 +21,25 @@ class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
-    def validate_fire_actors(
+    def _validate_fire_actors(
         gs: GameState,
         attacker_id: int,
         target_id: int,
-        require_initiative: bool = False,
-        require_reactive_fire: bool = False,
     ) -> bool:
-        """
-        Validates whether attacker can open fire onto target.
-        Optionally checks for initiative and can_reactive_fire.
-        """
+        """Validates that attacker can fire at target. Doesn't check initiative."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
-        fire_controls = gs.get_component(attacker_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
 
-        # Check if attacker can attack
         if attacker_unit.status not in (
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
             return False
-        if require_reactive_fire and not fire_controls.can_reactive_fire:
-            return False
-        if require_initiative and not InitiativeSystem.has_initiative(gs, attacker_id):
-            return False
-
-        # Check that the target faction is not the same as attacker
         if attacker_unit.faction == target_unit.faction:
             return False
-
-        # Check if target is in line of sight
+        # Leave LOS check last since it's most performance intensive
         if not LosSystem.check(gs, attacker_id, target_transform.position):
             return False
 
@@ -98,9 +84,9 @@ class FireSystem:
         """Performs fire action mutation from attacker unit to target unit."""
 
         # Validate fire actors
-        if not FireSystem.validate_fire_actors(
-            gs, attacker_id, target_id, require_initiative=True
-        ):
+        if not FireSystem._validate_fire_actors(gs, attacker_id, target_id):
+            return FireActionResult(is_valid=False)
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return FireActionResult(is_valid=False)
 
         # Apply outcome
@@ -140,19 +126,16 @@ class FireSystem:
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
-        """Get a list of valid spotters for reactive fire. Doesn't check LOS."""
+        """Get a list of valid spotters for reactive fire."""
 
-        unit = gs.get_component(target_id, CombatUnit)
-        for spotter_id, spotter_unit, _, fire_controls in gs.query(
+        for spotter_id, _, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
-
-            # Check that spotter is a valid spotter for reactive fire
-            if spotter_id == target_id:
+            if not fire_controls.can_reactive_fire:
                 continue
-            if unit.faction == spotter_unit.faction:
+            if InitiativeSystem.has_initiative(gs, spotter_id):
                 continue
-            if fire_controls.can_reactive_fire == False:
+            if not FireSystem._validate_fire_actors(gs, spotter_id, target_id):
                 continue
 
             yield spotter_id

@@ -73,7 +73,6 @@ class MoveSystem:
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
-        spotter_candidates = list(FireSystem.get_spotter_candidates(gs, unit_id))
         start = transform.position
 
         # For each subdivision step of move line, check interrupt
@@ -81,12 +80,7 @@ class MoveSystem:
             transform.position = step
 
             # Check for interrupt
-            for spotter_id in spotter_candidates:
-                # Validate reactive fire actors
-                if not FireSystem.validate_fire_actors(
-                    gs, spotter_id, unit_id, require_reactive_fire=True
-                ):
-                    continue
+            for spotter_id in FireSystem.get_spotter_candidates(gs, unit_id):
 
                 # Interrupt valid, perform the reactive fire
                 fire_controls = gs.get_component(spotter_id, FireControls)
@@ -97,23 +91,18 @@ class MoveSystem:
                         continue
                     case FireControls.Outcomes.PIN:
                         unit.status = CombatUnit.Status.PINNED
+                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                     case FireControls.Outcomes.SUPPRESS:
                         unit.status = CombatUnit.Status.SUPPRESSED
+                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                         InitiativeSystem.set_initiative(gs, spotter_unit.faction)
                     case FireControls.Outcomes.KILL:
-                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                         CommandSystem.kill_unit(gs, unit_id)
                         InitiativeSystem.set_initiative(gs, spotter_unit.faction)
-                return MoveActionResult(
-                    is_valid=True,
-                    is_interrupted=True,
-                )
+                return MoveActionResult(is_valid=True, is_interrupted=True)
 
         MoveSystem.update_terrain_inside(gs, unit_id, start)
-        return MoveActionResult(
-            is_valid=True,
-            is_interrupted=False,
-        )
+        return MoveActionResult(is_valid=True, is_interrupted=False)
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
