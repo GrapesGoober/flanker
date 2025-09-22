@@ -150,7 +150,7 @@ export enum AssaultOutcome {
 
 export type MoveActionResult = {
 	isValid: boolean;
-	isInterrupted: boolean;
+	fireOutcome: FireOutcome;
 };
 
 export type FireActionResult = {
@@ -200,7 +200,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 				| components['schemas']['AssaultActionLog']
 		) => {
 			const unitState = ParseCombatUnitsViewState(log.unit_state);
-			if (log.type === 'move' && 'to' in log.body && 'is_interrupted' in log.result) {
+			if (log.type === 'move' && 'to' in log.body && 'reactive_fire_outcome' in log.result) {
 				return {
 					type: 'move',
 					body: {
@@ -209,7 +209,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 					},
 					result: {
 						isValid: log.result.is_valid,
-						isInterrupted: log.result.is_interrupted
+						fireOutcome: log.result.reactive_fire_outcome
 					},
 					unitState
 				} as MoveActionLog;

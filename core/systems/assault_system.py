@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import random
+from core.action_models import MoveAction
 from core.components import (
     AssaultControls,
     CombatUnit,
@@ -42,7 +43,7 @@ class AssaultSystem:
             return AssaultActionResult(is_valid=False)
 
         # Moves the unit to target position (allow reactive fire)
-        result = MoveSystem.move(gs, attacker_id, target_transform.position)
+        result = MoveSystem.move(gs, MoveAction(attacker_id, target_transform.position))
         if not result.is_valid:
             return AssaultActionResult(is_valid=False)
         if result.reactive_fire_outcome:

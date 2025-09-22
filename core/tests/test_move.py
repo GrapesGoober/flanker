@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
+from core.action_models import MoveAction
 from core.components import (
     InitiativeState,
     MoveControls,
@@ -63,12 +64,12 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
+    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id, Vec2(5, -15)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.position == Vec2(5, -15), "Unit expects at Vec2(5, -15)"
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(6, 6))
+    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id, Vec2(6, 6)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.position == Vec2(0, -10), "Unit expects to not move"

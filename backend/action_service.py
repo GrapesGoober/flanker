@@ -6,6 +6,7 @@ from backend.models import (
     FireActionRequest,
     MoveActionRequest,
 )
+from core.action_models import MoveAction
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.move_system import MoveSystem
@@ -18,7 +19,7 @@ class ActionService:
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> bool:
         """Move a unit and trigger AI response for the opponent."""
-        result = MoveSystem.move(gs, body.unit_id, body.to)
+        result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
         LoggingService.log(
             MoveActionLog(
                 body=body,

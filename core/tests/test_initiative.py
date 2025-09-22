@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
+from core.action_models import MoveAction
 from core.components import InitiativeState, MoveControls, CombatUnit
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
@@ -31,7 +32,7 @@ def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     # Try to move the unit
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Should not move from original position
     assert transform.position == Vec2(0, 0), "Unit without initiative musn't move"
@@ -39,7 +40,7 @@ def test_no_initiative(fixture: Fixture) -> None:
 
 def test_has_initiative(fixture: Fixture) -> None:
     # Try to move the unit
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Expects to move to new position
     assert transform.position == Vec2(10, 10), "Unit with initiative can move"

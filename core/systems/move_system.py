@@ -1,5 +1,5 @@
 from typing import Iterable
-from core.actions import MoveAction, MoveActionResult
+from core.action_models import MoveAction, MoveActionResult
 from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
@@ -102,15 +102,17 @@ class MoveSystem:
         return MoveActionResult(is_valid=True)
 
     @staticmethod
-    def move(gs: GameState, unit_id: int, to: Vec2) -> MoveActionResult:
+    def move(gs: GameState, action: MoveAction) -> MoveActionResult:
         """Performs move action mutation to position. May trigger reactive fire."""
 
-        result = MoveSystem._move_single_unit(gs, MoveAction(unit_id, to))
+        result = MoveSystem._move_single_unit(gs, action)
         if result.reactive_fire_outcome in (
             FireControls.Outcomes.SUPPRESS,
             FireControls.Outcomes.KILL,
         ):
             InitiativeSystem.flip_initiative(gs)
+
+        # TODO: implement core-level logging here
         return result
 
     @staticmethod

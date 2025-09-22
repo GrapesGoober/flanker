@@ -3,6 +3,7 @@ from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
 from backend.log_models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
 from backend.models import FireActionRequest, MoveActionRequest
+from core.action_models import MoveAction
 from core.components import CombatUnit, InitiativeState, Transform
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
@@ -140,7 +141,7 @@ class AiService:
         body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
     ) -> tuple[bool, ActionLog]:
         if isinstance(body, MoveActionRequest):
-            result = MoveSystem.move(gs, body.unit_id, body.to)
+            result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
             log = MoveActionLog(
                 body=body, result=result, unit_state=CombatUnitService.get_units(gs)
             )
