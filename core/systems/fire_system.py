@@ -25,16 +25,10 @@ class FireSystem:
         gs: GameState,
         attacker_id: int,
         target_id: int,
-        require_initiative: bool = False,
-        require_reactive_fire: bool = False,
     ) -> bool:
-        """
-        Validates whether attacker can open fire onto target.
-        Optionally checks for initiative and can_reactive_fire.
-        """
+        """Validates that attacker can fire at target. Doesn't Check initiative."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
-        fire_controls = gs.get_component(attacker_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
 
@@ -43,10 +37,6 @@ class FireSystem:
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
-            return False
-        if require_reactive_fire and not fire_controls.can_reactive_fire:
-            return False
-        if require_initiative and not InitiativeSystem.has_initiative(gs, attacker_id):
             return False
 
         # Check that the target faction is not the same as attacker
@@ -98,9 +88,9 @@ class FireSystem:
         """Performs fire action mutation from attacker unit to target unit."""
 
         # Validate fire actors
-        if not FireSystem.validate_fire_actors(
-            gs, attacker_id, target_id, require_initiative=True
-        ):
+        if not FireSystem.validate_fire_actors(gs, attacker_id, target_id):
+            return FireActionResult(is_valid=False)
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return FireActionResult(is_valid=False)
 
         # Apply outcome

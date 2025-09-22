@@ -83,9 +83,7 @@ class MoveSystem:
             # Check for interrupt
             for spotter_id in spotter_candidates:
                 # Validate reactive fire actors
-                if not FireSystem.validate_fire_actors(
-                    gs, spotter_id, unit_id, require_reactive_fire=True
-                ):
+                if not FireSystem.validate_fire_actors(gs, spotter_id, unit_id):
                     continue
 
                 # Interrupt valid, perform the reactive fire
