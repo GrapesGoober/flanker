@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 from typing import Iterable
+from core.actions import MoveActionResult
 from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
@@ -13,14 +13,6 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
-
-
-@dataclass
-class MoveActionResult:
-    """Result of a move action whether is valid or interrupted."""
-
-    is_valid: bool
-    is_interrupted: bool = False
 
 
 class MoveSystem:
