@@ -38,7 +38,7 @@ def fixture() -> Fixture:
     unit_move_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
-        Transform(position=Vec2(0, -11)),
+        Transform(position=Vec2(0, -15)),
     )
     unit_shoot = gs.add_entity(
         MoveControls(),
@@ -93,3 +93,51 @@ def test_group_move(fixture: Fixture) -> None:
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "NO reactive fire mustn't flip initiative."
+
+
+def test_interrupt_success(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
+    MoveSystem.group_move(
+        fixture.gs,
+        GroupMoveAction(
+            moves=[
+                MoveAction(fixture.unit_move_1, Vec2(7, -10)),
+                MoveAction(fixture.unit_move_2, Vec2(7, -15)),
+            ]
+        ),
+    )
+    transform_1 = fixture.gs.get_component(fixture.unit_move_1, Transform)
+    assert transform_1.position == Vec2(
+        7, -10
+    ), "First unit must not be interrupted at Vec2(7, -10)"
+    transform_2 = fixture.gs.get_component(fixture.unit_move_2, Transform)
+    assert transform_2.position == Vec2(
+        7, -15
+    ), "Second unit must be interrupted at Vec2(7, -15)"
+    assert (
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
+    ), "Success group move doesn't flip initiative."
+
+
+def test_interrupt_fail(fixture: Fixture) -> None:
+    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
+    MoveSystem.group_move(
+        fixture.gs,
+        GroupMoveAction(
+            moves=[
+                MoveAction(fixture.unit_move_1, Vec2(9, -10)),
+                MoveAction(fixture.unit_move_2, Vec2(9, -15)),
+            ]
+        ),
+    )
+    transform_1 = fixture.gs.get_component(fixture.unit_move_1, Transform)
+    assert transform_1.position == Vec2(
+        8, -10
+    ), "First unit must not be interrupted at Vec2(8, -10)"
+    transform_2 = fixture.gs.get_component(fixture.unit_move_2, Transform)
+    assert transform_2.position == Vec2(
+        7, -15
+    ), "Second unit must be interrupted at Vec2(7, -15)"
+    assert (
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True
+    ), "Success group move doesn't flip initiative."
