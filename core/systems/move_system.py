@@ -63,7 +63,7 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def _move_single_unit(gs: GameState, action: MoveAction) -> MoveActionResult:
+    def move_single_unit(gs: GameState, action: MoveAction) -> MoveActionResult:
         """Mutator method moves a unit with reactive fire. Doesn't flip initiative."""
 
         if not MoveSystem._validate_move(gs, action.unit_id, action.to):
@@ -111,7 +111,7 @@ class MoveSystem:
     def move(gs: GameState, action: MoveAction) -> MoveActionResult:
         """Mutator method performs move action with reactive fire."""
 
-        result = MoveSystem._move_single_unit(gs, action)
+        result = MoveSystem.move_single_unit(gs, action)
         if result.reactive_fire_outcome in (
             FireControls.Outcomes.SUPPRESS,
             FireControls.Outcomes.KILL,
@@ -129,7 +129,7 @@ class MoveSystem:
         interrupt_count = 0
         # TODO: group move validation
         for move in action.moves:
-            result = MoveSystem._move_single_unit(gs, move)
+            result = MoveSystem.move_single_unit(gs, move)
             if result.reactive_fire_outcome in (
                 FireControls.Outcomes.SUPPRESS,
                 FireControls.Outcomes.KILL,
