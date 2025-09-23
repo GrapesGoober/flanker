@@ -20,7 +20,7 @@ class AssaultActionResult:
 
 
 class AssaultSystem:
-    """Static system class for handling movement action of combat units."""
+    """Static system class for handling assault action of combat units."""
 
     @staticmethod
     def assault(
@@ -28,7 +28,7 @@ class AssaultSystem:
         attacker_id: int,
         target_id: int,
     ) -> AssaultActionResult:
-        """Performs assault action to target; may trigger reactive fire."""
+        """Mutator method performs assault action to target with reactive fire."""
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         target_unit = gs.get_component(target_id, CombatUnit)
         attacker_assault = gs.get_component(attacker_id, AssaultControls)

@@ -64,7 +64,7 @@ class MoveSystem:
 
     @staticmethod
     def _move_single_unit(gs: GameState, action: MoveAction) -> MoveActionResult:
-        """Performs move action mutation of a single unit. Doesn't flip initiative."""
+        """Mutator method moves a unit with reactive fire. Doesn't flip initiative."""
 
         if not MoveSystem._validate_move(gs, action.unit_id, action.to):
             return MoveActionResult(is_valid=False)
@@ -109,7 +109,7 @@ class MoveSystem:
 
     @staticmethod
     def move(gs: GameState, action: MoveAction) -> MoveActionResult:
-        """Performs move action mutation with reactive fire."""
+        """Mutator method performs move action with reactive fire."""
 
         result = MoveSystem._move_single_unit(gs, action)
         if result.reactive_fire_outcome in (
@@ -123,7 +123,7 @@ class MoveSystem:
 
     @staticmethod
     def group_move(gs: GameState, action: GroupMoveAction) -> GroupMoveActionLog:
-        """Performs group move action mutation with reactive fire."""
+        """Mutator method performs group move action with reactive fire."""
 
         logs: list[MoveActionLog] = []
         interrupt_count = 0
@@ -144,7 +144,7 @@ class MoveSystem:
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
-        """Checks terrain and mutates CombatUnit's inside_terrains list."""
+        """Mutator method that rechecks and updates CombatUnit's inside_terrains."""
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
