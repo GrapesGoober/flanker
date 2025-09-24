@@ -1,9 +1,8 @@
 from typing import Iterable
 from core.action_models import (
     GroupMoveAction,
-    GroupMoveActionLog,
+    GroupMoveActionResult,
     MoveAction,
-    MoveActionLog,
     MoveActionResult,
 )
 from core.systems.command_system import CommandSystem
@@ -118,14 +117,13 @@ class MoveSystem:
         ):
             InitiativeSystem.flip_initiative(gs)
 
-        # TODO: implement core-level logging here
         return result
 
     @staticmethod
-    def group_move(gs: GameState, action: GroupMoveAction) -> GroupMoveActionLog:
+    def group_move(gs: GameState, action: GroupMoveAction) -> GroupMoveActionResult:
         """Mutator method performs group move action with reactive fire."""
 
-        logs: list[MoveActionLog] = []
+        logs: list[MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
         for move in action.moves:
@@ -139,8 +137,7 @@ class MoveSystem:
         if interrupt_count >= len(action.moves):
             InitiativeSystem.flip_initiative(gs)
 
-        # TODO: implement core-level logging here
-        return GroupMoveActionLog(logs)
+        return GroupMoveActionResult(logs)
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
