@@ -19,17 +19,23 @@ class GroupMoveAction:
 
 
 @dataclass
+class MoveActionResult:
+    """Result of a move action whether is valid or interrupted."""
+
+    is_valid: bool
+    reactive_fire_outcome: FireControls.Outcomes | None = None
+
+
+@dataclass
 class MoveActionLog:
     """Log of a move action. Defines whether is valid or whether is interrupted."""
 
     action: MoveAction
-    is_valid: bool
-    reactive_fire_outcome: FireControls.Outcomes | None = None
+    result: MoveActionResult
 
 
 @dataclass
 class GroupMoveActionLog:
     """Log of group move action consisting of multiple move action logs."""
 
-    action: GroupMoveAction
     moveActionLogs: list[MoveActionLog]

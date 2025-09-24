@@ -4,6 +4,7 @@ from core.action_models import (
     GroupMoveActionLog,
     MoveAction,
     MoveActionLog,
+    MoveActionResult,
 )
 from core.systems.command_system import CommandSystem
 from core.components import (
@@ -17,7 +18,6 @@ from core.systems.fire_system import FireSystem
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
-from core.systems.logging_system import LoggingSystem
 from core.utils.vec2 import Vec2
 
 
@@ -63,11 +63,11 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def move_single_unit(gs: GameState, action: MoveAction) -> MoveActionLog:
+    def move_single_unit(gs: GameState, action: MoveAction) -> MoveActionResult:
         """Mutator method moves a unit with reactive fire. Doesn't flip initiative."""
 
         if not MoveSystem._validate_move(gs, action.unit_id, action.to):
-            return MoveActionLog(action, is_valid=False)
+            return MoveActionResult(is_valid=False)
 
         transform = gs.get_component(action.unit_id, Transform)
         unit = gs.get_component(action.unit_id, CombatUnit)
@@ -99,15 +99,16 @@ class MoveSystem:
                         MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                     case FireControls.Outcomes.KILL:
                         CommandSystem.kill_unit(gs, action.unit_id)
-                return MoveActionLog(
-                    action, is_valid=True, reactive_fire_outcome=outcome
+                return MoveActionResult(
+                    is_valid=True,
+                    reactive_fire_outcome=outcome,
                 )
 
         MoveSystem.update_terrain_inside(gs, action.unit_id, start)
-        return MoveActionLog(action, is_valid=True)
+        return MoveActionResult(is_valid=True)
 
     @staticmethod
-    def move(gs: GameState, action: MoveAction) -> MoveActionLog:
+    def move(gs: GameState, action: MoveAction) -> MoveActionResult:
         """Mutator method performs move action with reactive fire."""
 
         result = MoveSystem.move_single_unit(gs, action)
@@ -117,7 +118,7 @@ class MoveSystem:
         ):
             InitiativeSystem.flip_initiative(gs)
 
-        LoggingSystem.log(gs, result)
+        # TODO: implement core-level logging here
         return result
 
     @staticmethod
@@ -138,9 +139,8 @@ class MoveSystem:
         if interrupt_count >= len(action.moves):
             InitiativeSystem.flip_initiative(gs)
 
-        group_log = GroupMoveActionLog(action, logs)
-        LoggingSystem.log(gs, group_log)
-        return group_log
+        # TODO: implement core-level logging here
+        return GroupMoveActionLog(logs)
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
