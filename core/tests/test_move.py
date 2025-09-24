@@ -10,7 +10,7 @@ from core.components import (
 )
 from core.gamestate import GameState
 from core.systems.los_system import Transform
-from core.systems.move_system import MoveSystem
+from core.systems.move_system import LoggingSystem, MoveSystem
 from core.utils.vec2 import Vec2
 
 
@@ -70,19 +70,27 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(5, -15)))
+    result_log = MoveSystem.move(
+        fixture.gs, MoveAction(fixture.unit_id_1, Vec2(5, -15))
+    )
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
+    assert LoggingSystem.get_logs(fixture.gs) == [
+        result_log
+    ], "Expects move result to be logged"
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(6, 6)))
+    result_log = MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(6, 6)))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
+    assert LoggingSystem.get_logs(fixture.gs) == [
+        result_log
+    ], "Expects move result to be logged"
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
 
 
 def test_group_move(fixture: Fixture) -> None:
-    MoveSystem.group_move(
+    result_log = MoveSystem.group_move(
         fixture.gs,
         GroupMoveAction(
             moves=[
@@ -91,6 +99,10 @@ def test_group_move(fixture: Fixture) -> None:
             ]
         ),
     )
+    assert LoggingSystem.get_logs(fixture.gs) == [
+        result_log
+    ], "Expects move result to be logged"
+
     transform_1 = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform_1.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
 
