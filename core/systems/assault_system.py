@@ -1,6 +1,7 @@
 import random
 from core.action_models import (
     AssaultOutcomes,
+    AssaultSuccessChances,
     InvalidActionTypes,
     AssaultAction,
     AssaultActionResult,
@@ -60,9 +61,9 @@ class AssaultSystem:
                 attacker_roll = 0
 
         threshold = {
-            CombatUnit.Status.ACTIVE: AssaultControls.SuccessChances.ACTIVE,
-            CombatUnit.Status.PINNED: AssaultControls.SuccessChances.PINNED,
-            CombatUnit.Status.SUPPRESSED: AssaultControls.SuccessChances.SUPPRESSED,
+            CombatUnit.Status.ACTIVE: AssaultSuccessChances.ACTIVE,
+            CombatUnit.Status.PINNED: AssaultSuccessChances.PINNED,
+            CombatUnit.Status.SUPPRESSED: AssaultSuccessChances.SUPPRESSED,
         }[target_unit.status]
 
         if attacker_roll <= threshold:

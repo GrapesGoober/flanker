@@ -43,11 +43,28 @@ class FireOutcomes(str, Enum):
     KILL = "KILL"
 
 
+class FireOutcomesChances(float, Enum):
+    """Maps each fire outcome to its probability range"""
+
+    MISS = 0.3
+    PIN = 0.7
+    SUPPRESS = 0.95
+    KILL = 1.0
+
+
 class AssaultOutcomes(str, Enum):
     """Defines an assault outcome as fail or success."""
 
     FAIL = "FAIL"
     SUCCESS = "SUCCESS"
+
+
+class AssaultSuccessChances(float, Enum):
+    """Maps each target status to its assault success chance."""
+
+    ACTIVE = 0.5
+    PINNED = 0.7
+    SUPPRESSED = 0.95
 
 
 @dataclass

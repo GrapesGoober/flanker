@@ -4,6 +4,7 @@ from core.action_models import (
     FireAction,
     FireActionResult,
     FireOutcomes,
+    FireOutcomesChances,
     InvalidActionTypes,
 )
 from core.systems.command_system import CommandSystem
@@ -61,13 +62,13 @@ class FireSystem:
             outcome = random.uniform(0, 1)
 
         # Apply outcome
-        if outcome <= FireControls.OutcomesProbabilityRanges.MISS:
+        if outcome <= FireOutcomesChances.MISS:
             return FireOutcomes.MISS
-        elif outcome <= FireControls.OutcomesProbabilityRanges.PIN:
+        elif outcome <= FireOutcomesChances.PIN:
             return FireOutcomes.PIN
-        elif outcome <= FireControls.OutcomesProbabilityRanges.SUPPRESS:
+        elif outcome <= FireOutcomesChances.SUPPRESS:
             return FireOutcomes.SUPPRESS
-        elif outcome <= FireControls.OutcomesProbabilityRanges.KILL:
+        elif outcome <= FireOutcomesChances.KILL:
             return FireOutcomes.KILL
 
         raise Exception(f"Invalid value {outcome=}")

@@ -68,14 +68,6 @@ class FireControls:
     Defines the set of outcomes and override.
     """
 
-    class OutcomesProbabilityRanges(float, Enum):
-        """Each fire outcome and its probability range"""
-
-        MISS = 0.3
-        PIN = 0.7
-        SUPPRESS = 0.95
-        KILL = 1.0
-
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
 
@@ -86,13 +78,6 @@ class AssaultControls:
     Marks an entity as capable for assault action.
     Defines the RNG roll multiplier.
     """
-
-    class SuccessChances(float, Enum):
-        """Chance of successful assault per each target status."""
-
-        ACTIVE = 0.5
-        PINNED = 0.7
-        SUPPRESSED = 0.95
 
     override: AssaultOutcomes | None = None
 
