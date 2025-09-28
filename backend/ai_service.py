@@ -120,8 +120,8 @@ class AiService:
         best_logs: list[ActionLog] = []
         for action in AiService.get_actions(gs):
             new_gs = deepcopy(gs)
-            is_valid, log = AiService.perform_action(new_gs, action)
-            if not is_valid:
+            log = AiService.perform_action(new_gs, action)
+            if log == None:
                 continue
             num_states += 1
             AiService.play(new_gs)
@@ -139,22 +139,25 @@ class AiService:
     def perform_action(
         gs: GameState,
         body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> tuple[bool, ActionLog]:
+    ) -> ActionLog | None:
         if isinstance(body, MoveActionRequest):
             result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
-            log = MoveActionLog(
-                body=body, result=result, unit_state=CombatUnitService.get_units(gs)
-            )
+            if result != None:
+                return MoveActionLog(
+                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                )
         elif isinstance(body, FireActionRequest):
             result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
-            log = FireActionLog(
-                body=body, result=result, unit_state=CombatUnitService.get_units(gs)
-            )
+            if result != None:
+                return FireActionLog(
+                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                )
         else:
             result = AssaultSystem.assault(
                 gs, AssaultAction(body.unit_id, body.target_id)
             )
-            log = AssaultActionLog(
-                body=body, result=result, unit_state=CombatUnitService.get_units(gs)
-            )
-        return result.is_valid, log
+            if result != None:
+                return AssaultActionLog(
+                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                )
+        return None
