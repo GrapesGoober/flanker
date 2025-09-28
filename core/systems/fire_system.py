@@ -1,6 +1,6 @@
 import random
 from typing import Iterable
-from core.action_models import FireAction, FireActionResult
+from core.action_models import FireAction, FireActionResult, InvalidActionTypes
 from core.systems.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
@@ -68,16 +68,18 @@ class FireSystem:
         raise Exception(f"Invalid value {outcome=}")
 
     @staticmethod
-    def fire(gs: GameState, action: FireAction) -> FireActionResult | None:
+    def fire(
+        gs: GameState, action: FireAction
+    ) -> FireActionResult | InvalidActionTypes:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
         if not FireSystem.validate_fire_actors(
             gs, action.attacker_id, action.target_id
         ):
-            return None
+            return InvalidActionTypes.BAD_ENTITY
         if not InitiativeSystem.has_initiative(gs, action.attacker_id):
-            return None
+            return InvalidActionTypes.BAD_INITIATIVE
 
         # Apply outcome
         target_unit = gs.get_component(action.target_id, CombatUnit)

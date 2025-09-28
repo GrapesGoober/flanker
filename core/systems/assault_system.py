@@ -1,5 +1,11 @@
 import random
-from core.action_models import AssaultAction, AssaultActionResult, MoveAction
+from core.action_models import (
+    InvalidActionTypes,
+    AssaultAction,
+    AssaultActionResult,
+    MoveAction,
+    MoveActionResult,
+)
 from core.components import (
     AssaultControls,
     CombatUnit,
@@ -15,7 +21,9 @@ class AssaultSystem:
     """Static system class for handling assault action of combat units."""
 
     @staticmethod
-    def assault(gs: GameState, action: AssaultAction) -> AssaultActionResult | None:
+    def assault(
+        gs: GameState, action: AssaultAction
+    ) -> AssaultActionResult | InvalidActionTypes:
         """Mutator method performs assault action with reactive fire."""
 
         attacker_unit = gs.get_component(action.attacker_id, CombatUnit)
@@ -25,16 +33,16 @@ class AssaultSystem:
 
         # Check assault action valid
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
-            return None
+            return InvalidActionTypes.BAD_INITIATIVE
         if not InitiativeSystem.has_initiative(gs, action.attacker_id):
-            return None
+            return InvalidActionTypes.BAD_INITIATIVE
         if attacker_unit.faction == target_unit.faction:
-            return None
+            return InvalidActionTypes.BAD_ENTITY
 
         # Moves the unit to target position (allow reactive fire)
         result = MoveSystem.move(gs, MoveAction(action.attacker_id, target_position))
-        if result == None:
-            return None
+        if not isinstance(result, MoveActionResult):
+            return result
         if result.reactive_fire_outcome != None:
             return AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome

@@ -7,7 +7,7 @@ from backend.models import (
     FireActionRequest,
     MoveActionRequest,
 )
-from core.action_models import AssaultAction, FireAction, MoveAction
+from core.action_models import AssaultAction, FireAction, InvalidActionTypes, MoveAction
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.move_system import MoveSystem
@@ -21,8 +21,8 @@ class ActionService:
     def move(gs: GameState, body: MoveActionRequest) -> None:
         """Move a unit and trigger AI response for the opponent."""
         result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
-        if result == None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if isinstance(result, InvalidActionTypes):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
             MoveActionLog(
                 body=body,
@@ -35,8 +35,8 @@ class ActionService:
     def fire(gs: GameState, body: FireActionRequest) -> None:
         """Perform fire action and trigger AI response for the opponent."""
         result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
-        if result == None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if isinstance(result, InvalidActionTypes):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
             FireActionLog(
                 body=body,
@@ -49,8 +49,8 @@ class ActionService:
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform fire action and trigger AI response for the opponent."""
         result = AssaultSystem.assault(gs, AssaultAction(body.unit_id, body.target_id))
-        if result == None:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        if isinstance(result, InvalidActionTypes):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
             AssaultActionLog(
                 body=body,

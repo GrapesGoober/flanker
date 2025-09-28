@@ -1,7 +1,8 @@
-from typing import Iterable
+from typing import Iterable, Literal
 from core.action_models import (
     GroupMoveAction,
     GroupMoveActionResult,
+    InvalidActionTypes,
     MoveAction,
     MoveActionResult,
 )
@@ -24,7 +25,9 @@ class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
     @staticmethod
-    def _validate_move(gs: GameState, unit_id: int, to: Vec2) -> bool:
+    def _validate_move(
+        gs: GameState, unit_id: int, to: Vec2
+    ) -> Literal[True] | InvalidActionTypes:
         """Returns `True` if move action can be performed."""
 
         transform = gs.get_component(unit_id, Transform)
@@ -33,9 +36,9 @@ class MoveSystem:
 
         # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
-            return False
+            return InvalidActionTypes.BAD_INITIATIVE
         if not InitiativeSystem.has_initiative(gs, unit_id):
-            return False
+            return InvalidActionTypes.BAD_INITIATIVE
 
         # Check move action though correct terrain type
         terrain_type = 0
@@ -44,7 +47,7 @@ class MoveSystem:
                 terrain_type = TerrainFeature.Flag.WALKABLE
         for intersect in IntersectSystem.get(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
-                return False
+                return InvalidActionTypes.BAD_COORDS
 
         return True
 
@@ -62,11 +65,13 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def _singular_move(gs: GameState, action: MoveAction) -> MoveActionResult | None:
+    def _singular_move(
+        gs: GameState, action: MoveAction
+    ) -> MoveActionResult | InvalidActionTypes:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
-        if not MoveSystem._validate_move(gs, action.unit_id, action.to):
-            return None
+        if (reason := MoveSystem._validate_move(gs, action.unit_id, action.to)) != True:
+            return reason
 
         transform = gs.get_component(action.unit_id, Transform)
         unit = gs.get_component(action.unit_id, CombatUnit)
@@ -106,12 +111,14 @@ class MoveSystem:
         return MoveActionResult()
 
     @staticmethod
-    def move(gs: GameState, action: MoveAction) -> MoveActionResult | None:
+    def move(
+        gs: GameState, action: MoveAction
+    ) -> MoveActionResult | InvalidActionTypes:
         """Mutator method performs move action with reactive fire."""
 
         result = MoveSystem._singular_move(gs, action)
-        if result == None:
-            return None
+        if not isinstance(result, MoveActionResult):
+            return result
         if result.reactive_fire_outcome in (
             FireControls.Outcomes.SUPPRESS,
             FireControls.Outcomes.KILL,
@@ -123,7 +130,7 @@ class MoveSystem:
     @staticmethod
     def group_move(
         gs: GameState, action: GroupMoveAction
-    ) -> GroupMoveActionResult | None:
+    ) -> GroupMoveActionResult | InvalidActionTypes:
         """Mutator method performs group move action with reactive fire."""
 
         logs: list[MoveActionResult] = []
@@ -131,8 +138,8 @@ class MoveSystem:
         # TODO: group move validation
         for move in action.moves:
             result = MoveSystem._singular_move(gs, move)
-            if result == None:
-                return None
+            if not isinstance(result, MoveActionResult):
+                return result
             if result.reactive_fire_outcome in (
                 FireControls.Outcomes.SUPPRESS,
                 FireControls.Outcomes.KILL,

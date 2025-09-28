@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.action_models import FireAction
+from core.action_models import FireAction, InvalidActionTypes
 from core.components import (
     InitiativeState,
     FireControls,
@@ -77,7 +77,7 @@ def test_no_los(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result == None, "Fire action mustn't occur"
+    assert fire_result == InvalidActionTypes.BAD_ENTITY, "Fire action mustn't occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.ACTIVE
@@ -179,4 +179,6 @@ def test_status_supppressed(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result == None, "SUPPRESSED unit can't do fire action"
+    assert (
+        fire_result == InvalidActionTypes.BAD_ENTITY
+    ), "SUPPRESSED unit can't do fire action"

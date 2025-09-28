@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 from core.components import AssaultControls, FireControls
 from core.utils.vec2 import Vec2
+from dataclasses import dataclass
+from enum import Enum
 
 
 @dataclass
@@ -36,7 +37,7 @@ class FireAction:
 
 @dataclass
 class MoveActionResult:
-    """Result of a move action as validity and any reactive fire."""
+    """Result of a move action as any reactive fire."""
 
     reactive_fire_outcome: FireControls.Outcomes | None = None
 
@@ -57,7 +58,15 @@ class FireActionResult:
 
 @dataclass
 class AssaultActionResult:
-    """Result of an assault action as validity, outcome, and any reactive fire."""
+    """Result of an assault action as assault outcome, and any reactive fire."""
 
     outcome: AssaultControls.Outcomes | None = None
     reactive_fire_outcome: FireControls.Outcomes | None = None
+
+
+class InvalidActionTypes(str, Enum):
+    """Different types of invalid (not error) actions."""
+
+    BAD_INITIATIVE = "BAD_INITIATIVE"
+    BAD_ENTITY = "BAD_ENTITY"
+    BAD_COORDS = "BAD_COORDS"
