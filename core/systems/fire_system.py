@@ -68,16 +68,16 @@ class FireSystem:
         raise Exception(f"Invalid value {outcome=}")
 
     @staticmethod
-    def fire(gs: GameState, action: FireAction) -> FireActionResult:
+    def fire(gs: GameState, action: FireAction) -> FireActionResult | None:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
         if not FireSystem.validate_fire_actors(
             gs, action.attacker_id, action.target_id
         ):
-            return FireActionResult(is_valid=False)
+            return None
         if not InitiativeSystem.has_initiative(gs, action.attacker_id):
-            return FireActionResult(is_valid=False)
+            return None
 
         # Apply outcome
         target_unit = gs.get_component(action.target_id, CombatUnit)

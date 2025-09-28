@@ -15,7 +15,7 @@ class AssaultSystem:
     """Static system class for handling assault action of combat units."""
 
     @staticmethod
-    def assault(gs: GameState, action: AssaultAction) -> AssaultActionResult:
+    def assault(gs: GameState, action: AssaultAction) -> AssaultActionResult | None:
         """Mutator method performs assault action with reactive fire."""
 
         attacker_unit = gs.get_component(action.attacker_id, CombatUnit)
@@ -25,16 +25,16 @@ class AssaultSystem:
 
         # Check assault action valid
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
-            return AssaultActionResult(is_valid=False)
+            return None
         if not InitiativeSystem.has_initiative(gs, action.attacker_id):
-            return AssaultActionResult(is_valid=False)
+            return None
         if attacker_unit.faction == target_unit.faction:
-            return AssaultActionResult(is_valid=False)
+            return None
 
         # Moves the unit to target position (allow reactive fire)
         result = MoveSystem.move(gs, MoveAction(action.attacker_id, target_position))
-        if not result.is_valid:
-            return AssaultActionResult(is_valid=False)
+        if result == None:
+            return None
         if result.reactive_fire_outcome != None:
             return AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome

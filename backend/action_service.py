@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from backend.combat_unit_service import CombatUnitService
 from backend.log_models import AssaultActionLog, FireActionLog, MoveActionLog
 from backend.logging_service import LoggingService
@@ -17,9 +18,11 @@ class ActionService:
     """Provides static methods to process player actions."""
 
     @staticmethod
-    def move(gs: GameState, body: MoveActionRequest) -> bool:
+    def move(gs: GameState, body: MoveActionRequest) -> None:
         """Move a unit and trigger AI response for the opponent."""
         result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
+        if result == None:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
         LoggingService.log(
             MoveActionLog(
                 body=body,
@@ -27,12 +30,13 @@ class ActionService:
                 unit_state=CombatUnitService.get_units(gs),
             )
         )
-        return result.is_valid
 
     @staticmethod
-    def fire(gs: GameState, body: FireActionRequest) -> bool:
+    def fire(gs: GameState, body: FireActionRequest) -> None:
         """Perform fire action and trigger AI response for the opponent."""
         result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
+        if result == None:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
         LoggingService.log(
             FireActionLog(
                 body=body,
@@ -40,12 +44,13 @@ class ActionService:
                 unit_state=CombatUnitService.get_units(gs),
             )
         )
-        return result.is_valid
 
     @staticmethod
-    def assault(gs: GameState, body: AssaultActionRequest) -> bool:
+    def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform fire action and trigger AI response for the opponent."""
         result = AssaultSystem.assault(gs, AssaultAction(body.unit_id, body.target_id))
+        if result == None:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
         LoggingService.log(
             AssaultActionLog(
                 body=body,
@@ -53,4 +58,3 @@ class ActionService:
                 unit_state=CombatUnitService.get_units(gs),
             )
         )
-        return result.is_valid

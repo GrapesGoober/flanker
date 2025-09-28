@@ -62,11 +62,11 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def _singular_move(gs: GameState, action: MoveAction) -> MoveActionResult:
+    def _singular_move(gs: GameState, action: MoveAction) -> MoveActionResult | None:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
         if not MoveSystem._validate_move(gs, action.unit_id, action.to):
-            return MoveActionResult(is_valid=False)
+            return None
 
         transform = gs.get_component(action.unit_id, Transform)
         unit = gs.get_component(action.unit_id, CombatUnit)
@@ -99,18 +99,19 @@ class MoveSystem:
                     case FireControls.Outcomes.KILL:
                         CommandSystem.kill_unit(gs, action.unit_id)
                 return MoveActionResult(
-                    is_valid=True,
                     reactive_fire_outcome=outcome,
                 )
 
         MoveSystem.update_terrain_inside(gs, action.unit_id, start)
-        return MoveActionResult(is_valid=True)
+        return MoveActionResult()
 
     @staticmethod
-    def move(gs: GameState, action: MoveAction) -> MoveActionResult:
+    def move(gs: GameState, action: MoveAction) -> MoveActionResult | None:
         """Mutator method performs move action with reactive fire."""
 
         result = MoveSystem._singular_move(gs, action)
+        if result == None:
+            return None
         if result.reactive_fire_outcome in (
             FireControls.Outcomes.SUPPRESS,
             FireControls.Outcomes.KILL,
@@ -120,7 +121,9 @@ class MoveSystem:
         return result
 
     @staticmethod
-    def group_move(gs: GameState, action: GroupMoveAction) -> GroupMoveActionResult:
+    def group_move(
+        gs: GameState, action: GroupMoveAction
+    ) -> GroupMoveActionResult | None:
         """Mutator method performs group move action with reactive fire."""
 
         logs: list[MoveActionResult] = []
@@ -128,6 +131,8 @@ class MoveSystem:
         # TODO: group move validation
         for move in action.moves:
             result = MoveSystem._singular_move(gs, move)
+            if result == None:
+                return None
             if result.reactive_fire_outcome in (
                 FireControls.Outcomes.SUPPRESS,
                 FireControls.Outcomes.KILL,

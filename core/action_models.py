@@ -38,7 +38,6 @@ class FireAction:
 class MoveActionResult:
     """Result of a move action as validity and any reactive fire."""
 
-    is_valid: bool = True
     reactive_fire_outcome: FireControls.Outcomes | None = None
 
 
@@ -53,7 +52,6 @@ class GroupMoveActionResult:
 class FireActionResult:
     """Result of a fire action as validity and fire action outcome."""
 
-    is_valid: bool = True
     outcome: FireControls.Outcomes | None = None
 
 
@@ -61,6 +59,5 @@ class FireActionResult:
 class AssaultActionResult:
     """Result of an assault action as validity, outcome, and any reactive fire."""
 
-    is_valid: bool = True
     outcome: AssaultControls.Outcomes | None = None
     reactive_fire_outcome: FireControls.Outcomes | None = None

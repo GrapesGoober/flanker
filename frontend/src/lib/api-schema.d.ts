@@ -191,11 +191,6 @@ export interface components {
         };
         /** AssaultActionResult */
         AssaultActionResult: {
-            /**
-             * Is Valid
-             * @default true
-             */
-            is_valid: boolean;
             outcome?: components["schemas"]["core__components__AssaultControls__Outcomes"] | null;
             reactive_fire_outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
         };
@@ -230,11 +225,6 @@ export interface components {
         };
         /** FireActionResult */
         FireActionResult: {
-            /**
-             * Is Valid
-             * @default true
-             */
-            is_valid: boolean;
             outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
         };
         /** HTTPValidationError */
@@ -261,11 +251,6 @@ export interface components {
         };
         /** MoveActionResult */
         MoveActionResult: {
-            /**
-             * Is Valid
-             * @default true
-             */
-            is_valid: boolean;
             reactive_fire_outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
         };
         /**

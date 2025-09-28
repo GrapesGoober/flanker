@@ -149,18 +149,15 @@ export enum AssaultOutcome {
 }
 
 export type MoveActionResult = {
-	isValid: boolean;
 	fireOutcome: FireOutcome;
 };
 
 export type FireActionResult = {
-	isValid: boolean;
 	isHit: boolean;
 	outcome: FireOutcome;
 };
 
 export type AssaultActionResult = {
-	isValid: boolean;
 	result: AssaultOutcome;
 };
 
@@ -208,7 +205,6 @@ export async function GetLogs(): Promise<ActionLog[]> {
 						to: log.body.to
 					},
 					result: {
-						isValid: log.result.is_valid,
 						fireOutcome: log.result.reactive_fire_outcome
 					},
 					unitState
@@ -221,7 +217,6 @@ export async function GetLogs(): Promise<ActionLog[]> {
 						targetId: log.body.target_id
 					},
 					result: {
-						isValid: log.result.is_valid,
 						outcome: (log.result.outcome ?? null) as FireOutcome
 					},
 					unitState
@@ -234,7 +229,6 @@ export async function GetLogs(): Promise<ActionLog[]> {
 						targetId: log.body.target_id
 					},
 					result: {
-						isValid: log.result.is_valid,
 						result: log.result.outcome
 					},
 					unitState
