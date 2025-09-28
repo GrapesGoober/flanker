@@ -93,7 +93,7 @@ def test_no_fire(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == False, "Fire action must be MISSED"
+    assert fire_result.is_valid == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.ACTIVE
@@ -109,7 +109,7 @@ def test_pin_fire(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == True, "Fire action must occur"
+    assert fire_result.is_valid == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.PINNED
@@ -125,7 +125,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == True, "Fire action must occur"
+    assert fire_result.is_valid == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.SUPPRESSED
@@ -139,7 +139,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == True, "Fire action must occur"
+    assert fire_result.is_valid == True, "Fire action must occur"
     assert (
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Expects PIN outcome to not overwrite SUPPRESSED status."
@@ -154,7 +154,7 @@ def test_kill_fire(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == True, "Fire action must occur"
+    assert fire_result.is_valid == True, "Fire action must occur"
     target = fixture.gs.try_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
@@ -169,7 +169,7 @@ def test_status_pinned(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == True, "PINNED unit can do fire action"
+    assert fire_result.is_valid == True, "PINNED unit can do fire action"
 
 
 def test_status_supppressed(fixture: Fixture) -> None:
@@ -179,4 +179,4 @@ def test_status_supppressed(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result.is_hit == False, "SUPPRESSED unit can't do fire action"
+    assert fire_result.is_valid == False, "SUPPRESSED unit can't do fire action"

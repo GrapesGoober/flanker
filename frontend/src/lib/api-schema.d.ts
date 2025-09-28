@@ -196,12 +196,8 @@ export interface components {
              * @default true
              */
             is_valid: boolean;
-            /**
-             * Is Interrupted
-             * @default false
-             */
-            is_interrupted: boolean;
-            result?: components["schemas"]["core__components__AssaultControls__Outcomes"] | null;
+            outcome?: components["schemas"]["core__components__AssaultControls__Outcomes"] | null;
+            reactive_fire_outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
         };
         /**
          * CombatUnitsViewState
@@ -234,13 +230,11 @@ export interface components {
         };
         /** FireActionResult */
         FireActionResult: {
-            /** Is Valid */
-            is_valid: boolean;
             /**
-             * Is Hit
-             * @default false
+             * Is Valid
+             * @default true
              */
-            is_hit: boolean;
+            is_valid: boolean;
             outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
         };
         /** HTTPValidationError */
@@ -267,7 +261,10 @@ export interface components {
         };
         /** MoveActionResult */
         MoveActionResult: {
-            /** Is Valid */
+            /**
+             * Is Valid
+             * @default true
+             */
             is_valid: boolean;
             reactive_fire_outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
         };

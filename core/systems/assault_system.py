@@ -1,6 +1,5 @@
-from dataclasses import dataclass
 import random
-from core.action_models import AssaultAction, MoveAction
+from core.action_models import AssaultAction, AssaultActionResult, MoveAction
 from core.components import (
     AssaultControls,
     CombatUnit,
@@ -10,13 +9,6 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
 from core.systems.command_system import CommandSystem
-
-
-@dataclass
-class AssaultActionResult:
-    is_valid: bool = True
-    is_interrupted: bool = False
-    result: AssaultControls.Outcomes | None = None
 
 
 class AssaultSystem:
@@ -44,7 +36,9 @@ class AssaultSystem:
         if not result.is_valid:
             return AssaultActionResult(is_valid=False)
         if result.reactive_fire_outcome != None:
-            return AssaultActionResult(is_interrupted=True)
+            return AssaultActionResult(
+                reactive_fire_outcome=result.reactive_fire_outcome
+            )
 
         # Once at location, do dice roll; only one can survive
         match attacker_assault.override:
@@ -64,7 +58,7 @@ class AssaultSystem:
 
         if attacker_roll <= threshold:
             CommandSystem.kill_unit(gs, action.target_id)
-            return AssaultActionResult(result=AssaultControls.Outcomes.SUCCESS)
+            return AssaultActionResult(outcome=AssaultControls.Outcomes.SUCCESS)
         else:
             CommandSystem.kill_unit(gs, action.attacker_id)
-            return AssaultActionResult(result=AssaultControls.Outcomes.FAIL)
+            return AssaultActionResult(outcome=AssaultControls.Outcomes.FAIL)

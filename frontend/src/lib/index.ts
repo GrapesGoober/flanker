@@ -160,8 +160,7 @@ export type FireActionResult = {
 };
 
 export type AssaultActionResult = {
-	isValid: boolean; // default: true
-	isInterrupted: boolean;
+	isValid: boolean;
 	result: AssaultOutcome;
 };
 
@@ -199,6 +198,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 				| components['schemas']['FireActionLog']
 				| components['schemas']['AssaultActionLog']
 		) => {
+			console.log(log);
 			const unitState = ParseCombatUnitsViewState(log.unit_state);
 			if (log.type === 'move' && 'to' in log.body && 'reactive_fire_outcome' in log.result) {
 				return {
@@ -213,7 +213,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 					},
 					unitState
 				} as MoveActionLog;
-			} else if (log.type === 'fire' && 'target_id' in log.body && 'is_hit' in log.result) {
+			} else if (log.type === 'fire' && 'target_id' in log.body && 'outcome' in log.result) {
 				return {
 					type: 'fire',
 					body: {
@@ -222,12 +222,11 @@ export async function GetLogs(): Promise<ActionLog[]> {
 					},
 					result: {
 						isValid: log.result.is_valid,
-						isHit: log.result.is_hit,
 						outcome: (log.result.outcome ?? null) as FireOutcome
 					},
 					unitState
 				} as FireActionLog;
-			} else if (log.type === 'assault' && 'target_id' in log.body && 'result' in log.result) {
+			} else if (log.type === 'assault' && 'target_id' in log.body && 'outcome' in log.result) {
 				return {
 					type: 'assault',
 					body: {
@@ -236,8 +235,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 					},
 					result: {
 						isValid: log.result.is_valid,
-						isInterrupted: log.result.is_interrupted,
-						result: log.result.result
+						result: log.result.outcome
 					},
 					unitState
 				} as AssaultActionLog;

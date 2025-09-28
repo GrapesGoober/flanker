@@ -1,21 +1,11 @@
-from dataclasses import dataclass
 import random
 from typing import Iterable
-from core.action_models import FireAction
+from core.action_models import FireAction, FireActionResult
 from core.systems.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
-
-
-@dataclass
-class FireActionResult:
-    """Result of a fire action as valid or successfully hit."""
-
-    is_valid: bool
-    is_hit: bool = False
-    outcome: FireControls.Outcomes | None = None
 
 
 class FireSystem:
@@ -94,34 +84,18 @@ class FireSystem:
         match FireSystem.get_fire_outcome(gs, action.attacker_id):
             case FireControls.Outcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(
-                    is_valid=True,
-                    is_hit=False,
-                    outcome=FireControls.Outcomes.MISS,
-                )
+                return FireActionResult(outcome=FireControls.Outcomes.MISS)
             case FireControls.Outcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(
-                    is_valid=True,
-                    is_hit=True,
-                    outcome=FireControls.Outcomes.PIN,
-                )
+                return FireActionResult(outcome=FireControls.Outcomes.PIN)
             case FireControls.Outcomes.SUPPRESS:
                 target_unit.status = CombatUnit.Status.SUPPRESSED
-                return FireActionResult(
-                    is_valid=True,
-                    is_hit=True,
-                    outcome=FireControls.Outcomes.SUPPRESS,
-                )
+                return FireActionResult(outcome=FireControls.Outcomes.SUPPRESS)
             case FireControls.Outcomes.KILL:
                 CommandSystem.kill_unit(gs, action.target_id)
-                return FireActionResult(
-                    is_valid=True,
-                    is_hit=True,
-                    outcome=FireControls.Outcomes.KILL,
-                )
+                return FireActionResult(outcome=FireControls.Outcomes.KILL)
         return FireActionResult(is_valid=False)
 
     @staticmethod
