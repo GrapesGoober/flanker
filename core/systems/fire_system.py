@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import random
 from typing import Iterable
+from core.action_models import FireAction
 from core.systems.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
@@ -77,22 +78,20 @@ class FireSystem:
         raise Exception(f"Invalid value {outcome=}")
 
     @staticmethod
-    def fire(
-        gs: GameState,
-        attacker_id: int,
-        target_id: int,
-    ) -> FireActionResult:
+    def fire(gs: GameState, action: FireAction) -> FireActionResult:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
-        if not FireSystem.validate_fire_actors(gs, attacker_id, target_id):
+        if not FireSystem.validate_fire_actors(
+            gs, action.attacker_id, action.target_id
+        ):
             return FireActionResult(is_valid=False)
-        if not InitiativeSystem.has_initiative(gs, attacker_id):
+        if not InitiativeSystem.has_initiative(gs, action.attacker_id):
             return FireActionResult(is_valid=False)
 
         # Apply outcome
-        target_unit = gs.get_component(target_id, CombatUnit)
-        match FireSystem.get_fire_outcome(gs, attacker_id):
+        target_unit = gs.get_component(action.target_id, CombatUnit)
+        match FireSystem.get_fire_outcome(gs, action.attacker_id):
             case FireControls.Outcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
                 return FireActionResult(
@@ -117,7 +116,7 @@ class FireSystem:
                     outcome=FireControls.Outcomes.SUPPRESS,
                 )
             case FireControls.Outcomes.KILL:
-                CommandSystem.kill_unit(gs, target_id)
+                CommandSystem.kill_unit(gs, action.target_id)
                 return FireActionResult(
                     is_valid=True,
                     is_hit=True,

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
+from core.action_models import FireAction
 from core.components import (
     InitiativeState,
     FireControls,
@@ -74,8 +75,7 @@ def test_no_los(fixture: Fixture) -> None:
     # Fire action won't occur
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_valid == False, "Fire action mustn't occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
@@ -91,8 +91,7 @@ def test_no_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.MISS
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == False, "Fire action must be MISSED"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
@@ -108,8 +107,7 @@ def test_pin_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.PIN
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
@@ -125,8 +123,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == True, "Fire action must occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
@@ -140,8 +137,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.PIN
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == True, "Fire action must occur"
     assert (
@@ -156,8 +152,7 @@ def test_kill_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == True, "Fire action must occur"
     target = fixture.gs.try_component(fixture.target_id, CombatUnit)
@@ -172,8 +167,7 @@ def test_status_pinned(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == True, "PINNED unit can do fire action"
 
@@ -183,7 +177,6 @@ def test_status_supppressed(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireControls.Outcomes.KILL
     fire_result = FireSystem.fire(
         fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+        FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert fire_result.is_hit == False, "SUPPRESSED unit can't do fire action"

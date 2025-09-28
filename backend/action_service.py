@@ -6,7 +6,7 @@ from backend.models import (
     FireActionRequest,
     MoveActionRequest,
 )
-from core.action_models import MoveAction
+from core.action_models import AssaultAction, FireAction, MoveAction
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.move_system import MoveSystem
@@ -32,7 +32,7 @@ class ActionService:
     @staticmethod
     def fire(gs: GameState, body: FireActionRequest) -> bool:
         """Perform fire action and trigger AI response for the opponent."""
-        result = FireSystem.fire(gs, body.unit_id, body.target_id)
+        result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
         LoggingService.log(
             FireActionLog(
                 body=body,
@@ -45,7 +45,7 @@ class ActionService:
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> bool:
         """Perform fire action and trigger AI response for the opponent."""
-        result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
+        result = AssaultSystem.assault(gs, AssaultAction(body.unit_id, body.target_id))
         LoggingService.log(
             AssaultActionLog(
                 body=body,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import random
-from core.action_models import MoveAction
+from core.action_models import AssaultAction, MoveAction
 from core.components import (
     AssaultControls,
     CombatUnit,
@@ -24,28 +24,25 @@ class AssaultSystem:
     """Static system class for handling assault action of combat units."""
 
     @staticmethod
-    def assault(
-        gs: GameState,
-        attacker_id: int,
-        target_id: int,
-    ) -> AssaultActionResult:
-        """Mutator method performs assault action to target with reactive fire."""
-        attacker_unit = gs.get_component(attacker_id, CombatUnit)
-        target_unit = gs.get_component(target_id, CombatUnit)
-        attacker_assault = gs.get_component(attacker_id, AssaultControls)
-        target_transform = gs.get_component(target_id, Transform)
+    def assault(gs: GameState, action: AssaultAction) -> AssaultActionResult:
+        """Mutator method performs assault action with reactive fire."""
+
+        attacker_unit = gs.get_component(action.attacker_id, CombatUnit)
+        target_unit = gs.get_component(action.target_id, CombatUnit)
+        attacker_assault = gs.get_component(action.attacker_id, AssaultControls)
+        target_transform = gs.get_component(action.target_id, Transform)
 
         # Check assault action valid
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
             return AssaultActionResult(is_valid=False)
-        if not InitiativeSystem.has_initiative(gs, attacker_id):
+        if not InitiativeSystem.has_initiative(gs, action.attacker_id):
             return AssaultActionResult(is_valid=False)
         if attacker_unit.faction == target_unit.faction:
             return AssaultActionResult(is_valid=False)
 
         # Moves the unit to target position (allow reactive fire)
         result = MoveSystem.move_single_unit(
-            gs, MoveAction(attacker_id, target_transform.position)
+            gs, MoveAction(action.attacker_id, target_transform.position)
         )
         if not result.is_valid:
             return AssaultActionResult(is_valid=False)
@@ -74,8 +71,8 @@ class AssaultSystem:
         }[target_unit.status]
 
         if attacker_roll <= threshold:
-            CommandSystem.kill_unit(gs, target_id)
+            CommandSystem.kill_unit(gs, action.target_id)
             return AssaultActionResult(result=AssaultControls.Outcomes.SUCCESS)
         else:
-            CommandSystem.kill_unit(gs, attacker_id)
+            CommandSystem.kill_unit(gs, action.attacker_id)
             return AssaultActionResult(result=AssaultControls.Outcomes.FAIL)
