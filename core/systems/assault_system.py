@@ -4,7 +4,6 @@ from core.action_models import AssaultAction, MoveAction
 from core.components import (
     AssaultControls,
     CombatUnit,
-    FireControls,
     Transform,
 )
 from core.gamestate import GameState
@@ -30,7 +29,7 @@ class AssaultSystem:
         attacker_unit = gs.get_component(action.attacker_id, CombatUnit)
         target_unit = gs.get_component(action.target_id, CombatUnit)
         attacker_assault = gs.get_component(action.attacker_id, AssaultControls)
-        target_transform = gs.get_component(action.target_id, Transform)
+        target_position = gs.get_component(action.target_id, Transform).position
 
         # Check assault action valid
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
@@ -41,17 +40,10 @@ class AssaultSystem:
             return AssaultActionResult(is_valid=False)
 
         # Moves the unit to target position (allow reactive fire)
-        result = MoveSystem.move_single_unit(
-            gs, MoveAction(action.attacker_id, target_transform.position)
-        )
+        result = MoveSystem.move(gs, MoveAction(action.attacker_id, target_position))
         if not result.is_valid:
             return AssaultActionResult(is_valid=False)
-        if result.reactive_fire_outcome:
-            if result.reactive_fire_outcome in (
-                FireControls.Outcomes.SUPPRESS,
-                FireControls.Outcomes.KILL,
-            ):
-                InitiativeSystem.flip_initiative(gs)
+        if result.reactive_fire_outcome != None:
             return AssaultActionResult(is_interrupted=True)
 
         # Once at location, do dice roll; only one can survive
