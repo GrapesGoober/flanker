@@ -191,9 +191,15 @@ export interface components {
         };
         /** AssaultActionResult */
         AssaultActionResult: {
-            outcome?: components["schemas"]["core__components__AssaultControls__Outcomes"] | null;
-            reactive_fire_outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
+            outcome?: components["schemas"]["AssaultOutcomes"] | null;
+            reactive_fire_outcome?: components["schemas"]["FireOutcomes"] | null;
         };
+        /**
+         * AssaultOutcomes
+         * @description Defines an assault outcome as fail or success.
+         * @enum {string}
+         */
+        AssaultOutcomes: "FAIL" | "SUCCESS";
         /**
          * CombatUnitsViewState
          * @description View state for all combat units in the game.
@@ -225,8 +231,14 @@ export interface components {
         };
         /** FireActionResult */
         FireActionResult: {
-            outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
+            outcome?: components["schemas"]["FireOutcomes"] | null;
         };
+        /**
+         * FireOutcomes
+         * @description Defines all fire outcomes.
+         * @enum {string}
+         */
+        FireOutcomes: "MISS" | "PIN" | "SUPPRESS" | "KILL";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -251,7 +263,7 @@ export interface components {
         };
         /** MoveActionResult */
         MoveActionResult: {
-            reactive_fire_outcome?: components["schemas"]["core__components__FireControls__Outcomes"] | null;
+            reactive_fire_outcome?: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * ObjectiveState
@@ -313,18 +325,6 @@ export interface components {
             /** Y */
             y: number;
         };
-        /**
-         * Outcomes
-         * @description Each assault outcome result
-         * @enum {string}
-         */
-        core__components__AssaultControls__Outcomes: "FAIL" | "SUCCESS";
-        /**
-         * Outcomes
-         * @description Each fire outcome and its probability range
-         * @enum {number}
-         */
-        core__components__FireControls__Outcomes: 0.3 | 0.7 | 0.95 | 1;
     };
     responses: never;
     parameters: never;

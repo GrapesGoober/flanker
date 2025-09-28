@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.action_models import AssaultAction
+from core.action_models import AssaultAction, AssaultOutcomes
 from core.components import (
     AssaultControls,
     InitiativeState,
@@ -51,7 +51,7 @@ def fixture() -> Fixture:
 
 
 def test_assault_fail(fixture: Fixture) -> None:
-    fixture.assault_controls.override = AssaultControls.Outcomes.FAIL
+    fixture.assault_controls.override = AssaultOutcomes.FAIL
     AssaultSystem.assault(
         fixture.gs, AssaultAction(fixture.attacker_id, fixture.target_id)
     )
@@ -60,7 +60,7 @@ def test_assault_fail(fixture: Fixture) -> None:
 
 
 def test_assault_success(fixture: Fixture) -> None:
-    fixture.assault_controls.override = AssaultControls.Outcomes.SUCCESS
+    fixture.assault_controls.override = AssaultOutcomes.SUCCESS
     AssaultSystem.assault(
         fixture.gs, AssaultAction(fixture.attacker_id, fixture.target_id)
     )

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.action_models import GroupMoveAction, MoveAction
+from core.action_models import FireOutcomes, GroupMoveAction, MoveAction
 from core.components import (
     InitiativeState,
     FireControls,
@@ -96,7 +96,7 @@ def test_group_move(fixture: Fixture) -> None:
 
 
 def test_interrupt_success(fixture: Fixture) -> None:
-    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
+    fixture.fire_controls.override = FireOutcomes.SUPPRESS
     MoveSystem.group_move(
         fixture.gs,
         GroupMoveAction(
@@ -120,7 +120,7 @@ def test_interrupt_success(fixture: Fixture) -> None:
 
 
 def test_interrupt_fail(fixture: Fixture) -> None:
-    fixture.fire_controls.override = FireControls.Outcomes.SUPPRESS
+    fixture.fire_controls.override = FireOutcomes.SUPPRESS
     MoveSystem.group_move(
         fixture.gs,
         GroupMoveAction(

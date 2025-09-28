@@ -10,6 +10,7 @@ from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
     FireControls,
+    FireOutcomes,
     TerrainFeature,
     MoveControls,
     Transform,
@@ -91,17 +92,17 @@ class MoveSystem:
                 # Interrupt valid, perform the reactive fire
                 outcome = FireSystem.get_fire_outcome(gs, spotter_id)
                 match outcome:
-                    case FireControls.Outcomes.MISS:
+                    case FireOutcomes.MISS:
                         fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
                         continue
-                    case FireControls.Outcomes.PIN:
+                    case FireOutcomes.PIN:
                         unit.status = CombatUnit.Status.PINNED
                         MoveSystem.update_terrain_inside(gs, action.unit_id, start)
-                    case FireControls.Outcomes.SUPPRESS:
+                    case FireOutcomes.SUPPRESS:
                         unit.status = CombatUnit.Status.SUPPRESSED
                         MoveSystem.update_terrain_inside(gs, action.unit_id, start)
-                    case FireControls.Outcomes.KILL:
+                    case FireOutcomes.KILL:
                         CommandSystem.kill_unit(gs, action.unit_id)
                 return MoveActionResult(
                     reactive_fire_outcome=outcome,
@@ -120,8 +121,8 @@ class MoveSystem:
         if not isinstance(result, MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
-            FireControls.Outcomes.SUPPRESS,
-            FireControls.Outcomes.KILL,
+            FireOutcomes.SUPPRESS,
+            FireOutcomes.KILL,
         ):
             InitiativeSystem.flip_initiative(gs)
 
@@ -141,8 +142,8 @@ class MoveSystem:
             if not isinstance(result, MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
-                FireControls.Outcomes.SUPPRESS,
-                FireControls.Outcomes.KILL,
+                FireOutcomes.SUPPRESS,
+                FireOutcomes.KILL,
             ):
                 interrupt_count += 1
 

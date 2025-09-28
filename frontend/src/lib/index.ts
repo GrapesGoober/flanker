@@ -137,10 +137,10 @@ export type AssaultActionRequest = {
 };
 
 export enum FireOutcome {
-	MISS = 0.3,
-	PIN = 0.7,
-	SUPPRESS = 0.95,
-	KILL = 1.0
+	MISS = 'MISS',
+	PIN = 'PIN',
+	SUPPRESS = 'SUPPRESS',
+	KILL = 'KILL'
 }
 
 export enum AssaultOutcome {

@@ -1,4 +1,3 @@
-from core.components import AssaultControls, FireControls
 from core.utils.vec2 import Vec2
 from dataclasses import dataclass
 from enum import Enum
@@ -35,11 +34,27 @@ class FireAction:
     target_id: int
 
 
+class FireOutcomes(str, Enum):
+    """Defines all fire outcomes."""
+
+    MISS = "MISS"
+    PIN = "PIN"
+    SUPPRESS = "SUPPRESS"
+    KILL = "KILL"
+
+
+class AssaultOutcomes(str, Enum):
+    """Defines an assault outcome as fail or success."""
+
+    FAIL = "FAIL"
+    SUCCESS = "SUCCESS"
+
+
 @dataclass
 class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
-    reactive_fire_outcome: FireControls.Outcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
 
 
 @dataclass
@@ -51,17 +66,17 @@ class GroupMoveActionResult:
 
 @dataclass
 class FireActionResult:
-    """Result of a fire action as validity and fire action outcome."""
+    """Result of a fire action as outcome."""
 
-    outcome: FireControls.Outcomes | None = None
+    outcome: FireOutcomes | None = None
 
 
 @dataclass
 class AssaultActionResult:
     """Result of an assault action as assault outcome, and any reactive fire."""
 
-    outcome: AssaultControls.Outcomes | None = None
-    reactive_fire_outcome: FireControls.Outcomes | None = None
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class InvalidActionTypes(str, Enum):

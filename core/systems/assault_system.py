@@ -1,5 +1,6 @@
 import random
 from core.action_models import (
+    AssaultOutcomes,
     InvalidActionTypes,
     AssaultAction,
     AssaultActionResult,
@@ -53,9 +54,9 @@ class AssaultSystem:
             case None:
                 attacker_roll = random.uniform(0, 1)
             # Allow for override to bypass RNG by fixing roll beyond threshold
-            case AssaultControls.Outcomes.FAIL:
+            case AssaultOutcomes.FAIL:
                 attacker_roll = 1
-            case AssaultControls.Outcomes.SUCCESS:
+            case AssaultOutcomes.SUCCESS:
                 attacker_roll = 0
 
         threshold = {
@@ -66,7 +67,7 @@ class AssaultSystem:
 
         if attacker_roll <= threshold:
             CommandSystem.kill_unit(gs, action.target_id)
-            return AssaultActionResult(outcome=AssaultControls.Outcomes.SUCCESS)
+            return AssaultActionResult(outcome=AssaultOutcomes.SUCCESS)
         else:
             CommandSystem.kill_unit(gs, action.attacker_id)
-            return AssaultActionResult(outcome=AssaultControls.Outcomes.FAIL)
+            return AssaultActionResult(outcome=AssaultOutcomes.FAIL)
