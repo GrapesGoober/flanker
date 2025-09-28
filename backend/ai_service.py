@@ -3,7 +3,7 @@ from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
 from backend.log_models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
 from backend.models import FireActionRequest, MoveActionRequest
-from core.action_models import MoveAction
+from core.action_models import AssaultAction, FireAction, MoveAction
 from core.components import CombatUnit, InitiativeState, Transform
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
@@ -146,12 +146,14 @@ class AiService:
                 body=body, result=result, unit_state=CombatUnitService.get_units(gs)
             )
         elif isinstance(body, FireActionRequest):
-            result = FireSystem.fire(gs, body.unit_id, body.target_id)
+            result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
             log = FireActionLog(
                 body=body, result=result, unit_state=CombatUnitService.get_units(gs)
             )
         else:
-            result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
+            result = AssaultSystem.assault(
+                gs, AssaultAction(body.unit_id, body.target_id)
+            )
             log = AssaultActionLog(
                 body=body, result=result, unit_state=CombatUnitService.get_units(gs)
             )
