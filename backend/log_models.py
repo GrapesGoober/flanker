@@ -6,8 +6,11 @@ from backend.models import (
     MoveActionRequest,
     CombatUnitsViewState,
 )
-from core.systems.fire_system import FireActionResult
-from core.action_models import MoveActionResult, AssaultActionResult
+from core.action_models import (
+    AssaultActionResult,
+    FireActionResult,
+    MoveActionResult,
+)
 
 
 class ActionType(str, Enum):
