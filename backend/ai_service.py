@@ -121,7 +121,7 @@ class AiService:
         for action in AiService.get_actions(gs):
             new_gs = deepcopy(gs)
             log = AiService.perform_action(new_gs, action)
-            if log == None:
+            if isinstance(log, InvalidActionTypes):
                 continue
             num_states += 1
             AiService.play(new_gs)
@@ -139,7 +139,7 @@ class AiService:
     def perform_action(
         gs: GameState,
         body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> ActionLog | None:
+    ) -> ActionLog | InvalidActionTypes:
         if isinstance(body, MoveActionRequest):
             result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
             if not isinstance(result, InvalidActionTypes):
@@ -160,4 +160,4 @@ class AiService:
                 return AssaultActionLog(
                     body=body, result=result, unit_state=CombatUnitService.get_units(gs)
                 )
-        return None
+        return result
