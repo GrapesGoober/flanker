@@ -8,10 +8,10 @@ from core.components import (
     MoveControls,
     TerrainFeature,
     CombatUnit,
+    Transform,
 )
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
-from core.systems.los_system import Transform
 from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
