@@ -4,7 +4,6 @@ from core.action_models import (
     FireAction,
     FireActionResult,
     FireOutcomes,
-    FireOutcomesChances,
     InvalidActionTypes,
 )
 from core.systems.command_system import CommandSystem
@@ -12,6 +11,13 @@ from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
+
+_FIRE_OUTCOME_PROBABILITIES = {
+    FireOutcomes.MISS: 0.3,
+    FireOutcomes.PIN: 0.4,
+    FireOutcomes.SUPPRESS: 0.25,
+    FireOutcomes.KILL: 0.05,
+}
 
 
 class FireSystem:
@@ -22,8 +28,8 @@ class FireSystem:
         gs: GameState,
         attacker_id: int,
         target_id: int,
-    ) -> bool:
-        """Validates that attacker can fire at target. Doesn't Check initiative."""
+    ) -> InvalidActionTypes | None:
+        """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         target_unit = gs.get_component(target_id, CombatUnit)
@@ -34,17 +40,15 @@ class FireSystem:
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
-            return False
+            return InvalidActionTypes.INACTIVE_UNIT
 
         # Check that the target faction is not the same as attacker
         if attacker_unit.faction == target_unit.faction:
-            return False
+            return InvalidActionTypes.BAD_ENTITY
 
         # Check if target is in line of sight
         if not LosSystem.check(gs, attacker_id, target_transform.position):
-            return False
-
-        return True
+            return InvalidActionTypes.BAD_COORDS
 
     @staticmethod
     def get_fire_outcome(
@@ -58,20 +62,11 @@ class FireSystem:
         # Determine fire outcome, using overriden value if found
         if fire_controls.override:
             return fire_controls.override
-        else:
-            outcome = random.uniform(0, 1)
 
-        # Apply outcome
-        if outcome <= FireOutcomesChances.MISS:
-            return FireOutcomes.MISS
-        elif outcome <= FireOutcomesChances.PIN:
-            return FireOutcomes.PIN
-        elif outcome <= FireOutcomesChances.SUPPRESS:
-            return FireOutcomes.SUPPRESS
-        elif outcome <= FireOutcomesChances.KILL:
-            return FireOutcomes.KILL
-
-        raise Exception(f"Invalid value {outcome=}")
+        # Roll outcome
+        outcomes = list(_FIRE_OUTCOME_PROBABILITIES.keys())
+        weights = list(_FIRE_OUTCOME_PROBABILITIES.values())
+        return random.choices(outcomes, weights=weights, k=1)[0]
 
     @staticmethod
     def fire(
@@ -80,12 +75,12 @@ class FireSystem:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
-        if not FireSystem.validate_fire_actors(
+        if reason := FireSystem.validate_fire_actors(
             gs, action.attacker_id, action.target_id
         ):
-            return InvalidActionTypes.BAD_ENTITY
+            return reason
         if not InitiativeSystem.has_initiative(gs, action.attacker_id):
-            return InvalidActionTypes.BAD_INITIATIVE
+            return InvalidActionTypes.NO_INITIATIVE
 
         # Apply outcome
         target_unit = gs.get_component(action.target_id, CombatUnit)

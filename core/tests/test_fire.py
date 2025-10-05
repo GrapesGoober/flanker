@@ -77,7 +77,7 @@ def test_no_los(fixture: Fixture) -> None:
         fixture.gs,
         FireAction(fixture.attacker_id, fixture.target_id),
     )
-    assert fire_result == InvalidActionTypes.BAD_ENTITY, "Fire action mustn't occur"
+    assert fire_result == InvalidActionTypes.BAD_COORDS, "Fire action mustn't occur"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.ACTIVE
@@ -180,5 +180,5 @@ def test_status_supppressed(fixture: Fixture) -> None:
         FireAction(fixture.attacker_id, fixture.target_id),
     )
     assert (
-        fire_result == InvalidActionTypes.BAD_ENTITY
+        fire_result == InvalidActionTypes.INACTIVE_UNIT
     ), "SUPPRESSED unit can't do fire action"

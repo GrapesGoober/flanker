@@ -37,9 +37,9 @@ class MoveSystem:
 
         # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
-            return InvalidActionTypes.BAD_INITIATIVE
+            return InvalidActionTypes.INACTIVE_UNIT
         if not InitiativeSystem.has_initiative(gs, unit_id):
-            return InvalidActionTypes.BAD_INITIATIVE
+            return InvalidActionTypes.NO_INITIATIVE
 
         # Check move action though correct terrain type
         terrain_type = 0
@@ -86,7 +86,7 @@ class MoveSystem:
             # Check for interrupt
             for spotter_id in spotter_candidates:
                 # Validate reactive fire actors
-                if not FireSystem.validate_fire_actors(gs, spotter_id, action.unit_id):
+                if FireSystem.validate_fire_actors(gs, spotter_id, action.unit_id):
                     continue
 
                 # Interrupt valid, perform the reactive fire
