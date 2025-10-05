@@ -10,20 +10,17 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
 from dataclasses import dataclass
-from enum import Enum
 
-
-class FireOutcomesChances(float, Enum):
-    """Maps each fire outcome to its probability range"""
-
-    MISS = 0.3
-    PIN = 0.7
-    SUPPRESS = 0.95
-    KILL = 1.0
+_FIRE_OUTCOME_PROBABILITIES = {
+    FireOutcomes.MISS: 0.3,
+    FireOutcomes.PIN: 0.4,
+    FireOutcomes.SUPPRESS: 0.25,
+    FireOutcomes.KILL: 0.05,
+}
 
 
 @dataclass
-class FireActionResult:
+class _FireActionResult:
     """Result of a fire action as outcome."""
 
     outcome: FireOutcomes | None = None
@@ -73,51 +70,42 @@ class FireSystem:
         # Determine fire outcome, using overriden value if found
         if fire_controls.override:
             return fire_controls.override
-        else:
-            outcome = random.uniform(0, 1)
 
-        # Apply outcome
-        if outcome <= FireOutcomesChances.MISS:
-            return FireOutcomes.MISS
-        elif outcome <= FireOutcomesChances.PIN:
-            return FireOutcomes.PIN
-        elif outcome <= FireOutcomesChances.SUPPRESS:
-            return FireOutcomes.SUPPRESS
-        elif outcome <= FireOutcomesChances.KILL:
-            return FireOutcomes.KILL
-
-        raise Exception(f"Invalid value {outcome=}")
+        # Roll an outcome
+        outcomes = list(_FIRE_OUTCOME_PROBABILITIES.keys())
+        weights = list(_FIRE_OUTCOME_PROBABILITIES.values())
+        return random.choices(outcomes, weights=weights, k=1)[0]
 
     @staticmethod
     def fire(
         gs: GameState, attacker_id: int, target_id: int
-    ) -> FireActionResult | InvalidActionTypes:
+    ) -> _FireActionResult | InvalidActionTypes:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
         if not FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return InvalidActionTypes.BAD_ENTITY
         if not InitiativeSystem.has_initiative(gs, attacker_id):
-            return InvalidActionTypes.BAD_INITIATIVE
+            return InvalidActionTypes.NO_INITIATIVE
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
         match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(outcome=FireOutcomes.MISS)
+                return _FireActionResult(outcome=FireOutcomes.MISS)
             case FireOutcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(outcome=FireOutcomes.PIN)
+                return _FireActionResult(outcome=FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
                 target_unit.status = CombatUnit.Status.SUPPRESSED
-                return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
             case FireOutcomes.KILL:
                 CommandSystem.kill_unit(gs, target_id)
-                return FireActionResult(outcome=FireOutcomes.KILL)
-        return FireActionResult(is_valid=False)
+                return _FireActionResult(outcome=FireOutcomes.KILL)
+        return _FireActionResult(is_valid=False)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:

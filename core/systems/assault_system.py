@@ -13,20 +13,17 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
 from core.systems.command_system import CommandSystem
-from enum import Enum
 from dataclasses import dataclass
 
-
-class AssaultSuccessChances(float, Enum):
-    """Maps each target status to its assault success chance."""
-
-    ACTIVE = 0.5
-    PINNED = 0.7
-    SUPPRESSED = 0.95
+_ASSAULT_SUCCESS_PROBABILITIES = {
+    CombatUnit.Status.ACTIVE: 0.5,
+    CombatUnit.Status.PINNED: 0.7,
+    CombatUnit.Status.SUPPRESSED: 0.95,
+}
 
 
 @dataclass
-class AssaultActionResult:
+class _AssaultActionResult:
     """Result of an assault action as assault outcome, and any reactive fire."""
 
     outcome: AssaultOutcomes | None = None
@@ -39,7 +36,7 @@ class AssaultSystem:
     @staticmethod
     def assault(
         gs: GameState, attacker_id: int, target_id: int
-    ) -> AssaultActionResult | InvalidActionTypes:
+    ) -> _AssaultActionResult | InvalidActionTypes:
         """Mutator method performs assault action with reactive fire."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
@@ -49,9 +46,9 @@ class AssaultSystem:
 
         # Check assault action valid
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
-            return InvalidActionTypes.BAD_INITIATIVE
+            return InvalidActionTypes.NO_INITIATIVE
         if not InitiativeSystem.has_initiative(gs, attacker_id):
-            return InvalidActionTypes.BAD_INITIATIVE
+            return InvalidActionTypes.NO_INITIATIVE
         if attacker_unit.faction == target_unit.faction:
             return InvalidActionTypes.BAD_ENTITY
 
@@ -60,7 +57,7 @@ class AssaultSystem:
         if isinstance(result, InvalidActionTypes):
             return result
         if result.reactive_fire_outcome != None:
-            return AssaultActionResult(
+            return _AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome
             )
 
@@ -74,15 +71,11 @@ class AssaultSystem:
             case AssaultOutcomes.SUCCESS:
                 attacker_roll = 0
 
-        threshold = {
-            CombatUnit.Status.ACTIVE: AssaultSuccessChances.ACTIVE,
-            CombatUnit.Status.PINNED: AssaultSuccessChances.PINNED,
-            CombatUnit.Status.SUPPRESSED: AssaultSuccessChances.SUPPRESSED,
-        }[target_unit.status]
+        threshold = _ASSAULT_SUCCESS_PROBABILITIES[target_unit.status]
 
         if attacker_roll <= threshold:
             CommandSystem.kill_unit(gs, target_id)
-            return AssaultActionResult(outcome=AssaultOutcomes.SUCCESS)
+            return _AssaultActionResult(outcome=AssaultOutcomes.SUCCESS)
         else:
             CommandSystem.kill_unit(gs, attacker_id)
-            return AssaultActionResult(outcome=AssaultOutcomes.FAIL)
+            return _AssaultActionResult(outcome=AssaultOutcomes.FAIL)
