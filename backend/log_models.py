@@ -6,9 +6,11 @@ from backend.models import (
     MoveActionRequest,
     CombatUnitsViewState,
 )
-from core.systems.move_system import _MoveActionResult
-from core.systems.fire_system import _FireActionResult
-from core.systems.assault_system import _AssaultActionResult
+
+# TODO: backend must define result models separately
+from core.systems.move_system import MoveActionResult
+from core.systems.fire_system import FireActionResult
+from core.systems.assault_system import AssaultActionResult
 
 
 class ActionType(str, Enum):
@@ -20,21 +22,21 @@ class ActionType(str, Enum):
 class MoveActionLog(BaseModel):
     type: ActionType = ActionType.MOVE
     body: MoveActionRequest
-    result: _MoveActionResult
+    result: MoveActionResult
     unit_state: CombatUnitsViewState
 
 
 class FireActionLog(BaseModel):
     type: ActionType = ActionType.FIRE
     body: FireActionRequest
-    result: _FireActionResult
+    result: FireActionResult
     unit_state: CombatUnitsViewState
 
 
 class AssaultActionLog(BaseModel):
     type: ActionType = ActionType.ASSAULT
     body: AssaultActionRequest
-    result: _AssaultActionResult
+    result: AssaultActionResult
     unit_state: CombatUnitsViewState
 
 

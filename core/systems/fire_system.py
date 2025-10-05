@@ -17,7 +17,7 @@ _FIRE_OUTCOME_PROBABILITIES = {
 
 
 @dataclass
-class _FireActionResult:
+class FireActionResult:
     """Result of a fire action as outcome."""
 
     outcome: FireControls.Outcomes | None = None
@@ -76,7 +76,7 @@ class FireSystem:
     @staticmethod
     def fire(
         gs: GameState, attacker_id: int, target_id: int
-    ) -> _FireActionResult | InvalidActionTypes:
+    ) -> FireActionResult | InvalidActionTypes:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
@@ -90,19 +90,19 @@ class FireSystem:
         match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireControls.Outcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return _FireActionResult(outcome=FireControls.Outcomes.MISS)
+                return FireActionResult(outcome=FireControls.Outcomes.MISS)
             case FireControls.Outcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return _FireActionResult(outcome=FireControls.Outcomes.PIN)
+                return FireActionResult(outcome=FireControls.Outcomes.PIN)
             case FireControls.Outcomes.SUPPRESS:
                 target_unit.status = CombatUnit.Status.SUPPRESSED
-                return _FireActionResult(outcome=FireControls.Outcomes.SUPPRESS)
+                return FireActionResult(outcome=FireControls.Outcomes.SUPPRESS)
             case FireControls.Outcomes.KILL:
                 CommandSystem.kill_unit(gs, target_id)
-                return _FireActionResult(outcome=FireControls.Outcomes.KILL)
-        return _FireActionResult(is_valid=False)
+                return FireActionResult(outcome=FireControls.Outcomes.KILL)
+        return FireActionResult(is_valid=False)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:

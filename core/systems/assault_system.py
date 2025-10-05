@@ -20,7 +20,7 @@ _ASSAULT_SUCCESS_PROBABILITIES = {
 
 
 @dataclass
-class _AssaultActionResult:
+class AssaultActionResult:
     """Result of an assault action as assault outcome, and any reactive fire."""
 
     outcome: AssaultControls.Outcomes | None = None
@@ -70,7 +70,7 @@ class AssaultSystem:
     @staticmethod
     def assault(
         gs: GameState, attacker_id: int, target_id: int
-    ) -> _AssaultActionResult | InvalidActionTypes:
+    ) -> AssaultActionResult | InvalidActionTypes:
         """Mutator method performs assault action with reactive fire."""
 
         # Check assault action valid
@@ -85,7 +85,7 @@ class AssaultSystem:
         if isinstance(result, InvalidActionTypes):
             return result
         if result.reactive_fire_outcome != None:
-            return _AssaultActionResult(
+            return AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome
             )
 
@@ -96,4 +96,4 @@ class AssaultSystem:
                 CommandSystem.kill_unit(gs, target_id)
             case AssaultControls.Outcomes.FAIL:
                 CommandSystem.kill_unit(gs, attacker_id)
-        return _AssaultActionResult(outcome=outcome)
+        return AssaultActionResult(outcome=outcome)

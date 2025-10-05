@@ -17,17 +17,17 @@ from dataclasses import dataclass
 
 
 @dataclass
-class _MoveActionResult:
+class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
     reactive_fire_outcome: FireControls.Outcomes | None = None
 
 
 @dataclass
-class _GroupMoveActionResult:
+class GroupMoveActionResult:
     """Result of a group move action as multiple singular move results."""
 
-    moveActionLogs: list[_MoveActionResult]
+    moveActionLogs: list[MoveActionResult]
 
 
 class MoveSystem:
@@ -49,7 +49,7 @@ class MoveSystem:
         if not InitiativeSystem.has_initiative(gs, unit_id):
             return InvalidActionTypes.NO_INITIATIVE
 
-        # Check move action though correct terrain type
+        # Check move action through correct terrain type
         terrain_type = 0
         match move_controls.move_type:
             case MoveControls.MoveType.FOOT:
@@ -76,7 +76,7 @@ class MoveSystem:
     @staticmethod
     def _singular_move(
         gs: GameState, unit_id: int, to: Vec2
-    ) -> _MoveActionResult | InvalidActionTypes:
+    ) -> MoveActionResult | InvalidActionTypes:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
         if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
@@ -112,21 +112,21 @@ class MoveSystem:
                         MoveSystem.update_terrain_inside(gs, unit_id, start)
                     case FireControls.Outcomes.KILL:
                         CommandSystem.kill_unit(gs, unit_id)
-                return _MoveActionResult(
+                return MoveActionResult(
                     reactive_fire_outcome=outcome,
                 )
 
         MoveSystem.update_terrain_inside(gs, unit_id, start)
-        return _MoveActionResult()
+        return MoveActionResult()
 
     @staticmethod
     def move(
         gs: GameState, unit_id: int, to: Vec2
-    ) -> _MoveActionResult | InvalidActionTypes:
+    ) -> MoveActionResult | InvalidActionTypes:
         """Mutator method performs move action with reactive fire."""
 
         result = MoveSystem._singular_move(gs, unit_id, to)
-        if not isinstance(result, _MoveActionResult):
+        if not isinstance(result, MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
             FireControls.Outcomes.SUPPRESS,
@@ -139,15 +139,15 @@ class MoveSystem:
     @staticmethod
     def group_move(
         gs: GameState, moves: list[tuple[int, Vec2]]
-    ) -> _GroupMoveActionResult | InvalidActionTypes:
+    ) -> GroupMoveActionResult | InvalidActionTypes:
         """Mutator method performs group move action with reactive fire."""
 
-        logs: list[_MoveActionResult] = []
+        logs: list[MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
         for unit_id, to in moves:
             result = MoveSystem._singular_move(gs, unit_id, to)
-            if not isinstance(result, _MoveActionResult):
+            if not isinstance(result, MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
                 FireControls.Outcomes.SUPPRESS,
@@ -158,7 +158,7 @@ class MoveSystem:
         if interrupt_count >= len(moves):
             InitiativeSystem.flip_initiative(gs)
 
-        return _GroupMoveActionResult(logs)
+        return GroupMoveActionResult(logs)
 
     @staticmethod
     def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
