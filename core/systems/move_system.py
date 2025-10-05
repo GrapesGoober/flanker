@@ -1,9 +1,7 @@
 from typing import Iterable, Literal
 from core.action_models import (
-    GroupMoveAction,
     GroupMoveActionResult,
     InvalidActionTypes,
-    MoveAction,
     MoveActionResult,
 )
 from core.systems.command_system import CommandSystem
@@ -67,26 +65,26 @@ class MoveSystem:
 
     @staticmethod
     def _singular_move(
-        gs: GameState, action: MoveAction
+        gs: GameState, unit_id: int, to: Vec2
     ) -> MoveActionResult | InvalidActionTypes:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
-        if (reason := MoveSystem._validate_move(gs, action.unit_id, action.to)) != True:
+        if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
             return reason
 
-        transform = gs.get_component(action.unit_id, Transform)
-        unit = gs.get_component(action.unit_id, CombatUnit)
-        spotter_candidates = list(FireSystem.get_spotter_candidates(gs, action.unit_id))
+        transform = gs.get_component(unit_id, Transform)
+        unit = gs.get_component(unit_id, CombatUnit)
+        spotter_candidates = list(FireSystem.get_spotter_candidates(gs, unit_id))
         start = transform.position
 
         # For each subdivision step of move line, check interrupt
-        for step in MoveSystem._get_move_steps(transform.position, action.to):
+        for step in MoveSystem._get_move_steps(transform.position, to):
             transform.position = step
 
             # Check for interrupt
             for spotter_id in spotter_candidates:
                 # Validate reactive fire actors
-                if not FireSystem.validate_fire_actors(gs, spotter_id, action.unit_id):
+                if not FireSystem.validate_fire_actors(gs, spotter_id, unit_id):
                     continue
 
                 # Interrupt valid, perform the reactive fire
@@ -98,26 +96,26 @@ class MoveSystem:
                         continue
                     case FireOutcomes.PIN:
                         unit.status = CombatUnit.Status.PINNED
-                        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
+                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                     case FireOutcomes.SUPPRESS:
                         unit.status = CombatUnit.Status.SUPPRESSED
-                        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
+                        MoveSystem.update_terrain_inside(gs, unit_id, start)
                     case FireOutcomes.KILL:
-                        CommandSystem.kill_unit(gs, action.unit_id)
+                        CommandSystem.kill_unit(gs, unit_id)
                 return MoveActionResult(
                     reactive_fire_outcome=outcome,
                 )
 
-        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
+        MoveSystem.update_terrain_inside(gs, unit_id, start)
         return MoveActionResult()
 
     @staticmethod
     def move(
-        gs: GameState, action: MoveAction
+        gs: GameState, unit_id: int, to: Vec2
     ) -> MoveActionResult | InvalidActionTypes:
         """Mutator method performs move action with reactive fire."""
 
-        result = MoveSystem._singular_move(gs, action)
+        result = MoveSystem._singular_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
@@ -130,15 +128,15 @@ class MoveSystem:
 
     @staticmethod
     def group_move(
-        gs: GameState, action: GroupMoveAction
+        gs: GameState, moves: list[tuple[int, Vec2]]
     ) -> GroupMoveActionResult | InvalidActionTypes:
         """Mutator method performs group move action with reactive fire."""
 
         logs: list[MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
-        for move in action.moves:
-            result = MoveSystem._singular_move(gs, move)
+        for unit_id, to in moves:
+            result = MoveSystem._singular_move(gs, unit_id, to)
             if not isinstance(result, MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
@@ -147,7 +145,7 @@ class MoveSystem:
             ):
                 interrupt_count += 1
 
-        if interrupt_count >= len(action.moves):
+        if interrupt_count >= len(moves):
             InitiativeSystem.flip_initiative(gs)
 
         return GroupMoveActionResult(logs)

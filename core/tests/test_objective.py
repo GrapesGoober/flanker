@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.action_models import FireAction, FireOutcomes
+from core.action_models import FireOutcomes
 from core.components import (
     EliminationObjective,
     InitiativeState,
@@ -59,24 +59,15 @@ def fixture() -> Fixture:
 
 
 def test_kill_one(fixture: Fixture) -> None:
-    FireSystem.fire(
-        fixture.gs,
-        FireAction(fixture.attacker_id, fixture.target_id_1),
-    )
+    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
 
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as objective not met"
 
 
 def test_kill_two(fixture: Fixture) -> None:
-    FireSystem.fire(
-        fixture.gs,
-        FireAction(fixture.attacker_id, fixture.target_id_1),
-    )
-    FireSystem.fire(
-        fixture.gs,
-        FireAction(fixture.attacker_id, fixture.target_id_2),
-    )
+    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
+    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_2)
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert (
         winner == InitiativeState.Faction.BLUE

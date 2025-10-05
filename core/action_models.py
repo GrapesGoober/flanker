@@ -1,37 +1,5 @@
-from core.utils.vec2 import Vec2
 from dataclasses import dataclass
 from enum import Enum
-
-
-@dataclass
-class MoveAction:
-    """A singular move action of a combat unit to a position."""
-
-    unit_id: int
-    to: Vec2
-
-
-@dataclass
-class GroupMoveAction:
-    """A group move action consisting of multiple move actions."""
-
-    moves: list[MoveAction]
-
-
-@dataclass
-class AssaultAction:
-    """An assault action of attacker combat unit assaulting target unit."""
-
-    attacker_id: int
-    target_id: int
-
-
-@dataclass
-class FireAction:
-    """A fire action of attacker combat unit firing at target unit."""
-
-    attacker_id: int
-    target_id: int
 
 
 class FireOutcomes(str, Enum):
