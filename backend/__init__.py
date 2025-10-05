@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from typing import NoReturn
+from fastapi import FastAPI, HTTPException, Request, status
 from backend.action_service import ActionService
 from backend.ai_service import AiService
 from backend.log_models import ActionLog
@@ -17,6 +18,11 @@ from backend.logging_service import LoggingService, logs
 SCENE_PATH = "./scenes/demo.json"
 gs = SceneService.load_scene(SCENE_PATH)
 app = FastAPI()
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(_: Request, exc: ValueError) -> NoReturn:
+    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc)
 
 
 @app.get("/api/units")
