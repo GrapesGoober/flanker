@@ -1,9 +1,7 @@
 import random
 from typing import Iterable
 from core.action_models import (
-    FireActionResult,
     FireOutcomes,
-    FireOutcomesChances,
     InvalidActionTypes,
 )
 from core.systems.command_system import CommandSystem
@@ -11,6 +9,24 @@ from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
+from dataclasses import dataclass
+from enum import Enum
+
+
+class FireOutcomesChances(float, Enum):
+    """Maps each fire outcome to its probability range"""
+
+    MISS = 0.3
+    PIN = 0.7
+    SUPPRESS = 0.95
+    KILL = 1.0
+
+
+@dataclass
+class FireActionResult:
+    """Result of a fire action as outcome."""
+
+    outcome: FireOutcomes | None = None
 
 
 class FireSystem:

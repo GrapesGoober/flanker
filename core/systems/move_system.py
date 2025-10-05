@@ -1,9 +1,5 @@
 from typing import Iterable, Literal
-from core.action_models import (
-    GroupMoveActionResult,
-    InvalidActionTypes,
-    MoveActionResult,
-)
+from core.action_models import InvalidActionTypes
 from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
@@ -18,6 +14,21 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
+from dataclasses import dataclass
+
+
+@dataclass
+class MoveActionResult:
+    """Result of a move action as any reactive fire."""
+
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
+class GroupMoveActionResult:
+    """Result of a group move action as multiple singular move results."""
+
+    moveActionLogs: list[MoveActionResult]
 
 
 class MoveSystem:

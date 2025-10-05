@@ -1,10 +1,8 @@
 import random
 from core.action_models import (
     AssaultOutcomes,
-    AssaultSuccessChances,
+    FireOutcomes,
     InvalidActionTypes,
-    AssaultActionResult,
-    MoveActionResult,
 )
 from core.components import (
     AssaultControls,
@@ -15,6 +13,24 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
 from core.systems.command_system import CommandSystem
+from enum import Enum
+from dataclasses import dataclass
+
+
+class AssaultSuccessChances(float, Enum):
+    """Maps each target status to its assault success chance."""
+
+    ACTIVE = 0.5
+    PINNED = 0.7
+    SUPPRESSED = 0.95
+
+
+@dataclass
+class AssaultActionResult:
+    """Result of an assault action as assault outcome, and any reactive fire."""
+
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class AssaultSystem:
@@ -41,7 +57,7 @@ class AssaultSystem:
 
         # Moves the unit to target position (allow reactive fire)
         result = MoveSystem.move(gs, attacker_id, target_position)
-        if not isinstance(result, MoveActionResult):
+        if isinstance(result, InvalidActionTypes):
             return result
         if result.reactive_fire_outcome != None:
             return AssaultActionResult(
