@@ -4,7 +4,6 @@ from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
     FireControls,
-    FireOutcomes,
     TerrainFeature,
     MoveControls,
     Transform,
@@ -21,7 +20,7 @@ from dataclasses import dataclass
 class _MoveActionResult:
     """Result of a move action as any reactive fire."""
 
-    reactive_fire_outcome: FireOutcomes | None = None
+    reactive_fire_outcome: FireControls.Outcomes | None = None
 
 
 @dataclass
@@ -101,17 +100,17 @@ class MoveSystem:
                 # Interrupt valid, perform the reactive fire
                 outcome = FireSystem.get_fire_outcome(gs, spotter_id)
                 match outcome:
-                    case FireOutcomes.MISS:
+                    case FireControls.Outcomes.MISS:
                         fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
                         continue
-                    case FireOutcomes.PIN:
+                    case FireControls.Outcomes.PIN:
                         unit.status = CombatUnit.Status.PINNED
                         MoveSystem.update_terrain_inside(gs, unit_id, start)
-                    case FireOutcomes.SUPPRESS:
+                    case FireControls.Outcomes.SUPPRESS:
                         unit.status = CombatUnit.Status.SUPPRESSED
                         MoveSystem.update_terrain_inside(gs, unit_id, start)
-                    case FireOutcomes.KILL:
+                    case FireControls.Outcomes.KILL:
                         CommandSystem.kill_unit(gs, unit_id)
                 return _MoveActionResult(
                     reactive_fire_outcome=outcome,
@@ -130,8 +129,8 @@ class MoveSystem:
         if not isinstance(result, _MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
-            FireOutcomes.SUPPRESS,
-            FireOutcomes.KILL,
+            FireControls.Outcomes.SUPPRESS,
+            FireControls.Outcomes.KILL,
         ):
             InitiativeSystem.flip_initiative(gs)
 
@@ -151,8 +150,8 @@ class MoveSystem:
             if not isinstance(result, _MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
-                FireOutcomes.SUPPRESS,
-                FireOutcomes.KILL,
+                FireControls.Outcomes.SUPPRESS,
+                FireControls.Outcomes.KILL,
             ):
                 interrupt_count += 1
 

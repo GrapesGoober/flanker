@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
-from core.action_models import AssaultOutcomes, FireOutcomes
 from core.utils.vec2 import Vec2
 
 
@@ -68,7 +67,15 @@ class FireControls:
     Defines the set of outcomes and override.
     """
 
-    override: FireOutcomes | None = None
+    class Outcomes(str, Enum):
+        """Defines all fire outcomes."""
+
+        MISS = "MISS"
+        PIN = "PIN"
+        SUPPRESS = "SUPPRESS"
+        KILL = "KILL"
+
+    override: Outcomes | None = None
     can_reactive_fire: bool = True
 
 
@@ -79,7 +86,13 @@ class AssaultControls:
     Defines the RNG roll multiplier.
     """
 
-    override: AssaultOutcomes | None = None
+    class Outcomes(str, Enum):
+        """Defines an assault outcome as fail or success."""
+
+        FAIL = "FAIL"
+        SUCCESS = "SUCCESS"
+
+    override: Outcomes | None = None
 
 
 @dataclass

@@ -1,9 +1,6 @@
 import random
 from typing import Iterable
-from core.action_models import (
-    FireOutcomes,
-    InvalidActionTypes,
-)
+from core.action_models import InvalidActionTypes
 from core.systems.command_system import CommandSystem
 from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
@@ -12,10 +9,10 @@ from core.systems.los_system import LosSystem
 from dataclasses import dataclass
 
 _FIRE_OUTCOME_PROBABILITIES = {
-    FireOutcomes.MISS: 0.3,
-    FireOutcomes.PIN: 0.4,
-    FireOutcomes.SUPPRESS: 0.25,
-    FireOutcomes.KILL: 0.05,
+    FireControls.Outcomes.MISS: 0.3,
+    FireControls.Outcomes.PIN: 0.4,
+    FireControls.Outcomes.SUPPRESS: 0.25,
+    FireControls.Outcomes.KILL: 0.05,
 }
 
 
@@ -23,7 +20,7 @@ _FIRE_OUTCOME_PROBABILITIES = {
 class _FireActionResult:
     """Result of a fire action as outcome."""
 
-    outcome: FireOutcomes | None = None
+    outcome: FireControls.Outcomes | None = None
 
 
 class FireSystem:
@@ -62,7 +59,7 @@ class FireSystem:
     def get_fire_outcome(
         gs: GameState,
         attacker_id: int,
-    ) -> FireOutcomes:
+    ) -> FireControls.Outcomes:
         """Returns a new randomized fire outcome, or a fixed outcome if overridden."""
 
         fire_controls = gs.get_component(attacker_id, FireControls)
@@ -91,20 +88,20 @@ class FireSystem:
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
         match FireSystem.get_fire_outcome(gs, attacker_id):
-            case FireOutcomes.MISS:
+            case FireControls.Outcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return _FireActionResult(outcome=FireOutcomes.MISS)
-            case FireOutcomes.PIN:
+                return _FireActionResult(outcome=FireControls.Outcomes.MISS)
+            case FireControls.Outcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return _FireActionResult(outcome=FireOutcomes.PIN)
-            case FireOutcomes.SUPPRESS:
+                return _FireActionResult(outcome=FireControls.Outcomes.PIN)
+            case FireControls.Outcomes.SUPPRESS:
                 target_unit.status = CombatUnit.Status.SUPPRESSED
-                return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
-            case FireOutcomes.KILL:
+                return _FireActionResult(outcome=FireControls.Outcomes.SUPPRESS)
+            case FireControls.Outcomes.KILL:
                 CommandSystem.kill_unit(gs, target_id)
-                return _FireActionResult(outcome=FireOutcomes.KILL)
+                return _FireActionResult(outcome=FireControls.Outcomes.KILL)
         return _FireActionResult(is_valid=False)
 
     @staticmethod

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import pytest
 
-from core.action_models import FireOutcomes
 from core.components import (
     EliminationObjective,
     InitiativeState,
@@ -38,7 +37,7 @@ def fixture() -> Fixture:
     )
     attacker_id = gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.BLUE),
-        FireControls(override=FireOutcomes.KILL),
+        FireControls(override=FireControls.Outcomes.KILL),
         Transform(position=Vec2(0, 0)),
     )
     target_id_1 = gs.add_entity(
