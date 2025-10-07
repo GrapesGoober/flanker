@@ -137,10 +137,10 @@ export type AssaultActionRequest = {
 };
 
 export enum FireOutcome {
-	MISS = 0.3,
-	PIN = 0.7,
-	SUPPRESS = 0.95,
-	KILL = 1.0
+	MISS = 'MISS',
+	PIN = 'PIN',
+	SUPPRESS = 'SUPPRESS',
+	KILL = 'KILL'
 }
 
 export enum AssaultOutcome {
@@ -149,19 +149,15 @@ export enum AssaultOutcome {
 }
 
 export type MoveActionResult = {
-	isValid: boolean;
-	isInterrupted: boolean;
+	fireOutcome: FireOutcome;
 };
 
 export type FireActionResult = {
-	isValid: boolean;
 	isHit: boolean;
 	outcome: FireOutcome;
 };
 
 export type AssaultActionResult = {
-	isValid: boolean; // default: true
-	isInterrupted: boolean;
 	result: AssaultOutcome;
 };
 
@@ -199,8 +195,9 @@ export async function GetLogs(): Promise<ActionLog[]> {
 				| components['schemas']['FireActionLog']
 				| components['schemas']['AssaultActionLog']
 		) => {
+			console.log(log);
 			const unitState = ParseCombatUnitsViewState(log.unit_state);
-			if (log.type === 'move' && 'to' in log.body && 'is_interrupted' in log.result) {
+			if (log.type === 'move' && 'to' in log.body && 'reactive_fire_outcome' in log.result) {
 				return {
 					type: 'move',
 					body: {
@@ -208,12 +205,11 @@ export async function GetLogs(): Promise<ActionLog[]> {
 						to: log.body.to
 					},
 					result: {
-						isValid: log.result.is_valid,
-						isInterrupted: log.result.is_interrupted
+						fireOutcome: log.result.reactive_fire_outcome
 					},
 					unitState
 				} as MoveActionLog;
-			} else if (log.type === 'fire' && 'target_id' in log.body && 'is_hit' in log.result) {
+			} else if (log.type === 'fire' && 'target_id' in log.body && 'outcome' in log.result) {
 				return {
 					type: 'fire',
 					body: {
@@ -221,13 +217,11 @@ export async function GetLogs(): Promise<ActionLog[]> {
 						targetId: log.body.target_id
 					},
 					result: {
-						isValid: log.result.is_valid,
-						isHit: log.result.is_hit,
 						outcome: (log.result.outcome ?? null) as FireOutcome
 					},
 					unitState
 				} as FireActionLog;
-			} else if (log.type === 'assault' && 'target_id' in log.body && 'result' in log.result) {
+			} else if (log.type === 'assault' && 'target_id' in log.body && 'outcome' in log.result) {
 				return {
 					type: 'assault',
 					body: {
@@ -235,9 +229,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 						targetId: log.body.target_id
 					},
 					result: {
-						isValid: log.result.is_valid,
-						isInterrupted: log.result.is_interrupted,
-						result: log.result.result
+						result: log.result.outcome
 					},
 					unitState
 				} as AssaultActionLog;

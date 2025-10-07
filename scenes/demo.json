@@ -30,7 +30,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": 0.95
+        "override": "SUPPRESS"
       },
       "AssaultControls": {}
     },
@@ -52,7 +52,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": 0.95
+        "override": "SUPPRESS"
       },
       "AssaultControls": {}
     },
@@ -73,7 +73,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": 0.7
+        "override": "PIN"
       },
       "AssaultControls": {}
     },
@@ -95,7 +95,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": 0.7
+        "override": "PIN"
       },
       "AssaultControls": {}
     },

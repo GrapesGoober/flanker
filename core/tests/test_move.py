@@ -1,17 +1,24 @@
 from dataclasses import dataclass
 import pytest
 
-from core.components import InitiativeState, MoveControls, TerrainFeature, CombatUnit
+from core.action_models import GroupMoveAction, MoveAction
+from core.components import (
+    InitiativeState,
+    MoveControls,
+    TerrainFeature,
+    CombatUnit,
+    Transform,
+)
 from core.gamestate import GameState
-from core.los_system import Transform
-from core.move_system import MoveSystem
+from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
 
 @dataclass
 class Fixture:
     gs: GameState
-    unit_id: int
+    unit_id_1: int
+    unit_id_2: int
 
 
 @pytest.fixture
@@ -19,10 +26,15 @@ def fixture() -> Fixture:
     gs = GameState()
     gs.add_entity(InitiativeState())
     # Rifle Squad
-    id = gs.add_entity(
+    unit_id_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(0, -10)),
+    )
+    unit_id_2 = gs.add_entity(
+        MoveControls(),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        Transform(position=Vec2(5, -10)),
     )
     # 10x10 opaque box
     gs.add_entity(
@@ -54,16 +66,33 @@ def fixture() -> Fixture:
         ),
     )
 
-    return Fixture(gs, id)
+    return Fixture(gs, unit_id_1, unit_id_2)
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(5, -15))
-    transform = fixture.gs.get_component(fixture.unit_id, Transform)
-    assert transform.position == Vec2(5, -15), "Unit expects at Vec2(5, -15)"
+    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(5, -15)))
+    transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
+    assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(6, 6))
-    transform = fixture.gs.get_component(fixture.unit_id, Transform)
-    assert transform.position == Vec2(0, -10), "Unit expects to not move"
+    MoveSystem.move(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(6, 6)))
+    transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
+    assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
+
+
+def test_group_move(fixture: Fixture) -> None:
+    MoveSystem.group_move(
+        fixture.gs,
+        GroupMoveAction(
+            moves=[
+                MoveAction(fixture.unit_id_1, Vec2(5, -15)),
+                MoveAction(fixture.unit_id_2, Vec2(15, -5)),
+            ]
+        ),
+    )
+    transform_1 = fixture.gs.get_component(fixture.unit_id_1, Transform)
+    assert transform_1.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
+
+    transform_2 = fixture.gs.get_component(fixture.unit_id_2, Transform)
+    assert transform_2.position == Vec2(15, -5), "Unit #2 expects at Vec2(15, -5)"

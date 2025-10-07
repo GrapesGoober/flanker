@@ -1,6 +1,6 @@
 from core.gamestate import GameState
 from core.components import CombatUnit
-from core.objective_system import ObjectiveSystem
+from core.systems.objective_system import ObjectiveSystem
 
 
 class CommandSystem:
@@ -8,7 +8,7 @@ class CommandSystem:
 
     @staticmethod
     def kill_unit(gs: GameState, unit_id: int) -> None:
-        """Kills a combat unit while transferring down chain of command."""
+        """Mutator method kills a combat unit while transferring chain of command."""
 
         unit = gs.get_component(unit_id, CombatUnit)
         current_command = unit.command_id

@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 import pytest
 
+from core.action_models import FireAction, FireOutcomes
 from core.components import (
     EliminationObjective,
     InitiativeState,
     FireControls,
     CombatUnit,
 )
-from core.fire_system import FireSystem
 from core.gamestate import GameState
-from core.los_system import Transform
-from core.objective_system import ObjectiveSystem
+from core.systems.fire_system import FireSystem
+from core.systems.los_system import Transform
+from core.systems.objective_system import ObjectiveSystem
 from core.utils.vec2 import Vec2
 
 
@@ -37,7 +38,7 @@ def fixture() -> Fixture:
     )
     attacker_id = gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.BLUE),
-        FireControls(override=FireControls.Outcomes.KILL),
+        FireControls(override=FireOutcomes.KILL),
         Transform(position=Vec2(0, 0)),
     )
     target_id_1 = gs.add_entity(
@@ -58,14 +59,24 @@ def fixture() -> Fixture:
 
 
 def test_kill_one(fixture: Fixture) -> None:
-    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
+    FireSystem.fire(
+        fixture.gs,
+        FireAction(fixture.attacker_id, fixture.target_id_1),
+    )
+
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as objective not met"
 
 
 def test_kill_two(fixture: Fixture) -> None:
-    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_1)
-    FireSystem.fire(fixture.gs, fixture.attacker_id, fixture.target_id_2)
+    FireSystem.fire(
+        fixture.gs,
+        FireAction(fixture.attacker_id, fixture.target_id_1),
+    )
+    FireSystem.fire(
+        fixture.gs,
+        FireAction(fixture.attacker_id, fixture.target_id_2),
+    )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert (
         winner == InitiativeState.Faction.BLUE

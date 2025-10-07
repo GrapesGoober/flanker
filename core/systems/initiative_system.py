@@ -7,7 +7,7 @@ class InitiativeSystem:
 
     @staticmethod
     def flip_initiative(gs: GameState) -> None:
-        """Flips the current initiative of command units."""
+        """Mutates the current initiative to the other faction."""
         for _, initiative in gs.query(InitiativeState):
             match initiative.faction:
                 case InitiativeState.Faction.RED:
@@ -20,7 +20,7 @@ class InitiativeSystem:
 
     @staticmethod
     def set_initiative(gs: GameState, faction: InitiativeState.Faction) -> None:
-        """Sets the given faction to have the initiative."""
+        """Mutates the given faction to have the initiative."""
         for _, faction_manager in gs.query(InitiativeState):
             faction_manager.faction = faction
         # Reset reactive fire
@@ -36,6 +36,7 @@ class InitiativeSystem:
 
     @staticmethod
     def get_initiative(gs: GameState) -> InitiativeState.Faction:
+        """Get the faction that has the current initiative."""
         for _, faction in gs.query(InitiativeState):
             return faction.faction
         raise Exception("InitiativeState component not found")
