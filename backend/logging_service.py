@@ -1,10 +1,27 @@
+from dataclasses import dataclass
 from backend.log_models import ActionLog
+from perf_test import GameState
 
-logs: list[ActionLog] = []
+
+@dataclass
+class _LogRecords:
+    logs: list[ActionLog]
 
 
 class LoggingService:
 
     @staticmethod
-    def log(log: ActionLog):
-        logs.append(log)
+    def log(gs: GameState, log: ActionLog) -> None:
+        if results := gs.query(_LogRecords):
+            _, log_records = results[0]
+        else:
+            gs.add_entity(log_records := _LogRecords([]))
+
+        log_records.logs.append(log)
+
+    @staticmethod
+    def get_logs(gs: GameState) -> list[ActionLog]:
+        if results := gs.query(_LogRecords):
+            _, log_records = results[0]
+            return log_records.logs
+        return []

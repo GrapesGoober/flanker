@@ -13,7 +13,7 @@ from backend.models import (
 from backend.combat_unit_service import CombatUnitService
 from backend.scene_service import SceneService
 from backend.terrain_service import TerrainService
-from backend.logging_service import LoggingService, logs
+from backend.logging_service import LoggingService
 
 SCENE_PATH = "./scenes/demo.json"
 gs = SceneService.load_scene(SCENE_PATH)
@@ -77,11 +77,11 @@ async def update_terrain(body: TerrainModel) -> None:
 
 @app.get("/api/logs")
 async def get_logs() -> list[ActionLog]:
-    return logs
+    return LoggingService.get_logs(gs)
 
 
 @app.post("/api/ai-play")
 async def ai_play() -> None:
     _, logs = AiService.play_minimax(gs, 4)
     for log in logs:
-        LoggingService.log(log)
+        LoggingService.log(gs, log)
