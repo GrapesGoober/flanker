@@ -13,7 +13,9 @@ export type TerrainFeatureData = {
 };
 
 export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
-	const { data, error } = await client.GET('/api/terrain');
+	const { data, error } = await client.GET('/api/game/{game_id}/terrain', {
+		params: { path: { game_id: 0 } }
+	});
 	if (error) throw new Error(JSON.stringify(error));
 
 	// Convert to a custom type in case API and types diverge
@@ -29,7 +31,12 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 }
 
 export async function UpdateTerrainData(terrain: TerrainFeatureData) {
-	const { data, error } = await client.PUT('/api/terrain', {
+	const { data, error } = await client.PUT('/api/edit/{game_id}/terrain', {
+		params: {
+			path: {
+				game_id: 0
+			}
+		},
 		body: {
 			terrain_id: terrain.terrainId,
 			terrain_type: terrain.terrainType,
@@ -72,7 +79,13 @@ function ParseCombatUnitsViewState(
 }
 
 export async function GetUnitStatesData(): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.GET('/api/units');
+	const { data, error } = await client.GET('/api/game/{game_id}/units', {
+		params: {
+			path: {
+				game_id: 0
+			}
+		}
+	});
 	if (error) throw new Error(JSON.stringify(error));
 	return ParseCombatUnitsViewState(data);
 }
@@ -81,7 +94,12 @@ export async function performMoveActionAsync(
 	unit_id: number,
 	to: Vec2
 ): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.POST('/api/move', {
+	const { data, error } = await client.POST('/api/game/{game_id}/move', {
+		params: {
+			path: {
+				game_id: 0
+			}
+		},
 		body: {
 			unit_id: unit_id,
 			to: to
@@ -95,7 +113,12 @@ export async function performFireActionAsync(
 	unit_id: number,
 	target_id: number
 ): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.POST('/api/fire', {
+	const { data, error } = await client.POST('/api/game/{game_id}/fire', {
+		params: {
+			path: {
+				game_id: 0
+			}
+		},
 		body: {
 			unit_id: unit_id,
 			target_id: target_id
@@ -109,7 +132,12 @@ export async function performAssaultActionAsync(
 	unit_id: number,
 	target_id: number
 ): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.POST('/api/assault', {
+	const { data, error } = await client.POST('/api/game/{game_id}/assault', {
+		params: {
+			path: {
+				game_id: 0
+			}
+		},
 		body: {
 			unit_id: unit_id,
 			target_id: target_id
@@ -185,7 +213,13 @@ export type AssaultActionLog = {
 export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog;
 
 export async function GetLogs(): Promise<ActionLog[]> {
-	const { data, error } = await client.GET('/api/logs');
+	const { data, error } = await client.GET('/api/game/{game_id}/logs', {
+		params: {
+			path: {
+				game_id: 0
+			}
+		}
+	});
 	if (error) throw new Error(JSON.stringify(error));
 	// Map each log entry to the correct ActionLog type and parse unitState
 	return data.map(
