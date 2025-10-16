@@ -48,7 +48,7 @@ class Serializer:
                     **{
                         comp.__class__.__name__: comp
                         for comp in comps.values()
-                        if comp in component_types
+                        if type(comp) in component_types
                     }
                 )
                 for entity_id, comps in entities.items()
