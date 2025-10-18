@@ -32,10 +32,7 @@ async def save_game(
     new_scene: str,
 ) -> None:
     """Saves a game into a scene."""
-    SceneService.save_scene(
-        path=f"./scenes/{new_scene}.json",
-        gs=scene_service.get_game_state(scene_name, game_id),
-    )
+    scene_service.save_scene(scene_name, game_id, f"./scenes/{new_scene}.json")
 
 
 @app.get("/api/{scene_name}/{game_id}/units")

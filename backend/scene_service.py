@@ -20,23 +20,16 @@ class SceneService:
                 yield cls
         yield TerrainTypeTag
 
-    @staticmethod
-    def load_scene(path: str) -> GameState:
-        component_types = list(SceneService._get_component_types())
-        with open(path, "r") as f:
-            gs = GameState.load(f.read(), component_types)
-
-        return gs
-
-    @staticmethod
-    def save_scene(path: str, gs: GameState) -> None:
+    def save_scene(self, scene_name: str, game_id: int, path: str) -> None:
+        gs = self.get_game_state(scene_name, game_id)
         component_types = list(SceneService._get_component_types())
         with open(path, "w") as f:
             f.write(gs.save(component_types))
 
     def get_game_state(self, scene_name: str, game_id: int) -> GameState:
         if scene_name not in self.games or game_id >= len(self.games[scene_name]):
-            self.games.setdefault(scene_name, []).append(
-                SceneService.load_scene(f"./scenes/{scene_name}.json")
-            )
+            component_types = list(SceneService._get_component_types())
+            with open(f"./scenes/{scene_name}.json", "r") as f:
+                gs = GameState.load(f.read(), component_types)
+            self.games.setdefault(scene_name, []).append(gs)
         return self.games[scene_name][game_id]
