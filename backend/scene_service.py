@@ -10,6 +10,9 @@ from core import components
 
 class SceneService:
 
+    def __init__(self) -> None:
+        self.games: dict[str, list[GameState]] = {}
+
     @staticmethod
     def _get_component_types() -> Iterable[type[Any]]:
         for _, cls in vars(components).items():
@@ -30,3 +33,10 @@ class SceneService:
         component_types = list(SceneService._get_component_types())
         with open(path, "w") as f:
             f.write(gs.save(component_types))
+
+    def get_game_state(self, scene_name: str, game_id: int) -> GameState:
+        if scene_name not in self.games or game_id >= len(self.games[scene_name]):
+            self.games.setdefault(scene_name, []).append(
+                SceneService.load_scene(f"./scenes/{scene_name}.json")
+            )
+        return self.games[scene_name][game_id]

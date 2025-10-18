@@ -4,27 +4,7 @@
  */
 
 export interface paths {
-    "/api/game/load/{save_name}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Load Game
-         * @description Loads a game from a save.
-         */
-        post: operations["load_game_api_game_load__save_name__post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/game/{game_id}/save/{save_name}": {
+    "/api/{scene_name}/{game_id}/save/{new_scene}": {
         parameters: {
             query?: never;
             header?: never;
@@ -37,14 +17,14 @@ export interface paths {
          * Save Game
          * @description Saves a game into a scene.
          */
-        post: operations["save_game_api_game__game_id__save__save_name__post"];
+        post: operations["save_game_api__scene_name___game_id__save__new_scene__post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/units": {
+    "/api/{scene_name}/{game_id}/units": {
         parameters: {
             query?: never;
             header?: never;
@@ -55,7 +35,7 @@ export interface paths {
          * Get Units
          * @description Get all combat units for the player faction.
          */
-        get: operations["get_units_api_game__game_id__units_get"];
+        get: operations["get_units_api__scene_name___game_id__units_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -64,7 +44,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/terrain": {
+    "/api/{scene_name}/{game_id}/terrain": {
         parameters: {
             query?: never;
             header?: never;
@@ -75,8 +55,12 @@ export interface paths {
          * Get Terrain
          * @description Get all terrain tiles for the current game state.
          */
-        get: operations["get_terrain_api_game__game_id__terrain_get"];
-        put?: never;
+        get: operations["get_terrain_api__scene_name___game_id__terrain_get"];
+        /**
+         * Update Terrain
+         * @description Edit the terrain polygon.
+         */
+        put: operations["update_terrain_api__scene_name___game_id__terrain_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -84,7 +68,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/move": {
+    "/api/{scene_name}/{game_id}/move": {
         parameters: {
             query?: never;
             header?: never;
@@ -97,14 +81,14 @@ export interface paths {
          * Action Move
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_move_api_game__game_id__move_post"];
+        post: operations["action_move_api__scene_name___game_id__move_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/fire": {
+    "/api/{scene_name}/{game_id}/fire": {
         parameters: {
             query?: never;
             header?: never;
@@ -117,14 +101,14 @@ export interface paths {
          * Action Fire
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_fire_api_game__game_id__fire_post"];
+        post: operations["action_fire_api__scene_name___game_id__fire_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/assault": {
+    "/api/{scene_name}/{game_id}/assault": {
         parameters: {
             query?: never;
             header?: never;
@@ -137,14 +121,14 @@ export interface paths {
          * Action Assault
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_assault_api_game__game_id__assault_post"];
+        post: operations["action_assault_api__scene_name___game_id__assault_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/logs": {
+    "/api/{scene_name}/{game_id}/logs": {
         parameters: {
             query?: never;
             header?: never;
@@ -152,7 +136,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Logs */
-        get: operations["get_logs_api_game__game_id__logs_get"];
+        get: operations["get_logs_api__scene_name___game_id__logs_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -161,7 +145,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/game/{game_id}/ai-play": {
+    "/api/{scene_name}/{game_id}/ai-play": {
         parameters: {
             query?: never;
             header?: never;
@@ -171,27 +155,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Ai Play */
-        post: operations["ai_play_api_game__game_id__ai_play_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/edit/{game_id}/terrain": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Update Terrain
-         * @description Edit the terrain polygon.
-         */
-        put: operations["update_terrain_api_edit__game_id__terrain_put"];
-        post?: never;
+        post: operations["ai_play_api__scene_name___game_id__ai_play_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -370,44 +334,14 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    load_game_api_game_load__save_name__post: {
+    save_game_api__scene_name___game_id__save__new_scene__post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                save_name: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": number;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    save_game_api_game__game_id__save__save_name__post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
+                scene_name: string;
                 game_id: number;
-                save_name: string;
+                new_scene: number;
             };
             cookie?: never;
         };
@@ -433,11 +367,12 @@ export interface operations {
             };
         };
     };
-    get_units_api_game__game_id__units_get: {
+    get_units_api__scene_name___game_id__units_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
@@ -464,11 +399,12 @@ export interface operations {
             };
         };
     };
-    get_terrain_api_game__game_id__terrain_get: {
+    get_terrain_api__scene_name___game_id__terrain_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
@@ -495,11 +431,48 @@ export interface operations {
             };
         };
     };
-    action_move_api_game__game_id__move_post: {
+    update_terrain_api__scene_name___game_id__terrain_put: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
+                game_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerrainModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    action_move_api__scene_name___game_id__move_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
@@ -530,11 +503,12 @@ export interface operations {
             };
         };
     };
-    action_fire_api_game__game_id__fire_post: {
+    action_fire_api__scene_name___game_id__fire_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
@@ -565,11 +539,12 @@ export interface operations {
             };
         };
     };
-    action_assault_api_game__game_id__assault_post: {
+    action_assault_api__scene_name___game_id__assault_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
@@ -600,11 +575,12 @@ export interface operations {
             };
         };
     };
-    get_logs_api_game__game_id__logs_get: {
+    get_logs_api__scene_name___game_id__logs_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
@@ -631,51 +607,17 @@ export interface operations {
             };
         };
     };
-    ai_play_api_game__game_id__ai_play_post: {
+    ai_play_api__scene_name___game_id__ai_play_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                scene_name: string;
                 game_id: number;
             };
             cookie?: never;
         };
         requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_terrain_api_edit__game_id__terrain_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                game_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TerrainModel"];
-            };
-        };
         responses: {
             /** @description Successful Response */
             200: {

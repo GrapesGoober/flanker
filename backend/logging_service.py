@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from backend.log_models import ActionLog
-from perf_test import GameState
+from core.gamestate import GameState
 
 
 @dataclass
