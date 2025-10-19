@@ -177,22 +177,22 @@ export interface components {
             type: components["schemas"]["ActionType"];
             body: components["schemas"]["AssaultActionRequest"];
             result: components["schemas"]["AssaultActionResult"];
-            unit_state: components["schemas"]["CombatUnitsViewState"];
+            unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /**
          * AssaultActionRequest
          * @description Request model for a unit's assault action.
          */
         AssaultActionRequest: {
-            /** Unit Id */
-            unit_id: number;
-            /** Target Id */
-            target_id: number;
+            /** Unitid */
+            unitId: number;
+            /** Targetid */
+            targetId: number;
         };
         /** AssaultActionResult */
         AssaultActionResult: {
             outcome?: components["schemas"]["AssaultOutcomes"] | null;
-            reactive_fire_outcome?: components["schemas"]["FireOutcomes"] | null;
+            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * AssaultOutcomes
@@ -205,9 +205,9 @@ export interface components {
          * @description View state for all combat units in the game.
          */
         CombatUnitsViewState: {
-            objective_state: components["schemas"]["ObjectiveState"];
-            /** Has Initiative */
-            has_initiative: boolean;
+            objectiveState: components["schemas"]["ObjectiveState"];
+            /** Hasinitiative */
+            hasInitiative: boolean;
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
         };
@@ -217,17 +217,17 @@ export interface components {
             type: components["schemas"]["ActionType"];
             body: components["schemas"]["FireActionRequest"];
             result: components["schemas"]["FireActionResult"];
-            unit_state: components["schemas"]["CombatUnitsViewState"];
+            unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /**
          * FireActionRequest
          * @description Request model for a unit's fire action.
          */
         FireActionRequest: {
-            /** Unit Id */
-            unit_id: number;
-            /** Target Id */
-            target_id: number;
+            /** Unitid */
+            unitId: number;
+            /** Targetid */
+            targetId: number;
         };
         /** FireActionResult */
         FireActionResult: {
@@ -250,20 +250,20 @@ export interface components {
             type: components["schemas"]["ActionType"];
             body: components["schemas"]["MoveActionRequest"];
             result: components["schemas"]["MoveActionResult"];
-            unit_state: components["schemas"]["CombatUnitsViewState"];
+            unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /**
          * MoveActionRequest
          * @description Request model for a unit's move action.
          */
         MoveActionRequest: {
-            /** Unit Id */
-            unit_id: number;
+            /** Unitid */
+            unitId: number;
             to: components["schemas"]["Vec2"];
         };
         /** MoveActionResult */
         MoveActionResult: {
-            reactive_fire_outcome?: components["schemas"]["FireOutcomes"] | null;
+            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * ObjectiveState
@@ -275,14 +275,14 @@ export interface components {
          * @description Represents a view of a single squad in the game.
          */
         SquadModel: {
-            /** Unit Id */
-            unit_id: number;
+            /** Unitid */
+            unitId: number;
             position: components["schemas"]["Vec2"];
             status: components["schemas"]["Status"];
-            /** Is Friendly */
-            is_friendly: boolean;
-            /** No Fire */
-            no_fire: boolean;
+            /** Isfriendly */
+            isFriendly: boolean;
+            /** Nofire */
+            noFire: boolean;
         };
         /**
          * Status
@@ -294,14 +294,14 @@ export interface components {
          * @description Represents a view of terrain feature in the game.
          */
         TerrainModel: {
-            /** Terrain Id */
-            terrain_id: number;
+            /** Terrainid */
+            terrainId: number;
             position: components["schemas"]["Vec2"];
             /** Degrees */
             degrees: number;
             /** Vertices */
             vertices: components["schemas"]["Vec2"][];
-            terrain_type: components["schemas"]["Types"];
+            terrainType: components["schemas"]["Types"];
         };
         /**
          * Types
@@ -341,7 +341,7 @@ export interface operations {
             path: {
                 scene_name: string;
                 game_id: number;
-                new_scene: number;
+                new_scene: string;
             };
             cookie?: never;
         };

@@ -25,8 +25,8 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 
 	// Convert to a custom type in case API and types diverge
 	const terrainData: TerrainFeatureData[] = data.map((element) => ({
-		terrainId: element.terrain_id,
-		terrainType: element.terrain_type,
+		terrainId: element.terrainId,
+		terrainType: element.terrainType,
 		position: element.position,
 		degrees: element.degrees,
 		vertices: element.vertices
@@ -44,8 +44,8 @@ export async function UpdateTerrainData(terrain: TerrainFeatureData) {
 			}
 		},
 		body: {
-			terrain_id: terrain.terrainId,
-			terrain_type: terrain.terrainType,
+			terrainId: terrain.terrainId,
+			terrainType: terrain.terrainType,
 			position: terrain.position,
 			degrees: terrain.degrees,
 			vertices: terrain.vertices
@@ -72,14 +72,14 @@ function ParseCombatUnitsViewState(
 	data: components['schemas']['CombatUnitsViewState']
 ): CombatUnitsViewState {
 	return {
-		objectivesState: data.objective_state,
-		hasInitiative: data.has_initiative,
+		objectivesState: data.objectiveState,
+		hasInitiative: data.hasInitiative,
 		squads: data.squads.map((squad) => ({
-			unitId: squad.unit_id,
+			unitId: squad.unitId,
 			position: squad.position,
 			status: squad.status,
-			isFriendly: squad.is_friendly,
-			noFire: squad.no_fire
+			isFriendly: squad.isFriendly,
+			noFire: squad.noFire
 		}))
 	};
 }
@@ -109,7 +109,7 @@ export async function performMoveActionAsync(
 			}
 		},
 		body: {
-			unit_id: unit_id,
+			unitId: unit_id,
 			to: to
 		}
 	});
@@ -129,8 +129,8 @@ export async function performFireActionAsync(
 			}
 		},
 		body: {
-			unit_id: unit_id,
-			target_id: target_id
+			unitId: unit_id,
+			targetId: target_id
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -149,8 +149,8 @@ export async function performAssaultActionAsync(
 			}
 		},
 		body: {
-			unit_id: unit_id,
-			target_id: target_id
+			unitId: unit_id,
+			targetId: target_id
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -241,37 +241,37 @@ export async function GetLogs(): Promise<ActionLog[]> {
 				| components['schemas']['AssaultActionLog']
 		) => {
 			console.log(log);
-			const unitState = ParseCombatUnitsViewState(log.unit_state);
-			if (log.type === 'move' && 'to' in log.body && 'reactive_fire_outcome' in log.result) {
+			const unitState = ParseCombatUnitsViewState(log.unitState);
+			if (log.type === 'move' && 'to' in log.body && 'reactiveFireOutcome' in log.result) {
 				return {
 					type: 'move',
 					body: {
-						unitId: log.body.unit_id,
+						unitId: log.body.unitId,
 						to: log.body.to
 					},
 					result: {
-						fireOutcome: log.result.reactive_fire_outcome
+						fireOutcome: log.result.reactiveFireOutcome
 					},
 					unitState
 				} as MoveActionLog;
-			} else if (log.type === 'fire' && 'target_id' in log.body && 'outcome' in log.result) {
+			} else if (log.type === 'fire' && 'targetId' in log.body && 'outcome' in log.result) {
 				return {
 					type: 'fire',
 					body: {
-						unitId: log.body.unit_id,
-						targetId: log.body.target_id
+						unitId: log.body.unitId,
+						targetId: log.body.targetId
 					},
 					result: {
 						outcome: (log.result.outcome ?? null) as FireOutcome
 					},
 					unitState
 				} as FireActionLog;
-			} else if (log.type === 'assault' && 'target_id' in log.body && 'outcome' in log.result) {
+			} else if (log.type === 'assault' && 'targetId' in log.body && 'outcome' in log.result) {
 				return {
 					type: 'assault',
 					body: {
-						unitId: log.body.unit_id,
-						targetId: log.body.target_id
+						unitId: log.body.unitId,
+						targetId: log.body.targetId
 					},
 					result: {
 						result: log.result.outcome
