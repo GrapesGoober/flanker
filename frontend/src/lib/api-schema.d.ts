@@ -166,15 +166,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * ActionType
-         * @enum {string}
-         */
-        ActionType: "move" | "fire" | "assault";
         /** AssaultActionLog */
         AssaultActionLog: {
-            /** @default assault */
-            type: components["schemas"]["ActionType"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "AssaultActionLog";
             body: components["schemas"]["AssaultActionRequest"];
             result: components["schemas"]["AssaultActionResult"];
             unitState: components["schemas"]["CombatUnitsViewState"];
@@ -213,8 +211,11 @@ export interface components {
         };
         /** FireActionLog */
         FireActionLog: {
-            /** @default fire */
-            type: components["schemas"]["ActionType"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "FireActionLog";
             body: components["schemas"]["FireActionRequest"];
             result: components["schemas"]["FireActionResult"];
             unitState: components["schemas"]["CombatUnitsViewState"];
@@ -246,8 +247,11 @@ export interface components {
         };
         /** MoveActionLog */
         MoveActionLog: {
-            /** @default move */
-            type: components["schemas"]["ActionType"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "MoveActionLog";
             body: components["schemas"]["MoveActionRequest"];
             result: components["schemas"]["MoveActionResult"];
             unitState: components["schemas"]["CombatUnitsViewState"];

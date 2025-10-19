@@ -242,7 +242,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 		) => {
 			console.log(log);
 			const unitState = ParseCombatUnitsViewState(log.unitState);
-			if (log.type === 'move' && 'to' in log.body && 'reactiveFireOutcome' in log.result) {
+			if (log.logType === 'MoveActionLog') {
 				return {
 					type: 'move',
 					body: {
@@ -254,7 +254,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 					},
 					unitState
 				} as MoveActionLog;
-			} else if (log.type === 'fire' && 'targetId' in log.body && 'outcome' in log.result) {
+			} else if (log.logType === 'FireActionLog') {
 				return {
 					type: 'fire',
 					body: {
@@ -266,7 +266,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 					},
 					unitState
 				} as FireActionLog;
-			} else if (log.type === 'assault' && 'targetId' in log.body && 'outcome' in log.result) {
+			} else if (log.logType === 'AssaultActionLog') {
 				return {
 					type: 'assault',
 					body: {

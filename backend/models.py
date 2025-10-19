@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Annotated, Literal, Union
 
 from pydantic.alias_generators import to_camel
 from core.components import CombatUnit
@@ -8,7 +9,7 @@ from core.action_models import (
     FireActionResult,
     MoveActionResult,
 )
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CamelCaseConfig:
@@ -82,31 +83,28 @@ class TerrainModel(BaseModel, CamelCaseConfig):
         BUILDING = "BUILDING"
 
 
-class ActionType(str, Enum):
-    MOVE = "move"
-    FIRE = "fire"
-    ASSAULT = "assault"
-
-
 class MoveActionLog(BaseModel, CamelCaseConfig):
-    type: ActionType = ActionType.MOVE
+    log_type: Literal["MoveActionLog"] = "MoveActionLog"
     body: MoveActionRequest
     result: MoveActionResult
     unit_state: CombatUnitsViewState
 
 
 class FireActionLog(BaseModel, CamelCaseConfig):
-    type: ActionType = ActionType.FIRE
+    log_type: Literal["FireActionLog"] = "FireActionLog"
     body: FireActionRequest
     result: FireActionResult
     unit_state: CombatUnitsViewState
 
 
 class AssaultActionLog(BaseModel, CamelCaseConfig):
-    type: ActionType = ActionType.ASSAULT
+    log_type: Literal["AssaultActionLog"] = "AssaultActionLog"
     body: AssaultActionRequest
     result: AssaultActionResult
     unit_state: CombatUnitsViewState
 
 
-ActionLog = MoveActionLog | FireActionLog | AssaultActionLog
+ActionLog = Annotated[
+    Union[MoveActionLog, FireActionLog, AssaultActionLog],
+    Field(discriminator="log_type"),
+]
