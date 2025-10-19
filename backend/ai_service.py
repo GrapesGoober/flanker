@@ -1,7 +1,7 @@
 import random
 from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
-from backend.log_models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
+from backend.models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
 from backend.models import FireActionRequest, MoveActionRequest
 from core.action_models import AssaultAction, FireAction, InvalidActionTypes, MoveAction
 from core.components import CombatUnit, InitiativeState, Transform

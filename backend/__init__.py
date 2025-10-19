@@ -2,7 +2,7 @@ from typing import NoReturn
 from fastapi import FastAPI, HTTPException, Request, status
 from backend.action_service import ActionService
 from backend.ai_service import AiService
-from backend.log_models import ActionLog
+from backend.models import ActionLog
 from backend.models import (
     AssaultActionRequest,
     FireActionRequest,

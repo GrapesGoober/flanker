@@ -1,8 +1,12 @@
 from enum import Enum
-
-from pydantic import BaseModel
 from core.components import CombatUnit
 from core.utils.vec2 import Vec2
+from core.action_models import (
+    AssaultActionResult,
+    FireActionResult,
+    MoveActionResult,
+)
+from pydantic import BaseModel
 
 
 class SquadModel(BaseModel):
@@ -66,3 +70,33 @@ class TerrainModel(BaseModel):
         FIELD = "FIELD"
         WATER = "WATER"
         BUILDING = "BUILDING"
+
+
+class ActionType(str, Enum):
+    MOVE = "move"
+    FIRE = "fire"
+    ASSAULT = "assault"
+
+
+class MoveActionLog(BaseModel):
+    type: ActionType = ActionType.MOVE
+    body: MoveActionRequest
+    result: MoveActionResult
+    unit_state: CombatUnitsViewState
+
+
+class FireActionLog(BaseModel):
+    type: ActionType = ActionType.FIRE
+    body: FireActionRequest
+    result: FireActionResult
+    unit_state: CombatUnitsViewState
+
+
+class AssaultActionLog(BaseModel):
+    type: ActionType = ActionType.ASSAULT
+    body: AssaultActionRequest
+    result: AssaultActionResult
+    unit_state: CombatUnitsViewState
+
+
+ActionLog = MoveActionLog | FireActionLog | AssaultActionLog
