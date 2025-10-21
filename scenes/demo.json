@@ -1,7 +1,6 @@
 {
-  "id_counter": 58,
   "entities": {
-    "0": {
+    "5c8338eb-9219-4048-be7b-fa1df171047d": {
       "InitiativeState": {
         "faction": "BLUE"
       },
@@ -12,7 +11,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "2": {
+    "ee9f257b-e781-4b39-8479-b33b4964a9d6": {
       "Transform": {
         "position": {
           "x": 100.0,
@@ -29,12 +28,12 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "override": "SUPPRESS"
+        "override": "SUPPRESS",
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
-    "3": {
+    "3cd19219-7f06-4ad6-8f9e-d85eb0f6ae10": {
       "Transform": {
         "position": {
           "x": 100.0,
@@ -51,12 +50,12 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "override": "SUPPRESS"
+        "override": "SUPPRESS",
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
-    "10": {
+    "998a4630-2eca-4b47-83b0-5a2d1cbdb389": {
       "Transform": {
         "position": {
           "x": 190.0,
@@ -72,12 +71,12 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "override": "PIN"
+        "override": "PIN",
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
-    "11": {
+    "88f6a055-6361-499d-9d94-c720952b64e3": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -88,18 +87,20 @@
       "CombatUnit": {
         "faction": "RED",
         "status": "ACTIVE",
-        "inside_terrains": [15]
+        "inside_terrains": [
+          15
+        ]
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "override": "PIN"
+        "override": "PIN",
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
-    "13": {
+    "6ff761e7-f338-498d-8e7f-fe64855d9ab1": {
       "Transform": {
         "position": {
           "x": 225.0,
@@ -133,7 +134,7 @@
         "type": "BUILDING"
       }
     },
-    "14": {
+    "96ffd20b-1f5b-4aa1-b5e0-70a121ca95cd": {
       "Transform": {
         "position": {
           "x": 190.0,
@@ -167,7 +168,7 @@
         "type": "BUILDING"
       }
     },
-    "15": {
+    "2543fd59-dda5-4cec-ae85-36a301d71abd": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -201,7 +202,7 @@
         "type": "BUILDING"
       }
     },
-    "23": {
+    "d745efc7-05dc-44db-a3b1-dce25a4c4e85": {
       "Transform": {
         "position": {
           "x": 453.0,
@@ -287,7 +288,7 @@
         "type": "ROAD"
       }
     },
-    "27": {
+    "d6b2848d-327f-4294-b87d-030135254927": {
       "Transform": {
         "position": {
           "x": 65.0,
@@ -349,7 +350,7 @@
         "type": "FOREST"
       }
     },
-    "28": {
+    "012d46ea-23fb-41bb-a548-c3985f4fb6a9": {
       "Transform": {
         "position": {
           "x": 141.0,
@@ -423,7 +424,7 @@
         "type": "FOREST"
       }
     },
-    "29": {
+    "cc6bc654-d08b-4159-935a-176856ea7c39": {
       "Transform": {
         "position": {
           "x": 113.5,
@@ -521,7 +522,7 @@
         "type": "FOREST"
       }
     },
-    "31": {
+    "a03d08d8-1365-41ad-a4a6-b5c1523afbad": {
       "Transform": {
         "position": {
           "x": 265.5,
@@ -607,7 +608,7 @@
         "type": "FOREST"
       }
     },
-    "38": {
+    "43f58080-1d00-400d-a4f5-61c5281bfba4": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -669,7 +670,7 @@
         "type": "FIELD"
       }
     },
-    "39": {
+    "156f0b0a-3cf3-4640-82a6-a46048cea1fe": {
       "Transform": {
         "position": {
           "x": 204.0,
@@ -739,7 +740,7 @@
         "type": "FIELD"
       }
     },
-    "40": {
+    "5fe9c20c-d5d8-437d-b6aa-f62a18aa2ddf": {
       "Transform": {
         "position": {
           "x": 179.0,
@@ -813,7 +814,7 @@
         "type": "FIELD"
       }
     },
-    "41": {
+    "c856b79a-9c74-4895-8753-d0898f36d44f": {
       "Transform": {
         "position": {
           "x": 192.5,

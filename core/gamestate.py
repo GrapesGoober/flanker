@@ -1,5 +1,5 @@
 from typing import Any, overload
-from core.serializer import Serializer
+from uuid import UUID, uuid4
 
 
 class GameState:
@@ -7,24 +7,22 @@ class GameState:
 
     def __init__(self) -> None:
         """Initializes the game state with empty entities."""
-        self._id_counter: int = 0
-        self._entities: dict[int, dict[type[Any], Any]] = {}
+        self._entities: dict[UUID, dict[type[Any], Any]] = {}
         self._cache: dict[tuple[type, ...], list[tuple[int, Any]]] = {}
 
-    def add_entity(self, *components: Any) -> int:
+    def add_entity(self, *components: Any) -> UUID:
         """Adds a new entity with the given components, returns ID."""
-        entity_id = self._id_counter
-        self._id_counter += 1
+        entity_id = uuid4()
         self._entities[entity_id] = {type(c): c for c in components}
         self._cache = {}
         return entity_id
 
-    def delete_entity(self, entity_id: int) -> None:
+    def delete_entity(self, entity_id: UUID) -> None:
         """Deletes an entity by its ID"""
         self._entities.pop(entity_id)
         self._cache = {}
 
-    def get_component[T](self, entity_id: int, component_type: type[T]) -> T:
+    def get_component[T](self, entity_id: UUID, component_type: type[T]) -> T:
         """Get an entity's component. None if entity or component not found."""
         if entity_id not in self._entities:
             raise KeyError(f"{entity_id=} doesn't exist")
@@ -32,7 +30,7 @@ class GameState:
             raise KeyError(f"{component_type=} missing for {entity_id=}")
         return self._entities[entity_id][component_type]
 
-    def try_component[T](self, entity_id: int, component_type: type[T]) -> T | None:
+    def try_component[T](self, entity_id: UUID, component_type: type[T]) -> T | None:
         return self._entities.get(entity_id, {}).get(component_type, None)
 
     @overload
@@ -63,17 +61,11 @@ class GameState:
             self._cache[component_types] = result
             return result
 
-    def save(self, component_types: list[type]) -> str:
-        """Saves game state to json string."""
-        return Serializer.serialize(
-            self._entities,
-            self._id_counter,
-            component_types,
-        )
+    def get_entities_copy(self) -> dict[UUID, dict[type[Any], Any]]:
+        """Returns a shallow copy of the entity-components table."""
+        inner_proxies = {
+            eid: dict(components)
+            for eid, components in self._entities.items()
+        }
+        return dict(inner_proxies)
 
-    @staticmethod
-    def load(data: str, component_types: list[type]) -> "GameState":
-        """Loads game state from json string."""
-        gs = GameState()
-        gs._entities, gs._id_counter = Serializer.deserialize(data, component_types)
-        return gs
