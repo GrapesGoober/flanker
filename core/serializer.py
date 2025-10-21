@@ -36,9 +36,7 @@ class Serializer:
         """Serialises entity-component table & id counter to json string"""
 
         # Define file schema models using existing components
-        EntityComponent, FileData = Serializer._build_schema(
-            [comp_type for comps in entities.values() for comp_type in comps]
-        )
+        EntityComponent, FileData = Serializer._build_schema(component_types)
 
         # Convert entities to using EntityComponent models
         file_data = FileData(
@@ -48,6 +46,7 @@ class Serializer:
                     **{
                         comp.__class__.__name__: comp
                         for comp in comps.values()
+                        # Filter out unregistered components
                         if type(comp) in component_types
                     }
                 )

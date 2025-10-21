@@ -17,7 +17,6 @@ class _TerrainData:
 
     np_verts: NDArray[np.float64]
     np_vectors: NDArray[np.float64]
-    vert_ids: list[int]
     np_vert_ids: NDArray[np.int64]
 
 
@@ -56,11 +55,11 @@ class IntersectSystem:
         terrain_data = terrain_datas[mask]
 
         intersects = IntersectSystem._njit_get_intersect(
-            (start.x, start.y),
-            (end.x, end.y),
-            terrain_data.np_verts,
-            terrain_data.np_vectors,
-            terrain_data.np_vert_ids,
+            start_pos=(start.x, start.y),
+            end_pos=(end.x, end.y),
+            edge_verts=terrain_data.np_verts,
+            edge_vectors=terrain_data.np_vectors,
+            vert_ids=terrain_data.np_vert_ids,
         )
 
         for terrain_id in intersects:
@@ -123,6 +122,5 @@ class IntersectSystem:
         return _TerrainData(
             np_verts=edge_start,
             np_vectors=edge_vectors,
-            vert_ids=vert_ids,
             np_vert_ids=np.array(vert_ids, dtype=np.int64),
         )
