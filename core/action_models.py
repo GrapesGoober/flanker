@@ -1,3 +1,4 @@
+from core.serializer import UUID
 from core.utils.vec2 import Vec2
 from dataclasses import dataclass
 from enum import Enum
@@ -7,7 +8,7 @@ from enum import Enum
 class MoveAction:
     """A singular move action of a combat unit to a position."""
 
-    unit_id: int
+    unit_id: UUID
     to: Vec2
 
 
@@ -22,16 +23,16 @@ class GroupMoveAction:
 class AssaultAction:
     """An assault action of attacker combat unit assaulting target unit."""
 
-    attacker_id: int
-    target_id: int
+    attacker_id: UUID
+    target_id: UUID
 
 
 @dataclass
 class FireAction:
     """A fire action of attacker combat unit firing at target unit."""
 
-    attacker_id: int
-    target_id: int
+    attacker_id: UUID
+    target_id: UUID
 
 
 class FireOutcomes(str, Enum):

@@ -1,4 +1,5 @@
 from typing import Iterable, Literal
+from uuid import UUID
 from core.action_models import (
     GroupMoveAction,
     GroupMoveActionResult,
@@ -27,7 +28,7 @@ class MoveSystem:
 
     @staticmethod
     def _validate_move(
-        gs: GameState, unit_id: int, to: Vec2
+        gs: GameState, unit_id: UUID, to: Vec2
     ) -> Literal[True] | InvalidActionTypes:
         """Returns `True` if move action can be performed."""
 

@@ -5,9 +5,9 @@ from uuid import UUID, uuid4
 class GameState:
     """Encapsulates ECS entities & components into a game state."""
 
-    def __init__(self) -> None:
+    def __init__(self, entities: dict[UUID, dict[type[Any], Any]]) -> None:
         """Initializes the game state with empty entities."""
-        self._entities: dict[UUID, dict[type[Any], Any]] = {}
+        self._entities = entities
         self._cache: dict[tuple[type, ...], list[tuple[int, Any]]] = {}
 
     def add_entity(self, *components: Any) -> UUID:
