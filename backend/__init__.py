@@ -2,13 +2,13 @@ from typing import NoReturn
 from fastapi import FastAPI, HTTPException, Request, status
 from backend.action_service import ActionService
 from backend.ai_service import AiService
-from backend.models import ActionLog
 from backend.models import (
     AssaultActionRequest,
     FireActionRequest,
     TerrainModel,
     MoveActionRequest,
     CombatUnitsViewState,
+    ActionLog,
 )
 from backend.combat_unit_service import CombatUnitService
 from backend.scene_service import SceneService
