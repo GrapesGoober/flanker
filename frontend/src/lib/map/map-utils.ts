@@ -28,34 +28,6 @@ export function GetSmoothedPath(coords: Vec2[], tension: number): string {
 	return line(coords) || '';
 }
 
-export function GetGridLines(bounds: {
-	xMin: number;
-	xMax: number;
-	yMin: number;
-	yMax: number;
-}): [Vec2, Vec2][] {
-	const GRID_SPACING = 100;
-	const lines: [Vec2, Vec2][] = [];
-
-	// Horizontal lines (y varies)
-	for (let y = bounds.yMin; y <= bounds.yMax; y += GRID_SPACING) {
-		lines.push([
-			{ x: bounds.xMin, y },
-			{ x: bounds.xMax, y }
-		]);
-	}
-
-	// Vertical lines (x varies)
-	for (let x = bounds.xMin; x <= bounds.xMax; x += GRID_SPACING) {
-		lines.push([
-			{ x, y: bounds.yMin },
-			{ x, y: bounds.yMax }
-		]);
-	}
-
-	return lines;
-}
-
 export function generatePointsInsidePolygon(
 	coords: Vec2[],
 	spacing: number,

@@ -2,7 +2,6 @@
 	import { onMount, type Snippet } from 'svelte';
 	import * as d3 from 'd3';
 	import type { Vec2 } from '$lib';
-	import { GetGridLines } from './map-utils';
 
 	type Props = {
 		svgSnippet: Snippet;
@@ -11,13 +10,9 @@
 
 	let mapLayer: SVGSVGElement | null = null;
 	let zoomLayer: SVGGElement | null = null;
+	let gridPattern: SVGPatternElement | null = null;
+	let gridPatternId = `grid-pattern`; // I don't like raw magic strings in html
 	let transform: d3.ZoomTransform = d3.zoomIdentity;
-	const lines: [Vec2, Vec2][] = GetGridLines({
-		xMin: 0,
-		xMax: 500,
-		yMin: 0,
-		yMax: 500
-	});
 
 	// Convert screen coordinates to world position using current transform
 	export function ToWorldCoords(coords: Vec2): Vec2 {
@@ -29,12 +24,18 @@
 	onMount(() => {
 		const mapDiv = d3.select(mapLayer as SVGSVGElement);
 		const svgZoom = d3.select(zoomLayer);
+		const pattern = d3.select(gridPattern);
 		const zoom = d3
 			.zoom<SVGSVGElement, unknown>()
 			.scaleExtent([0.5, 10])
 			.on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
 				transform = event.transform;
 				svgZoom.attr('transform', transform.toString());
+				// Update grid pattern so it zooms and pans along
+				pattern.attr(
+					'patternTransform',
+					`translate(${transform.x},${transform.y}) scale(${transform.k})`
+				);
 			});
 
 		// Set default starting zoom and pan
@@ -44,14 +45,21 @@
 </script>
 
 <svg bind:this={mapLayer} class="map-box">
+	<defs>
+		<pattern
+			bind:this={gridPattern}
+			id={gridPatternId}
+			width="100"
+			height="100"
+			patternUnits="userSpaceOnUse"
+		>
+			<path class="map-grid-line" d="M 100 0 L 0 0 0 100" fill="none" />
+		</pattern>
+	</defs>
 	<g bind:this={zoomLayer}>
 		{@render props.svgSnippet()}
-
-		<!-- Translucent grid lines on top of everything -->
-		{#each lines as [start, end]}
-			<line x1={start.x} y1={start.y} x2={end.x} y2={end.y} class="map-grid-line" />
-		{/each}
 	</g>
+	<rect width="100%" height="100%" fill={`url(#${gridPatternId})`} />
 </svg>
 
 <style lang="less">
@@ -65,7 +73,7 @@
 		background-color: #ecffc7;
 	}
 	.map-grid-line {
-		stroke-width: 1;
+		stroke-width: 2;
 		stroke: #00000020;
 		pointer-events: none;
 	}
