@@ -154,7 +154,7 @@ class MoveSystem:
         return GroupMoveActionResult(logs)
 
     @staticmethod
-    def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
+    def update_terrain_inside(gs: GameState, unit_id: UUID, start: Vec2) -> None:
         """Mutator method that rechecks and updates CombatUnit's inside_terrains."""
 
         transform = gs.get_component(unit_id, Transform)

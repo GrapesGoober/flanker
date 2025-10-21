@@ -68,7 +68,8 @@
         "status": "ACTIVE"
       },
       "MoveControls": {
-        "move_type": "FOOT"
+        "move_type": "FOOT",
+        "inside_terrains": ["96ffd20b-1f5b-4aa1-b5e0-70a121ca95cd"]
       },
       "FireControls": {
         "override": "PIN",
@@ -87,9 +88,7 @@
       "CombatUnit": {
         "faction": "RED",
         "status": "ACTIVE",
-        "inside_terrains": [
-          15
-        ]
+        "inside_terrains": ["2543fd59-dda5-4cec-ae85-36a301d71abd"]
       },
       "MoveControls": {
         "move_type": "FOOT"

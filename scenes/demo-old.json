@@ -213,7 +213,8 @@
         "status": "ACTIVE"
       },
       "MoveControls": {
-        "move_type": "FOOT"
+        "move_type": "FOOT",
+        "inside_terrains": ["69ed2f17-b6ae-4c6e-ad34-0eed6829cdca"]
       },
       "FireControls": {
         "can_reactive_fire": true
@@ -231,9 +232,7 @@
       "CombatUnit": {
         "faction": "RED",
         "status": "ACTIVE",
-        "inside_terrains": [
-          15
-        ]
+        "inside_terrains": ["b686859f-6ecb-4a8d-9f1f-e374b397966e"]
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -254,9 +253,7 @@
       "CombatUnit": {
         "faction": "RED",
         "status": "ACTIVE",
-        "inside_terrains": [
-          13
-        ]
+        "inside_terrains": ["38758e78-faf3-4b1d-ba5d-e078eb0e1a1f"]
       },
       "MoveControls": {
         "move_type": "FOOT"

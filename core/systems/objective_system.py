@@ -4,13 +4,14 @@ from core.components import (
     InitiativeState,
 )
 from core.gamestate import GameState
+from uuid import UUID
 
 
 class ObjectiveSystem:
     """Static system class for scenario objectives"""
 
     @staticmethod
-    def count_kill(gs: GameState, unit_destroyed_id: int) -> None:
+    def count_kill(gs: GameState, unit_destroyed_id: UUID) -> None:
         """Count a killed unit towards Elimination Objective."""
         unit = gs.get_component(unit_destroyed_id, CombatUnit)
         for _, objective in gs.query(EliminationObjective):

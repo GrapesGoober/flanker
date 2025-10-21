@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 from core.action_models import AssaultOutcomes, FireOutcomes
 from core.utils.vec2 import Vec2
+from uuid import UUID
 
 
 @dataclass
@@ -42,9 +43,9 @@ class CombatUnit:
         SUPPRESSED = "SUPPRESSED"
 
     faction: InitiativeState.Faction
-    command_id: int | None = None
+    command_id: UUID | None = None
     status: Status = Status.ACTIVE
-    inside_terrains: list[int] | None = None
+    inside_terrains: list[UUID] | None = None
 
 
 @dataclass

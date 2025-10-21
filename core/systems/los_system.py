@@ -2,13 +2,14 @@ from core.components import CombatUnit, TerrainFeature, Transform
 from core.gamestate import GameState
 from core.systems.intersect_system import IntersectSystem
 from core.utils.vec2 import Vec2
+from uuid import UUID
 
 
 class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) for entities."""
 
     @staticmethod
-    def check(gs: GameState, spotter_ent: int, target_pos: Vec2) -> bool:
+    def check(gs: GameState, spotter_ent: UUID, target_pos: Vec2) -> bool:
         """Returns `True` if entity `source_id` can see entity `target_id`."""
         spotter_transform = gs.get_component(spotter_ent, Transform)
         spotter_unit = gs.get_component(spotter_ent, CombatUnit)

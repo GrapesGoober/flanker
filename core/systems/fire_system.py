@@ -11,6 +11,7 @@ from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
+from uuid import UUID
 
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
@@ -26,8 +27,8 @@ class FireSystem:
     @staticmethod
     def validate_fire_actors(
         gs: GameState,
-        attacker_id: int,
-        target_id: int,
+        attacker_id: UUID,
+        target_id: UUID,
     ) -> InvalidActionTypes | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
 
@@ -53,7 +54,7 @@ class FireSystem:
     @staticmethod
     def get_fire_outcome(
         gs: GameState,
-        attacker_id: int,
+        attacker_id: UUID,
     ) -> FireOutcomes:
         """Returns a new randomized fire outcome, or a fixed outcome if overridden."""
 
@@ -102,7 +103,7 @@ class FireSystem:
         return FireActionResult(is_valid=False)
 
     @staticmethod
-    def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
+    def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
         """Returns a list of valid spotters for reactive fire. Doesn't check LOS."""
 
         unit = gs.get_component(target_id, CombatUnit)

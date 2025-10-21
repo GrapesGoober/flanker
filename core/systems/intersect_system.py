@@ -9,6 +9,7 @@ from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
 from core.utils.vec2 import Vec2
 from core.utils.linear_transform import LinearTransform
+from uuid import UUID
 
 
 @dataclass
@@ -17,8 +18,7 @@ class _TerrainData:
 
     np_verts: NDArray[np.float64]
     np_vectors: NDArray[np.float64]
-    vert_ids: list[int]
-    np_vert_ids: NDArray[np.int64]
+    np_vert_ids: NDArray[np.bytes_]  # Store as strings
 
 
 @dataclass
@@ -33,7 +33,7 @@ class Intersection:
     """Represents intersection between line and terrain feature."""
 
     terrain: TerrainFeature
-    terrain_id: int
+    terrain_id: UUID
 
 
 class IntersectSystem:
@@ -56,17 +56,17 @@ class IntersectSystem:
         terrain_data = terrain_datas[mask]
 
         intersects = IntersectSystem._njit_get_intersect(
-            (start.x, start.y),
-            (end.x, end.y),
-            terrain_data.np_verts,
-            terrain_data.np_vectors,
-            terrain_data.np_vert_ids,
+            start_pos=(start.x, start.y),
+            end_pos=(end.x, end.y),
+            edge_verts=terrain_data.np_verts,
+            edge_vectors=terrain_data.np_vectors,
+            vert_ids=terrain_data.np_vert_ids,
         )
 
         for terrain_id in intersects:
             yield Intersection(
-                gs.get_component(terrain_id, TerrainFeature),
-                int(terrain_id),
+                gs.get_component(UUID(terrain_id), TerrainFeature),
+                UUID(terrain_id),
             )
 
     @staticmethod
@@ -76,8 +76,8 @@ class IntersectSystem:
         end_pos: tuple[float, float],
         edge_verts: NDArray[np.float64],
         edge_vectors: NDArray[np.float64],
-        vert_ids: NDArray[np.int64],
-    ) -> NDArray[np.int64]:
+        vert_ids: NDArray[np.bytes_],
+    ) -> NDArray[np.bytes_]:
         """Returns NDArray of intersected terrain ids."""
         # Explicitly tell numpy that we're working with 2d vectors with z=0
         start = np.array([start_pos[0], start_pos[1], 0], dtype=np.float64)
@@ -102,7 +102,7 @@ class IntersectSystem:
 
         np_verts: list[tuple[float, float, float]] = []
         np_verts_shift: list[tuple[float, float, float]] = []
-        vert_ids: list[int] = []
+        vert_ids: list[UUID] = []
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if (terrain.flag & mask) == 0:
                 continue
@@ -123,6 +123,5 @@ class IntersectSystem:
         return _TerrainData(
             np_verts=edge_start,
             np_vectors=edge_vectors,
-            vert_ids=vert_ids,
-            np_vert_ids=np.array(vert_ids, dtype=np.int64),
+            np_vert_ids=np.array(vert_ids, dtype="U36"),  # Store as strings
         )

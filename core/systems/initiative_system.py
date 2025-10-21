@@ -1,5 +1,6 @@
 from core.gamestate import GameState
 from core.components import CombatUnit, InitiativeState, FireControls
+from uuid import UUID
 
 
 class InitiativeSystem:
@@ -29,7 +30,7 @@ class InitiativeSystem:
                 fire_controls.can_reactive_fire = True
 
     @staticmethod
-    def has_initiative(gs: GameState, unit_id: int) -> bool:
+    def has_initiative(gs: GameState, unit_id: UUID) -> bool:
         """Check whether the unit's faction has initiative."""
         unit = gs.get_component(unit_id, CombatUnit)
         return unit.faction == InitiativeSystem.get_initiative(gs)
