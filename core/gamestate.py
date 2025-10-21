@@ -5,10 +5,16 @@ from uuid import UUID, uuid4
 class GameState:
     """Encapsulates ECS entities & components into a game state."""
 
-    def __init__(self, entities: dict[UUID, dict[type[Any], Any]]) -> None:
-        """Initializes the game state with empty entities."""
-        self._entities = entities
+    def __init__(self, entities: dict[UUID, list[Any]] = {}) -> None:
+        """Initializes the game state with entities."""
         self._cache: dict[tuple[type, ...], list[tuple[int, Any]]] = {}
+        self._entities: dict[UUID, dict[type[Any], Any]] = {}
+        for eid, comps in entities.items():
+            component_types: list[type[Any]] = [type(c) for c in comps]
+            if len(component_types) != len(set(component_types)):
+                raise ValueError(f"Entity {eid} has duplicate component types")
+            entity = {t: c for t, c in zip(component_types, comps)}
+            self._entities[eid] = entity
 
     def add_entity(self, *components: Any) -> UUID:
         """Adds a new entity with the given components, returns ID."""
@@ -61,11 +67,8 @@ class GameState:
             self._cache[component_types] = result
             return result
 
-    def get_entities_copy(self) -> dict[UUID, dict[type[Any], Any]]:
+    def get_entities_copy(self) -> dict[UUID, list[Any]]:
         """Returns a shallow copy of the entity-components table."""
-        inner_proxies = {
-            eid: dict(components)
-            for eid, components in self._entities.items()
+        return {
+            eid: list(components.values()) for eid, components in self._entities.items()
         }
-        return dict(inner_proxies)
-

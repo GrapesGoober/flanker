@@ -8,6 +8,7 @@ class Serializer:
 
     class FileDataType(BaseModel):
         """Defines the output file data structure for serialization"""
+
         entities: dict[UUID, BaseModel]
 
     @staticmethod
@@ -20,23 +21,19 @@ class Serializer:
             t.__name__: (Optional[t], None) for t in component_types
         }
         EntityComponent = create_model("EntityComponent", **component_fields)
-        FileData = create_model(
-            "FileData", entities=dict[UUID, EntityComponent]
-        )
+        FileData = create_model("FileData", entities=dict[UUID, EntityComponent])
         # The dynamically built FileData type must conform to _FileDataType
         return EntityComponent, cast(type[Serializer.FileDataType], FileData)
 
     @staticmethod
     def serialize(
-        entities: dict[UUID, dict[type, Any]],
+        entities: dict[UUID, list[Any]],
         component_types: list[type],
     ) -> str:
-        """Serialises entity-component table & id counter to json string"""
+        """Serialises entity-component table to json string"""
 
         # Define file schema models using existing components
-        EntityComponent, FileData = Serializer._build_schema(
-            [comp_type for comps in entities.values() for comp_type in comps]
-        )
+        EntityComponent, FileData = Serializer._build_schema(component_types)
 
         # Convert entities to using EntityComponent models
         file_data = FileData(
@@ -44,7 +41,7 @@ class Serializer:
                 entity_id: EntityComponent(
                     **{
                         comp.__class__.__name__: comp
-                        for comp in comps.values()
+                        for comp in comps
                         if type(comp) in component_types
                     }
                 )
@@ -58,20 +55,20 @@ class Serializer:
     @staticmethod
     def deserialize(
         json_data: str, component_types: list[type]
-    ) -> dict[UUID, dict[type, Any]]:
-        """Deerialises entity-component table & id counter from json string"""
+    ) -> dict[UUID, list[Any]]:
+        """Deerialises entity-component table from json string"""
 
         # Serialize with nulls excluded
         EntityComponent, FileData = Serializer._build_schema(component_types)
         file_data = FileData.model_validate_json(json_data)
 
-        # Convert EntityComponent models to dict[type, Any] components
-        entities: dict[UUID, dict[type, Any]] = {
-            entity_id: {
-                type(comp_obj): comp_obj
+        # Convert EntityComponent models to dict[UUID, list[Any]] components
+        entities: dict[UUID, list[Any]] = {
+            entity_id: [
+                comp_obj
                 for comp_name in EntityComponent.model_fields.keys()
                 if (comp_obj := getattr(entity_components, comp_name)) is not None
-            }
+            ]
             for entity_id, entity_components in file_data.entities.items()
         }
         return entities
