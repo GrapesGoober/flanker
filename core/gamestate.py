@@ -63,9 +63,13 @@ class GameState:
             self._cache[component_types] = result
             return result
 
-    def save(self) -> str:
+    def save(self, component_types: list[type]) -> str:
         """Saves game state to json string."""
-        return Serializer.serialize(self._entities, self._id_counter)
+        return Serializer.serialize(
+            self._entities,
+            self._id_counter,
+            component_types,
+        )
 
     @staticmethod
     def load(data: str, component_types: list[type]) -> "GameState":

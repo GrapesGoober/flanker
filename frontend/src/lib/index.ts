@@ -13,13 +13,20 @@ export type TerrainFeatureData = {
 };
 
 export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
-	const { data, error } = await client.GET('/api/terrain');
+	const { data, error } = await client.GET('/api/{scene_name}/{game_id}/terrain', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		}
+	});
 	if (error) throw new Error(JSON.stringify(error));
 
 	// Convert to a custom type in case API and types diverge
 	const terrainData: TerrainFeatureData[] = data.map((element) => ({
-		terrainId: element.terrain_id,
-		terrainType: element.terrain_type,
+		terrainId: element.terrainId,
+		terrainType: element.terrainType,
 		position: element.position,
 		degrees: element.degrees,
 		vertices: element.vertices
@@ -29,10 +36,16 @@ export async function GetTerrainData(): Promise<TerrainFeatureData[]> {
 }
 
 export async function UpdateTerrainData(terrain: TerrainFeatureData) {
-	const { data, error } = await client.PUT('/api/terrain', {
+	const { data, error } = await client.PUT('/api/{scene_name}/{game_id}/terrain', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		},
 		body: {
-			terrain_id: terrain.terrainId,
-			terrain_type: terrain.terrainType,
+			terrainId: terrain.terrainId,
+			terrainType: terrain.terrainType,
 			position: terrain.position,
 			degrees: terrain.degrees,
 			vertices: terrain.vertices
@@ -59,20 +72,27 @@ function ParseCombatUnitsViewState(
 	data: components['schemas']['CombatUnitsViewState']
 ): CombatUnitsViewState {
 	return {
-		objectivesState: data.objective_state,
-		hasInitiative: data.has_initiative,
+		objectivesState: data.objectiveState,
+		hasInitiative: data.hasInitiative,
 		squads: data.squads.map((squad) => ({
-			unitId: squad.unit_id,
+			unitId: squad.unitId,
 			position: squad.position,
 			status: squad.status,
-			isFriendly: squad.is_friendly,
-			noFire: squad.no_fire
+			isFriendly: squad.isFriendly,
+			noFire: squad.noFire
 		}))
 	};
 }
 
 export async function GetUnitStatesData(): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.GET('/api/units');
+	const { data, error } = await client.GET('/api/{scene_name}/{game_id}/units', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		}
+	});
 	if (error) throw new Error(JSON.stringify(error));
 	return ParseCombatUnitsViewState(data);
 }
@@ -81,9 +101,15 @@ export async function performMoveActionAsync(
 	unit_id: number,
 	to: Vec2
 ): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.POST('/api/move', {
+	const { data, error } = await client.POST('/api/{scene_name}/{game_id}/move', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		},
 		body: {
-			unit_id: unit_id,
+			unitId: unit_id,
 			to: to
 		}
 	});
@@ -95,10 +121,16 @@ export async function performFireActionAsync(
 	unit_id: number,
 	target_id: number
 ): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.POST('/api/fire', {
+	const { data, error } = await client.POST('/api/{scene_name}/{game_id}/fire', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		},
 		body: {
-			unit_id: unit_id,
-			target_id: target_id
+			unitId: unit_id,
+			targetId: target_id
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -109,10 +141,16 @@ export async function performAssaultActionAsync(
 	unit_id: number,
 	target_id: number
 ): Promise<CombatUnitsViewState> {
-	const { data, error } = await client.POST('/api/assault', {
+	const { data, error } = await client.POST('/api/{scene_name}/{game_id}/assault', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		},
 		body: {
-			unit_id: unit_id,
-			target_id: target_id
+			unitId: unit_id,
+			targetId: target_id
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -185,7 +223,14 @@ export type AssaultActionLog = {
 export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog;
 
 export async function GetLogs(): Promise<ActionLog[]> {
-	const { data, error } = await client.GET('/api/logs');
+	const { data, error } = await client.GET('/api/{scene_name}/{game_id}/logs', {
+		params: {
+			path: {
+				scene_name: 'demo',
+				game_id: 0
+			}
+		}
+	});
 	if (error) throw new Error(JSON.stringify(error));
 	// Map each log entry to the correct ActionLog type and parse unitState
 	return data.map(
@@ -196,37 +241,37 @@ export async function GetLogs(): Promise<ActionLog[]> {
 				| components['schemas']['AssaultActionLog']
 		) => {
 			console.log(log);
-			const unitState = ParseCombatUnitsViewState(log.unit_state);
-			if (log.type === 'move' && 'to' in log.body && 'reactive_fire_outcome' in log.result) {
+			const unitState = ParseCombatUnitsViewState(log.unitState);
+			if (log.logType === 'MoveActionLog') {
 				return {
 					type: 'move',
 					body: {
-						unitId: log.body.unit_id,
+						unitId: log.body.unitId,
 						to: log.body.to
 					},
 					result: {
-						fireOutcome: log.result.reactive_fire_outcome
+						fireOutcome: log.result.reactiveFireOutcome
 					},
 					unitState
 				} as MoveActionLog;
-			} else if (log.type === 'fire' && 'target_id' in log.body && 'outcome' in log.result) {
+			} else if (log.logType === 'FireActionLog') {
 				return {
 					type: 'fire',
 					body: {
-						unitId: log.body.unit_id,
-						targetId: log.body.target_id
+						unitId: log.body.unitId,
+						targetId: log.body.targetId
 					},
 					result: {
 						outcome: (log.result.outcome ?? null) as FireOutcome
 					},
 					unitState
 				} as FireActionLog;
-			} else if (log.type === 'assault' && 'target_id' in log.body && 'outcome' in log.result) {
+			} else if (log.logType === 'AssaultActionLog') {
 				return {
 					type: 'assault',
 					body: {
-						unitId: log.body.unit_id,
-						targetId: log.body.target_id
+						unitId: log.body.unitId,
+						targetId: log.body.targetId
 					},
 					result: {
 						result: log.result.outcome

@@ -69,7 +69,8 @@
         "status": "ACTIVE"
       },
       "MoveControls": {
-        "move_type": "FOOT"
+        "move_type": "FOOT",
+        "inside_terrains": [14]
       },
       "FireControls": {
         "can_reactive_fire": true,

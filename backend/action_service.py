@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from backend.combat_unit_service import CombatUnitService
-from backend.log_models import AssaultActionLog, FireActionLog, MoveActionLog
+from backend.models import AssaultActionLog, FireActionLog, MoveActionLog
 from backend.logging_service import LoggingService
 from backend.models import (
     AssaultActionRequest,
@@ -24,11 +24,12 @@ class ActionService:
         if isinstance(result, InvalidActionTypes):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
+            gs,
             MoveActionLog(
                 body=body,
                 result=result,
                 unit_state=CombatUnitService.get_units(gs),
-            )
+            ),
         )
 
     @staticmethod
@@ -38,11 +39,12 @@ class ActionService:
         if isinstance(result, InvalidActionTypes):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
+            gs,
             FireActionLog(
                 body=body,
                 result=result,
                 unit_state=CombatUnitService.get_units(gs),
-            )
+            ),
         )
 
     @staticmethod
@@ -52,9 +54,10 @@ class ActionService:
         if isinstance(result, InvalidActionTypes):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
+            gs,
             AssaultActionLog(
                 body=body,
                 result=result,
                 unit_state=CombatUnitService.get_units(gs),
-            )
+            ),
         )

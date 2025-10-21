@@ -1,11 +1,26 @@
 from enum import Enum
+from typing import Annotated, Literal, Union
 
-from pydantic import BaseModel
+from pydantic.alias_generators import to_camel
 from core.components import CombatUnit
 from core.utils.vec2 import Vec2
+from core.action_models import (
+    AssaultActionResult,
+    FireActionResult,
+    MoveActionResult,
+)
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class SquadModel(BaseModel):
+class CamelCaseConfig:
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class SquadModel(BaseModel, CamelCaseConfig):
     """Represents a view of a single squad in the game."""
 
     unit_id: int
@@ -15,7 +30,7 @@ class SquadModel(BaseModel):
     no_fire: bool
 
 
-class CombatUnitsViewState(BaseModel):
+class CombatUnitsViewState(BaseModel, CamelCaseConfig):
     """View state for all combat units in the game."""
 
     class ObjectiveState(Enum):
@@ -28,28 +43,28 @@ class CombatUnitsViewState(BaseModel):
     squads: list[SquadModel]
 
 
-class MoveActionRequest(BaseModel):
+class MoveActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's move action."""
 
     unit_id: int
     to: Vec2
 
 
-class FireActionRequest(BaseModel):
+class FireActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's fire action."""
 
     unit_id: int
     target_id: int
 
 
-class AssaultActionRequest(BaseModel):
+class AssaultActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's assault action."""
 
     unit_id: int
     target_id: int
 
 
-class TerrainModel(BaseModel):
+class TerrainModel(BaseModel, CamelCaseConfig):
     """Represents a view of terrain feature in the game."""
 
     terrain_id: int
@@ -66,3 +81,30 @@ class TerrainModel(BaseModel):
         FIELD = "FIELD"
         WATER = "WATER"
         BUILDING = "BUILDING"
+
+
+class MoveActionLog(BaseModel, CamelCaseConfig):
+    log_type: Literal["MoveActionLog"] = "MoveActionLog"
+    body: MoveActionRequest
+    result: MoveActionResult
+    unit_state: CombatUnitsViewState
+
+
+class FireActionLog(BaseModel, CamelCaseConfig):
+    log_type: Literal["FireActionLog"] = "FireActionLog"
+    body: FireActionRequest
+    result: FireActionResult
+    unit_state: CombatUnitsViewState
+
+
+class AssaultActionLog(BaseModel, CamelCaseConfig):
+    log_type: Literal["AssaultActionLog"] = "AssaultActionLog"
+    body: AssaultActionRequest
+    result: AssaultActionResult
+    unit_state: CombatUnitsViewState
+
+
+ActionLog = Annotated[
+    Union[MoveActionLog, FireActionLog, AssaultActionLog],
+    Field(discriminator="log_type"),
+]

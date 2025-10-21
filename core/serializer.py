@@ -28,20 +28,27 @@ class Serializer:
         return EntityComponent, cast(type[Serializer.FileDataType], FileData)
 
     @staticmethod
-    def serialize(entities: dict[int, dict[type, Any]], id_counter: int) -> str:
+    def serialize(
+        entities: dict[int, dict[type, Any]],
+        id_counter: int,
+        component_types: list[type],
+    ) -> str:
         """Serialises entity-component table & id counter to json string"""
 
         # Define file schema models using existing components
-        EntityComponent, FileData = Serializer._build_schema(
-            [comp_type for comps in entities.values() for comp_type in comps]
-        )
+        EntityComponent, FileData = Serializer._build_schema(component_types)
 
         # Convert entities to using EntityComponent models
         file_data = FileData(
             id_counter=id_counter,
             entities={
                 entity_id: EntityComponent(
-                    **{comp.__class__.__name__: comp for comp in comps.values()}
+                    **{
+                        comp.__class__.__name__: comp
+                        for comp in comps.values()
+                        # Filter out unregistered components
+                        if type(comp) in component_types
+                    }
                 )
                 for entity_id, comps in entities.items()
             },
