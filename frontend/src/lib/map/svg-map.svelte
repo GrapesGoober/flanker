@@ -8,10 +8,12 @@
 	};
 	let props: Props = $props();
 
+	const gridPatternId = `grid-pattern`;
+	const gridSize = 100;
+
 	let mapLayer: SVGSVGElement | null = null;
 	let zoomLayer: SVGGElement | null = null;
 	let gridPattern: SVGPatternElement | null = null;
-	let gridPatternId = `grid-pattern`; // I don't like raw magic strings in html
 	let transform: d3.ZoomTransform = d3.zoomIdentity;
 
 	// Convert screen coordinates to world position using current transform
@@ -49,11 +51,11 @@
 		<pattern
 			bind:this={gridPattern}
 			id={gridPatternId}
-			width="100"
-			height="100"
+			width={gridSize}
+			height={gridSize}
 			patternUnits="userSpaceOnUse"
 		>
-			<path class="map-grid-line" d="M 100 0 L 0 0 0 100" fill="none" />
+			<path class="map-grid-line" d="M {gridSize} 0 L 0 0 0 {gridSize}" fill="none" />
 		</pattern>
 	</defs>
 	<g bind:this={zoomLayer}>
