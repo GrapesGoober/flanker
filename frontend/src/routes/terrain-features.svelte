@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TerrainFeatureData } from '$lib';
+	import type { TerrainModel } from '$lib';
 	import TreeTriangle from '$lib/svg-icons/tree-triangle.svelte';
 	import {
 		GetClosedPath,
@@ -10,11 +10,11 @@
 	import { transform } from '$lib/linear-transform';
 
 	type Props = {
-		terrainData: TerrainFeatureData[];
+		terrainData: TerrainModel[];
 	};
 	let props: Props = $props();
 	// Road's boarders need to be drawn separately
-	function FilterRoads(): TerrainFeatureData[] {
+	function FilterRoads(): TerrainModel[] {
 		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
 	}
 </script>

@@ -6,7 +6,7 @@
 		GetTerrainData,
 		type ActionLog,
 		type CombatUnitsViewState,
-		type TerrainFeatureData
+		type TerrainModel
 	} from '$lib';
 	import TerrainFeatures from '../terrain-features.svelte';
 	import RifleSquad from '$lib/rifle-squad.svelte';
@@ -18,10 +18,10 @@
 	let map: SvgMap | null = $state(null);
 	let logData: ActionLog[] = $state([]);
 	let index: number = $state(0);
-	let terrain: TerrainFeatureData[] = $state([]);
+	let terrain: TerrainModel[] = $state([]);
 	let currentView: CombatUnitsViewState = $derived(
 		logData[index]?.unitState ?? {
-			objectivesState: 'INCOMPLETE',
+			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
 			squads: []
 		}
@@ -44,7 +44,7 @@
 				<g transform="translate({actorUnit.position.x}, {actorUnit.position.y})"
 					><BorderFriendlyUnit /></g
 				>
-				{#if action.type == 'fire' || action.type == 'assault'}
+				{#if action.logType == 'FireActionLog' || action.logType == 'AssaultActionLog'}
 					{@const targetUnit = currentView.squads.filter(
 						(unit) => unit.unitId == action.body.targetId
 					)[0]}
@@ -69,7 +69,7 @@ index = <input type="number" class="number-input" bind:value={index} />
 </div>
 
 {#if action}
-	{action.type}
+	{action.logType}
 	{JSON.stringify(action.body)}
 	{JSON.stringify(action.result)}
 {/if}

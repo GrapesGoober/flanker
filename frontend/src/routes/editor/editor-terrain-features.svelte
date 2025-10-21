@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TerrainFeatureData } from '$lib';
+	import type { TerrainModel } from '$lib';
 	import { transform } from '$lib/linear-transform';
 	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map/map-utils';
 	import type { EditorController } from './editor-controller.svelte';
@@ -9,11 +9,11 @@
 	};
 	let props: Props = $props();
 
-	function selectTerrain(terrain: TerrainFeatureData) {
+	function selectTerrain(terrain: TerrainModel) {
 		props.controller.selectTerrain(terrain);
 	}
 
-	function isSelected(terrain: TerrainFeatureData) {
+	function isSelected(terrain: TerrainModel) {
 		if (props.controller.state.type === 'selected') {
 			return props.controller.state.terrain === terrain;
 		}

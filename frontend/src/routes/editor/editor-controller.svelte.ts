@@ -1,12 +1,12 @@
-import { GetTerrainData, UpdateTerrainData, type TerrainFeatureData, type Vec2 } from '$lib';
+import { GetTerrainData, UpdateTerrainData, type TerrainModel, type Vec2 } from '$lib';
 
 type EditorControllerState =
 	| { type: 'default' }
-	| { type: 'selected'; terrain: TerrainFeatureData }
+	| { type: 'selected'; terrain: TerrainModel }
 	| { type: 'draw'; drawPolygon: Vec2[] };
 
 export class EditorController {
-	terrainData: TerrainFeatureData[] = $state([]);
+	terrainData: TerrainModel[] = $state([]);
 	state: EditorControllerState = $state({ type: 'default' });
 
 	refreshTerrain() {
@@ -18,7 +18,7 @@ export class EditorController {
 		if (this.state.type != 'draw') return;
 		this.state.drawPolygon.push(worldPos);
 	}
-	selectTerrain(terrain: TerrainFeatureData) {
+	selectTerrain(terrain: TerrainModel) {
 		if (this.state.type != 'default' && this.state.type != 'selected') return;
 		if (this.state.type == 'selected') UpdateTerrainData(this.state.terrain);
 		this.state = {

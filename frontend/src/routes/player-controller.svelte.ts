@@ -6,7 +6,7 @@ import {
 	performMoveActionAsync,
 	type CombatUnitsViewState,
 	type RifleSquadData,
-	type TerrainFeatureData,
+	type TerrainModel,
 	type Vec2
 } from '$lib';
 
@@ -17,7 +17,7 @@ type PlayerControllerState =
 	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
 
 export class PlayerController {
-	terrainData: TerrainFeatureData[] = $state([]);
+	terrainData: TerrainModel[] = $state([]);
 	unitData: CombatUnitsViewState = $state({
 		objectivesState: 'INCOMPLETE',
 		hasInitiative: false,

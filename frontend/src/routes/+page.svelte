@@ -25,7 +25,7 @@
 	});
 
 	$effect(() => {
-		if (controller.unitData.objectivesState == 'COMPLETED') {
+		if (controller.unitData.objectiveState == 'COMPLETED') {
 			alert('Objectives Completed');
 		}
 	});
