@@ -71,7 +71,7 @@
 		stroke-width: @road-width;
 	}
 	.forest {
-		fill: #d0e0b6;
+		fill: #c1d3a4;
 		stroke-width: @stroke-width;
 	}
 	.forest-border {
@@ -84,7 +84,7 @@
 		fill: #aad2e0;
 	}
 	.field {
-		fill: #f0e6d4;
+		fill: #e6dac4;
 		stroke-width: @stroke-width;
 	}
 	.building {

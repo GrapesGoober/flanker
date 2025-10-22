@@ -40,21 +40,27 @@
 	<div class="action-box {controller.isFetching ? 'loading' : ''}">
 		<button
 			class="action-button"
-			onclick={controller.moveActionAsync}
+			onclick={() => {
+				controller.moveActionAsync();
+			}}
 			disabled={!controller.isMoveActionValid()}
 		>
 			Move (m)
 		</button>
 		<button
 			class="action-button"
-			onclick={controller.fireActionAsync}
+			onclick={() => {
+				controller.fireActionAsync;
+			}}
 			disabled={!controller.isFireActionValid()}
 		>
 			Fire (f)
 		</button>
 		<button
 			class="action-button"
-			onclick={controller.assaultActionAsync}
+			onclick={() => {
+				controller.assaultActionAsync();
+			}}
 			disabled={!controller.isAssaultActionValid()}
 		>
 			Assault (a)

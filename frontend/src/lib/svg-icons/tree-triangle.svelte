@@ -4,6 +4,6 @@
 
 <style lang="less">
 	.tree-color {
-		fill: #c2d49b;
+		fill: #b3c687;
 	}
 </style>
