@@ -50,7 +50,7 @@
 		<button
 			class="action-button"
 			onclick={() => {
-				controller.fireActionAsync;
+				controller.fireActionAsync();
 			}}
 			disabled={!controller.isFireActionValid()}
 		>
