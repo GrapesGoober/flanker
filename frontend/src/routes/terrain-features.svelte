@@ -90,8 +90,8 @@
 		stroke-width: @stroke-width;
 	}
 	.building {
-		fill: #a5a5a5;
-		stroke: #a5a5a5;
+		fill: #bfbfbf;
+		stroke: #ababab;
 		stroke-width: @stroke-width;
 		stroke-linecap: square;
 	}
