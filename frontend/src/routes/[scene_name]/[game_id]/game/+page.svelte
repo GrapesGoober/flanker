@@ -19,7 +19,6 @@
 		const y = event.clientY - rect.y;
 		controller.setMoveMarker(map.ToWorldCoords({ x, y }));
 	}
-
 	onMount(async () => {
 		await controller.initializeAsync();
 	});

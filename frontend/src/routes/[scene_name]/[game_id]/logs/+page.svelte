@@ -8,11 +8,10 @@
 		type CombatUnitsViewState,
 		type TerrainModel
 	} from '$lib';
-	import TerrainFeatures from '../terrain-features.svelte';
+	import TerrainFeatures from '../game/terrain-features.svelte';
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import BorderFriendlyUnit from '$lib/svg-icons/border-friendly-unit.svelte';
 	import Arrow from '$lib/svg-icons/arrow.svelte';
-	import BlankUnit from '$lib/svg-icons/blank-friendly-unit.svelte';
 	import BorderHostileUnit from '$lib/svg-icons/border-hostile-unit.svelte';
 
 	let map: SvgMap | null = $state(null);
