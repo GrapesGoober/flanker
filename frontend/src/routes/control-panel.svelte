@@ -82,7 +82,7 @@
 
 	// Globals
 	* {
-		font-family: Verdana, Geneva, Tahoma, sans-serif;
+		font-family: monospace;
 	}
 
 	// Info Section
