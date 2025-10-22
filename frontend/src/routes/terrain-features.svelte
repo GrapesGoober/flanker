@@ -57,43 +57,39 @@
 </g>
 
 <style lang="less">
-	@stroke-width: 1.5;
+	@stroke-width: 1;
 	@road-width: 5;
 
 	.road-border {
 		fill: none;
-		stroke: #d0dcb8;
+		stroke: #dddddd;
 		stroke-width: @road-width + @stroke-width * 2;
 	}
 	.road {
 		fill: none;
-		stroke: #eff6e0;
+		stroke: #f5f5f5;
 		stroke-width: @road-width;
 	}
 	.forest {
-		fill: #c1da91;
-		stroke: #c1da91;
+		fill: #d0e0b6;
 		stroke-width: @stroke-width;
 	}
 	.forest-border {
 		fill: none;
-		stroke: #a2bf69;
-		stroke-width: @stroke-width;
-		stroke-dasharray: 8, 8;
+		// stroke: #add19e;
+		// stroke-width: @stroke-width;
+		// stroke-dasharray: 8, 8;
 	}
 	.water {
-		fill: #a5dac6;
-		stroke: #a5dac6;
-		stroke-width: @stroke-width;
+		fill: #aad2e0;
 	}
 	.field {
-		fill: #f5c887aa;
-		stroke: #cba57aaa;
+		fill: #f0e6d4;
 		stroke-width: @stroke-width;
 	}
 	.building {
-		fill: #aaa;
-		stroke: #999;
+		fill: #a5a5a5;
+		stroke: #a5a5a5;
 		stroke-width: @stroke-width;
 		stroke-linecap: square;
 	}

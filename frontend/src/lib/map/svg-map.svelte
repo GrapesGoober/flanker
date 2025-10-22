@@ -9,7 +9,6 @@
 	let props: Props = $props();
 
 	const gridPatternId = `grid-pattern`;
-	const gridSize = 100;
 
 	let mapLayer: SVGSVGElement | null = null;
 	let zoomLayer: SVGGElement | null = null;
@@ -51,32 +50,43 @@
 		<pattern
 			bind:this={gridPattern}
 			id={gridPatternId}
-			width={gridSize}
-			height={gridSize}
+			width="100"
+			height="100"
 			patternUnits="userSpaceOnUse"
 		>
-			<path class="map-grid-line" d="M {gridSize} 0 L 0 0 0 {gridSize}" fill="none" />
+			<path class="major-grid-line" d="M100,0 L0,0 0,100" fill="none" />
+			<path class="minor-grid-line" d="M33,0 L33,100" fill="none" />
+			<path class="minor-grid-line" d="M0,033 L100,33" fill="none" />
+			<path class="minor-grid-line" d="M66,0 L66,100" fill="none" />
+			<path class="minor-grid-line" d="M0,66 L100,66" fill="none" />
 		</pattern>
 	</defs>
 	<g bind:this={zoomLayer}>
 		{@render props.svgSnippet()}
 	</g>
-	<rect width="100%" height="100%" fill={`url(#${gridPatternId})`} />
+	<rect class="grid-layer" width="100%" height="100%" fill={`url(#${gridPatternId})`} />
 </svg>
 
 <style lang="less">
-	@stroke-width: 1.5;
-	@road-width: 5;
 	.map-box {
 		border: 1px solid #ccc;
 		width: 100%;
 		height: 90vh;
 		touch-action: none; /* required for pointer-based zooming */
-		background-color: #ecffc7;
+		background-color: #fafaef;
 	}
-	.map-grid-line {
+	.major-grid-line {
 		stroke-width: 2;
 		stroke: #00000020;
+		pointer-events: none;
+	}
+
+	.minor-grid-line {
+		stroke-width: 0.5;
+		stroke: #00000015;
+		pointer-events: none;
+	}
+	.grid-layer {
 		pointer-events: none;
 	}
 </style>
