@@ -57,12 +57,12 @@
 </g>
 
 <style lang="less">
-	@stroke-width: 1;
+	@stroke-width: 0.75;
 	@road-width: 5;
 
 	.road-border {
 		fill: none;
-		stroke: #dddddd;
+		stroke: #c9c9c9;
 		stroke-width: @road-width + @stroke-width * 2;
 	}
 	.road {
@@ -72,19 +72,21 @@
 	}
 	.forest {
 		fill: #c1d3a4;
+		stroke: #c1d3a4;
 		stroke-width: @stroke-width;
 	}
 	.forest-border {
 		fill: none;
-		// stroke: #add19e;
-		// stroke-width: @stroke-width;
-		// stroke-dasharray: 8, 8;
+		stroke: #abbc8f;
+		stroke-width: @stroke-width;
+		stroke-dasharray: 8, 8;
 	}
 	.water {
 		fill: #aad2e0;
 	}
 	.field {
 		fill: #e6dac4;
+		stroke: #d7ccb7;
 		stroke-width: @stroke-width;
 	}
 	.building {
