@@ -3,7 +3,7 @@
 <line x1="7" y1="-5" x2="-7" y2="5" class="cross" />
 
 <style lang="less">
-	@stroke-width: 1;
+	@stroke-width: 0.7;
 	.box {
 		fill: white;
 		stroke: black;

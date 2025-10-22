@@ -3,7 +3,7 @@
 <line x1="4" y1="-4" x2="-4" y2="4" class="cross" />
 
 <style lang="less">
-	@stroke-width: 1;
+	@stroke-width: 0.7;
 	.diamond {
 		fill: white;
 		stroke: black;
