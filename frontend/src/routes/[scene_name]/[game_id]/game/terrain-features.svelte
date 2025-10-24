@@ -62,12 +62,12 @@
 
 	.road-border {
 		fill: none;
-		stroke: #c9c9c9;
+		stroke: #c0c4ca;
 		stroke-width: @road-width + @stroke-width * 2;
 	}
 	.road {
 		fill: none;
-		stroke: #f5f5f5;
+		stroke: #dadfe6;
 		stroke-width: @road-width;
 	}
 	.forest {
@@ -77,7 +77,7 @@
 	}
 	.forest-border {
 		fill: none;
-		stroke: #abbc8f;
+		stroke: #a3a998;
 		stroke-width: @stroke-width;
 		stroke-dasharray: 8, 8;
 	}
@@ -85,8 +85,8 @@
 		fill: #aad2e0;
 	}
 	.field {
-		fill: #e6dac4;
-		stroke: #d7ccb7;
+		fill: #d5dfc4;
+		stroke: #bebebe;
 		stroke-width: @stroke-width;
 	}
 	.building {

@@ -73,7 +73,7 @@
 		width: 100%;
 		height: 90vh;
 		touch-action: none; /* required for pointer-based zooming */
-		background-color: #f4f4e7;
+		background-color: #f4f2f2;
 	}
 	.major-grid-line {
 		stroke-width: 2;
