@@ -3,7 +3,7 @@
 	import { PlayerController } from './player-controller.svelte';
 	import ControlPanel from './control-panel.svelte';
 	import { SvgMap } from '$lib/components';
-	import TerrainLayer from './terrain-layer.svelte';
+	import TerrainLayer from '../../../../lib/components/terrain-layer.svelte';
 	import CombatUnitsLayer from './combat-units-layer.svelte';
 
 	let controller: PlayerController = $state(new PlayerController());

@@ -8,7 +8,7 @@
 		type CombatUnitsViewState,
 		type TerrainModel
 	} from '$lib/api';
-	import TerrainLayer from '../game/terrain-layer.svelte';
+	import TerrainLayer from '../../../../lib/components/terrain-layer.svelte';
 	import LogViewLayer from './log-view-layer.svelte';
 
 	let map: SvgMap | null = $state(null);
