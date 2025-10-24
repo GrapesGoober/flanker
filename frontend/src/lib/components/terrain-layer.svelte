@@ -45,7 +45,7 @@
 				</g>
 			{/each}
 		{:else if terrain.terrainType == 'FIELD'}
-			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" fill="url(#diagonalStripes)" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" />
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} fill="url(#diagonalStripes)" />
 		{:else if terrain.terrainType == 'WATER'}
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water" />
