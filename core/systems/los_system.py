@@ -74,7 +74,9 @@ class LosSystem:
                 )
             )
             if len(intersects) != 0:
-                visible_points.append(intersects[0].point)
+                points = [intersect.point for intersect in intersects]
+                points = LosSystem.sort_by_distance(points, spotter_pos)
+                visible_points.append(points[0])
             else:
                 visible_points.append(spotter_pos + ray)
 
@@ -93,6 +95,13 @@ class LosSystem:
             return theta
 
         return sorted(verts, key=angle_from_spotter)
+
+    @staticmethod
+    def sort_by_distance(verts: list[Vec2], spotter_pos: Vec2) -> list[Vec2]:
+        def distance_from_spotter(v: Vec2) -> float:
+            return (v - spotter_pos).length()
+
+        return sorted(verts, key=distance_from_spotter)
 
     @staticmethod
     def get(
