@@ -4,6 +4,7 @@
 	import EditorTerrainLayer from './editor-terrain-layer.svelte';
 	import { EditorController } from './editor-controller.svelte';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
+	import TerrainLayer from '$lib/components/terrain-layer.svelte';
 
 	let controller: EditorController = $state(new EditorController());
 	let map: SvgMap | null = $state(null);
@@ -34,6 +35,7 @@
 </script>
 
 {#snippet mapSvgSnippet()}
+	<TerrainLayer terrainData={controller.terrainData} />
 	<EditorTerrainLayer {controller} />
 	{#if controller.state.type == 'draw'}
 		<path d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)} class="draw-polygon" />
@@ -64,8 +66,8 @@ mode = {controller.state.type}
 		width: 4em;
 	}
 	.draw-polygon {
-		fill: #ccd5ae88;
-		stroke: #c2cca0;
+		fill: #d2aed588;
+		stroke: #c2a0cc;
 		stroke-width: @stroke-width;
 	}
 </style>

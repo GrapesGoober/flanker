@@ -29,52 +29,29 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<g onclick={() => selectTerrain(terrain)}>
-			{#if terrain.terrainType == 'FOREST'}
-				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="forest {selectedClass}" />
-			{:else if terrain.terrainType == 'FIELD'}
-				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field {selectedClass}" />
-			{:else if terrain.terrainType == 'WATER'}
-				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water {selectedClass}" />
+			{#if ['FOREST', 'FIELD', 'WATER'].includes(terrain.terrainType)}
+				<path d={GetSmoothedClosedPath(vertices, 0.7)} class="closed-terrain {selectedClass}" />
 			{:else if terrain.terrainType == 'ROAD'}
-				<path d={GetSmoothedPath(vertices, 0.7)} class="road {selectedClass}" />
+				<path d={GetSmoothedPath(vertices, 0.7)} class="open-terrain {selectedClass}" />
 			{:else if terrain.terrainType == 'BUILDING'}
-				<path d={GetClosedPath(vertices)} class="building {selectedClass}" />
+				<path d={GetClosedPath(vertices)} class="closed-terrain {selectedClass}" />
 			{/if}
 		</g>
 	{/each}
 </g>
 
+<!-- CSS being important to detect mouse clicks -->
 <style lang="less">
-	@stroke-width: 1.5;
 	@road-width: 5;
-
 	.selected-terrain {
 		stroke: red !important;
 	}
-	.road {
+	.closed-terrain {
+		fill: transparent;
+	}
+	.open-terrain {
 		fill: none;
-		stroke: #bbc5a5;
-		stroke-width: @road-width + @stroke-width * 2;
-	}
-	.forest {
-		fill: #c1da91;
-		stroke: #a2b879;
-		stroke-width: @stroke-width;
-	}
-	.water {
-		fill: #a5dac6;
-		stroke: #a5dac6;
-		stroke-width: @stroke-width;
-	}
-	.field {
-		fill: #f5c887aa;
-		stroke: #cba57aaa;
-		stroke-width: @stroke-width;
-	}
-	.building {
-		fill: #aaa;
-		stroke: #999;
-		stroke-width: @stroke-width;
-		stroke-linecap: square;
+		stroke: transparent;
+		stroke-width: @road-width;
 	}
 </style>
