@@ -1,6 +1,7 @@
 import type { Vec2 } from '$lib/api';
 import * as d3 from 'd3';
 
+/** Returns a closed cardinal path string for given coordinates. */
 export function GetClosedPath(coords: Vec2[]): string {
 	const line = d3
 		.line<Vec2>()
@@ -10,6 +11,7 @@ export function GetClosedPath(coords: Vec2[]): string {
 	return line(coords) || '';
 }
 
+/** Returns a smoothed closed cardinal path string with tension. */
 export function GetSmoothedClosedPath(coords: Vec2[], tension: number): string {
 	const line = d3
 		.line<Vec2>()
@@ -19,6 +21,7 @@ export function GetSmoothedClosedPath(coords: Vec2[], tension: number): string {
 	return line(coords) || '';
 }
 
+/** Returns a smoothed cardinal path string for open coordinates with tension. */
 export function GetSmoothedPath(coords: Vec2[], tension: number): string {
 	const line = d3
 		.line<Vec2>()
@@ -28,6 +31,7 @@ export function GetSmoothedPath(coords: Vec2[], tension: number): string {
 	return line(coords) || '';
 }
 
+/** Generates points inside a polygon with spacing and random jitter. */
 export function generatePointsInsidePolygon(
 	coords: Vec2[],
 	spacing: number,
@@ -62,6 +66,7 @@ export function generatePointsInsidePolygon(
 	return result;
 }
 
+/** Generates an even distribution of points inside a polygon. */
 export function generateEvenPointsInsidePolygon(
 	coords: Vec2[],
 	numpoints: number,
@@ -98,6 +103,7 @@ export function generateEvenPointsInsidePolygon(
 	return bestPoints;
 }
 
+/** Transforms a list of vectors by translation and rotation. */
 export function transform(vecList: Vec2[], translate: Vec2, rotate: number): Vec2[] {
 	const radians = (rotate * Math.PI) / 180;
 	const cosA = Math.cos(radians);
