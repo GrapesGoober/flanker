@@ -20,6 +20,12 @@
 </script>
 
 <svg overflow="visible">
+	<defs>
+		<pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="6" height="6">
+			<path d="M1,5 L5,1" class="field-stroke" />
+		</pattern>
+	</defs>
+
 	<!-- Road's boarders need to be drawn separately -->
 	{#each FilterRoads() as road}
 		{@const vertices = transform(road.vertices, road.position, road.degrees)}
@@ -39,7 +45,8 @@
 				</g>
 			{/each}
 		{:else if terrain.terrainType == 'FIELD'}
-			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" fill="url(#diagonalStripes)" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} fill="url(#diagonalStripes)" />
 		{:else if terrain.terrainType == 'WATER'}
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water" />
 		{:else if terrain.terrainType == 'ROAD'}
@@ -88,6 +95,11 @@
 		fill: #d5dfc4;
 		stroke: #bebebe;
 		stroke-width: @stroke-width;
+	}
+	.field-stroke {
+		stroke: #bebebe;
+		stroke-width: @stroke-width;
+		stroke-linecap: round;
 	}
 	.building {
 		fill: #bfbfbf;
