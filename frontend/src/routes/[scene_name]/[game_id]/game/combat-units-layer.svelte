@@ -22,7 +22,7 @@
 </script>
 
 <!-- Defines overlay for gameplay icons -->
-<g class="transparent-icons">
+<svg overflow="visible" class="transparent-icons">
 	{#if controller.state.type !== 'default'}
 		{@const selectedUnit = controller.state.selectedUnit}
 		{@const position = controller.state.selectedUnit.position}
@@ -42,16 +42,18 @@
 			<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
 		{/if}
 	{/if}
-</g>
+</svg>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- Draw combat units -->
-{#each controller.unitData.squads as unit, index}
-	<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-		<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
-	</g>
-{/each}
+<svg overflow="visible">
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<!-- Draw combat units -->
+	{#each controller.unitData.squads as unit, index}
+		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+		</g>
+	{/each}
+</svg>
 
 <style lang="less">
 	* {
