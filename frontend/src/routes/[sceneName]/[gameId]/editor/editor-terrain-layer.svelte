@@ -1,4 +1,9 @@
 <script lang="ts">
+	/**
+	 * Svelte layer for rendering and selecting terrain polygons in the editor.
+	 * Handles terrain selection, transformation, and SVG path rendering.
+	 * The terrains are drawn transparently, as it handles clicking.
+	 */
 	import type { TerrainModel } from '$lib/api';
 	import { transform } from '$lib/map-utils';
 	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map-utils';
@@ -9,10 +14,12 @@
 	};
 	let props: Props = $props();
 
+	/** Selects the given terrain in the editor controller. */
 	function selectTerrain(terrain: TerrainModel) {
 		props.controller.selectTerrain(terrain);
 	}
 
+	/** Returns true if the terrain is currently selected. */
 	function isSelected(terrain: TerrainModel) {
 		if (props.controller.state.type === 'selected') {
 			return props.controller.state.terrain === terrain;
@@ -21,7 +28,7 @@
 	}
 </script>
 
-<g>
+<svg overflow="visible">
 	<!-- Draw each polygons -->
 	{#each props.controller.terrainData as terrain}
 		{@const selectedClass = isSelected(terrain) ? 'selected-terrain' : ''}
@@ -38,7 +45,7 @@
 			{/if}
 		</g>
 	{/each}
-</g>
+</svg>
 
 <!-- CSS being important to detect mouse clicks -->
 <style lang="less">

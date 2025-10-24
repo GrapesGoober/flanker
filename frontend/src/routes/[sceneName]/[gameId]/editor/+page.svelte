@@ -1,4 +1,8 @@
 <script lang="ts">
+	/**
+	 * Editor page for terrain and polygon drawing in the map scene.
+	 * Handles terrain editing, drawing polygons, and UI state management.
+	 */
 	import { onMount } from 'svelte';
 	import { SvgMap } from '$lib/components';
 	import EditorTerrainLayer from './editor-terrain-layer.svelte';
@@ -10,10 +14,12 @@
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
+	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
 		controller.refreshTerrain();
 	});
 
+	/** Adds a vertex to the polygon at the clicked position. */
 	function addVertex(event: MouseEvent) {
 		if (map == null) return;
 		const node = clickTarget as HTMLElement;
@@ -24,11 +30,13 @@
 		controller.addVertex(worldPos);
 	}
 
+	/** Resets the editor mode and refreshes terrain. */
 	function resetMode() {
 		controller.refreshTerrain();
 		controller.reset();
 	}
 
+	/** Switches the editor to draw mode. */
 	function drawMode() {
 		controller.drawMode();
 	}
