@@ -1,15 +1,20 @@
 <script lang="ts">
+	/**
+	 * Gameplay page for handling player actions, map interactions, and UI state.
+	 * Manages player controller, map, and click events for move markers.
+	 */
 	import { onMount } from 'svelte';
 	import { PlayerController } from './player-controller.svelte';
 	import ControlPanel from './control-panel.svelte';
-	import SvgMap from '$lib/map/svg-map.svelte';
-	import TerrainFeatures from './terrain-features.svelte';
-	import CombatUnits from './combat-units.svelte';
+	import { SvgMap } from '$lib/components';
+	import TerrainLayer from '../../../../lib/components/terrain-layer.svelte';
+	import CombatUnitsLayer from './combat-units-layer.svelte';
 
 	let controller: PlayerController = $state(new PlayerController());
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
+	/*Adds a move marker at the clicked position on the map. */
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
 		if (controller.isFetching) return;
@@ -19,23 +24,17 @@
 		const y = event.clientY - rect.y;
 		controller.setMoveMarker(map.ToWorldCoords({ x, y }));
 	}
-
+	/* Initializes the player controller and loads game data on mount. */
 	onMount(async () => {
 		await controller.initializeAsync();
-	});
-
-	$effect(() => {
-		if (controller.unitData.objectivesState == 'COMPLETED') {
-			alert('Objectives Completed');
-		}
 	});
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
-	<TerrainFeatures terrainData={controller.terrainData} />
-	<CombatUnits bind:controller />
+	<TerrainLayer terrainData={controller.terrainData} />
+	<CombatUnitsLayer bind:controller />
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -45,3 +44,5 @@
 </div>
 
 <ControlPanel bind:controller />
+
+{controller.unitData.objectiveState == 'COMPLETED' ? 'Objectives Completed' : ''}

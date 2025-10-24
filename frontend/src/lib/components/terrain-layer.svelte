@@ -1,25 +1,31 @@
 <script lang="ts">
-	import type { TerrainFeatureData } from '$lib';
-	import TreeTriangle from '$lib/svg-icons/tree-triangle.svelte';
+	import type { TerrainModel } from '$lib/api';
+	import { TreeTriangle } from '$lib/components';
 	import {
 		GetClosedPath,
 		GetSmoothedClosedPath,
 		GetSmoothedPath,
 		generatePointsInsidePolygon
-	} from '$lib/map/map-utils';
-	import { transform } from '$lib/linear-transform';
+	} from '$lib/map-utils';
+	import { transform } from '$lib/map-utils';
 
 	type Props = {
-		terrainData: TerrainFeatureData[];
+		terrainData: TerrainModel[];
 	};
 	let props: Props = $props();
 	// Road's boarders need to be drawn separately
-	function FilterRoads(): TerrainFeatureData[] {
+	function FilterRoads(): TerrainModel[] {
 		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
 	}
 </script>
 
-<g>
+<svg overflow="visible">
+	<defs>
+		<pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="6" height="6">
+			<path d="M1,5 L5,1" class="field-stroke" />
+		</pattern>
+	</defs>
+
 	<!-- Road's boarders need to be drawn separately -->
 	{#each FilterRoads() as road}
 		{@const vertices = transform(road.vertices, road.position, road.degrees)}
@@ -40,6 +46,7 @@
 			{/each}
 		{:else if terrain.terrainType == 'FIELD'}
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} fill="url(#diagonalStripes)" />
 		{:else if terrain.terrainType == 'WATER'}
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water" />
 		{:else if terrain.terrainType == 'ROAD'}
@@ -54,46 +61,49 @@
 			<path d={GetClosedPath(vertices)} class="building" />
 		{/if}
 	{/each}
-</g>
+</svg>
 
 <style lang="less">
-	@stroke-width: 1.5;
+	@stroke-width: 0.75;
 	@road-width: 5;
 
 	.road-border {
 		fill: none;
-		stroke: #d0dcb8;
+		stroke: #c0c4ca;
 		stroke-width: @road-width + @stroke-width * 2;
 	}
 	.road {
 		fill: none;
-		stroke: #eff6e0;
+		stroke: #dadfe6;
 		stroke-width: @road-width;
 	}
 	.forest {
-		fill: #c1da91;
-		stroke: #c1da91;
+		fill: #c1d3a4;
+		stroke: #c1d3a4;
 		stroke-width: @stroke-width;
 	}
 	.forest-border {
 		fill: none;
-		stroke: #a2bf69;
+		stroke: #a3a998;
 		stroke-width: @stroke-width;
 		stroke-dasharray: 8, 8;
 	}
 	.water {
-		fill: #a5dac6;
-		stroke: #a5dac6;
-		stroke-width: @stroke-width;
+		fill: #aad2e0;
 	}
 	.field {
-		fill: #f5c887aa;
-		stroke: #cba57aaa;
+		fill: #d5dfc4;
+		stroke: #bebebe;
 		stroke-width: @stroke-width;
 	}
+	.field-stroke {
+		stroke: #bebebe;
+		stroke-width: @stroke-width;
+		stroke-linecap: round;
+	}
 	.building {
-		fill: #aaa;
-		stroke: #999;
+		fill: #bfbfbf;
+		stroke: #ababab;
 		stroke-width: @stroke-width;
 		stroke-linecap: square;
 	}

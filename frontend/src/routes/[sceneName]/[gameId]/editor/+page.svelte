@@ -1,18 +1,25 @@
 <script lang="ts">
+	/**
+	 * Editor page for terrain and polygon drawing in the map scene.
+	 * Handles terrain editing, drawing polygons, and UI state management.
+	 */
 	import { onMount } from 'svelte';
-	import SvgMap from '$lib/map/svg-map.svelte';
-	import EditorTerrainFeatures from './editor-terrain-features.svelte';
+	import { SvgMap } from '$lib/components';
+	import EditorTerrainLayer from './editor-terrain-layer.svelte';
 	import { EditorController } from './editor-controller.svelte';
-	import { GetSmoothedClosedPath } from '$lib/map/map-utils';
+	import { GetSmoothedClosedPath } from '$lib/map-utils';
+	import TerrainLayer from '$lib/components/terrain-layer.svelte';
 
 	let controller: EditorController = $state(new EditorController());
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
+	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
 		controller.refreshTerrain();
 	});
 
+	/** Adds a vertex to the polygon at the clicked position. */
 	function addVertex(event: MouseEvent) {
 		if (map == null) return;
 		const node = clickTarget as HTMLElement;
@@ -23,18 +30,21 @@
 		controller.addVertex(worldPos);
 	}
 
+	/** Resets the editor mode and refreshes terrain. */
 	function resetMode() {
 		controller.refreshTerrain();
 		controller.reset();
 	}
 
+	/** Switches the editor to draw mode. */
 	function drawMode() {
 		controller.drawMode();
 	}
 </script>
 
 {#snippet mapSvgSnippet()}
-	<EditorTerrainFeatures {controller} />
+	<TerrainLayer terrainData={controller.terrainData} />
+	<EditorTerrainLayer {controller} />
 	{#if controller.state.type == 'draw'}
 		<path d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)} class="draw-polygon" />
 	{/if}
@@ -64,8 +74,8 @@ mode = {controller.state.type}
 		width: 4em;
 	}
 	.draw-polygon {
-		fill: #ccd5ae88;
-		stroke: #c2cca0;
+		fill: #d2aed588;
+		stroke: #c2a0cc;
 		stroke-width: @stroke-width;
 	}
 </style>
