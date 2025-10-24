@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/{scene_name}/{game_id}/save/{new_scene}": {
+    "/api/{sceneName}/{gameId}/save/{newScene}": {
         parameters: {
             query?: never;
             header?: never;
@@ -17,14 +17,14 @@ export interface paths {
          * Save Game
          * @description Saves a game into a scene.
          */
-        post: operations["save_game_api__scene_name___game_id__save__new_scene__post"];
+        post: operations["save_game_api__sceneName___gameId__save__newScene__post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/units": {
+    "/api/{sceneName}/{gameId}/units": {
         parameters: {
             query?: never;
             header?: never;
@@ -35,7 +35,7 @@ export interface paths {
          * Get Units
          * @description Get all combat units for the player faction.
          */
-        get: operations["get_units_api__scene_name___game_id__units_get"];
+        get: operations["get_units_api__sceneName___gameId__units_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -44,7 +44,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/terrain": {
+    "/api/{sceneName}/{gameId}/terrain": {
         parameters: {
             query?: never;
             header?: never;
@@ -55,12 +55,12 @@ export interface paths {
          * Get Terrain
          * @description Get all terrain tiles for the current game state.
          */
-        get: operations["get_terrain_api__scene_name___game_id__terrain_get"];
+        get: operations["get_terrain_api__sceneName___gameId__terrain_get"];
         /**
          * Update Terrain
          * @description Edit the terrain polygon.
          */
-        put: operations["update_terrain_api__scene_name___game_id__terrain_put"];
+        put: operations["update_terrain_api__sceneName___gameId__terrain_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -68,7 +68,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/move": {
+    "/api/{sceneName}/{gameId}/move": {
         parameters: {
             query?: never;
             header?: never;
@@ -81,14 +81,14 @@ export interface paths {
          * Action Move
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_move_api__scene_name___game_id__move_post"];
+        post: operations["action_move_api__sceneName___gameId__move_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/fire": {
+    "/api/{sceneName}/{gameId}/fire": {
         parameters: {
             query?: never;
             header?: never;
@@ -101,14 +101,14 @@ export interface paths {
          * Action Fire
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_fire_api__scene_name___game_id__fire_post"];
+        post: operations["action_fire_api__sceneName___gameId__fire_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/assault": {
+    "/api/{sceneName}/{gameId}/assault": {
         parameters: {
             query?: never;
             header?: never;
@@ -121,14 +121,14 @@ export interface paths {
          * Action Assault
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_assault_api__scene_name___game_id__assault_post"];
+        post: operations["action_assault_api__sceneName___gameId__assault_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/logs": {
+    "/api/{sceneName}/{gameId}/logs": {
         parameters: {
             query?: never;
             header?: never;
@@ -136,7 +136,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Logs */
-        get: operations["get_logs_api__scene_name___game_id__logs_get"];
+        get: operations["get_logs_api__sceneName___gameId__logs_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -145,7 +145,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/{scene_name}/{game_id}/ai-play": {
+    "/api/{sceneName}/{gameId}/ai-play": {
         parameters: {
             query?: never;
             header?: never;
@@ -155,7 +155,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Ai Play */
-        post: operations["ai_play_api__scene_name___game_id__ai_play_post"];
+        post: operations["ai_play_api__sceneName___gameId__ai_play_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -338,14 +338,14 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    save_game_api__scene_name___game_id__save__new_scene__post: {
+    save_game_api__sceneName___gameId__save__newScene__post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
-                new_scene: string;
+                sceneName: string;
+                gameId: number;
+                newScene: string;
             };
             cookie?: never;
         };
@@ -371,13 +371,13 @@ export interface operations {
             };
         };
     };
-    get_units_api__scene_name___game_id__units_get: {
+    get_units_api__sceneName___gameId__units_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -403,13 +403,13 @@ export interface operations {
             };
         };
     };
-    get_terrain_api__scene_name___game_id__terrain_get: {
+    get_terrain_api__sceneName___gameId__terrain_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -435,13 +435,13 @@ export interface operations {
             };
         };
     };
-    update_terrain_api__scene_name___game_id__terrain_put: {
+    update_terrain_api__sceneName___gameId__terrain_put: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -471,13 +471,13 @@ export interface operations {
             };
         };
     };
-    action_move_api__scene_name___game_id__move_post: {
+    action_move_api__sceneName___gameId__move_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -507,13 +507,13 @@ export interface operations {
             };
         };
     };
-    action_fire_api__scene_name___game_id__fire_post: {
+    action_fire_api__sceneName___gameId__fire_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -543,13 +543,13 @@ export interface operations {
             };
         };
     };
-    action_assault_api__scene_name___game_id__assault_post: {
+    action_assault_api__sceneName___gameId__assault_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -579,13 +579,13 @@ export interface operations {
             };
         };
     };
-    get_logs_api__scene_name___game_id__logs_get: {
+    get_logs_api__sceneName___gameId__logs_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
@@ -611,13 +611,13 @@ export interface operations {
             };
         };
     };
-    ai_play_api__scene_name___game_id__ai_play_post: {
+    ai_play_api__sceneName___gameId__ai_play_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                scene_name: string;
-                game_id: number;
+                sceneName: string;
+                gameId: number;
             };
             cookie?: never;
         };
