@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import SvgMap from '$lib/map/svg-map.svelte';
+	import SvgMap from '$lib/components/svg-map.svelte';
 	import EditorTerrainFeatures from './editor-terrain-features.svelte';
 	import { EditorController } from './editor-controller.svelte';
-	import { GetSmoothedClosedPath } from '$lib/map/map-utils';
+	import { GetSmoothedClosedPath } from '$lib/map-utils';
 
 	let controller: EditorController = $state(new EditorController());
 	let map: SvgMap | null = $state(null);

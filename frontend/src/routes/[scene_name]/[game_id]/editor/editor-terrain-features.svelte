@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { TerrainModel } from '$lib/api';
-	import { transform } from '$lib/linear-transform';
-	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map/map-utils';
+	import { transform } from '$lib/map-utils';
+	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map-utils';
 	import type { EditorController } from './editor-controller.svelte';
 
 	type Props = {

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import RifleSquad from '$lib/rifle-squad.svelte';
-	import Arrow from '$lib/svg-icons/arrow.svelte';
+	import RifleSquad from '$lib/components/rifle-squad.svelte';
+	import Arrow from '$lib/components/svg-icons/arrow.svelte';
 	import { PlayerController } from './player-controller.svelte';
-	import BlankUnit from '$lib/svg-icons/blank-friendly-unit.svelte';
-	import BorderFriendlyUnit from '$lib/svg-icons/border-friendly-unit.svelte';
-	import BorderHostileUnit from '$lib/svg-icons/border-hostile-unit.svelte';
+	import BlankUnit from '$lib/components/svg-icons/blank-friendly-unit.svelte';
+	import BorderFriendlyUnit from '$lib/components/svg-icons/border-friendly-unit.svelte';
+	import BorderHostileUnit from '$lib/components/svg-icons/border-hostile-unit.svelte';
 
 	type Props = {
 		controller: PlayerController;

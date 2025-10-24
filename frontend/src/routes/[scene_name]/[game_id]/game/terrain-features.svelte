@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { TerrainModel } from '$lib/api';
-	import TreeTriangle from '$lib/svg-icons/tree-triangle.svelte';
+	import TreeTriangle from '$lib/components/svg-icons/tree-triangle.svelte';
 	import {
 		GetClosedPath,
 		GetSmoothedClosedPath,
 		GetSmoothedPath,
 		generatePointsInsidePolygon
-	} from '$lib/map/map-utils';
-	import { transform } from '$lib/linear-transform';
+	} from '$lib/map-utils';
+	import { transform } from '$lib/map-utils';
 
 	type Props = {
 		terrainData: TerrainModel[];
