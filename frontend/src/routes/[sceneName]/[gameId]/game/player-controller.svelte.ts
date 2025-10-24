@@ -16,6 +16,11 @@ type PlayerControllerState =
 	| { type: 'moveMarked'; selectedUnit: RifleSquadData; moveMarker: Vec2 }
 	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
 
+/*
+PlayerController class
+Manages player state, unit selection, actions (move, fire, assault), and game data fetching.
+Handles validation and updates for gameplay interactions.
+*/
 export class PlayerController {
 	terrainData: TerrainModel[] = $state([]);
 	unitData: CombatUnitsViewState = $state({
@@ -26,6 +31,7 @@ export class PlayerController {
 	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
 
+	/* Initializes controller and loads terrain & unit states data. */
 	async initializeAsync() {
 		this.isFetching = true;
 		this.terrainData = await GetTerrainData();
@@ -33,6 +39,7 @@ export class PlayerController {
 		this.isFetching = false;
 	}
 
+	/* Selects a combat unit and transitions to state 'selected'. */
 	selectUnit(unitId: number) {
 		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
@@ -48,10 +55,11 @@ export class PlayerController {
 					type: 'selected',
 					selectedUnit: unit
 				};
-			} else this.setFireMarker(unit);
+			} else this.setAttackMarker(unit);
 		}
 	}
 
+	/* Set move marker and transition state to 'moveMarked'. */
 	setMoveMarker(at: Vec2) {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type == 'default') return;
@@ -63,7 +71,8 @@ export class PlayerController {
 		};
 	}
 
-	setFireMarker(target: RifleSquadData) {
+	/* Sets aan marker for the selected unit then transition to 'attackMarked'. */
+	setAttackMarker(target: RifleSquadData) {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type == 'default') return;
 		if (target.isFriendly) return;
@@ -74,12 +83,14 @@ export class PlayerController {
 		};
 	}
 
+	/* Closes the current selection and resets state. */
 	closeSelection() {
 		this.state = {
 			type: 'default'
 		};
 	}
 
+	/* Returns true if move action is valid. */
 	isMoveActionValid(): boolean {
 		if (this.isFetching) return false;
 		if (this.state.type !== 'moveMarked') return false;
@@ -89,6 +100,7 @@ export class PlayerController {
 		return true;
 	}
 
+	/* Returns true if fire action is valid. */
 	isFireActionValid(): boolean {
 		if (this.isFetching) return false;
 		if (this.state.type !== 'attackMarked') return false;
@@ -98,6 +110,7 @@ export class PlayerController {
 		return true;
 	}
 
+	/* Returns true if assault action is valid. */
 	isAssaultActionValid(): boolean {
 		if (this.isFetching) return false;
 		if (this.state.type !== 'attackMarked') return false;
@@ -107,6 +120,7 @@ export class PlayerController {
 		return true;
 	}
 
+	/* Performs move action for the selected unit. */
 	async moveActionAsync() {
 		if (!this.isMoveActionValid()) return;
 		if (this.state.type !== 'moveMarked') return false;
@@ -117,6 +131,7 @@ export class PlayerController {
 		this.reselectUnit(unitId);
 	}
 
+	/* Performs fire action for the selected unit. */
 	async fireActionAsync() {
 		if (!this.isFireActionValid()) return;
 		if (this.state.type !== 'attackMarked') return;
@@ -127,6 +142,7 @@ export class PlayerController {
 		this.reselectUnit(unitId);
 	}
 
+	/* Performs assault action for the selected unit. */
 	async assaultActionAsync() {
 		if (!this.isAssaultActionValid()) return;
 		if (this.state.type !== 'attackMarked') return;
@@ -137,6 +153,7 @@ export class PlayerController {
 		this.reselectUnit(unitId);
 	}
 
+	/* Reselects the unit after an action, or resets state if not found. */
 	private reselectUnit(unitId: number) {
 		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
 		if (currentUnit)

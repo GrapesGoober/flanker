@@ -1,4 +1,8 @@
 <script lang="ts">
+	/*
+	ControlPanel displays selected unit info and available actions (move, fire, assault).
+	Handles keyboard shortcuts and loading state for player actions.
+	*/
 	import { LoadingSpinner } from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
 
@@ -8,10 +12,12 @@
 
 	let { controller = $bindable() }: Props = $props();
 
+	/* Closes the current unit selection. */
 	function closeSelection() {
 		controller.closeSelection();
 	}
 
+	/* Handles keyboard shortcuts for unit actions. */
 	async function onKeyDown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
 		if (key === 'c') controller.closeSelection();
@@ -21,9 +27,11 @@
 	}
 </script>
 
+<!-- Listen for keyboard shortcuts to trigger actions -->
 <svelte:window onkeydown={onKeyDown} />
 
 {#if controller.state.type != 'default'}
+	<!-- Info box: displays selected unit details -->
 	<div class="info-box">
 		<div class="info-header-box">
 			<span class="info-header-text">1st Platoon</span>
@@ -37,6 +45,7 @@
 		</span>
 	</div>
 
+	<!-- Action box: buttons for move, fire, and assault actions -->
 	<div class="action-box {controller.isFetching ? 'loading' : ''}">
 		<button
 			class="action-button"
@@ -66,6 +75,7 @@
 			Assault (a)
 		</button>
 		{#if controller.isFetching}
+			<!-- Loading spinner shown while actions are processing -->
 			<div class="loading-spinner">
 				<LoadingSpinner />
 			</div>

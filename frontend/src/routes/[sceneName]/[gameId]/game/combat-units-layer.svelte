@@ -1,4 +1,9 @@
 <script lang="ts">
+	/*
+	CombatUnitsLayer Svelte component
+	Renders combat units and overlays for gameplay, including selection and action markers.
+	Handles unit selection and icon display based on game state.
+	*/
 	import {
 		RifleSquad,
 		Arrow,
@@ -14,6 +19,7 @@
 
 	let { controller = $bindable() }: Props = $props();
 
+	/* Selects a unit and updates the controller state. */
 	function SelectUnit(unitId: number, event: MouseEvent) {
 		if (controller.isFetching) return;
 		event.stopPropagation(); // Prevent the terrain's onclick trigger

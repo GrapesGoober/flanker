@@ -1,4 +1,8 @@
 <script lang="ts">
+	/**
+	 * Gameplay page for handling player actions, map interactions, and UI state.
+	 * Manages player controller, map, and click events for move markers.
+	 */
 	import { onMount } from 'svelte';
 	import { PlayerController } from './player-controller.svelte';
 	import ControlPanel from './control-panel.svelte';
@@ -10,6 +14,7 @@
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
+	/*Adds a move marker at the clicked position on the map. */
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
 		if (controller.isFetching) return;
@@ -19,6 +24,7 @@
 		const y = event.clientY - rect.y;
 		controller.setMoveMarker(map.ToWorldCoords({ x, y }));
 	}
+	/* Initializes the player controller and loads game data on mount. */
 	onMount(async () => {
 		await controller.initializeAsync();
 	});
