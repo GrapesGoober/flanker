@@ -14,7 +14,7 @@
 		type CombatUnitsViewState,
 		type TerrainModel
 	} from '$lib/api';
-	import TerrainFeatures from '../game/terrain-features.svelte';
+	import TerrainFeatures from '../game/terrain-layer.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let logData: ActionLog[] = $state([]);

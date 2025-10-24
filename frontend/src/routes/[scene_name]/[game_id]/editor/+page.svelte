@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { SvgMap } from '$lib/components';
-	import EditorTerrainFeatures from './editor-terrain-features.svelte';
+	import EditorTerrainLayer from './editor-terrain-layer.svelte';
 	import { EditorController } from './editor-controller.svelte';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 
@@ -34,7 +34,7 @@
 </script>
 
 {#snippet mapSvgSnippet()}
-	<EditorTerrainFeatures {controller} />
+	<EditorTerrainLayer {controller} />
 	{#if controller.state.type == 'draw'}
 		<path d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)} class="draw-polygon" />
 	{/if}

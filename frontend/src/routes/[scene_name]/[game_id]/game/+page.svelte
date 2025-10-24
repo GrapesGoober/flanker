@@ -3,8 +3,8 @@
 	import { PlayerController } from './player-controller.svelte';
 	import ControlPanel from './control-panel.svelte';
 	import { SvgMap } from '$lib/components';
-	import TerrainFeatures from './terrain-features.svelte';
-	import CombatUnits from './combat-units.svelte';
+	import TerrainLayer from './terrain-layer.svelte';
+	import CombatUnitsLayer from './combat-units-layer.svelte';
 
 	let controller: PlayerController = $state(new PlayerController());
 	let map: SvgMap | null = $state(null);
@@ -27,8 +27,8 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
-	<TerrainFeatures terrainData={controller.terrainData} />
-	<CombatUnits bind:controller />
+	<TerrainLayer terrainData={controller.terrainData} />
+	<CombatUnitsLayer bind:controller />
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
