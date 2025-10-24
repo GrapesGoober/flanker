@@ -14,7 +14,7 @@ for _, cls in vars(components).items():
         component_types.append(cls)
 component_types.append(TerrainTypeTag)
 
-path = "./scenes/demo-old.json"
+path = "./scenes/demo.json"
 
 with open(path, "r") as f:
     gs = GameState.load(f.read(), component_types)
