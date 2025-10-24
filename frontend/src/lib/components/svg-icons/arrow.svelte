@@ -26,29 +26,31 @@
 	let shaftEnd: Vec2 = $derived(GetShaftEnd());
 </script>
 
-<defs>
-	<marker
-		id="triangle"
-		viewBox="0 0 8 8"
-		refX="1"
-		refY="4"
-		markerUnits="strokeWidth"
-		markerWidth="2"
-		markerHeight="2"
-		orient="auto"
-	>
-		<path d="M 0 0 L 6 4 L 0 8 z" />
-	</marker>
-</defs>
+<svg overflow="visible">
+	<defs>
+		<marker
+			id="triangle"
+			viewBox="0 0 8 8"
+			refX="1"
+			refY="4"
+			markerUnits="strokeWidth"
+			markerWidth="2"
+			markerHeight="2"
+			orient="auto"
+		>
+			<path d="M 0 0 L 6 4 L 0 8 z" />
+		</marker>
+	</defs>
 
-<line
-	x1={props.start.x}
-	y1={props.start.y}
-	x2={shaftEnd.x}
-	y2={shaftEnd.y}
-	class="move-line"
-	marker-end="url(#triangle)"
-/>
+	<line
+		x1={props.start.x}
+		y1={props.start.y}
+		x2={shaftEnd.x}
+		y2={shaftEnd.y}
+		class="move-line"
+		marker-end="url(#triangle)"
+	/>
+</svg>
 
 <style lang="less">
 	@color: black;

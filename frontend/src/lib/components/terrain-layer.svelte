@@ -19,7 +19,7 @@
 	}
 </script>
 
-<g>
+<svg overflow="visible">
 	<!-- Road's boarders need to be drawn separately -->
 	{#each FilterRoads() as road}
 		{@const vertices = transform(road.vertices, road.position, road.degrees)}
@@ -54,7 +54,7 @@
 			<path d={GetClosedPath(vertices)} class="building" />
 		{/if}
 	{/each}
-</g>
+</svg>
 
 <style lang="less">
 	@stroke-width: 0.75;

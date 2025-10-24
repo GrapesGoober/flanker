@@ -6,10 +6,13 @@
 	let { rifleSquadData = $bindable<RifleSquadData>() } = $props();
 </script>
 
-<g transform="translate({rifleSquadData.position.x},{rifleSquadData.position.y})">
+<svg
+	overflow="visible"
+	transform="translate({rifleSquadData.position.x},{rifleSquadData.position.y})"
+>
 	{#if rifleSquadData.isFriendly}
 		<FriendlyRifleSquad />
 	{:else}
 		<HostileRifleSquad />
 	{/if}
-</g>
+</svg>
