@@ -25,8 +25,8 @@ export type RouteParams = {
 export function GetParams(): RouteParams {
 	return {
 		path: {
-			sceneName: page.params['scene_name'] as string,
-			gameId: Number(page.params['game_id'])
+			sceneName: page.params['sceneName'] as string,
+			gameId: Number(page.params['gameId'])
 		}
 	};
 }
