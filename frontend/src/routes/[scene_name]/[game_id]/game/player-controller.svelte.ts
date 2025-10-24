@@ -8,7 +8,7 @@ import {
 	type RifleSquadData,
 	type TerrainModel,
 	type Vec2
-} from '$lib';
+} from '$lib/api';
 
 type PlayerControllerState =
 	| { type: 'default' }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Vec2 } from '$lib';
+	import type { Vec2 } from '$lib/api';
 
 	type Props = {
 		start: Vec2;

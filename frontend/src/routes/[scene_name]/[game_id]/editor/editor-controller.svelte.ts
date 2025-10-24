@@ -1,4 +1,4 @@
-import { GetTerrainData, UpdateTerrainData, type TerrainModel, type Vec2 } from '$lib';
+import { GetTerrainData, UpdateTerrainData, type TerrainModel, type Vec2 } from '$lib/api';
 
 type EditorControllerState =
 	| { type: 'default' }

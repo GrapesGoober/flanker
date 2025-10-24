@@ -7,7 +7,7 @@
 		type ActionLog,
 		type CombatUnitsViewState,
 		type TerrainModel
-	} from '$lib';
+	} from '$lib/api';
 	import TerrainFeatures from '../game/terrain-features.svelte';
 	import RifleSquad from '$lib/rifle-squad.svelte';
 	import BorderFriendlyUnit from '$lib/svg-icons/border-friendly-unit.svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { RifleSquadData } from '$lib';
+	import type { RifleSquadData } from '$lib/api';
 	import FriendlyRifleSquad from './svg-icons/friendly-rifle-squad.svelte';
 	import HostileRifleSquad from './svg-icons/hostile-rifle-squad.svelte';
 

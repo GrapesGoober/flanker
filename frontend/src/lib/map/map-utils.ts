@@ -1,4 +1,4 @@
-import type { Vec2 } from '$lib';
+import type { Vec2 } from '$lib/api';
 import * as d3 from 'd3';
 
 export function GetClosedPath(coords: Vec2[]): string {

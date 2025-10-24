@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TerrainModel } from '$lib';
+	import type { TerrainModel } from '$lib/api';
 	import { transform } from '$lib/linear-transform';
 	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map/map-utils';
 	import type { EditorController } from './editor-controller.svelte';

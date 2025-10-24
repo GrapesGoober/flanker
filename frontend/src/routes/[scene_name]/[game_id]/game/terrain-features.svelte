@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { TerrainModel } from '$lib';
+	import type { TerrainModel } from '$lib/api';
 	import TreeTriangle from '$lib/svg-icons/tree-triangle.svelte';
 	import {
 		GetClosedPath,

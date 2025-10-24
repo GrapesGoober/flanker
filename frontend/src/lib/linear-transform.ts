@@ -1,4 +1,4 @@
-import type { Vec2 } from '$lib';
+import type { Vec2 } from '$lib/api';
 
 export function transform(vecList: Vec2[], translate: Vec2, rotate: number): Vec2[] {
 	const radians = (rotate * Math.PI) / 180;
