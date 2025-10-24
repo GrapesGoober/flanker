@@ -22,12 +22,6 @@
 	onMount(async () => {
 		await controller.initializeAsync();
 	});
-
-	$effect(() => {
-		if (controller.unitData.objectiveState == 'COMPLETED') {
-			alert('Objectives Completed');
-		}
-	});
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -44,3 +38,5 @@
 </div>
 
 <ControlPanel bind:controller />
+
+{controller.unitData.objectiveState == 'COMPLETED' ? 'Objectives Completed' : ''}
