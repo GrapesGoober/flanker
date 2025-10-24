@@ -10,9 +10,9 @@
 
 	const gridPatternId = `grid-pattern`;
 
-	let mapLayer: SVGSVGElement | null = null;
-	let zoomLayer: SVGGElement | null = null;
-	let gridPattern: SVGPatternElement | null = null;
+	let mapLayer: SVGSVGElement | null = null; // Handles events
+	let zoomLayer: SVGGElement | null = null; // Applies zoom-pan
+	let gridLayer: SVGPatternElement | null = null; // Applies zoom-pan separately
 	let transform: d3.ZoomTransform = d3.zoomIdentity;
 
 	// Convert screen coordinates to world position using current transform
@@ -24,19 +24,15 @@
 	// Set up D3 pan/zoom
 	onMount(() => {
 		const mapDiv = d3.select(mapLayer as SVGSVGElement);
-		const svgZoom = d3.select(zoomLayer);
-		const pattern = d3.select(gridPattern);
+		const zoomSvg = d3.select(zoomLayer);
+		const pattern = d3.select(gridLayer);
 		const zoom = d3
 			.zoom<SVGSVGElement, unknown>()
 			.scaleExtent([0.5, 10])
 			.on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
 				transform = event.transform;
-				svgZoom.attr('transform', transform.toString());
-				// Update grid pattern so it zooms and pans along
-				pattern.attr(
-					'patternTransform',
-					`translate(${transform.x},${transform.y}) scale(${transform.k})`
-				);
+				zoomSvg.attr('transform', transform.toString());
+				pattern.attr('patternTransform', transform.toString());
 			});
 
 		// Set default starting zoom and pan
@@ -48,7 +44,7 @@
 <svg bind:this={mapLayer} class="map-box">
 	<defs>
 		<pattern
-			bind:this={gridPattern}
+			bind:this={gridLayer}
 			id={gridPatternId}
 			width="100"
 			height="100"
