@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import SvgMap from '$lib/components/svg-map.svelte';
+	import {
+		SvgMap,
+		RifleSquad,
+		BorderFriendlyUnit,
+		Arrow,
+		BorderHostileUnit
+	} from '$lib/components';
 	import {
 		GetLogs,
 		GetTerrainData,
@@ -9,10 +15,6 @@
 		type TerrainModel
 	} from '$lib/api';
 	import TerrainFeatures from '../game/terrain-features.svelte';
-	import RifleSquad from '$lib/components/rifle-squad.svelte';
-	import BorderFriendlyUnit from '$lib/components/svg-icons/border-friendly-unit.svelte';
-	import Arrow from '$lib/components/svg-icons/arrow.svelte';
-	import BorderHostileUnit from '$lib/components/svg-icons/border-hostile-unit.svelte';
 
 	let map: SvgMap | null = $state(null);
 	let logData: ActionLog[] = $state([]);

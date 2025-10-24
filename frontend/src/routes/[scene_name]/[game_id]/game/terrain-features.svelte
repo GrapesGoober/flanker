@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { TerrainModel } from '$lib/api';
-	import TreeTriangle from '$lib/components/svg-icons/tree-triangle.svelte';
+	import { TreeTriangle } from '$lib/components';
 	import {
 		GetClosedPath,
 		GetSmoothedClosedPath,

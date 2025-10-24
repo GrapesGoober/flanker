@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LoadingSpinner from '$lib/components/svg-icons/loading-spinner.svelte';
+	import { LoadingSpinner } from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
 
 	type Props = {

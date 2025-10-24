@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import SvgMap from '$lib/components/svg-map.svelte';
+	import { SvgMap } from '$lib/components';
 	import EditorTerrainFeatures from './editor-terrain-features.svelte';
 	import { EditorController } from './editor-controller.svelte';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';

@@ -1,10 +1,12 @@
 <script lang="ts">
-	import RifleSquad from '$lib/components/rifle-squad.svelte';
-	import Arrow from '$lib/components/svg-icons/arrow.svelte';
+	import {
+		RifleSquad,
+		Arrow,
+		BlankFriendlyUnit,
+		BorderFriendlyUnit,
+		BorderHostileUnit
+	} from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
-	import BlankUnit from '$lib/components/svg-icons/blank-friendly-unit.svelte';
-	import BorderFriendlyUnit from '$lib/components/svg-icons/border-friendly-unit.svelte';
-	import BorderHostileUnit from '$lib/components/svg-icons/border-hostile-unit.svelte';
 
 	type Props = {
 		controller: PlayerController;
@@ -32,7 +34,7 @@
 		{/if}
 		{#if controller.state.type == 'moveMarked'}
 			{@const moveMarker = controller.state.moveMarker}
-			<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankUnit /></g>
+			<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankFriendlyUnit /></g>
 			<Arrow start={selectedUnit.position} end={controller.state.moveMarker} offset={6} />
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { PlayerController } from './player-controller.svelte';
 	import ControlPanel from './control-panel.svelte';
-	import SvgMap from '$lib/components/svg-map.svelte';
+	import { SvgMap } from '$lib/components';
 	import TerrainFeatures from './terrain-features.svelte';
 	import CombatUnits from './combat-units.svelte';
 
