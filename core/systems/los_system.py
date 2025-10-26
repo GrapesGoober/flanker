@@ -103,8 +103,11 @@ class LosSystem:
 
     @staticmethod
     def filter_new_points(verts: list[Vec2]) -> list[Vec2]:
-
-        return [verts[0]]
+        if len(verts) == 1:
+            return [verts[0]]
+        if len(verts) >= 1:
+            return [verts[1]]
+        return []
 
     @staticmethod
     def add_point(visible_points: list[Vec2], new_point: Vec2) -> None:
