@@ -50,24 +50,18 @@ class LosSystem:
         return True
 
     @staticmethod
-    def rotate_vector(v: Vec2, angle: float) -> Vec2:
-        """Rotate a 2D vector by 'angle' radians."""
-        c, s = math.cos(angle), math.sin(angle)
-        return Vec2(v.x * c - v.y * s, v.x * s + v.y * c)
-
-    @staticmethod
     def get_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
         radius: float = 1000,
     ) -> list[Vec2]:
-        sorted_verts = LosSystem.get_sorted_verts(gs, spotter_pos)
+        verts = LosSystem.get_terrain_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
-        for vert in sorted_verts:
+        for vert in verts:
             center_ray = (vert - spotter_pos).normalized() * radius
             angle_jitter = 1e-6
-            left_ray = LosSystem.rotate_vector(center_ray, -angle_jitter)
-            right_ray = LosSystem.rotate_vector(center_ray, +angle_jitter)
+            left_ray = center_ray.rotated(-angle_jitter)
+            right_ray = center_ray.rotated(+angle_jitter)
             for ray in [left_ray, right_ray]:
                 intersects = list(
                     LosSystem.get(
@@ -78,18 +72,21 @@ class LosSystem:
                     )
                 )
                 if len(intersects) != 0:
-                    points = [intersect.point for intersect in intersects]
-                    points = LosSystem.sort_by_distance(points, spotter_pos)
-                    points = LosSystem.filter_new_points(points)
-                    for point in points:
-                        LosSystem.add_point(visible_points, point)
+                    intersects = LosSystem.sort_by_distance(intersects, spotter_pos)
+                    intersects = LosSystem.filter_new_intersects(intersects)
+                    for intersect in intersects:
+                        LosSystem.add_point_if_noncolinear(
+                            visible_points, intersect.point
+                        )
                 else:
-                    LosSystem.add_point(visible_points, spotter_pos + ray)
+                    LosSystem.add_point_if_noncolinear(
+                        visible_points, spotter_pos + ray
+                    )
 
         return visible_points
 
     @staticmethod
-    def get_sorted_verts(
+    def get_terrain_verts(
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
@@ -98,19 +95,29 @@ class LosSystem:
             if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
                 continue
             verts += LinearTransform.apply(terrain.vertices, transform)
-        sorted_verts = LosSystem.sort_by_angle(verts, spotter_pos)
-        return sorted_verts
+
+        def angle_from_spotter(v: Vec2) -> float:
+            # Vector from spotter_pos to vertex
+            rel = v - spotter_pos
+            # Compute angle relative to +x axis (0 radians)
+            theta = math.atan2(rel.y, rel.x)
+            # Normalize to [0, 2π)
+            if theta < 0:
+                theta += 2 * math.pi
+            return theta
+
+        return sorted(verts, key=angle_from_spotter)
 
     @staticmethod
-    def filter_new_points(verts: list[Vec2]) -> list[Vec2]:
-        if len(verts) == 1:
-            return [verts[0]]
-        if len(verts) >= 1:
-            return [verts[1]]
+    def filter_new_intersects(intersects: list[Intersection]) -> list[Intersection]:
+        if len(intersects) == 1:
+            return [intersects[0]]
+        if len(intersects) >= 1:
+            return [intersects[1]]
         return []
 
     @staticmethod
-    def add_point(visible_points: list[Vec2], new_point: Vec2) -> None:
+    def add_point_if_noncolinear(visible_points: list[Vec2], new_point: Vec2) -> None:
         if len(visible_points) >= 2:
             a = visible_points[-2]
             b = visible_points[-1]
@@ -131,29 +138,12 @@ class LosSystem:
         visible_points.append(new_point)
 
     @staticmethod
-    def sort_by_angle(
-        verts: list[Vec2],
-        spotter_pos: Vec2,
-    ) -> list[Vec2]:
-        def angle_from_spotter(v: Vec2) -> float:
-            # Vector from spotter_pos to vertex
-            rel = v - spotter_pos
-            # Compute angle relative to +x axis (0 radians)
-            theta = math.atan2(rel.y, rel.x)
-            # Normalize to [0, 2π)
-            if theta < 0:
-                theta += 2 * math.pi
-            return theta
-
-        return sorted(verts, key=angle_from_spotter)
-
-    @staticmethod
     def sort_by_distance(
-        verts: list[Vec2],
+        verts: list[Intersection],
         spotter_pos: Vec2,
-    ) -> list[Vec2]:
-        def distance_from_spotter(v: Vec2) -> float:
-            return (v - spotter_pos).length()
+    ) -> list[Intersection]:
+        def distance_from_spotter(v: Intersection) -> float:
+            return (v.point - spotter_pos).length()
 
         return sorted(verts, key=distance_from_spotter)
 
