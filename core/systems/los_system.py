@@ -50,31 +50,41 @@ class LosSystem:
         return True
 
     @staticmethod
+    def rotate_vector(v: Vec2, angle: float) -> Vec2:
+        """Rotate a 2D vector by 'angle' radians."""
+        c, s = math.cos(angle), math.sin(angle)
+        return Vec2(v.x * c - v.y * s, v.x * s + v.y * c)
+
+    @staticmethod
     def get_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
-        range: float = 1000,
+        radius: float = 1000,
     ) -> list[Vec2]:
         sorted_verts = LosSystem.get_sorted_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in sorted_verts:
-            ray = (vert - spotter_pos).normalized() * range
-            intersects = list(
-                LosSystem.get(
-                    gs=gs,
-                    start=spotter_pos,
-                    end=spotter_pos + ray,
-                    mask=TerrainFeature.Flag.OPAQUE,
+            center_ray = (vert - spotter_pos).normalized() * radius
+            angle_jitter = 1e-6
+            left_ray = LosSystem.rotate_vector(center_ray, -angle_jitter)
+            right_ray = LosSystem.rotate_vector(center_ray, +angle_jitter)
+            for ray in [left_ray, right_ray]:
+                intersects = list(
+                    LosSystem.get(
+                        gs=gs,
+                        start=spotter_pos,
+                        end=spotter_pos + ray,
+                        mask=TerrainFeature.Flag.OPAQUE,
+                    )
                 )
-            )
-            if len(intersects) != 0:
-                points = [intersect.point for intersect in intersects]
-                points = LosSystem.sort_by_distance(points, spotter_pos)
-                points = LosSystem.filter_new_points(points)
-                for point in points:
-                    LosSystem.add_point(visible_points, point)
-            else:
-                LosSystem.add_point(visible_points, spotter_pos + ray)
+                if len(intersects) != 0:
+                    points = [intersect.point for intersect in intersects]
+                    points = LosSystem.sort_by_distance(points, spotter_pos)
+                    points = LosSystem.filter_new_points(points)
+                    for point in points:
+                        LosSystem.add_point(visible_points, point)
+                else:
+                    LosSystem.add_point(visible_points, spotter_pos + ray)
 
         return visible_points
 
@@ -94,7 +104,7 @@ class LosSystem:
     @staticmethod
     def filter_new_points(verts: list[Vec2]) -> list[Vec2]:
 
-        return verts
+        return [verts[0]]
 
     @staticmethod
     def add_point(visible_points: list[Vec2], new_point: Vec2) -> None:
@@ -103,13 +113,16 @@ class LosSystem:
             b = visible_points[-1]
             c = new_point
 
-            # Vector cross product (2D scalar) to test collinearity
+            # If points are colinear, replace
             ab = b - a
             ac = c - a
-            cross = ab.x * ac.y - ab.y * ac.x
-
-            if abs(cross) < 1e-9:  # nearly collinear
+            cross = ab.cross(ac)
+            if abs(cross) < 1e-9:
                 visible_points[-1] = new_point
+                return
+
+            # If points are colocated, don't append
+            if visible_points[-1] == new_point:
                 return
 
         visible_points.append(new_point)
