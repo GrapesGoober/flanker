@@ -12,6 +12,37 @@
         "units_destroyed_counter": 0
       }
     },
+    "1": {
+      "Transform": {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "degrees": 0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 300,
+            "y": 0
+          },
+          {
+            "x": 300,
+            "y": 300
+          },
+          {
+            "x": 0,
+            "y": 300
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 1
+      }
+    },
     "2": {
       "Transform": {
         "position": {

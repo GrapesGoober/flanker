@@ -53,15 +53,9 @@ class LosSystem:
     def get_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
-        range: float = 300,
+        range: float = 1000,
     ) -> list[Vec2]:
-
-        verts: list[Vec2] = []
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
-                continue
-            verts += LinearTransform.apply(terrain.vertices, transform)
-        sorted_verts = LosSystem.sort_by_angle(verts, spotter_pos)
+        sorted_verts = LosSystem.get_sorted_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in sorted_verts:
             ray = (vert - spotter_pos).normalized() * range
@@ -83,25 +77,41 @@ class LosSystem:
         return visible_points
 
     @staticmethod
+    def get_sorted_verts(
+        gs: GameState,
+        spotter_pos: Vec2,
+    ) -> list[Vec2]:
+        verts: list[Vec2] = []
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
+                continue
+            verts += LinearTransform.apply(terrain.vertices, transform)
+        sorted_verts = LosSystem.sort_by_angle(verts, spotter_pos)
+        return sorted_verts
+
+    @staticmethod
     def add_point(visible_points: list[Vec2], new_point: Vec2) -> None:
-        if len(visible_points) >= 2:
-            a = visible_points[-2]
-            b = visible_points[-1]
-            c = new_point
+        # if len(visible_points) >= 2:
+        #     a = visible_points[-2]
+        #     b = visible_points[-1]
+        #     c = new_point
 
-            # Vector cross product (2D scalar) to test collinearity
-            ab = b - a
-            ac = c - a
-            cross = ab.x * ac.y - ab.y * ac.x
+        #     # Vector cross product (2D scalar) to test collinearity
+        #     ab = b - a
+        #     ac = c - a
+        #     cross = ab.x * ac.y - ab.y * ac.x
 
-            if abs(cross) < 1e-9:  # nearly collinear
-                visible_points[-1] = new_point
-                return
+        #     if abs(cross) < 1e-9:  # nearly collinear
+        #         visible_points[-1] = new_point
+        #         return
 
         visible_points.append(new_point)
 
     @staticmethod
-    def sort_by_angle(verts: list[Vec2], spotter_pos: Vec2) -> list[Vec2]:
+    def sort_by_angle(
+        verts: list[Vec2],
+        spotter_pos: Vec2,
+    ) -> list[Vec2]:
         def angle_from_spotter(v: Vec2) -> float:
             # Vector from spotter_pos to vertex
             rel = v - spotter_pos
@@ -115,7 +125,10 @@ class LosSystem:
         return sorted(verts, key=angle_from_spotter)
 
     @staticmethod
-    def sort_by_distance(verts: list[Vec2], spotter_pos: Vec2) -> list[Vec2]:
+    def sort_by_distance(
+        verts: list[Vec2],
+        spotter_pos: Vec2,
+    ) -> list[Vec2]:
         def distance_from_spotter(v: Vec2) -> float:
             return (v - spotter_pos).length()
 
@@ -123,7 +136,10 @@ class LosSystem:
 
     @staticmethod
     def get(
-        gs: GameState, start: Vec2, end: Vec2, mask: int = -1
+        gs: GameState,
+        start: Vec2,
+        end: Vec2,
+        mask: int = -1,
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
@@ -138,7 +154,11 @@ class LosSystem:
 
     @staticmethod
     def _get_intersect(
-        a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2, tol: float = 0.1
+        a1: Vec2,
+        a2: Vec2,
+        b1: Vec2,
+        b2: Vec2,
+        tol: float = 1e-9,
     ) -> Vec2 | None:
         """Return an (x, y) intersection point between 2 line segments."""
         da = a2 - a1  # Delta first segment a

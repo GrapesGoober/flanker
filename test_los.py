@@ -33,6 +33,5 @@ if __name__ == "__main__":
     with open(path, "r") as f:
         gs = GameState.load(f.read(), component_types)
 
-    poly = LosSystem.get_los_polygon(gs, Vec2(0, 0))
-
+    poly = LosSystem.get_los_polygon(gs, Vec2(1, 1))
     visualize_points(poly)
