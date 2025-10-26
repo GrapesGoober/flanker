@@ -70,7 +70,9 @@ class LosSystem:
             if len(intersects) != 0:
                 points = [intersect.point for intersect in intersects]
                 points = LosSystem.sort_by_distance(points, spotter_pos)
-                LosSystem.add_point(visible_points, points[0])
+                points = LosSystem.filter_new_points(points)
+                for point in points:
+                    LosSystem.add_point(visible_points, point)
             else:
                 LosSystem.add_point(visible_points, spotter_pos + ray)
 
@@ -90,20 +92,25 @@ class LosSystem:
         return sorted_verts
 
     @staticmethod
+    def filter_new_points(verts: list[Vec2]) -> list[Vec2]:
+
+        return verts
+
+    @staticmethod
     def add_point(visible_points: list[Vec2], new_point: Vec2) -> None:
-        # if len(visible_points) >= 2:
-        #     a = visible_points[-2]
-        #     b = visible_points[-1]
-        #     c = new_point
+        if len(visible_points) >= 2:
+            a = visible_points[-2]
+            b = visible_points[-1]
+            c = new_point
 
-        #     # Vector cross product (2D scalar) to test collinearity
-        #     ab = b - a
-        #     ac = c - a
-        #     cross = ab.x * ac.y - ab.y * ac.x
+            # Vector cross product (2D scalar) to test collinearity
+            ab = b - a
+            ac = c - a
+            cross = ab.x * ac.y - ab.y * ac.x
 
-        #     if abs(cross) < 1e-9:  # nearly collinear
-        #         visible_points[-1] = new_point
-        #         return
+            if abs(cross) < 1e-9:  # nearly collinear
+                visible_points[-1] = new_point
+                return
 
         visible_points.append(new_point)
 
