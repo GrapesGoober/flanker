@@ -1,6 +1,7 @@
 from itertools import pairwise
 import math
 from typing import Iterable
+
 from core.components import CombatUnit, TerrainFeature, Transform
 from core.gamestate import GameState
 from core.systems.intersect_system import IntersectSystem
@@ -55,7 +56,7 @@ class LosSystem:
         spotter_pos: Vec2,
         radius: float = 1000,
     ) -> list[Vec2]:
-        verts = LosSystem.get_terrain_verts(gs, spotter_pos)
+        verts = LosSystem.get_sorted_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in verts:
             center_ray = (vert - spotter_pos).normalized() * radius
@@ -86,15 +87,34 @@ class LosSystem:
         return visible_points
 
     @staticmethod
-    def get_terrain_verts(
+    def _is_inside(vertices: list[Vec2], point: Vec2) -> bool:
+        line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
+        intersect_count = 0
+        for b1, b2 in pairwise(vertices):
+            # FIXME: due to tolerance, this ends up counting duplicate intersects
+            # It needs to filter intersects to remove duplicate counting
+            if LosSystem._get_intersect(point, line_cast_to, b1, b2):
+                intersect_count += 1
+        return intersect_count % 2 != 0
+
+    @staticmethod
+    def get_sorted_verts(
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
-        verts: list[Vec2] = []
+        all_verts: list[Vec2] = []
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
             if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
                 continue
-            verts += LinearTransform.apply(terrain.vertices, transform)
+            vertices = LinearTransform.apply(terrain.vertices, transform)
+            # Ignore if this is terrains that spotter is inside
+            # This rule applies to all OPAQUE terrains that is not BOUNDARY
+            if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
+                if _ == 41:
+                    pass
+                if LosSystem._is_inside(vertices, spotter_pos):
+                    continue
+            all_verts += vertices
 
         def angle_from_spotter(v: Vec2) -> float:
             # Vector from spotter_pos to vertex
@@ -106,7 +126,7 @@ class LosSystem:
                 theta += 2 * math.pi
             return theta
 
-        return sorted(verts, key=angle_from_spotter)
+        return sorted(all_verts, key=angle_from_spotter)
 
     @staticmethod
     def filter_new_intersects(intersects: list[Intersection]) -> list[Intersection]:
@@ -158,6 +178,11 @@ class LosSystem:
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
+                # Ignore if this is terrains that spotter is inside
+                # This rule applies to all OPAQUE terrains that is not BOUNDARY
+                if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
+                    if LosSystem._is_inside(vertices, start):
+                        continue
                 if terrain.is_closed_loop:
                     vertices.append(vertices[0])
                 for b1, b2 in pairwise(vertices):
