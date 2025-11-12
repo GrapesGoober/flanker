@@ -73,20 +73,24 @@ class LosSystem:
                         mask=TerrainFeature.Flag.OPAQUE,
                     )
                 )
+                # Choose which point from the intersects to append
                 if intersects:
                     intersects = LosSystem.sort_by_distance(intersects, spotter_pos)
                     # Use the second intersection point to allow see-into terrain
                     if len(intersects) > 1:
-                        second_intersect = intersects[1]
+                        new_point = intersects[1].point
                     else:
-                        second_intersect = intersects[0]
-                    LosSystem.add_point_if_noncolinear(
-                        visible_points, second_intersect.point
-                    )
-                else:
-                    LosSystem.add_point_if_noncolinear(
-                        visible_points, spotter_pos + ray
-                    )
+                        new_point = intersects[0].point
+                else:  # No intersects, use fallback point using the ray
+                    new_point = spotter_pos + ray
+
+                # If points are colocated, don't append
+                if visible_points and visible_points[-1] == new_point:
+                    continue
+                # If points are colinear, don't append
+                if LosSystem.is_colinear(visible_points, new_point):
+                    continue
+                visible_points.append(new_point)
 
         return visible_points
 
@@ -131,25 +135,20 @@ class LosSystem:
         return sorted(all_verts, key=angle_from_spotter)
 
     @staticmethod
-    def add_point_if_noncolinear(visible_points: list[Vec2], new_point: Vec2) -> None:
-        if len(visible_points) >= 2:
-            a = visible_points[-2]
-            b = visible_points[-1]
+    def is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
+        """Returns whether points are colinear from the previous other points."""
+        if len(previous_points) >= 2:
+            a = previous_points[-2]
+            b = previous_points[-1]
             c = new_point
-
-            # If points are colinear, replace
             ab = b - a
             ac = c - a
             cross = ab.cross(ac)
             if abs(cross) < 1e-9:
-                visible_points[-1] = new_point
-                return
+                previous_points[-1] = new_point
+                return True
 
-            # If points are colocated, don't append
-            if visible_points[-1] == new_point:
-                return
-
-        visible_points.append(new_point)
+        return False
 
     @staticmethod
     def sort_by_distance(
