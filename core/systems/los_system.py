@@ -56,6 +56,7 @@ class LosSystem:
         spotter_pos: Vec2,
         radius: float = 1000,
     ) -> list[Vec2]:
+        """Returns a polygon representing the LOS from a spotter position."""
         verts = LosSystem.get_sorted_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in verts:
@@ -65,20 +66,23 @@ class LosSystem:
             right_ray = center_ray.rotated(+angle_jitter)
             for ray in [left_ray, right_ray]:
                 intersects = list(
-                    LosSystem.get(
+                    LosSystem.get_intersect(
                         gs=gs,
                         start=spotter_pos,
                         end=spotter_pos + ray,
                         mask=TerrainFeature.Flag.OPAQUE,
                     )
                 )
-                if len(intersects) != 0:
+                if intersects:
                     intersects = LosSystem.sort_by_distance(intersects, spotter_pos)
-                    intersects = LosSystem.filter_new_intersects(intersects)
-                    for intersect in intersects:
-                        LosSystem.add_point_if_noncolinear(
-                            visible_points, intersect.point
-                        )
+                    # Use the second intersection point to allow see-into terrain
+                    if len(intersects) > 1:
+                        second_intersect = intersects[1]
+                    else:
+                        second_intersect = intersects[0]
+                    LosSystem.add_point_if_noncolinear(
+                        visible_points, second_intersect.point
+                    )
                 else:
                     LosSystem.add_point_if_noncolinear(
                         visible_points, spotter_pos + ray
@@ -88,6 +92,10 @@ class LosSystem:
 
     @staticmethod
     def _is_inside(vertices: list[Vec2], point: Vec2) -> bool:
+        """
+        Checks whether a point is inside vertices.
+        Assumes closed loop that `vertices[-1] == vertices[0]`.
+        """
         line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
         intersect_points: list[Vec2] = []
         for b1, b2 in pairwise(vertices):
@@ -103,19 +111,12 @@ class LosSystem:
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
+        """Get all terrain vertices sorted by angle."""
         all_verts: list[Vec2] = []
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
             if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
                 continue
-            vertices = LinearTransform.apply(terrain.vertices, transform)
-            # Ignore if this is terrains that spotter is inside
-            # This rule applies to all OPAQUE terrains that is not BOUNDARY
-            if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
-                if _ == 41:
-                    pass
-                if LosSystem._is_inside(vertices, spotter_pos):
-                    continue
-            all_verts += vertices
+            all_verts += LinearTransform.apply(terrain.vertices, transform)
 
         def angle_from_spotter(v: Vec2) -> float:
             # Vector from spotter_pos to vertex
@@ -128,14 +129,6 @@ class LosSystem:
             return theta
 
         return sorted(all_verts, key=angle_from_spotter)
-
-    @staticmethod
-    def filter_new_intersects(intersects: list[Intersection]) -> list[Intersection]:
-        if len(intersects) == 1:
-            return [intersects[0]]
-        if len(intersects) >= 1:
-            return [intersects[1]]
-        return []
 
     @staticmethod
     def add_point_if_noncolinear(visible_points: list[Vec2], new_point: Vec2) -> None:
@@ -163,13 +156,15 @@ class LosSystem:
         verts: list[Intersection],
         spotter_pos: Vec2,
     ) -> list[Intersection]:
+        """Sorts a list of intersection by distance from spotter."""
+
         def distance_from_spotter(v: Intersection) -> float:
             return (v.point - spotter_pos).length()
 
         return sorted(verts, key=distance_from_spotter)
 
     @staticmethod
-    def get(
+    def get_intersect(
         gs: GameState,
         start: Vec2,
         end: Vec2,
@@ -179,13 +174,14 @@ class LosSystem:
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
-                # Ignore if this is terrains that spotter is inside
-                # This rule applies to all OPAQUE terrains that is not BOUNDARY
-                if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
-                    if LosSystem._is_inside(vertices, start):
-                        continue
                 if terrain.is_closed_loop:
                     vertices.append(vertices[0])
+                    # Ignore the terrain entity if the spotter is inside it,
+                    # this allows spotter to see-out of a terrain
+                    if LosSystem._is_inside(vertices, start):
+                        # This rule doesn't apply to boundary terrain
+                        if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
+                            continue
                 for b1, b2 in pairwise(vertices):
                     point = LosSystem._get_intersect(start, end, b1, b2)
                     if point is not None:
