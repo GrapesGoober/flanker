@@ -89,13 +89,14 @@ class LosSystem:
     @staticmethod
     def _is_inside(vertices: list[Vec2], point: Vec2) -> bool:
         line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
-        intersect_count = 0
+        intersect_points: list[Vec2] = []
         for b1, b2 in pairwise(vertices):
-            # FIXME: due to tolerance, this ends up counting duplicate intersects
-            # It needs to filter intersects to remove duplicate counting
-            if LosSystem._get_intersect(point, line_cast_to, b1, b2):
-                intersect_count += 1
-        return intersect_count % 2 != 0
+            if intersect := LosSystem._get_intersect(point, line_cast_to, b1, b2):
+                # Due to tolerance, duplicate intersects needs to be filtered out
+                if intersect not in intersect_points:
+                    intersect_points.append(intersect)
+
+        return len(intersect_points) % 2 != 0
 
     @staticmethod
     def get_sorted_verts(
