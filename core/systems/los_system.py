@@ -1,10 +1,10 @@
-from itertools import pairwise
 import math
 from typing import Iterable
 
 from core.components import CombatUnit, TerrainFeature, Transform
 from core.gamestate import GameState
 from core.systems.intersect_system import IntersectSystem
+from core.utils.intersect_getter import IntersectGetter
 from core.utils.linear_transform import LinearTransform
 from core.utils.vec2 import Vec2
 from dataclasses import dataclass
@@ -57,7 +57,7 @@ class LosSystem:
         radius: float = 1000,
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
-        verts = LosSystem.get_sorted_verts(gs, spotter_pos)
+        verts = LosSystem._get_sorted_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in verts:
             center_ray = (vert - spotter_pos).normalized() * radius
@@ -66,7 +66,7 @@ class LosSystem:
             right_ray = center_ray.rotated(+angle_jitter)
             for ray in [left_ray, right_ray]:
                 intersects = list(
-                    LosSystem.get_intersect(
+                    LosSystem.get_terrain_intersect(
                         gs=gs,
                         start=spotter_pos,
                         end=spotter_pos + ray,
@@ -75,7 +75,7 @@ class LosSystem:
                 )
                 # Choose which point from the intersects to append
                 if intersects:
-                    intersects = LosSystem.sort_by_distance(intersects, spotter_pos)
+                    intersects = LosSystem._sort_by_distance(intersects, spotter_pos)
                     # Use the second intersection point to allow see-into terrain
                     if len(intersects) > 1:
                         new_point = intersects[1].point
@@ -88,30 +88,14 @@ class LosSystem:
                 if visible_points and visible_points[-1] == new_point:
                     continue
                 # If points are colinear, don't append
-                if LosSystem.is_colinear(visible_points, new_point):
+                if LosSystem._is_colinear(visible_points, new_point):
                     continue
                 visible_points.append(new_point)
 
         return visible_points
 
     @staticmethod
-    def _is_inside(vertices: list[Vec2], point: Vec2) -> bool:
-        """
-        Checks whether a point is inside vertices.
-        Assumes closed loop that `vertices[-1] == vertices[0]`.
-        """
-        line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
-        intersect_points: list[Vec2] = []
-        for b1, b2 in pairwise(vertices):
-            if intersect := LosSystem._get_intersect(point, line_cast_to, b1, b2):
-                # Due to tolerance, duplicate intersects needs to be filtered out
-                if intersect not in intersect_points:
-                    intersect_points.append(intersect)
-
-        return len(intersect_points) % 2 != 0
-
-    @staticmethod
-    def get_sorted_verts(
+    def _get_sorted_verts(
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
@@ -135,7 +119,7 @@ class LosSystem:
         return sorted(all_verts, key=angle_from_spotter)
 
     @staticmethod
-    def is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
+    def _is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
         """Returns whether points are colinear from the previous other points."""
         if len(previous_points) >= 2:
             a = previous_points[-2]
@@ -151,7 +135,7 @@ class LosSystem:
         return False
 
     @staticmethod
-    def sort_by_distance(
+    def _sort_by_distance(
         verts: list[Intersection],
         spotter_pos: Vec2,
     ) -> list[Intersection]:
@@ -163,7 +147,7 @@ class LosSystem:
         return sorted(verts, key=distance_from_spotter)
 
     @staticmethod
-    def get_intersect(
+    def get_terrain_intersect(
         gs: GameState,
         start: Vec2,
         end: Vec2,
@@ -177,31 +161,14 @@ class LosSystem:
                     vertices.append(vertices[0])
                     # Ignore the terrain entity if the spotter is inside it,
                     # this allows spotter to see-out of a terrain
-                    if LosSystem._is_inside(vertices, start):
+                    if IntersectGetter.is_inside(start, vertices):
                         # This rule doesn't apply to boundary terrain
                         if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
                             continue
-                for b1, b2 in pairwise(vertices):
-                    point = LosSystem._get_intersect(start, end, b1, b2)
-                    if point is not None:
-                        yield Intersection(point, terrain, id)
 
-    @staticmethod
-    def _get_intersect(
-        a1: Vec2,
-        a2: Vec2,
-        b1: Vec2,
-        b2: Vec2,
-        tol: float = 1e-9,
-    ) -> Vec2 | None:
-        """Return an (x, y) intersection point between 2 line segments."""
-        da = a2 - a1  # Delta first segment a
-        db = b2 - b1  # Delta second segment b
-        if (denom := da.cross(db)) == 0:
-            return None  # Lines are parallel
-        diff = b1 - a1
-        t = diff.cross(db) / denom  # t and a are parametric values for intersection,
-        u = diff.cross(da) / denom  # along the length of the vectors using deltas
-        if -tol <= t <= 1 + tol and -tol <= u <= 1 + tol:
-            return a1 + da * t  # Offset p1 point by ua to get final point
-        return None  # Intersection is outside the segments
+                points = IntersectGetter.get_intersects(
+                    line=(start, end),
+                    vertices=vertices,
+                )
+                for point in points:
+                    yield Intersection(point, terrain, id)
