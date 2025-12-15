@@ -56,7 +56,7 @@ class IntersectGetter:
         )
         # Convert to Vec2
         points = [Vec2(x, y) for x, y in intersections]
-        # Filter out duplicate/colocated points using Vec2 equality
+        # Filter out colocated points using Vec2 equality
         unique_points = [p for i, p in enumerate(points) if p not in points[:i]]
         return list(unique_points)
 
@@ -81,10 +81,14 @@ class IntersectGetter:
         t = np.cross(q1_p1, edge_vectors)[:, 2] / line_cross_edge
         u = np.cross(q1_p1, line_vector)[:, 2] / line_cross_edge
 
-        TOL = 1e-9
+        # Note: we're trying to check t and u values in bound [0, 1].
+        # Since the cost of missing a intersect point (false negative) is too severe,
+        # the tolerance has to be negative to eagerly catch an intersect.
+        # This will check for bound (0-TOL, 1+TOL)
+        TOL = -1e-9
         parallel = np.abs(line_cross_edge) <= TOL
         intersect_mask = (
-            (~parallel) & (t >= TOL) & (t <= 1 - TOL) & (u >= TOL) & (u <= 1 - TOL)
+            (~parallel) & (t > TOL) & (t < 1 - TOL) & (u > TOL) & (u < 1 - TOL)
         )
 
         # Calculate intersection points using P = start + t * line_vector
