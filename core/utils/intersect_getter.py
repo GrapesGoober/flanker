@@ -83,12 +83,11 @@ class IntersectGetter:
 
         # Note: we're trying to check t and u values in bound [0, 1].
         # Since the cost of missing a intersect point (false negative) is too severe,
-        # the tolerance has to be negative to eagerly catch an intersect.
-        # This will check for bound (0-TOL, 1+TOL)
-        TOL = -1e-9
+        # the tolerance has to eagerly catch an intersect [0-TOL, 1+TOL]
+        TOL = 1e-9
         parallel = np.abs(line_cross_edge) <= TOL
         intersect_mask = (
-            (~parallel) & (t > TOL) & (t < 1 - TOL) & (u > TOL) & (u < 1 - TOL)
+            (~parallel) & (t >= -TOL) & (t <= 1 + TOL) & (u >= -TOL) & (u <= 1 + TOL)
         )
 
         # Calculate intersection points using P = start + t * line_vector
