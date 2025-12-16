@@ -59,7 +59,7 @@ class IntersectGetter:
         )
         # Convert to Vec2
         points = [Vec2(x, y) for x, y in intersections]
-        # Filter out colocated points using Vec2 equality
+        # Filter out colocated intersection points if exists
         unique_points = [p for i, p in enumerate(points) if p not in points[:i]]
         return list(unique_points)
 
@@ -72,25 +72,24 @@ class IntersectGetter:
         edge_vectors: NDArray[np.float64],
     ) -> NDArray[np.float64]:
         """
+        Private optimized intersect getter for `get_intersects`.
         Computes all line segment intersections between a line and a set of edges
-        represented as linear Bezier curves L = start + t * vector.
+        represented as linear Bezier curves Line = start + t * vector.
         Returns NDArray (N x 2) of intersection points.
-        Note: this returns duplicate co-located points if edges share a vertex.
+        Note: might return duplicate points if line intersects a shared vertex.
         """
         # Compute two parametric values t & u of intersect point
+        # TODO: why use np.cross? Wikipedia says use determinant matrix
+        # Is this why we're passing z=0 to prevent np.cross from freaking out?
+        # This might not be the correct way to do this.
         denominator = np.cross(line_vector, edge_vectors)[:, 2]
         q1_p1 = edge_verts - line_vert
         t = np.cross(q1_p1, edge_vectors)[:, 2] / denominator
         u = np.cross(q1_p1, line_vector)[:, 2] / denominator
+        parallel_mask = np.abs(denominator) <= 1e-9
 
-        # Note: we're trying to check t and u values in bound [0, 1].
-        # Since the cost of missing a intersect point (false negative) is too severe,
-        # the tolerance has to greedily catch an intersect [0-TOL, 1+TOL].
-        TOL = 1e-9
-        parallel = np.abs(denominator) <= TOL
-        intersect_mask = (
-            (~parallel) & (t >= -TOL) & (t <= 1 + TOL) & (u >= -TOL) & (u <= 1 + TOL)
-        )
+        # There's intersection if t and u values are in bound [0, 1]
+        intersect_mask = (~parallel_mask) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
 
         # Calculate intersection points using P = start + t * line_vector
         # Only slice [:2] to grab x and y, ignore z=0

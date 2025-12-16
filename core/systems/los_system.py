@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Intersection:
+class TerrainIntersection:
     """Represents intersection between line and terrain feature."""
 
     point: Vec2
@@ -61,6 +61,8 @@ class LosSystem:
         visible_points: list[Vec2] = []
         for vert in verts:
             center_ray = (vert - spotter_pos).normalized() * radius
+            # TODO: add distance-based jittering, not angles
+            # Reason: angle-based jittering makes it hard to filter out colocated points
             angle_jitter = 1e-6
             left_ray = center_ray.rotated(-angle_jitter)
             right_ray = center_ray.rotated(+angle_jitter)
@@ -136,12 +138,12 @@ class LosSystem:
 
     @staticmethod
     def _sort_by_distance(
-        verts: list[Intersection],
+        verts: list[TerrainIntersection],
         spotter_pos: Vec2,
-    ) -> list[Intersection]:
+    ) -> list[TerrainIntersection]:
         """Sorts a list of intersection by distance from spotter."""
 
-        def distance_from_spotter(v: Intersection) -> float:
+        def distance_from_spotter(v: TerrainIntersection) -> float:
             return (v.point - spotter_pos).length()
 
         return sorted(verts, key=distance_from_spotter)
@@ -152,7 +154,7 @@ class LosSystem:
         start: Vec2,
         end: Vec2,
         mask: int = -1,
-    ) -> Iterable[Intersection]:
+    ) -> Iterable[TerrainIntersection]:
         """Yields intersections between the line segment and terrain."""
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
@@ -171,4 +173,4 @@ class LosSystem:
                     vertices=vertices,
                 )
                 for point in points:
-                    yield Intersection(point, terrain, id)
+                    yield TerrainIntersection(point, terrain, id)
