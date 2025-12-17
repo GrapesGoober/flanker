@@ -89,8 +89,9 @@ class LosSystem:
                 # If points are colocated, don't append
                 if visible_points and visible_points[-1] == new_point:
                     continue
-                # If points are colinear, don't append
+                # If points are colinear, replace instead of append
                 if LosSystem._is_colinear(visible_points, new_point):
+                    visible_points[-1] = new_point
                     continue
                 visible_points.append(new_point)
 
