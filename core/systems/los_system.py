@@ -55,10 +55,10 @@ class LosSystem:
         gs: GameState,
         spotter_pos: Vec2,
         radius: float = 1000,
-        jitter_size: float = 1e-6,
+        jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
-        verts = LosSystem._get_sorted_verts(gs, spotter_pos)
+        verts = LosSystem._sort_verts_by_angle(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -71,7 +71,7 @@ class LosSystem:
             right_point = spotter_pos + jitter
             for point in [left_point, right_point]:
                 intersects = list(
-                    LosSystem.get_terrain_intersect(
+                    LosSystem._get_terrain_intersects(
                         gs=gs,
                         start=point,
                         end=point + ray,
@@ -80,7 +80,9 @@ class LosSystem:
                 )
                 # Choose which point from the intersects to append
                 if intersects:
-                    intersects = LosSystem._sort_by_distance(intersects, spotter_pos)
+                    intersects = LosSystem._sort_intersects_by_distance(
+                        intersects, spotter_pos
+                    )
                     # Use the second intersection point to allow see-into terrain
                     if len(intersects) > 1:
                         new_point = intersects[1].point
@@ -105,7 +107,7 @@ class LosSystem:
         return visible_points
 
     @staticmethod
-    def _get_sorted_verts(
+    def _sort_verts_by_angle(
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
@@ -145,7 +147,7 @@ class LosSystem:
         return False
 
     @staticmethod
-    def _sort_by_distance(
+    def _sort_intersects_by_distance(
         verts: list[TerrainIntersection],
         spotter_pos: Vec2,
     ) -> list[TerrainIntersection]:
@@ -157,7 +159,7 @@ class LosSystem:
         return sorted(verts, key=distance_from_spotter)
 
     @staticmethod
-    def get_terrain_intersect(
+    def _get_terrain_intersects(
         gs: GameState,
         start: Vec2,
         end: Vec2,
