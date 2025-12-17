@@ -55,23 +55,26 @@ class LosSystem:
         gs: GameState,
         spotter_pos: Vec2,
         radius: float = 1000,
+        jitter_size: float = 1e-6,
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
         verts = LosSystem._get_sorted_verts(gs, spotter_pos)
         visible_points: list[Vec2] = []
         for vert in verts:
-            center_ray = (vert - spotter_pos).normalized() * radius
-            # TODO: add distance-based jittering, not angles
-            # Reason: angle-based jittering makes it hard to filter out colocated points
-            angle_jitter = 1e-6
-            left_ray = center_ray.rotated(-angle_jitter)
-            right_ray = center_ray.rotated(+angle_jitter)
-            for ray in [left_ray, right_ray]:
+            direction = (vert - spotter_pos).normalized()
+            # TODO: Remove radius, cast towards the bounding box instead
+            ray = direction * radius
+            # Instead of casting one ray, casts two rays slightly to the left and right.
+            # This prevents boundary sensitivity when casting rays at the vertices.
+            jitter = direction.rotated(1.5708) * jitter_size
+            left_point = spotter_pos - jitter
+            right_point = spotter_pos + jitter
+            for point in [left_point, right_point]:
                 intersects = list(
                     LosSystem.get_terrain_intersect(
                         gs=gs,
-                        start=spotter_pos,
-                        end=spotter_pos + ray,
+                        start=point,
+                        end=point + ray,
                         mask=TerrainFeature.Flag.OPAQUE,
                     )
                 )
@@ -86,6 +89,10 @@ class LosSystem:
                 else:  # No intersects, use fallback point using the ray
                     new_point = spotter_pos + ray
 
+                # If the new point is close enough to the target vertex,
+                # assume that the point is aimed there and lands close enough
+                if (new_point - vert).length() < 1e-3:
+                    new_point = vert
                 # If points are colocated, don't append
                 if visible_points and visible_points[-1] == new_point:
                     continue
