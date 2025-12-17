@@ -40,7 +40,8 @@ if __name__ == "__main__":
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
         visualize_points(vertices, color="C1")
-
+    center = Vec2(150, 180)
     poly = LosSystem.get_los_polygon(gs, Vec2(150, 180))
     visualize_points(poly, color="C0")
+    plt.scatter(center.x, -center.y, color="C0")  # type: ignore
     plt.show()  # type: ignore
