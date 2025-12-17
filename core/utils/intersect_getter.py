@@ -58,7 +58,7 @@ class IntersectGetter:
             edge_vectors=np.array(edge_vectors, dtype=np.float64),
         )
         # Convert to Vec2
-        points = [Vec2(x, y) for x, y in intersections]
+        points = [Vec2(float(x), float(y)) for x, y in intersections]
         # Filter out colocated intersection points if exists
         unique_points = [p for i, p in enumerate(points) if p not in points[:i]]
         return list(unique_points)
