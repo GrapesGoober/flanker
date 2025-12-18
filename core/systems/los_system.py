@@ -1,7 +1,12 @@
 import math
 from typing import Iterable
 
-from core.components import CombatUnit, TerrainFeature, Transform
+from core.components import (
+    CombatUnit,
+    LosControls,
+    TerrainFeature,
+    Transform,
+)
 from core.gamestate import GameState
 from core.systems.intersect_system import IntersectSystem
 from core.utils.intersect_getter import IntersectGetter
@@ -58,7 +63,19 @@ class LosSystem:
         return True
 
     @staticmethod
-    def get_los_polygon(
+    def update_los_polygon(
+        gs: GameState,
+        unit_id: int,
+    ) -> None:
+        transform = gs.get_component(unit_id, Transform)
+        los_controls = gs.get_component(unit_id, LosControls)
+        los_controls.los_polygon = LosSystem._get_los_polygon(
+            gs,
+            transform.position,
+        )
+
+    @staticmethod
+    def _get_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
         radius: float = 1000,
