@@ -25,6 +25,9 @@
         "status": "ACTIVE",
         "inside_terrains": []
       },
+      "LosControls": {
+        "los_polygon": []
+      },
       "MoveControls": {
         "move_type": "FOOT"
       },
@@ -45,6 +48,9 @@
         "faction": "BLUE",
         "status": "ACTIVE",
         "inside_terrains": []
+      },
+      "LosControls": {
+        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -67,6 +73,9 @@
         "status": "ACTIVE",
         "inside_terrains": []
       },
+      "LosControls": {
+        "los_polygon": []
+      },
       "MoveControls": {
         "move_type": "FOOT"
       },
@@ -87,6 +96,9 @@
         "faction": "BLUE",
         "status": "ACTIVE",
         "inside_terrains": []
+      },
+      "LosControls": {
+        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -109,6 +121,9 @@
         "status": "ACTIVE",
         "inside_terrains": []
       },
+      "LosControls": {
+        "los_polygon": []
+      },
       "MoveControls": {
         "move_type": "FOOT"
       },
@@ -129,6 +144,9 @@
         "faction": "BLUE",
         "status": "ACTIVE",
         "inside_terrains": []
+      },
+      "LosControls": {
+        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -151,6 +169,9 @@
         "status": "ACTIVE",
         "inside_terrains": []
       },
+      "LosControls": {
+        "los_polygon": []
+      },
       "MoveControls": {
         "move_type": "FOOT"
       },
@@ -171,6 +192,9 @@
         "faction": "BLUE",
         "status": "ACTIVE",
         "inside_terrains": []
+      },
+      "LosControls": {
+        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -193,6 +217,9 @@
         "status": "ACTIVE",
         "inside_terrains": []
       },
+      "LosControls": {
+        "los_polygon": []
+      },
       "MoveControls": {
         "move_type": "FOOT"
       },
@@ -212,6 +239,9 @@
       "CombatUnit": {
         "faction": "RED",
         "status": "ACTIVE"
+      },
+      "LosControls": {
+        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT",
@@ -235,6 +265,9 @@
         "status": "ACTIVE",
         "inside_terrains": [15]
       },
+      "LosControls": {
+        "los_polygon": []
+      },
       "MoveControls": {
         "move_type": "FOOT"
       },
@@ -255,6 +288,9 @@
         "faction": "RED",
         "status": "ACTIVE",
         "inside_terrains": [13]
+      },
+      "LosControls": {
+        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT"

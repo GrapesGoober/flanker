@@ -48,6 +48,16 @@ class CombatUnit:
 
 
 @dataclass
+class LosControls:
+    """
+    Marks an entity as capable of Line-Of-Sight.
+    LOS interrupts move actions and allows for fire actions.
+    """
+
+    los_polygon: list[Vec2]
+
+
+@dataclass
 class MoveControls:
     """
     Marks entity as movable, along with its. Used by move action to
