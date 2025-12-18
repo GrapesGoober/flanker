@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class TerrainIntersection:
+class _TerrainIntersection:
     """Represents intersection between line and terrain feature."""
 
     point: Vec2
@@ -19,8 +19,15 @@ class TerrainIntersection:
     terrain_id: int
 
 
+@dataclass
+class _Terrain:
+    terrain_id: int
+    terrain_feature: TerrainFeature
+    vertices: list[Vec2]
+
+
 class LosSystem:
-    """Static system class for checking Line-of-Sight (LOS) for entities."""
+    """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
     def check(gs: GameState, spotter_ent: int, target_pos: Vec2) -> bool:
@@ -58,7 +65,14 @@ class LosSystem:
         jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
-        verts = LosSystem._sort_verts_by_angle(gs, spotter_pos)
+        terrains = list(
+            LosSystem._get_terrain_vertices(
+                gs,
+                spotter_pos,
+                mask=TerrainFeature.Flag.OPAQUE,
+            )
+        )
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrains)
         visible_points: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -73,9 +87,8 @@ class LosSystem:
                 intersects = list(
                     LosSystem._get_terrain_intersects(
                         gs=gs,
-                        start=point,
-                        end=point + ray,
-                        mask=TerrainFeature.Flag.OPAQUE,
+                        line=(point, point + ray),
+                        terrains=terrains,
                     )
                 )
                 # Choose which point from the intersects to append
@@ -108,15 +121,11 @@ class LosSystem:
 
     @staticmethod
     def _sort_verts_by_angle(
-        gs: GameState,
         spotter_pos: Vec2,
+        terrains: list[_Terrain],
     ) -> list[Vec2]:
         """Get all terrain vertices sorted by angle."""
-        all_verts: list[Vec2] = []
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
-                continue
-            all_verts += LinearTransform.apply(terrain.vertices, transform)
+        all_verts = [vert for t in terrains for vert in t.vertices]
 
         def angle_from_spotter(v: Vec2) -> float:
             # Vector from spotter_pos to vertex
@@ -141,31 +150,47 @@ class LosSystem:
             ac = c - a
             cross = ab.cross(ac)
             if abs(cross) < 1e-9:
-                previous_points[-1] = new_point
                 return True
 
         return False
 
     @staticmethod
     def _sort_intersects_by_distance(
-        verts: list[TerrainIntersection],
+        intersects: list[_TerrainIntersection],
         spotter_pos: Vec2,
-    ) -> list[TerrainIntersection]:
+    ) -> list[_TerrainIntersection]:
         """Sorts a list of intersection by distance from spotter."""
 
-        def distance_from_spotter(v: TerrainIntersection) -> float:
+        def distance_from_spotter(v: _TerrainIntersection) -> float:
             return (v.point - spotter_pos).length()
 
-        return sorted(verts, key=distance_from_spotter)
+        return sorted(intersects, key=distance_from_spotter)
 
     @staticmethod
     def _get_terrain_intersects(
         gs: GameState,
-        start: Vec2,
-        end: Vec2,
-        mask: int = -1,
-    ) -> Iterable[TerrainIntersection]:
+        line: tuple[Vec2, Vec2],
+        terrains: list[_Terrain],
+    ) -> Iterable[_TerrainIntersection]:
         """Yields intersections between the line segment and terrain."""
+        for terrain in terrains:
+            points = IntersectGetter.get_intersects(
+                line=line,
+                vertices=terrain.vertices,
+            )
+            for point in points:
+                yield _TerrainIntersection(
+                    point,
+                    terrain.terrain_feature,
+                    terrain.terrain_id,
+                )
+
+    @staticmethod
+    def _get_terrain_vertices(
+        gs: GameState,
+        spotter_pos: Vec2,
+        mask: int = -1,
+    ) -> Iterable[_Terrain]:
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
@@ -173,14 +198,15 @@ class LosSystem:
                     vertices.append(vertices[0])
                     # Ignore the terrain entity if the spotter is inside it,
                     # this allows spotter to see-out of a terrain
-                    if IntersectGetter.is_inside(start, vertices):
+                    if (
+                        IntersectGetter.is_inside(spotter_pos, vertices)
                         # This rule doesn't apply to boundary terrain
-                        if (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0:
-                            continue
-
-                points = IntersectGetter.get_intersects(
-                    line=(start, end),
-                    vertices=vertices,
-                )
-                for point in points:
-                    yield TerrainIntersection(point, terrain, id)
+                        and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
+                    ):
+                        continue
+                # TODO: Get terrain vertices early on.
+                # Filter out is_inside and terrain mask once.
+                # Use this same list for both the sorted vertices AND for intersection checks.
+                # Thus, this vertices must be per-terrain (for intersection checks)
+                # and also global (for sorting verts)
+                yield _Terrain(id, terrain, vertices)
