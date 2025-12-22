@@ -79,6 +79,8 @@ class MoveSystem:
         spotter_candidates = list(FireSystem.get_spotter_candidates(gs, action.unit_id))
         start = transform.position
 
+        # TODO: refactor interrupt to LOS polygon
+
         # For each subdivision step of move line, check interrupt
         for step in MoveSystem._get_move_steps(transform.position, action.to):
             transform.position = step

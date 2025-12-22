@@ -3,7 +3,7 @@ from typing import Iterable
 
 from core.components import (
     CombatUnit,
-    LosControls,
+    FireControls,
     TerrainFeature,
     Transform,
 )
@@ -68,14 +68,14 @@ class LosSystem:
         unit_id: int,
     ) -> None:
         transform = gs.get_component(unit_id, Transform)
-        los_controls = gs.get_component(unit_id, LosControls)
-        los_controls.los_polygon = LosSystem._get_los_polygon(
+        fire_controls = gs.get_component(unit_id, FireControls)
+        fire_controls.los_polygon = LosSystem.get_los_polygon(
             gs,
             transform.position,
         )
 
     @staticmethod
-    def _get_los_polygon(
+    def get_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
         radius: float = 1000,

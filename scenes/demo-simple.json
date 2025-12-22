@@ -56,15 +56,13 @@
         "status": "ACTIVE",
         "inside_terrains": []
       },
-      "LosControls": {
-        "los_polygon": []
-      },
       "MoveControls": {
         "move_type": "FOOT"
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": "SUPPRESS"
+        "override": "SUPPRESS",
+        "los_polygon": []
       },
       "AssaultControls": {}
     },
@@ -80,9 +78,6 @@
         "faction": "BLUE",
         "status": "ACTIVE",
         "inside_terrains": []
-      },
-      "LosControls": {
-        "los_polygon": []
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -103,9 +98,7 @@
       },
       "CombatUnit": {
         "faction": "RED",
-        "status": "ACTIVE"
-      },
-      "LosControls": {
+        "status": "ACTIVE",
         "los_polygon": []
       },
       "MoveControls": {
@@ -131,15 +124,13 @@
         "status": "ACTIVE",
         "inside_terrains": [15]
       },
-      "LosControls": {
-        "los_polygon": []
-      },
       "MoveControls": {
         "move_type": "FOOT"
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": "PIN"
+        "override": "PIN",
+        "los_polygon": []
       },
       "AssaultControls": {}
     },

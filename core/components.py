@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, IntFlag, auto
 from core.action_models import AssaultOutcomes, FireOutcomes
 from core.utils.vec2 import Vec2
@@ -48,16 +48,6 @@ class CombatUnit:
 
 
 @dataclass
-class LosControls:
-    """
-    Marks an entity as capable of Line-Of-Sight.
-    LOS interrupts move actions and allows for fire actions.
-    """
-
-    los_polygon: list[Vec2]
-
-
-@dataclass
 class MoveControls:
     """
     Marks entity as movable, along with its. Used by move action to
@@ -80,6 +70,7 @@ class FireControls:
 
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
+    los_polygon: list[Vec2] = field(default_factory=list[Vec2])
 
 
 @dataclass
