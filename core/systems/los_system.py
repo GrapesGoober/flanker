@@ -134,6 +134,7 @@ class LosSystem:
                     continue
                 visible_points.append(new_point)
 
+        visible_points.append(visible_points[0])
         return visible_points
 
     @staticmethod

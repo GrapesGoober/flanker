@@ -12,6 +12,7 @@ from core.components import (
 )
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
+from core.systems.los_system import LosSystem
 from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
 
@@ -61,6 +62,22 @@ def fixture() -> Fixture:
             flag=TerrainFeature.Flag.OPAQUE,
         ),
     )
+    # 200x200 boundary
+    gs.add_entity(
+        Transform(position=Vec2(0, 0), degrees=0),
+        TerrainFeature(
+            vertices=[
+                Vec2(-1000, -1000),
+                Vec2(1000, -1000),
+                Vec2(1000, 1000),
+                Vec2(-1000, 1000),
+                Vec2(-1000, -1000),
+            ],
+            flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
+        ),
+    )
+
+    LosSystem.update_los_polygon(gs, unit_shoot)
 
     return Fixture(
         gs=gs,
@@ -107,8 +124,8 @@ def test_interrupt_pin(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
-        8, -10
-    ), "Move action expects to be interrupted at Vec2(8, -10)"
+        7.5, -10
+    ), "Move action expects to be interrupted at Vec2(7.5, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
     assert unit.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
@@ -124,7 +141,7 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
-        8, -10
+        7.5, -10
     ), "Move action expects to be interrupted at Vec2(8, -10)"
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
     assert (

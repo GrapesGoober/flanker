@@ -17,6 +17,8 @@ class IntersectGetter:
         Checks whether a point is inside vertices.
         Assumes a closed loop that `vertices[-1] == vertices[0]`.
         """
+        if len(vertices) <= 2:
+            raise ValueError("`is_inside` need at least three vertices.")
 
         line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
         # TODO: it thinks it's inside one terrain entity

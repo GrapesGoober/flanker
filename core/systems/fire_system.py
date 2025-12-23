@@ -109,8 +109,9 @@ class FireSystem:
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
-
             # Check that spotter is a valid spotter for reactive fire
+            if spotter_unit.status == CombatUnit.Status.SUPPRESSED:
+                continue
             if spotter_id == target_id:
                 continue
             if unit.faction == spotter_unit.faction:
