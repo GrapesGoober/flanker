@@ -113,7 +113,7 @@ class MoveSystem:
 
         # Tiny offset to prevent entity from sitting precisely on LOS polygon edge
         # This reduces likelyhood of floating point sensitivity
-        offset = (action.to - transform.position).normalized() * 1e-9
+        offset = (action.to - transform.position).normalized() * 1e-12
 
         # Loop through each interrupt candidate point to apply move interrupt
         for interrupt_pos, spotter_id in interrupt_candidates:
