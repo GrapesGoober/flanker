@@ -111,6 +111,10 @@ class MoveSystem:
             key=lambda intersect: (intersect[0] - transform.position).length(),
         )
 
+        # Tiny offset to prevent entity from sitting precisely on LOS polygon edge
+        # This reduces likelyhood of floating point sensitivity
+        offset = (action.to - transform.position).normalized() * 1e-9
+
         # Loop through each interrupt candidate point to apply move interrupt
         for interrupt_pos, spotter_id in interrupt_candidates:
             fire_controls = gs.get_component(spotter_id, FireControls)
@@ -124,11 +128,11 @@ class MoveSystem:
                     continue
                 case FireOutcomes.PIN:
                     unit.status = CombatUnit.Status.PINNED
-                    transform.position = interrupt_pos
+                    transform.position = interrupt_pos + offset
                     MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                 case FireOutcomes.SUPPRESS:
                     unit.status = CombatUnit.Status.SUPPRESSED
-                    transform.position = interrupt_pos
+                    transform.position = interrupt_pos + offset
                     MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                 case FireOutcomes.KILL:
                     CommandSystem.kill_unit(gs, action.unit_id)
