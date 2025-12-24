@@ -21,6 +21,7 @@ from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
 from core.systems.los_system import IntersectGetter
 from core.utils.vec2 import Vec2
+from core.systems.los_system import LosSystem
 
 
 class MoveSystem:
@@ -84,18 +85,22 @@ class MoveSystem:
 
         interrupt_candidates: list[tuple[Vec2, int]] = []
         for spotter_id in spotter_candidates:
-            attacker_fire_controls = gs.get_component(spotter_id, FireControls)
+            spotter_fire_controls = gs.get_component(spotter_id, FireControls)
+            if not spotter_fire_controls.los_polygon:
+                LosSystem.update_los_polygon(gs, spotter_id)
+                # LOS polygon should be generated
+                assert spotter_fire_controls.los_polygon
 
             # Check if target is in line of sight
             if IntersectGetter.is_inside(
                 point=transform.position,
-                vertices=attacker_fire_controls.los_polygon,
+                vertices=spotter_fire_controls.los_polygon,
             ):
                 interrupt_candidates.append((transform.position, spotter_id))
                 continue
             if intersects := IntersectGetter.get_intersects(
                 line=(transform.position, action.to),
-                vertices=attacker_fire_controls.los_polygon,
+                vertices=spotter_fire_controls.los_polygon,
             ):
                 interrupt_candidates.append((intersects[0], spotter_id))
                 continue

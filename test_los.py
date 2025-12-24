@@ -44,6 +44,7 @@ if __name__ == "__main__":
     LosSystem.update_los_polygon(gs, unit_id)
     center = gs.get_component(unit_id, components.Transform).position
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
+    assert poly
     visualize_points(poly, color="C0")
     plt.scatter(center.x, -center.y, color="C0")  # type: ignore
     plt.show()  # type: ignore

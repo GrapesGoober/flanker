@@ -30,7 +30,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -52,7 +52,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -74,7 +74,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -96,7 +96,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -118,7 +118,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -140,7 +140,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -162,7 +162,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -184,7 +184,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -206,7 +206,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -228,7 +228,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -250,7 +250,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -272,7 +272,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },

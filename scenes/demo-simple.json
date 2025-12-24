@@ -62,7 +62,7 @@
       "FireControls": {
         "can_reactive_fire": true,
         "override": "SUPPRESS",
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -99,7 +99,7 @@
       "CombatUnit": {
         "faction": "RED",
         "status": "ACTIVE",
-        "los_polygon": []
+        "los_polygon": null
       },
       "MoveControls": {
         "move_type": "FOOT",
@@ -130,7 +130,7 @@
       "FireControls": {
         "can_reactive_fire": true,
         "override": "PIN",
-        "los_polygon": []
+        "los_polygon": null
       },
       "AssaultControls": {}
     },

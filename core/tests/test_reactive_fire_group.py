@@ -14,7 +14,6 @@ from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
-from test_los import LosSystem
 
 
 @dataclass
@@ -77,8 +76,6 @@ def fixture() -> Fixture:
             flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
         ),
     )
-
-    LosSystem.update_los_polygon(gs, unit_shoot)
 
     return Fixture(
         gs=gs,

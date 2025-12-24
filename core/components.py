@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 from core.action_models import AssaultOutcomes, FireOutcomes
 from core.utils.vec2 import Vec2
@@ -70,7 +70,7 @@ class FireControls:
 
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
-    los_polygon: list[Vec2] = field(default_factory=list[Vec2])
+    los_polygon: list[Vec2] | None = None
 
 
 @dataclass
