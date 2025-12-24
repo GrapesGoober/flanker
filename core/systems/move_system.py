@@ -117,13 +117,10 @@ class MoveSystem:
 
         # Loop through each interrupt candidate point to apply move interrupt
         for interrupt_pos, spotter_id in interrupt_candidates:
-            fire_controls = gs.get_component(spotter_id, FireControls)
-            if fire_controls.can_reactive_fire == False:
-                continue
-
             outcome = FireSystem.get_fire_outcome(gs, spotter_id)
             match outcome:
                 case FireOutcomes.MISS:
+                    fire_controls = gs.get_component(spotter_id, FireControls)
                     fire_controls.can_reactive_fire = False
                     continue
                 case FireOutcomes.PIN:
