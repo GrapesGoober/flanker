@@ -81,8 +81,6 @@ class MoveSystem:
         spotter_candidates = list(
             FireSystem.get_spotter_candidates(gs, action.unit_id),
         )
-        start = transform.position
-
         interrupt_candidates: list[tuple[Vec2, int]] = []
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
@@ -126,11 +124,9 @@ class MoveSystem:
                 case FireOutcomes.PIN:
                     unit.status = CombatUnit.Status.PINNED
                     transform.position = interrupt_pos + offset
-                    MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                 case FireOutcomes.SUPPRESS:
                     unit.status = CombatUnit.Status.SUPPRESSED
                     transform.position = interrupt_pos + offset
-                    MoveSystem.update_terrain_inside(gs, action.unit_id, start)
                 case FireOutcomes.KILL:
                     CommandSystem.kill_unit(gs, action.unit_id)
             return MoveActionResult(
@@ -138,7 +134,6 @@ class MoveSystem:
             )
 
         transform.position = action.to
-        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
         return MoveActionResult()
 
     @staticmethod
@@ -181,17 +176,3 @@ class MoveSystem:
             InitiativeSystem.flip_initiative(gs)
 
         return GroupMoveActionResult(logs)
-
-    @staticmethod
-    def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
-        """Mutator method that rechecks and updates CombatUnit's inside_terrains."""
-
-        transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
-        unit.inside_terrains = unit.inside_terrains or []  # Remove None
-        for intersect in IntersectSystem.get(gs, start, transform.position):
-            tid = intersect.terrain_id
-            if tid in unit.inside_terrains:
-                unit.inside_terrains.remove(tid)
-            else:
-                unit.inside_terrains.append(tid)

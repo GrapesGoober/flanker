@@ -44,7 +44,6 @@ class CombatUnit:
     faction: InitiativeState.Faction
     command_id: int | None = None
     status: Status = Status.ACTIVE
-    inside_terrains: list[int] | None = None
 
 
 @dataclass

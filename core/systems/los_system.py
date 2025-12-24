@@ -2,7 +2,6 @@ import math
 from typing import Iterable
 
 from core.components import (
-    CombatUnit,
     FireControls,
     TerrainFeature,
     Transform,
@@ -37,10 +36,9 @@ class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
-    def check(gs: GameState, spotter_ent: int, target_pos: Vec2) -> bool:
-        """Returns `True` if entity `source_id` can see entity `target_id`."""
-        spotter_transform = gs.get_component(spotter_ent, Transform)
-        spotter_unit = gs.get_component(spotter_ent, CombatUnit)
+    def check(gs: GameState, spotter_id: int, target_pos: Vec2) -> bool:
+        """Returns `True` if entity `spotter_id` can see position `target_pos`."""
+        spotter_transform = gs.get_component(spotter_id, Transform)
 
         intersects = IntersectSystem.get(
             gs=gs,
@@ -51,11 +49,19 @@ class LosSystem:
 
         # Can see into one other terrain polygon
         passed_one_terrain = False
-        spotter_terrain = spotter_unit.inside_terrains or []
         for intersect in intersects:
             # Doesn't count spotter's terrain
-            if intersect.terrain_id in spotter_terrain:
-                continue
+            terrain_id = intersect.terrain_id
+            terrain = gs.get_component(terrain_id, TerrainFeature)
+            terrain_transform = gs.get_component(terrain_id, Transform)
+            vertices = LinearTransform.apply(terrain.vertices, terrain_transform)
+            if terrain.is_closed_loop:
+                vertices.append(vertices[0])
+                if IntersectGetter.is_inside(
+                    point=spotter_transform.position, vertices=vertices
+                ):
+                    continue
+
             if not passed_one_terrain:
                 passed_one_terrain = True
                 continue
