@@ -94,8 +94,12 @@ class FireSystem:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
                 return FireActionResult(outcome=FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
-                target_unit.status = CombatUnit.Status.SUPPRESSED
-                return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                if target_unit.status != CombatUnit.Status.SUPPRESSED:
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
+                    return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                else:  # Kills the unit if it is already suppressed
+                    CommandSystem.kill_unit(gs, action.target_id)
+                    return FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
                 CommandSystem.kill_unit(gs, action.target_id)
                 return FireActionResult(outcome=FireOutcomes.KILL)
