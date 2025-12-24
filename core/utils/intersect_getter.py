@@ -21,8 +21,6 @@ class IntersectGetter:
             raise ValueError("`is_inside` need at least three vertices.")
 
         line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
-        # TODO: it thinks it's inside one terrain entity
-        # PROVE: try changing the source point by 0.1
         intersect_points = IntersectGetter.get_intersects(
             line=(point, line_cast_to),
             vertices=vertices,
@@ -78,7 +76,7 @@ class IntersectGetter:
         Computes all line segment intersections between a line and a set of edges
         represented as linear Bezier curves Line = start + t * vector.
         Returns NDArray (N x 2) of intersection points.
-        Note: might return duplicate points if line intersects a shared vertex.
+        Note: might return duplicate points if edges share a vertex.
         """
         # Compute two parametric values t & u of intersect point
         # TODO: why use np.cross? Wikipedia says use determinant matrix

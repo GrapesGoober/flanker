@@ -26,6 +26,8 @@ class _TerrainIntersection:
 
 @dataclass
 class _Terrain:
+    """Represents a prepared terrain ready for LOS."""
+
     terrain_id: int
     terrain_feature: TerrainFeature
     vertices: list[Vec2]
@@ -93,7 +95,6 @@ class LosSystem:
         visible_points: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
-            # TODO: Remove radius, cast towards the bounding box instead
             ray = direction * radius
             # Instead of casting one ray, casts two rays slightly to the left and right.
             # This prevents boundary sensitivity when casting rays at the vertices.
@@ -103,7 +104,6 @@ class LosSystem:
             for point in [left_point, right_point]:
                 intersects = list(
                     LosSystem._get_terrain_intersects(
-                        gs=gs,
                         line=(point, point + ray),
                         terrains=terrains,
                     )
@@ -186,7 +186,6 @@ class LosSystem:
 
     @staticmethod
     def _get_terrain_intersects(
-        gs: GameState,
         line: tuple[Vec2, Vec2],
         terrains: list[_Terrain],
     ) -> Iterable[_TerrainIntersection]:
@@ -209,6 +208,7 @@ class LosSystem:
         spotter_pos: Vec2,
         mask: int = -1,
     ) -> Iterable[_Terrain]:
+        """Yields only relevant terrains and its transformed vertices."""
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
@@ -222,9 +222,4 @@ class LosSystem:
                         and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
                     ):
                         continue
-                # TODO: Get terrain vertices early on.
-                # Filter out is_inside and terrain mask once.
-                # Use this same list for both the sorted vertices AND for intersection checks.
-                # Thus, this vertices must be per-terrain (for intersection checks)
-                # and also global (for sorting verts)
                 yield _Terrain(id, terrain, vertices)

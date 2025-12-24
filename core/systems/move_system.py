@@ -82,7 +82,6 @@ class MoveSystem:
         )
         start = transform.position
 
-        # TODO: refactor interrupt to LOS polygon
         interrupt_candidates: list[tuple[Vec2, int]] = []
         for spotter_id in spotter_candidates:
             attacker_fire_controls = gs.get_component(spotter_id, FireControls)
