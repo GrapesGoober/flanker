@@ -68,20 +68,16 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def _singular_move(
+    def _get_interrupt_candidates(
         gs: GameState, action: MoveAction
-    ) -> MoveActionResult | InvalidActionTypes:
-        """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
-
-        if (reason := MoveSystem._validate_move(gs, action.unit_id, action.to)) != True:
-            return reason
-
-        transform = gs.get_component(action.unit_id, Transform)
-        unit = gs.get_component(action.unit_id, CombatUnit)
+    ) -> list[tuple[Vec2, int]]:
         spotter_candidates = list(
             FireSystem.get_spotter_candidates(gs, action.unit_id),
         )
         interrupt_candidates: list[tuple[Vec2, int]] = []
+
+        transform = gs.get_component(action.unit_id, Transform)
+
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             if not spotter_fire_controls.los_polygon:
@@ -109,8 +105,24 @@ class MoveSystem:
             key=lambda intersect: (intersect[0] - transform.position).length(),
         )
 
+        return interrupt_candidates
+
+    @staticmethod
+    def _singular_move(
+        gs: GameState, action: MoveAction
+    ) -> MoveActionResult | InvalidActionTypes:
+        """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
+
+        if (reason := MoveSystem._validate_move(gs, action.unit_id, action.to)) != True:
+            return reason
+
+        transform = gs.get_component(action.unit_id, Transform)
+        unit = gs.get_component(action.unit_id, CombatUnit)
+
+        interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, action)
+
         # Tiny offset to prevent entity from sitting precisely on LOS polygon edge
-        # This reduces likelyhood of floating point sensitivity
+        # This reduces floating point sensitivity
         offset = (action.to - transform.position).normalized() * 1e-12
 
         # Loop through each interrupt candidate point to apply move interrupt
