@@ -22,8 +22,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -44,8 +43,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -66,8 +64,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -88,8 +85,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -110,8 +106,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -132,8 +127,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -154,8 +148,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -176,8 +169,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -198,8 +190,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -223,8 +214,7 @@
         "status": "ACTIVE"
       },
       "MoveControls": {
-        "move_type": "FOOT",
-        "inside_terrains": [14]
+        "move_type": "FOOT"
       },
       "FireControls": {
         "can_reactive_fire": true,
@@ -242,8 +232,7 @@
       },
       "CombatUnit": {
         "faction": "RED",
-        "status": "ACTIVE",
-        "inside_terrains": [15]
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -264,8 +253,7 @@
       },
       "CombatUnit": {
         "faction": "RED",
-        "status": "ACTIVE",
-        "inside_terrains": [13]
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
