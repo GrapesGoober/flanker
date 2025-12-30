@@ -94,8 +94,12 @@ class FireSystem:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
                 return FireActionResult(outcome=FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
-                target_unit.status = CombatUnit.Status.SUPPRESSED
-                return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                if target_unit.status != CombatUnit.Status.SUPPRESSED:
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
+                    return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                else:  # Kills the unit if it is already suppressed
+                    CommandSystem.kill_unit(gs, action.target_id)
+                    return FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
                 CommandSystem.kill_unit(gs, action.target_id)
                 return FireActionResult(outcome=FireOutcomes.KILL)
@@ -109,8 +113,9 @@ class FireSystem:
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
-
             # Check that spotter is a valid spotter for reactive fire
+            if spotter_unit.status == CombatUnit.Status.SUPPRESSED:
+                continue
             if spotter_id == target_id:
                 continue
             if unit.faction == spotter_unit.faction:

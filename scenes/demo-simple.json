@@ -12,6 +12,37 @@
         "units_destroyed_counter": 0
       }
     },
+    "1": {
+      "Transform": {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "degrees": 0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 300,
+            "y": 0
+          },
+          {
+            "x": 300,
+            "y": 300
+          },
+          {
+            "x": 0,
+            "y": 300
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
+      }
+    },
     "2": {
       "Transform": {
         "position": {
@@ -22,15 +53,15 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": "SUPPRESS"
+        "override": "SUPPRESS",
+        "los_polygon": null
       },
       "AssaultControls": {}
     },
@@ -44,8 +75,7 @@
       },
       "CombatUnit": {
         "faction": "BLUE",
-        "status": "ACTIVE",
-        "inside_terrains": []
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -66,11 +96,11 @@
       },
       "CombatUnit": {
         "faction": "RED",
-        "status": "ACTIVE"
+        "status": "ACTIVE",
+        "los_polygon": null
       },
       "MoveControls": {
-        "move_type": "FOOT",
-        "inside_terrains": [14]
+        "move_type": "FOOT"
       },
       "FireControls": {
         "can_reactive_fire": true,
@@ -88,15 +118,15 @@
       },
       "CombatUnit": {
         "faction": "RED",
-        "status": "ACTIVE",
-        "inside_terrains": [15]
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "override": "PIN"
+        "override": "PIN",
+        "los_polygon": null
       },
       "AssaultControls": {}
     },

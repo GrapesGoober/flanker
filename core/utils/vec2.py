@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from math import sqrt, isclose
+import math
 
 
 @dataclass
@@ -40,6 +41,15 @@ class Vec2:
         """Returns a new normalized vector."""
         length = self.length()
         return self / length if length else Vec2(0, 0)
+
+    def rotated(self, angle: float) -> "Vec2":
+        """Returns a new vector rotated by `angle` radians."""
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+        return Vec2(
+            self.x * cos_a - self.y * sin_a,
+            self.x * sin_a + self.y * cos_a,
+        )
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Vec2):

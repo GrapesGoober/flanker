@@ -44,7 +44,6 @@ class CombatUnit:
     faction: InitiativeState.Faction
     command_id: int | None = None
     status: Status = Status.ACTIVE
-    inside_terrains: list[int] | None = None
 
 
 @dataclass
@@ -70,6 +69,7 @@ class FireControls:
 
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
+    los_polygon: list[Vec2] | None = None
 
 
 @dataclass
@@ -102,6 +102,7 @@ class TerrainFeature:
         DRIVABLE = auto()
         WATER = auto()
         HILL = auto()
+        BOUNDARY = auto()
 
 
 @dataclass

@@ -14,7 +14,7 @@ for _, cls in vars(components).items():
         component_types.append(cls)
 component_types.append(TerrainTypeTag)
 
-path = "./scenes/demo-old.json"
+path = "./scenes/demo.json"
 
 with open(path, "r") as f:
     gs = GameState.load(f.read(), component_types)
@@ -24,6 +24,10 @@ MoveSystem.move(gs, MoveAction(1, Vec2(-50, -200)))
 
 
 def test() -> None:
+
+    # Reset LOS polygons
+    for _, fire_controls in gs.query(components.FireControls):
+        fire_controls.los_polygon = None
     MoveSystem.move(gs, MoveAction(2, Vec2(-50, -200)))
     MoveSystem.move(gs, MoveAction(3, Vec2(-50, -200)))
     MoveSystem.move(gs, MoveAction(4, Vec2(-50, -200)))

@@ -19,7 +19,9 @@ from core.systems.fire_system import FireSystem
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
+from core.systems.los_system import IntersectGetter
 from core.utils.vec2 import Vec2
+from core.systems.los_system import LosSystem
 
 
 class MoveSystem:
@@ -66,6 +68,46 @@ class MoveSystem:
             yield current
 
     @staticmethod
+    def _get_interrupt_candidates(
+        gs: GameState, action: MoveAction
+    ) -> list[tuple[Vec2, int]]:
+        spotter_candidates = list(
+            FireSystem.get_spotter_candidates(gs, action.unit_id),
+        )
+        interrupt_candidates: list[tuple[Vec2, int]] = []
+
+        transform = gs.get_component(action.unit_id, Transform)
+
+        for spotter_id in spotter_candidates:
+            spotter_fire_controls = gs.get_component(spotter_id, FireControls)
+            if not spotter_fire_controls.los_polygon:
+                LosSystem.update_los_polygon(gs, spotter_id)
+                # LOS polygon should be generated
+                assert spotter_fire_controls.los_polygon
+
+            # Check if target is in line of sight
+            if IntersectGetter.is_inside(
+                point=transform.position,
+                vertices=spotter_fire_controls.los_polygon,
+            ):
+                interrupt_candidates.append((transform.position, spotter_id))
+                continue
+            if intersects := IntersectGetter.get_intersects(
+                line=(transform.position, action.to),
+                vertices=spotter_fire_controls.los_polygon,
+            ):
+                interrupt_candidates.append((intersects[0], spotter_id))
+                continue
+
+        # Sort the intersection candidates based distance from moving unit
+        interrupt_candidates = sorted(
+            interrupt_candidates,
+            key=lambda intersect: (intersect[0] - transform.position).length(),
+        )
+
+        return interrupt_candidates
+
+    @staticmethod
     def _singular_move(
         gs: GameState, action: MoveAction
     ) -> MoveActionResult | InvalidActionTypes:
@@ -76,39 +118,34 @@ class MoveSystem:
 
         transform = gs.get_component(action.unit_id, Transform)
         unit = gs.get_component(action.unit_id, CombatUnit)
-        spotter_candidates = list(FireSystem.get_spotter_candidates(gs, action.unit_id))
-        start = transform.position
 
-        # For each subdivision step of move line, check interrupt
-        for step in MoveSystem._get_move_steps(transform.position, action.to):
-            transform.position = step
+        interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, action)
 
-            # Check for interrupt
-            for spotter_id in spotter_candidates:
-                # Validate reactive fire actors
-                if FireSystem.validate_fire_actors(gs, spotter_id, action.unit_id):
+        # Tiny offset to prevent entity from sitting precisely on LOS polygon edge
+        # This reduces floating point sensitivity
+        offset = (action.to - transform.position).normalized() * 1e-12
+
+        # Loop through each interrupt candidate point to apply move interrupt
+        for interrupt_pos, spotter_id in interrupt_candidates:
+            outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+            match outcome:
+                case FireOutcomes.MISS:
+                    fire_controls = gs.get_component(spotter_id, FireControls)
+                    fire_controls.can_reactive_fire = False
                     continue
+                case FireOutcomes.PIN:
+                    unit.status = CombatUnit.Status.PINNED
+                    transform.position = interrupt_pos + offset
+                case FireOutcomes.SUPPRESS:
+                    unit.status = CombatUnit.Status.SUPPRESSED
+                    transform.position = interrupt_pos + offset
+                case FireOutcomes.KILL:
+                    CommandSystem.kill_unit(gs, action.unit_id)
+            return MoveActionResult(
+                reactive_fire_outcome=outcome,
+            )
 
-                # Interrupt valid, perform the reactive fire
-                outcome = FireSystem.get_fire_outcome(gs, spotter_id)
-                match outcome:
-                    case FireOutcomes.MISS:
-                        fire_controls = gs.get_component(spotter_id, FireControls)
-                        fire_controls.can_reactive_fire = False
-                        continue
-                    case FireOutcomes.PIN:
-                        unit.status = CombatUnit.Status.PINNED
-                        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
-                    case FireOutcomes.SUPPRESS:
-                        unit.status = CombatUnit.Status.SUPPRESSED
-                        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
-                    case FireOutcomes.KILL:
-                        CommandSystem.kill_unit(gs, action.unit_id)
-                return MoveActionResult(
-                    reactive_fire_outcome=outcome,
-                )
-
-        MoveSystem.update_terrain_inside(gs, action.unit_id, start)
+        transform.position = action.to
         return MoveActionResult()
 
     @staticmethod
@@ -151,17 +188,3 @@ class MoveSystem:
             InitiativeSystem.flip_initiative(gs)
 
         return GroupMoveActionResult(logs)
-
-    @staticmethod
-    def update_terrain_inside(gs: GameState, unit_id: int, start: Vec2) -> None:
-        """Mutator method that rechecks and updates CombatUnit's inside_terrains."""
-
-        transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
-        unit.inside_terrains = unit.inside_terrains or []  # Remove None
-        for intersect in IntersectSystem.get(gs, start, transform.position):
-            tid = intersect.terrain_id
-            if tid in unit.inside_terrains:
-                unit.inside_terrains.remove(tid)
-            else:
-                unit.inside_terrains.append(tid)

@@ -62,6 +62,21 @@ def fixture() -> Fixture:
         ),
     )
 
+    # 200x200 boundary
+    gs.add_entity(
+        Transform(position=Vec2(0, 0), degrees=0),
+        TerrainFeature(
+            vertices=[
+                Vec2(-1000, -1000),
+                Vec2(1000, -1000),
+                Vec2(1000, 1000),
+                Vec2(-1000, 1000),
+                Vec2(-1000, -1000),
+            ],
+            flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
+        ),
+    )
+
     return Fixture(
         gs=gs,
         unit_move_1=unit_move_1,
@@ -112,8 +127,8 @@ def test_interrupt_success(fixture: Fixture) -> None:
     ), "First unit must not be interrupted at Vec2(7, -10)"
     transform_2 = fixture.gs.get_component(fixture.unit_move_2, Transform)
     assert transform_2.position == Vec2(
-        7, -15
-    ), "Second unit must be interrupted at Vec2(7, -15)"
+        6.25, -15
+    ), "Second unit must be interrupted at Vec2(6.25, -15)"
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "Success group move doesn't flip initiative."
@@ -132,12 +147,12 @@ def test_interrupt_fail(fixture: Fixture) -> None:
     )
     transform_1 = fixture.gs.get_component(fixture.unit_move_1, Transform)
     assert transform_1.position == Vec2(
-        8, -10
-    ), "First unit must not be interrupted at Vec2(8, -10)"
+        7.5, -10
+    ), "First unit must be interrupted at Vec2(7.5, -10)"
     transform_2 = fixture.gs.get_component(fixture.unit_move_2, Transform)
     assert transform_2.position == Vec2(
-        7, -15
-    ), "Second unit must be interrupted at Vec2(7, -15)"
+        6.25, -15
+    ), "Second unit must be interrupted at Vec2(6.25, -15)"
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True
     ), "Success group move doesn't flip initiative."
