@@ -1,7 +1,6 @@
 import random
 from typing import Iterable
 from core.action_models import (
-    FireAction,
     FireActionResult,
     FireOutcomes,
     InvalidActionTypes,
@@ -11,6 +10,7 @@ from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
+
 
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
@@ -70,21 +70,21 @@ class FireSystem:
 
     @staticmethod
     def fire(
-        gs: GameState, action: FireAction
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
     ) -> FireActionResult | InvalidActionTypes:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
-        if reason := FireSystem.validate_fire_actors(
-            gs, action.attacker_id, action.target_id
-        ):
+        if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
-        if not InitiativeSystem.has_initiative(gs, action.attacker_id):
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return InvalidActionTypes.NO_INITIATIVE
 
         # Apply outcome
-        target_unit = gs.get_component(action.target_id, CombatUnit)
-        match FireSystem.get_fire_outcome(gs, action.attacker_id):
+        target_unit = gs.get_component(target_id, CombatUnit)
+        match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
                 return FireActionResult(outcome=FireOutcomes.MISS)
@@ -98,10 +98,10 @@ class FireSystem:
                     target_unit.status = CombatUnit.Status.SUPPRESSED
                     return FireActionResult(outcome=FireOutcomes.SUPPRESS)
                 else:  # Kills the unit if it is already suppressed
-                    CommandSystem.kill_unit(gs, action.target_id)
+                    CommandSystem.kill_unit(gs, target_id)
                     return FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
-                CommandSystem.kill_unit(gs, action.target_id)
+                CommandSystem.kill_unit(gs, target_id)
                 return FireActionResult(outcome=FireOutcomes.KILL)
         return FireActionResult(is_valid=False)
 

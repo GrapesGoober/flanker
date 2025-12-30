@@ -4,7 +4,6 @@ from core.action_models import (
     InvalidActionTypes,
     AssaultAction,
     AssaultActionResult,
-    MoveAction,
 )
 from core.components import (
     AssaultControls,
@@ -73,7 +72,7 @@ class AssaultSystem:
 
         # Moves the unit to target position (allow reactive fire)
         target_position = gs.get_component(action.target_id, Transform).position
-        result = MoveSystem.move(gs, MoveAction(action.attacker_id, target_position))
+        result = MoveSystem.move(gs, action.attacker_id, target_position)
         if isinstance(result, InvalidActionTypes):
             return result
         if result.reactive_fire_outcome != None:

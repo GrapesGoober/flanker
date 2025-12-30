@@ -265,7 +265,10 @@ export interface components {
             unitId: number;
             to: components["schemas"]["Vec2"];
         };
-        /** MoveActionResult */
+        /**
+         * MoveActionResult
+         * @description Result of a move action as any reactive fire.
+         */
         MoveActionResult: {
             reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
         };

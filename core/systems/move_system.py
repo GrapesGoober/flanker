@@ -1,16 +1,12 @@
 from typing import Iterable, Literal
 from core.action_models import (
-    GroupMoveAction,
-    GroupMoveActionResult,
+    FireOutcomes,
     InvalidActionTypes,
-    MoveAction,
-    MoveActionResult,
 )
 from core.systems.command_system import CommandSystem
 from core.components import (
     CombatUnit,
     FireControls,
-    FireOutcomes,
     TerrainFeature,
     MoveControls,
     Transform,
@@ -22,6 +18,21 @@ from core.systems.intersect_system import IntersectSystem
 from core.systems.los_system import IntersectGetter
 from core.utils.vec2 import Vec2
 from core.systems.los_system import LosSystem
+from dataclasses import dataclass
+
+
+@dataclass
+class _MoveActionResult:
+    """Result of a move action as any reactive fire."""
+
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
+class _GroupMoveActionResult:
+    """Result of a group move action as multiple singular move results."""
+
+    moveActionLogs: list[_MoveActionResult]
 
 
 class MoveSystem:
@@ -69,14 +80,16 @@ class MoveSystem:
 
     @staticmethod
     def _get_interrupt_candidates(
-        gs: GameState, action: MoveAction
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
     ) -> list[tuple[Vec2, int]]:
         spotter_candidates = list(
-            FireSystem.get_spotter_candidates(gs, action.unit_id),
+            FireSystem.get_spotter_candidates(gs, unit_id),
         )
         interrupt_candidates: list[tuple[Vec2, int]] = []
 
-        transform = gs.get_component(action.unit_id, Transform)
+        transform = gs.get_component(unit_id, Transform)
 
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
@@ -93,7 +106,7 @@ class MoveSystem:
                 interrupt_candidates.append((transform.position, spotter_id))
                 continue
             if intersects := IntersectGetter.get_intersects(
-                line=(transform.position, action.to),
+                line=(transform.position, to),
                 vertices=spotter_fire_controls.los_polygon,
             ):
                 interrupt_candidates.append((intersects[0], spotter_id))
@@ -109,21 +122,23 @@ class MoveSystem:
 
     @staticmethod
     def _singular_move(
-        gs: GameState, action: MoveAction
-    ) -> MoveActionResult | InvalidActionTypes:
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
+    ) -> _MoveActionResult | InvalidActionTypes:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
-        if (reason := MoveSystem._validate_move(gs, action.unit_id, action.to)) != True:
+        if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
             return reason
 
-        transform = gs.get_component(action.unit_id, Transform)
-        unit = gs.get_component(action.unit_id, CombatUnit)
+        transform = gs.get_component(unit_id, Transform)
+        unit = gs.get_component(unit_id, CombatUnit)
 
-        interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, action)
+        interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
 
         # Tiny offset to prevent entity from sitting precisely on LOS polygon edge
         # This reduces floating point sensitivity
-        offset = (action.to - transform.position).normalized() * 1e-12
+        offset = (to - transform.position).normalized() * 1e-12
 
         # Loop through each interrupt candidate point to apply move interrupt
         for interrupt_pos, spotter_id in interrupt_candidates:
@@ -140,22 +155,24 @@ class MoveSystem:
                     unit.status = CombatUnit.Status.SUPPRESSED
                     transform.position = interrupt_pos + offset
                 case FireOutcomes.KILL:
-                    CommandSystem.kill_unit(gs, action.unit_id)
-            return MoveActionResult(
+                    CommandSystem.kill_unit(gs, unit_id)
+            return _MoveActionResult(
                 reactive_fire_outcome=outcome,
             )
 
-        transform.position = action.to
-        return MoveActionResult()
+        transform.position = to
+        return _MoveActionResult()
 
     @staticmethod
     def move(
-        gs: GameState, action: MoveAction
-    ) -> MoveActionResult | InvalidActionTypes:
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
+    ) -> _MoveActionResult | InvalidActionTypes:
         """Mutator method performs move action with reactive fire."""
 
-        result = MoveSystem._singular_move(gs, action)
-        if not isinstance(result, MoveActionResult):
+        result = MoveSystem._singular_move(gs, unit_id, to)
+        if not isinstance(result, _MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
             FireOutcomes.SUPPRESS,
@@ -167,16 +184,17 @@ class MoveSystem:
 
     @staticmethod
     def group_move(
-        gs: GameState, action: GroupMoveAction
-    ) -> GroupMoveActionResult | InvalidActionTypes:
+        gs: GameState,
+        moves: list[tuple[int, Vec2]],
+    ) -> _GroupMoveActionResult | InvalidActionTypes:
         """Mutator method performs group move action with reactive fire."""
 
-        logs: list[MoveActionResult] = []
+        logs: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
-        for move in action.moves:
-            result = MoveSystem._singular_move(gs, move)
-            if not isinstance(result, MoveActionResult):
+        for unit_id, to in moves:
+            result = MoveSystem._singular_move(gs, unit_id, to)
+            if not isinstance(result, _MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
                 FireOutcomes.SUPPRESS,
@@ -184,7 +202,7 @@ class MoveSystem:
             ):
                 interrupt_count += 1
 
-        if interrupt_count >= len(action.moves):
+        if interrupt_count >= len(moves):
             InitiativeSystem.flip_initiative(gs)
 
-        return GroupMoveActionResult(logs)
+        return _GroupMoveActionResult(logs)

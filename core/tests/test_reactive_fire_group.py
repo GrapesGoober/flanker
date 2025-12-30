@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import pytest
 
-from core.action_models import FireOutcomes, GroupMoveAction, MoveAction
+from core.action_models import FireOutcomes
 from core.components import (
     InitiativeState,
     FireControls,
@@ -62,7 +62,7 @@ def fixture() -> Fixture:
         ),
     )
 
-    # 200x200 boundary
+    # 2000x2000 boundary
     gs.add_entity(
         Transform(position=Vec2(0, 0), degrees=0),
         TerrainFeature(
@@ -89,12 +89,10 @@ def fixture() -> Fixture:
 def test_group_move(fixture: Fixture) -> None:
     MoveSystem.group_move(
         fixture.gs,
-        GroupMoveAction(
-            moves=[
-                MoveAction(fixture.unit_move_1, Vec2(5, -15)),
-                MoveAction(fixture.unit_move_2, Vec2(6, -14)),
-            ]
-        ),
+        moves=[
+            (fixture.unit_move_1, Vec2(5, -15)),
+            (fixture.unit_move_2, Vec2(6, -14)),
+        ],
     )
     transform = fixture.gs.get_component(fixture.unit_move_1, Transform)
     assert transform.position == Vec2(
@@ -114,12 +112,10 @@ def test_interrupt_success(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
     MoveSystem.group_move(
         fixture.gs,
-        GroupMoveAction(
-            moves=[
-                MoveAction(fixture.unit_move_1, Vec2(7, -10)),
-                MoveAction(fixture.unit_move_2, Vec2(7, -15)),
-            ]
-        ),
+        moves=[
+            (fixture.unit_move_1, Vec2(7, -10)),
+            (fixture.unit_move_2, Vec2(7, -15)),
+        ],
     )
     transform_1 = fixture.gs.get_component(fixture.unit_move_1, Transform)
     assert transform_1.position == Vec2(
@@ -138,12 +134,10 @@ def test_interrupt_fail(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
     MoveSystem.group_move(
         fixture.gs,
-        GroupMoveAction(
-            moves=[
-                MoveAction(fixture.unit_move_1, Vec2(9, -10)),
-                MoveAction(fixture.unit_move_2, Vec2(9, -15)),
-            ]
-        ),
+        moves=[
+            (fixture.unit_move_1, Vec2(9, -10)),
+            (fixture.unit_move_2, Vec2(9, -15)),
+        ],
     )
     transform_1 = fixture.gs.get_component(fixture.unit_move_1, Transform)
     assert transform_1.position == Vec2(

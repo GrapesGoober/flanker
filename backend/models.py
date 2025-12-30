@@ -7,7 +7,7 @@ from core.utils.vec2 import Vec2
 from core.action_models import (
     AssaultActionResult,
     FireActionResult,
-    MoveActionResult,
+    FireOutcomes,
 )
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -81,6 +81,12 @@ class TerrainModel(BaseModel, CamelCaseConfig):
         FIELD = "FIELD"
         WATER = "WATER"
         BUILDING = "BUILDING"
+
+
+class MoveActionResult(BaseModel, CamelCaseConfig):
+    """Result of a move action as any reactive fire."""
+
+    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class MoveActionLog(BaseModel, CamelCaseConfig):

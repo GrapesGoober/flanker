@@ -1,10 +1,26 @@
 import random
 from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
-from backend.models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
-from backend.models import FireActionRequest, MoveActionRequest
-from core.action_models import AssaultAction, FireAction, InvalidActionTypes, MoveAction
-from core.components import CombatUnit, InitiativeState, Transform
+from backend.models import (
+    ActionLog,
+    AssaultActionLog,
+    FireActionLog,
+    MoveActionLog,
+    MoveActionResult,
+)
+from backend.models import (
+    FireActionRequest,
+    MoveActionRequest,
+)
+from core.action_models import (
+    AssaultAction,
+    InvalidActionTypes,
+)
+from core.components import (
+    CombatUnit,
+    InitiativeState,
+    Transform,
+)
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.initiative_system import InitiativeSystem
@@ -141,13 +157,17 @@ class AiService:
         body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
     ) -> ActionLog | InvalidActionTypes:
         if isinstance(body, MoveActionRequest):
-            result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
+            result = MoveSystem.move(gs, body.unit_id, body.to)
             if not isinstance(result, InvalidActionTypes):
                 return MoveActionLog(
-                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                    body=body,
+                    result=MoveActionResult(
+                        reactive_fire_outcome=result.reactive_fire_outcome
+                    ),
+                    unit_state=CombatUnitService.get_units(gs),
                 )
         elif isinstance(body, FireActionRequest):
-            result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
+            result = FireSystem.fire(gs, body.unit_id, body.target_id)
             if not isinstance(result, InvalidActionTypes):
                 return FireActionLog(
                     body=body, result=result, unit_state=CombatUnitService.get_units(gs)
