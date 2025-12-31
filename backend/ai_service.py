@@ -6,6 +6,7 @@ from backend.models import (
     AssaultActionLog,
     AssaultActionResult,
     FireActionLog,
+    FireActionResult,
     MoveActionLog,
     MoveActionResult,
 )
@@ -170,7 +171,9 @@ class AiService:
             result = FireSystem.fire(gs, body.unit_id, body.target_id)
             if not isinstance(result, InvalidActionTypes):
                 return FireActionLog(
-                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                    body=body,
+                    result=FireActionResult(outcome=result.outcome),
+                    unit_state=CombatUnitService.get_units(gs),
                 )
         else:
             result = AssaultSystem.assault(gs, body.unit_id, body.target_id)

@@ -4,6 +4,7 @@ from backend.models import (
     AssaultActionLog,
     AssaultActionResult,
     FireActionLog,
+    FireActionResult,
     MoveActionLog,
     MoveActionResult,
 )
@@ -50,7 +51,7 @@ class ActionService:
             gs,
             FireActionLog(
                 body=body,
-                result=result,
+                result=FireActionResult(outcome=result.outcome),
                 unit_state=CombatUnitService.get_units(gs),
             ),
         )

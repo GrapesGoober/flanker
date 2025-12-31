@@ -6,7 +6,6 @@ from core.components import CombatUnit
 from core.utils.vec2 import Vec2
 from core.action_models import (
     AssaultOutcomes,
-    FireActionResult,
     FireOutcomes,
 )
 from pydantic import BaseModel, ConfigDict, Field
@@ -84,8 +83,6 @@ class TerrainModel(BaseModel, CamelCaseConfig):
 
 
 class MoveActionResult(BaseModel, CamelCaseConfig):
-    """Result of a move action as any reactive fire."""
-
     reactive_fire_outcome: FireOutcomes | None = None
 
 
@@ -96,6 +93,10 @@ class MoveActionLog(BaseModel, CamelCaseConfig):
     unit_state: CombatUnitsViewState
 
 
+class FireActionResult(BaseModel, CamelCaseConfig):
+    outcome: FireOutcomes | None = None
+
+
 class FireActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["FireActionLog"] = "FireActionLog"
     body: FireActionRequest
@@ -104,8 +105,6 @@ class FireActionLog(BaseModel, CamelCaseConfig):
 
 
 class AssaultActionResult(BaseModel, CamelCaseConfig):
-    """Result of an assault action as assault outcome, and any reactive fire."""
-
     outcome: AssaultOutcomes | None = None
     reactive_fire_outcome: FireOutcomes | None = None
 

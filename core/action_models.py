@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from enum import Enum
 
 
@@ -16,13 +15,6 @@ class FireOutcomes(str, Enum):
     PIN = "PIN"
     SUPPRESS = "SUPPRESS"
     KILL = "KILL"
-
-
-@dataclass
-class FireActionResult:
-    """Result of a fire action as outcome."""
-
-    outcome: FireOutcomes | None = None
 
 
 class InvalidActionTypes(str, Enum):

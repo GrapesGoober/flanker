@@ -187,10 +187,7 @@ export interface components {
             /** Targetid */
             targetId: number;
         };
-        /**
-         * AssaultActionResult
-         * @description Result of an assault action as assault outcome, and any reactive fire.
-         */
+        /** AssaultActionResult */
         AssaultActionResult: {
             outcome?: components["schemas"]["AssaultOutcomes"] | null;
             reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
@@ -268,10 +265,7 @@ export interface components {
             unitId: number;
             to: components["schemas"]["Vec2"];
         };
-        /**
-         * MoveActionResult
-         * @description Result of a move action as any reactive fire.
-         */
+        /** MoveActionResult */
         MoveActionResult: {
             reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
         };

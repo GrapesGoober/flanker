@@ -1,7 +1,6 @@
 import random
 from typing import Iterable
 from core.action_models import (
-    FireActionResult,
     FireOutcomes,
     InvalidActionTypes,
 )
@@ -10,6 +9,14 @@ from core.components import CombatUnit, FireControls, Transform
 from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
+from dataclasses import dataclass
+
+
+@dataclass
+class _FireActionResult:
+    """Result of a fire action as outcome."""
+
+    outcome: FireOutcomes | None = None
 
 
 _FIRE_OUTCOME_PROBABILITIES = {
@@ -73,7 +80,7 @@ class FireSystem:
         gs: GameState,
         attacker_id: int,
         target_id: int,
-    ) -> FireActionResult | InvalidActionTypes:
+    ) -> _FireActionResult | InvalidActionTypes:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
@@ -87,23 +94,23 @@ class FireSystem:
         match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(outcome=FireOutcomes.MISS)
+                return _FireActionResult(outcome=FireOutcomes.MISS)
             case FireOutcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(outcome=FireOutcomes.PIN)
+                return _FireActionResult(outcome=FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.SUPPRESSED
-                    return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                    return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
                 else:  # Kills the unit if it is already suppressed
                     CommandSystem.kill_unit(gs, target_id)
-                    return FireActionResult(outcome=FireOutcomes.KILL)
+                    return _FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
                 CommandSystem.kill_unit(gs, target_id)
-                return FireActionResult(outcome=FireOutcomes.KILL)
-        return FireActionResult(is_valid=False)
+                return _FireActionResult(outcome=FireOutcomes.KILL)
+        return _FireActionResult(is_valid=False)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
