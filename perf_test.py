@@ -3,7 +3,6 @@ from inspect import isclass
 from typing import Any
 from backend.terrain_service import TerrainTypeTag
 from core import components
-from core.action_models import MoveAction
 from core.gamestate import GameState
 from core.systems.move_system import MoveSystem
 from core.utils.vec2 import Vec2
@@ -20,7 +19,7 @@ with open(path, "r") as f:
     gs = GameState.load(f.read(), component_types)
 
 
-MoveSystem.move(gs, MoveAction(1, Vec2(-50, -200)))
+MoveSystem.move(gs, 1, Vec2(-50, -200))
 
 
 def test() -> None:
@@ -28,14 +27,14 @@ def test() -> None:
     # Reset LOS polygons
     for _, fire_controls in gs.query(components.FireControls):
         fire_controls.los_polygon = None
-    MoveSystem.move(gs, MoveAction(2, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(3, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(4, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(5, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(6, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(7, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(8, Vec2(-50, -200)))
-    MoveSystem.move(gs, MoveAction(9, Vec2(-50, -200)))
+    MoveSystem.move(gs, 2, Vec2(-50, -200))
+    MoveSystem.move(gs, 3, Vec2(-50, -200))
+    MoveSystem.move(gs, 4, Vec2(-50, -200))
+    MoveSystem.move(gs, 5, Vec2(-50, -200))
+    MoveSystem.move(gs, 6, Vec2(-50, -200))
+    MoveSystem.move(gs, 7, Vec2(-50, -200))
+    MoveSystem.move(gs, 8, Vec2(-50, -200))
+    MoveSystem.move(gs, 9, Vec2(-50, -200))
 
 
 from timeit import timeit

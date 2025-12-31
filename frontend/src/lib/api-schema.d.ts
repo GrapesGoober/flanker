@@ -187,7 +187,10 @@ export interface components {
             /** Targetid */
             targetId: number;
         };
-        /** AssaultActionResult */
+        /**
+         * AssaultActionResult
+         * @description Result of an assault action as assault outcome, and any reactive fire.
+         */
         AssaultActionResult: {
             outcome?: components["schemas"]["AssaultOutcomes"] | null;
             reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;

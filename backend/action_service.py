@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from backend.combat_unit_service import CombatUnitService
 from backend.models import (
     AssaultActionLog,
+    AssaultActionResult,
     FireActionLog,
     MoveActionLog,
     MoveActionResult,
@@ -12,7 +13,7 @@ from backend.models import (
     FireActionRequest,
     MoveActionRequest,
 )
-from core.action_models import AssaultAction, InvalidActionTypes
+from core.action_models import InvalidActionTypes
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.move_system import MoveSystem
@@ -57,14 +58,17 @@ class ActionService:
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform fire action and trigger AI response for the opponent."""
-        result = AssaultSystem.assault(gs, AssaultAction(body.unit_id, body.target_id))
+        result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidActionTypes):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
             gs,
             AssaultActionLog(
                 body=body,
-                result=result,
+                result=AssaultActionResult(
+                    outcome=result.outcome,
+                    reactive_fire_outcome=result.reactive_fire_outcome,
+                ),
                 unit_state=CombatUnitService.get_units(gs),
             ),
         )

@@ -4,6 +4,7 @@ from backend.combat_unit_service import CombatUnitService
 from backend.models import (
     ActionLog,
     AssaultActionLog,
+    AssaultActionResult,
     FireActionLog,
     MoveActionLog,
     MoveActionResult,
@@ -13,7 +14,6 @@ from backend.models import (
     MoveActionRequest,
 )
 from core.action_models import (
-    AssaultAction,
     InvalidActionTypes,
 )
 from core.components import (
@@ -173,11 +173,14 @@ class AiService:
                     body=body, result=result, unit_state=CombatUnitService.get_units(gs)
                 )
         else:
-            result = AssaultSystem.assault(
-                gs, AssaultAction(body.unit_id, body.target_id)
-            )
+            result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
             if not isinstance(result, InvalidActionTypes):
                 return AssaultActionLog(
-                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                    body=body,
+                    result=AssaultActionResult(
+                        outcome=result.outcome,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    ),
+                    unit_state=CombatUnitService.get_units(gs),
                 )
         return result

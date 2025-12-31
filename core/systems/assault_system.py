@@ -1,9 +1,9 @@
+from dataclasses import dataclass
 import random
 from core.action_models import (
     AssaultOutcomes,
+    FireOutcomes,
     InvalidActionTypes,
-    AssaultAction,
-    AssaultActionResult,
 )
 from core.components import (
     AssaultControls,
@@ -22,30 +22,44 @@ _ASSAULT_SUCCESS_PROBABILITIES = {
 }
 
 
+@dataclass
+class _AssaultActionResult:
+    """Result of an assault action as assault outcome, and any reactive fire."""
+
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
 class AssaultSystem:
     """Static system class for handling assault action of combat units."""
 
     @staticmethod
     def _validate_assault_action(
-        gs: GameState, action: AssaultAction
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
     ) -> InvalidActionTypes | None:
         """Check whether assault action valid."""
-        attacker_unit = gs.get_component(action.attacker_id, CombatUnit)
-        target_unit = gs.get_component(action.target_id, CombatUnit)
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        target_unit = gs.get_component(target_id, CombatUnit)
 
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
             return InvalidActionTypes.NO_INITIATIVE
-        if not InitiativeSystem.has_initiative(gs, action.attacker_id):
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return InvalidActionTypes.NO_INITIATIVE
         if attacker_unit.faction == target_unit.faction:
             return InvalidActionTypes.BAD_ENTITY
 
     @staticmethod
-    def _get_assault_outcome(gs: GameState, action: AssaultAction) -> AssaultOutcomes:
+    def _get_assault_outcome(
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
+    ) -> AssaultOutcomes:
         """Rolls a randomized assault outcome, or overriden if provided."""
 
-        attacker_assault = gs.get_component(action.attacker_id, AssaultControls)
-        target_unit = gs.get_component(action.target_id, CombatUnit)
+        attacker_assault = gs.get_component(attacker_id, AssaultControls)
+        target_unit = gs.get_component(target_id, CombatUnit)
 
         # Once at location, do dice roll; only one can survive
         if attacker_assault.override == None:
@@ -62,29 +76,37 @@ class AssaultSystem:
 
     @staticmethod
     def assault(
-        gs: GameState, action: AssaultAction
-    ) -> AssaultActionResult | InvalidActionTypes:
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
+    ) -> _AssaultActionResult | InvalidActionTypes:
         """Mutator method performs assault action with reactive fire."""
 
         # Check assault action valid
-        if invalid_reason := AssaultSystem._validate_assault_action(gs, action):
+        if invalid_reason := AssaultSystem._validate_assault_action(
+            gs, attacker_id, target_id
+        ):
             return invalid_reason
 
         # Moves the unit to target position (allow reactive fire)
-        target_position = gs.get_component(action.target_id, Transform).position
-        result = MoveSystem.move(gs, action.attacker_id, target_position)
+        target_position = gs.get_component(target_id, Transform).position
+        result = MoveSystem.move(gs, attacker_id, target_position)
         if isinstance(result, InvalidActionTypes):
             return result
         if result.reactive_fire_outcome != None:
-            return AssaultActionResult(
+            return _AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome
             )
 
         # Once at location, do dice roll; only one can survive
-        outcome = AssaultSystem._get_assault_outcome(gs, action)
+        outcome = AssaultSystem._get_assault_outcome(
+            gs,
+            attacker_id,
+            target_id,
+        )
         match outcome:
             case AssaultOutcomes.SUCCESS:
-                CommandSystem.kill_unit(gs, action.target_id)
+                CommandSystem.kill_unit(gs, target_id)
             case AssaultOutcomes.FAIL:
-                CommandSystem.kill_unit(gs, action.attacker_id)
-        return AssaultActionResult(outcome=outcome)
+                CommandSystem.kill_unit(gs, attacker_id)
+        return _AssaultActionResult(outcome=outcome)

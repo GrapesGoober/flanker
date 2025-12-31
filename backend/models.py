@@ -5,7 +5,7 @@ from pydantic.alias_generators import to_camel
 from core.components import CombatUnit
 from core.utils.vec2 import Vec2
 from core.action_models import (
-    AssaultActionResult,
+    AssaultOutcomes,
     FireActionResult,
     FireOutcomes,
 )
@@ -101,6 +101,13 @@ class FireActionLog(BaseModel, CamelCaseConfig):
     body: FireActionRequest
     result: FireActionResult
     unit_state: CombatUnitsViewState
+
+
+class AssaultActionResult(BaseModel, CamelCaseConfig):
+    """Result of an assault action as assault outcome, and any reactive fire."""
+
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class AssaultActionLog(BaseModel, CamelCaseConfig):
