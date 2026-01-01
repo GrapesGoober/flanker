@@ -1,18 +1,19 @@
 from dataclasses import dataclass
+
 import pytest
 
-from core.action_models import FireOutcomes
-from core.components import (
-    EliminationObjective,
-    InitiativeState,
-    FireControls,
-    CombatUnit,
-)
 from core.gamestate import GameState
+from core.models.components import (
+    CombatUnit,
+    EliminationObjective,
+    FireControls,
+    InitiativeState,
+)
+from core.models.outcomes import FireOutcomes
+from core.models.vec2 import Vec2
 from core.systems.fire_system import FireSystem
 from core.systems.los_system import Transform
 from core.systems.objective_system import ObjectiveSystem
-from core.utils.vec2 import Vec2
 
 
 @dataclass

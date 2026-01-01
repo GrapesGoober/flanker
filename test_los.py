@@ -3,11 +3,12 @@ from inspect import isclass
 from typing import Any
 
 from matplotlib import pyplot as plt
+
 from backend.tag_components import TerrainTypeTag
-from core import components
 from core.gamestate import GameState
+from core.models import components
+from core.models.vec2 import Vec2
 from core.systems.los_system import LinearTransform, LosSystem
-from core.utils.vec2 import Vec2
 
 
 def visualize_points(verts: list[Vec2], color: str = "C0") -> None:

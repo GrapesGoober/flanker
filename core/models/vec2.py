@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from math import sqrt, isclose
 import math
+from dataclasses import dataclass
+from math import isclose, sqrt
 
 
 @dataclass

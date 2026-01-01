@@ -1,24 +1,21 @@
+from dataclasses import dataclass
 from typing import Iterable, Literal
-from core.action_models import (
-    FireOutcomes,
-    InvalidActionTypes,
-)
-from core.systems.command_system import CommandSystem
-from core.components import (
+
+from core.gamestate import GameState
+from core.models.components import (
     CombatUnit,
     FireControls,
-    TerrainFeature,
     MoveControls,
+    TerrainFeature,
     Transform,
 )
+from core.models.outcomes import FireOutcomes, InvalidAction
+from core.models.vec2 import Vec2
+from core.systems.command_system import CommandSystem
 from core.systems.fire_system import FireSystem
-from core.gamestate import GameState
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
-from core.systems.los_system import IntersectGetter
-from core.utils.vec2 import Vec2
-from core.systems.los_system import LosSystem
-from dataclasses import dataclass
+from core.systems.los_system import IntersectGetter, LosSystem
 
 
 @dataclass
@@ -41,7 +38,7 @@ class MoveSystem:
     @staticmethod
     def _validate_move(
         gs: GameState, unit_id: int, to: Vec2
-    ) -> Literal[True] | InvalidActionTypes:
+    ) -> Literal[True] | InvalidAction:
         """Returns `True` if move action can be performed."""
 
         transform = gs.get_component(unit_id, Transform)
@@ -50,9 +47,9 @@ class MoveSystem:
 
         # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
-            return InvalidActionTypes.INACTIVE_UNIT
+            return InvalidAction.INACTIVE_UNIT
         if not InitiativeSystem.has_initiative(gs, unit_id):
-            return InvalidActionTypes.NO_INITIATIVE
+            return InvalidAction.NO_INITIATIVE
 
         # Check move action though correct terrain type
         terrain_type = 0
@@ -61,7 +58,7 @@ class MoveSystem:
                 terrain_type = TerrainFeature.Flag.WALKABLE
         for intersect in IntersectSystem.get(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
-                return InvalidActionTypes.BAD_COORDS
+                return InvalidAction.BAD_COORDS
 
         return True
 
@@ -125,7 +122,7 @@ class MoveSystem:
         gs: GameState,
         unit_id: int,
         to: Vec2,
-    ) -> _MoveActionResult | InvalidActionTypes:
+    ) -> _MoveActionResult | InvalidAction:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
         if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
@@ -168,7 +165,7 @@ class MoveSystem:
         gs: GameState,
         unit_id: int,
         to: Vec2,
-    ) -> _MoveActionResult | InvalidActionTypes:
+    ) -> _MoveActionResult | InvalidAction:
         """Mutator method performs move action with reactive fire."""
 
         result = MoveSystem._singular_move(gs, unit_id, to)
@@ -186,7 +183,7 @@ class MoveSystem:
     def group_move(
         gs: GameState,
         moves: list[tuple[int, Vec2]],
-    ) -> _GroupMoveActionResult | InvalidActionTypes:
+    ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
 
         logs: list[_MoveActionResult] = []

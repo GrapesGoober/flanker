@@ -1,15 +1,13 @@
 import random
+from dataclasses import dataclass
 from typing import Iterable
-from core.action_models import (
-    FireOutcomes,
-    InvalidActionTypes,
-)
-from core.systems.command_system import CommandSystem
-from core.components import CombatUnit, FireControls, Transform
+
 from core.gamestate import GameState
+from core.models.components import CombatUnit, FireControls, Transform
+from core.models.outcomes import FireOutcomes, InvalidAction
+from core.systems.command_system import CommandSystem
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
-from dataclasses import dataclass
 
 
 @dataclass
@@ -35,7 +33,7 @@ class FireSystem:
         gs: GameState,
         attacker_id: int,
         target_id: int,
-    ) -> InvalidActionTypes | None:
+    ) -> InvalidAction | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
@@ -47,15 +45,15 @@ class FireSystem:
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
-            return InvalidActionTypes.INACTIVE_UNIT
+            return InvalidAction.INACTIVE_UNIT
 
         # Check that the target faction is not the same as attacker
         if attacker_unit.faction == target_unit.faction:
-            return InvalidActionTypes.BAD_ENTITY
+            return InvalidAction.BAD_ENTITY
 
         # Check if target is in line of sight
         if not LosSystem.check(gs, attacker_id, target_transform.position):
-            return InvalidActionTypes.BAD_COORDS
+            return InvalidAction.BAD_COORDS
 
     @staticmethod
     def get_fire_outcome(
@@ -80,14 +78,14 @@ class FireSystem:
         gs: GameState,
         attacker_id: int,
         target_id: int,
-    ) -> _FireActionResult | InvalidActionTypes:
+    ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
         if not InitiativeSystem.has_initiative(gs, attacker_id):
-            return InvalidActionTypes.NO_INITIATIVE
+            return InvalidAction.NO_INITIATIVE
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)

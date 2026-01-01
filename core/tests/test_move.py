@@ -1,16 +1,17 @@
 from dataclasses import dataclass
+
 import pytest
 
-from core.components import (
+from core.gamestate import GameState
+from core.models.components import (
+    CombatUnit,
     InitiativeState,
     MoveControls,
     TerrainFeature,
-    CombatUnit,
     Transform,
 )
-from core.gamestate import GameState
+from core.models.vec2 import Vec2
 from core.systems.move_system import MoveSystem
-from core.utils.vec2 import Vec2
 
 
 @dataclass

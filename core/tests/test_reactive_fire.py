@@ -1,19 +1,20 @@
 from dataclasses import dataclass
+
 import pytest
 
-from core.action_models import FireOutcomes
-from core.components import (
-    InitiativeState,
+from core.gamestate import GameState
+from core.models.components import (
+    CombatUnit,
     FireControls,
+    InitiativeState,
     MoveControls,
     TerrainFeature,
-    CombatUnit,
     Transform,
 )
-from core.gamestate import GameState
+from core.models.outcomes import FireOutcomes
+from core.models.vec2 import Vec2
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
-from core.utils.vec2 import Vec2
 
 
 @dataclass

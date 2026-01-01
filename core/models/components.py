@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
-from core.action_models import AssaultOutcomes, FireOutcomes
-from core.utils.vec2 import Vec2
+
+from core.models.outcomes import AssaultOutcomes, FireOutcomes
+from core.models.vec2 import Vec2
 
 
 @dataclass

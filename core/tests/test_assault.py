@@ -1,17 +1,18 @@
 from dataclasses import dataclass
+
 import pytest
 
-from core.action_models import AssaultOutcomes
-from core.components import (
+from core.gamestate import GameState
+from core.models.components import (
     AssaultControls,
-    InitiativeState,
     CombatUnit,
+    InitiativeState,
     MoveControls,
     Transform,
 )
-from core.gamestate import GameState
+from core.models.outcomes import AssaultOutcomes
+from core.models.vec2 import Vec2
 from core.systems.assault_system import AssaultSystem
-from core.utils.vec2 import Vec2
 
 
 @dataclass

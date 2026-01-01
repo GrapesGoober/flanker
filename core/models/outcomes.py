@@ -17,8 +17,8 @@ class FireOutcomes(str, Enum):
     KILL = "KILL"
 
 
-class InvalidActionTypes(str, Enum):
-    """Different types of invalid (not error) actions."""
+class InvalidAction(str, Enum):
+    """Defines reasons of invalid (not error) actions."""
 
     INACTIVE_UNIT = "INACTIVE_UNIT"
     NO_INITIATIVE = "NO_INITIATIVE"

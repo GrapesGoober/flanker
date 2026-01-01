@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from numba import njit  # type: ignore
 import numpy as np
+from numba import njit  # type: ignore
 from numpy.typing import NDArray
 
-from core.components import TerrainFeature, Transform
 from core.gamestate import GameState
-from core.utils.vec2 import Vec2
+from core.models.components import TerrainFeature, Transform
+from core.models.vec2 import Vec2
 from core.utils.linear_transform import LinearTransform
 
 

@@ -1,8 +1,8 @@
-from backend.tag_components import TerrainTypeTag
-from core.components import TerrainFeature, Transform
-from core.utils.vec2 import Vec2
-from core.gamestate import GameState
 from backend.models import TerrainModel
+from backend.tag_components import TerrainTypeTag
+from core.gamestate import GameState
+from core.models.components import TerrainFeature, Transform
+from core.models.vec2 import Vec2
 
 
 class TerrainService:

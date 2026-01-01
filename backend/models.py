@@ -1,14 +1,12 @@
 from enum import Enum
 from typing import Annotated, Literal, Union
 
-from pydantic.alias_generators import to_camel
-from core.components import CombatUnit
-from core.utils.vec2 import Vec2
-from core.action_models import (
-    AssaultOutcomes,
-    FireOutcomes,
-)
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
+
+from core.models.components import CombatUnit
+from core.models.outcomes import AssaultOutcomes, FireOutcomes
+from core.models.vec2 import Vec2
 
 
 class CamelCaseConfig:
