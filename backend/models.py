@@ -80,37 +80,25 @@ class TerrainModel(BaseModel, CamelCaseConfig):
         BUILDING = "BUILDING"
 
 
-class MoveActionResult(BaseModel, CamelCaseConfig):
-    reactive_fire_outcome: FireOutcomes | None = None
-
-
 class MoveActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLog"] = "MoveActionLog"
     body: MoveActionRequest
-    result: MoveActionResult
+    reactive_fire_outcome: FireOutcomes | None = None
     unit_state: CombatUnitsViewState
-
-
-class FireActionResult(BaseModel, CamelCaseConfig):
-    outcome: FireOutcomes | None = None
 
 
 class FireActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["FireActionLog"] = "FireActionLog"
     body: FireActionRequest
-    result: FireActionResult
+    outcome: FireOutcomes | None = None
     unit_state: CombatUnitsViewState
-
-
-class AssaultActionResult(BaseModel, CamelCaseConfig):
-    outcome: AssaultOutcomes | None = None
-    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class AssaultActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["AssaultActionLog"] = "AssaultActionLog"
     body: AssaultActionRequest
-    result: AssaultActionResult
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
     unit_state: CombatUnitsViewState
 
 

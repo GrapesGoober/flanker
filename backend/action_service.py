@@ -5,13 +5,10 @@ from backend.logging_service import LoggingService
 from backend.models import (
     AssaultActionLog,
     AssaultActionRequest,
-    AssaultActionResult,
     FireActionLog,
     FireActionRequest,
-    FireActionResult,
     MoveActionLog,
     MoveActionRequest,
-    MoveActionResult,
 )
 from core.gamestate import GameState
 from core.models.outcomes import InvalidAction
@@ -33,9 +30,7 @@ class ActionService:
             gs,
             MoveActionLog(
                 body=body,
-                result=MoveActionResult(
-                    reactive_fire_outcome=result.reactive_fire_outcome
-                ),
+                reactive_fire_outcome=result.reactive_fire_outcome,
                 unit_state=CombatUnitService.get_units(gs),
             ),
         )
@@ -50,7 +45,7 @@ class ActionService:
             gs,
             FireActionLog(
                 body=body,
-                result=FireActionResult(outcome=result.outcome),
+                outcome=result.outcome,
                 unit_state=CombatUnitService.get_units(gs),
             ),
         )
@@ -65,10 +60,8 @@ class ActionService:
             gs,
             AssaultActionLog(
                 body=body,
-                result=AssaultActionResult(
-                    outcome=result.outcome,
-                    reactive_fire_outcome=result.reactive_fire_outcome,
-                ),
+                outcome=result.outcome,
+                reactive_fire_outcome=result.reactive_fire_outcome,
                 unit_state=CombatUnitService.get_units(gs),
             ),
         )

@@ -4,9 +4,9 @@
 	Displays action logs, terrain, and unit state for replay and analysis.
 	Handles log navigation and map rendering.
 	*/
-	import { onMount } from 'svelte';
-	import { SvgMap } from '$lib/components';
 	import { GetLogs, GetTerrainData, type ActionLog, type TerrainModel } from '$lib/api';
+	import { SvgMap } from '$lib/components';
+	import { onMount } from 'svelte';
 	import TerrainLayer from '../../../../lib/components/terrain-layer.svelte';
 	import LogViewLayer from './log-view-layer.svelte';
 
@@ -38,7 +38,5 @@ index = <input type="number" class="number-input" bind:value={index} />
 
 <!-- Display current action log details -->
 {#if action}
-	{action.logType}
-	{JSON.stringify(action.body)}
-	{JSON.stringify(action.result)}
+	{JSON.stringify(action)}
 {/if}

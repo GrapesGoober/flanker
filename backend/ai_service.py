@@ -6,16 +6,18 @@ from backend.combat_unit_service import CombatUnitService
 from backend.models import (
     ActionLog,
     AssaultActionLog,
-    AssaultActionResult,
     FireActionLog,
     FireActionRequest,
-    FireActionResult,
     MoveActionLog,
     MoveActionRequest,
-    MoveActionResult,
 )
 from core.gamestate import GameState
-from core.models.components import CombatUnit, InitiativeState, Transform
+from core.models.components import (
+    CombatUnit,
+    EliminationObjective,
+    InitiativeState,
+    Transform,
+)
 from core.models.outcomes import InvalidAction
 from core.models.vec2 import Vec2
 from core.systems.assault_system import AssaultSystem
@@ -154,9 +156,7 @@ class AiService:
             if not isinstance(result, InvalidAction):
                 return MoveActionLog(
                     body=body,
-                    result=MoveActionResult(
-                        reactive_fire_outcome=result.reactive_fire_outcome
-                    ),
+                    reactive_fire_outcome=result.reactive_fire_outcome,
                     unit_state=CombatUnitService.get_units(gs),
                 )
         elif isinstance(body, FireActionRequest):
@@ -164,7 +164,7 @@ class AiService:
             if not isinstance(result, InvalidAction):
                 return FireActionLog(
                     body=body,
-                    result=FireActionResult(outcome=result.outcome),
+                    outcome=result.outcome,
                     unit_state=CombatUnitService.get_units(gs),
                 )
         else:
@@ -172,10 +172,8 @@ class AiService:
             if not isinstance(result, InvalidAction):
                 return AssaultActionLog(
                     body=body,
-                    result=AssaultActionResult(
-                        outcome=result.outcome,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    ),
+                    outcome=result.outcome,
+                    reactive_fire_outcome=result.reactive_fire_outcome,
                     unit_state=CombatUnitService.get_units(gs),
                 )
         return result

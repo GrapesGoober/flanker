@@ -174,7 +174,8 @@ export interface components {
              */
             logType: "AssaultActionLog";
             body: components["schemas"]["AssaultActionRequest"];
-            result: components["schemas"]["AssaultActionResult"];
+            outcome?: components["schemas"]["AssaultOutcomes"] | null;
+            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
             unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /**
@@ -186,11 +187,6 @@ export interface components {
             unitId: number;
             /** Targetid */
             targetId: number;
-        };
-        /** AssaultActionResult */
-        AssaultActionResult: {
-            outcome?: components["schemas"]["AssaultOutcomes"] | null;
-            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * AssaultOutcomes
@@ -217,7 +213,7 @@ export interface components {
              */
             logType: "FireActionLog";
             body: components["schemas"]["FireActionRequest"];
-            result: components["schemas"]["FireActionResult"];
+            outcome?: components["schemas"]["FireOutcomes"] | null;
             unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /**
@@ -229,10 +225,6 @@ export interface components {
             unitId: number;
             /** Targetid */
             targetId: number;
-        };
-        /** FireActionResult */
-        FireActionResult: {
-            outcome?: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * FireOutcomes
@@ -253,7 +245,7 @@ export interface components {
              */
             logType: "MoveActionLog";
             body: components["schemas"]["MoveActionRequest"];
-            result: components["schemas"]["MoveActionResult"];
+            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
             unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /**
@@ -264,10 +256,6 @@ export interface components {
             /** Unitid */
             unitId: number;
             to: components["schemas"]["Vec2"];
-        };
-        /** MoveActionResult */
-        MoveActionResult: {
-            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * ObjectiveState
