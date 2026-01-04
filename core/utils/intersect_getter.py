@@ -1,8 +1,10 @@
 from itertools import pairwise
-from numba import njit  # type: ignore
+
 import numpy as np
+from numba import njit  # type: ignore
 from numpy.typing import NDArray
-from core.utils.vec2 import Vec2
+
+from core.models.vec2 import Vec2
 
 
 class IntersectGetter:
@@ -64,7 +66,7 @@ class IntersectGetter:
         return list(unique_points)
 
     @staticmethod
-    @njit
+    @njit(cache=True)  # type: ignore
     def _njit_get_intersect(
         line_vert: NDArray[np.float64],
         line_vector: NDArray[np.float64],

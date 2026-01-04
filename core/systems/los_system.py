@@ -1,17 +1,13 @@
 import math
+from dataclasses import dataclass
 from typing import Iterable
 
-from core.components import (
-    FireControls,
-    TerrainFeature,
-    Transform,
-)
 from core.gamestate import GameState
+from core.models.components import FireControls, TerrainFeature, Transform
+from core.models.vec2 import Vec2
 from core.systems.intersect_system import IntersectSystem
 from core.utils.intersect_getter import IntersectGetter
 from core.utils.linear_transform import LinearTransform
-from core.utils.vec2 import Vec2
-from dataclasses import dataclass
 
 
 @dataclass

@@ -1,5 +1,5 @@
 from core.gamestate import GameState
-from core.components import CombatUnit
+from core.models.components import CombatUnit
 from core.systems.objective_system import ObjectiveSystem
 
 

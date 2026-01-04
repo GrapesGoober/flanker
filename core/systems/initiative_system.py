@@ -1,5 +1,5 @@
 from core.gamestate import GameState
-from core.components import CombatUnit, InitiativeState, FireControls
+from core.models.components import CombatUnit, FireControls, InitiativeState
 
 
 class InitiativeSystem:

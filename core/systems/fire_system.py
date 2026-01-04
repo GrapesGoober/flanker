@@ -1,16 +1,21 @@
 import random
+from dataclasses import dataclass
 from typing import Iterable
-from core.action_models import (
-    FireAction,
-    FireActionResult,
-    FireOutcomes,
-    InvalidActionTypes,
-)
-from core.systems.command_system import CommandSystem
-from core.components import CombatUnit, FireControls, Transform
+
 from core.gamestate import GameState
+from core.models.components import CombatUnit, FireControls, Transform
+from core.models.outcomes import FireOutcomes, InvalidAction
+from core.systems.command_system import CommandSystem
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.los_system import LosSystem
+
+
+@dataclass
+class _FireActionResult:
+    """Result of a fire action as outcome."""
+
+    outcome: FireOutcomes | None = None
+
 
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
@@ -28,7 +33,7 @@ class FireSystem:
         gs: GameState,
         attacker_id: int,
         target_id: int,
-    ) -> InvalidActionTypes | None:
+    ) -> InvalidAction | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
@@ -40,15 +45,15 @@ class FireSystem:
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
-            return InvalidActionTypes.INACTIVE_UNIT
+            return InvalidAction.INACTIVE_UNIT
 
         # Check that the target faction is not the same as attacker
         if attacker_unit.faction == target_unit.faction:
-            return InvalidActionTypes.BAD_ENTITY
+            return InvalidAction.BAD_ENTITY
 
         # Check if target is in line of sight
         if not LosSystem.check(gs, attacker_id, target_transform.position):
-            return InvalidActionTypes.BAD_COORDS
+            return InvalidAction.BAD_COORDS
 
     @staticmethod
     def get_fire_outcome(
@@ -70,40 +75,40 @@ class FireSystem:
 
     @staticmethod
     def fire(
-        gs: GameState, action: FireAction
-    ) -> FireActionResult | InvalidActionTypes:
+        gs: GameState,
+        attacker_id: int,
+        target_id: int,
+    ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
 
         # Validate fire actors
-        if reason := FireSystem.validate_fire_actors(
-            gs, action.attacker_id, action.target_id
-        ):
+        if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
-        if not InitiativeSystem.has_initiative(gs, action.attacker_id):
-            return InvalidActionTypes.NO_INITIATIVE
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
+            return InvalidAction.NO_INITIATIVE
 
         # Apply outcome
-        target_unit = gs.get_component(action.target_id, CombatUnit)
-        match FireSystem.get_fire_outcome(gs, action.attacker_id):
+        target_unit = gs.get_component(target_id, CombatUnit)
+        match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(outcome=FireOutcomes.MISS)
+                return _FireActionResult(outcome=FireOutcomes.MISS)
             case FireOutcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
-                return FireActionResult(outcome=FireOutcomes.PIN)
+                return _FireActionResult(outcome=FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.SUPPRESSED
-                    return FireActionResult(outcome=FireOutcomes.SUPPRESS)
+                    return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
                 else:  # Kills the unit if it is already suppressed
-                    CommandSystem.kill_unit(gs, action.target_id)
-                    return FireActionResult(outcome=FireOutcomes.KILL)
+                    CommandSystem.kill_unit(gs, target_id)
+                    return _FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
-                CommandSystem.kill_unit(gs, action.target_id)
-                return FireActionResult(outcome=FireOutcomes.KILL)
-        return FireActionResult(is_valid=False)
+                CommandSystem.kill_unit(gs, target_id)
+                return _FireActionResult(outcome=FireOutcomes.KILL)
+        return _FireActionResult(is_valid=False)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:

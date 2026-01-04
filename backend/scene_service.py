@@ -1,11 +1,10 @@
 from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any, Iterable
-from backend.tag_components import (
-    TerrainTypeTag,
-)
+
+from backend.tag_components import TerrainTypeTag
 from core.gamestate import GameState
-from core import components
+from core.models import components
 
 
 class SceneService:

@@ -1,17 +1,18 @@
 from dataclasses import dataclass
+
 import pytest
 
-from core.action_models import AssaultAction, AssaultOutcomes
-from core.components import (
+from core.gamestate import GameState
+from core.models.components import (
     AssaultControls,
-    InitiativeState,
     CombatUnit,
+    InitiativeState,
     MoveControls,
     Transform,
 )
-from core.gamestate import GameState
+from core.models.outcomes import AssaultOutcomes
+from core.models.vec2 import Vec2
 from core.systems.assault_system import AssaultSystem
-from core.utils.vec2 import Vec2
 
 
 @dataclass
@@ -53,8 +54,11 @@ def fixture() -> Fixture:
 def test_assault_fail(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultOutcomes.FAIL
     AssaultSystem.assault(
-        fixture.gs, AssaultAction(fixture.attacker_id, fixture.target_id)
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
+
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
     assert attacker == None, "Failed assault must destroy attacker"
 
@@ -62,7 +66,9 @@ def test_assault_fail(fixture: Fixture) -> None:
 def test_assault_success(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultOutcomes.SUCCESS
     AssaultSystem.assault(
-        fixture.gs, AssaultAction(fixture.attacker_id, fixture.target_id)
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
     assert attacker != None, "Successful assault mustn't destroy attacker"

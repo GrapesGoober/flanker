@@ -1,9 +1,5 @@
-from core.components import (
-    CombatUnit,
-    EliminationObjective,
-    InitiativeState,
-)
 from core.gamestate import GameState
+from core.models.components import CombatUnit, EliminationObjective, InitiativeState
 
 
 class ObjectiveSystem:

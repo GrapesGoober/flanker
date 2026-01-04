@@ -1,7 +1,8 @@
 import math
 from typing import List
-from core.components import Transform
-from core.utils.vec2 import Vec2
+
+from core.models.components import Transform
+from core.models.vec2 import Vec2
 
 
 class LinearTransform:

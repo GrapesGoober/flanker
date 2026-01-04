@@ -1,18 +1,18 @@
 from dataclasses import dataclass
+
 import pytest
 
-from core.action_models import MoveAction
-from core.components import (
+from core.gamestate import GameState
+from core.models.components import (
     CombatUnit,
+    InitiativeState,
     MoveControls,
     TerrainFeature,
     Transform,
-    InitiativeState,
 )
-from core.gamestate import GameState
+from core.models.vec2 import Vec2
 from core.systems.los_system import LosSystem
 from core.systems.move_system import MoveSystem
-from core.utils.vec2 import Vec2
 
 
 @dataclass
@@ -78,7 +78,7 @@ def test_no_los(fixture: Fixture) -> None:
 
 
 def test_los(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, MoveAction(fixture.target_id, Vec2(6, -10)))
+    MoveSystem.move(fixture.gs, fixture.target_id, Vec2(6, -10))
     has_los = LosSystem.check(
         fixture.gs, fixture.source_id, fixture.target_transform.position
     )
@@ -86,7 +86,7 @@ def test_los(fixture: Fixture) -> None:
 
 
 def test_los_target_inside_terrain(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, MoveAction(fixture.target_id, Vec2(5, 1)))
+    MoveSystem.move(fixture.gs, fixture.target_id, Vec2(5, 1))
     has_los = LosSystem.check(
         fixture.gs, fixture.source_id, fixture.target_transform.position
     )
@@ -94,7 +94,7 @@ def test_los_target_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_source_inside_terrain(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, MoveAction(fixture.source_id, Vec2(9, 9)))
+    MoveSystem.move(fixture.gs, fixture.source_id, Vec2(9, 9))
     has_los = LosSystem.check(
         fixture.gs, fixture.source_id, fixture.target_transform.position
     )
@@ -102,8 +102,8 @@ def test_los_source_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_both_inside_terrain(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, MoveAction(fixture.source_id, Vec2(9, 9)))
-    MoveSystem.move(fixture.gs, MoveAction(fixture.target_id, Vec2(-6, 4)))
+    MoveSystem.move(fixture.gs, fixture.source_id, Vec2(9, 9))
+    MoveSystem.move(fixture.gs, fixture.target_id, Vec2(-6, 4))
     has_los = LosSystem.check(
         fixture.gs, fixture.source_id, fixture.target_transform.position
     )

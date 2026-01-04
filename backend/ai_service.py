@@ -1,18 +1,29 @@
 import random
+from copy import deepcopy
+
 from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
-from backend.models import ActionLog, AssaultActionLog, FireActionLog, MoveActionLog
-from backend.models import FireActionRequest, MoveActionRequest
-from core.action_models import AssaultAction, FireAction, InvalidActionTypes, MoveAction
-from core.components import CombatUnit, InitiativeState, Transform
+from backend.models import (
+    ActionLog,
+    AssaultActionLog,
+    FireActionLog,
+    FireActionRequest,
+    MoveActionLog,
+    MoveActionRequest,
+)
+from core.gamestate import GameState
+from core.models.components import (
+    CombatUnit,
+    EliminationObjective,
+    InitiativeState,
+    Transform,
+)
+from core.models.outcomes import InvalidAction
+from core.models.vec2 import Vec2
 from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
-from core.gamestate import GameState
-from copy import deepcopy
-
-from core.utils.vec2 import Vec2
 
 num_states: int = 0
 num_depth: int = (
@@ -121,7 +132,7 @@ class AiService:
         for action in AiService.get_actions(gs):
             new_gs = deepcopy(gs)
             log = AiService.perform_action(new_gs, action)
-            if isinstance(log, InvalidActionTypes):
+            if isinstance(log, InvalidAction):
                 continue
             num_states += 1
             AiService.play(new_gs)
@@ -139,25 +150,30 @@ class AiService:
     def perform_action(
         gs: GameState,
         body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> ActionLog | InvalidActionTypes:
+    ) -> ActionLog | InvalidAction:
         if isinstance(body, MoveActionRequest):
-            result = MoveSystem.move(gs, MoveAction(body.unit_id, body.to))
-            if not isinstance(result, InvalidActionTypes):
+            result = MoveSystem.move(gs, body.unit_id, body.to)
+            if not isinstance(result, InvalidAction):
                 return MoveActionLog(
-                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                    body=body,
+                    reactive_fire_outcome=result.reactive_fire_outcome,
+                    unit_state=CombatUnitService.get_units(gs),
                 )
         elif isinstance(body, FireActionRequest):
-            result = FireSystem.fire(gs, FireAction(body.unit_id, body.target_id))
-            if not isinstance(result, InvalidActionTypes):
+            result = FireSystem.fire(gs, body.unit_id, body.target_id)
+            if not isinstance(result, InvalidAction):
                 return FireActionLog(
-                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                    body=body,
+                    outcome=result.outcome,
+                    unit_state=CombatUnitService.get_units(gs),
                 )
         else:
-            result = AssaultSystem.assault(
-                gs, AssaultAction(body.unit_id, body.target_id)
-            )
-            if not isinstance(result, InvalidActionTypes):
+            result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
+            if not isinstance(result, InvalidAction):
                 return AssaultActionLog(
-                    body=body, result=result, unit_state=CombatUnitService.get_units(gs)
+                    body=body,
+                    outcome=result.outcome,
+                    reactive_fire_outcome=result.reactive_fire_outcome,
+                    unit_state=CombatUnitService.get_units(gs),
                 )
         return result

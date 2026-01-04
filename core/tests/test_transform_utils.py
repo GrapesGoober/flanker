@@ -1,5 +1,5 @@
-from core.components import Transform
-from core.utils.vec2 import Vec2
+from core.models.components import Transform
+from core.models.vec2 import Vec2
 from core.utils.linear_transform import LinearTransform
 
 
