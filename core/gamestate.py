@@ -1,5 +1,4 @@
 from typing import Any, overload
-from core.serializer import Serializer
 
 
 class GameState:
@@ -63,17 +62,17 @@ class GameState:
             self._cache[component_types] = result
             return result
 
-    def save(self, component_types: list[type]) -> str:
-        """Saves game state to json string."""
-        return Serializer.serialize(
-            self._entities,
-            self._id_counter,
-            component_types,
-        )
+    def dump(self) -> tuple[dict[int, dict[type, Any]], int]:
+        """Dump the entities table and id counter"""
+        return self._entities, self._id_counter
 
     @staticmethod
-    def load(data: str, component_types: list[type]) -> "GameState":
-        """Loads game state from json string."""
+    def load(
+        entities: dict[int, dict[type, Any]],
+        id_counter: int,
+    ) -> "GameState":
+        """Loads game state from entities table and id counter."""
         gs = GameState()
-        gs._entities, gs._id_counter = Serializer.deserialize(data, component_types)
+        gs._entities = entities
+        gs._id_counter = id_counter
         return gs

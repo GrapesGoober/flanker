@@ -177,3 +177,22 @@ class AiService:
                     unit_state=CombatUnitService.get_units(gs),
                 )
         return result
+
+    @staticmethod
+    def smart_copy(
+        gs: GameState,
+        action: MoveActionRequest | FireActionRequest | AssaultActionRequest,
+    ) -> GameState: ...
+
+    @staticmethod
+    def get_mutable_entities(gs: GameState) -> list[int]:
+        entity_ids: set[int] = set()
+
+        for id, _ in gs.query(InitiativeState):
+            entity_ids.add(id)
+        for id, _ in gs.query(EliminationObjective):
+            entity_ids.add(id)
+        for id, _ in gs.query(CombatUnit):
+            entity_ids.add(id)
+
+        return list(entity_ids)

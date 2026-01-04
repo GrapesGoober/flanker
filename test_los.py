@@ -8,6 +8,7 @@ from backend.tag_components import TerrainTypeTag
 from core.gamestate import GameState
 from core.models import components
 from core.models.vec2 import Vec2
+from core.serializer import Serializer
 from core.systems.los_system import LinearTransform, LosSystem
 
 
@@ -31,7 +32,11 @@ if __name__ == "__main__":
     path = "./scenes/demo-simple.json"
 
     with open(path, "r") as f:
-        gs = GameState.load(f.read(), component_types)
+        entities, id_counter = Serializer.deserialize(
+            json_data=f.read(),
+            component_types=component_types,
+        )
+        gs = GameState.load(entities, id_counter)
 
     for _, terrain, transform in gs.query(
         components.TerrainFeature,

@@ -5,6 +5,7 @@ from typing import Any, Iterable
 from backend.tag_components import TerrainTypeTag
 from core.gamestate import GameState
 from core.models import components
+from core.serializer import Serializer
 
 
 class SceneService:
@@ -19,13 +20,29 @@ class SceneService:
                 yield cls
         yield TerrainTypeTag
 
-    def save_scene(self, scene_name: str, game_id: int, path: str) -> None:
+    def save_scene(
+        self,
+        scene_name: str,
+        game_id: int,
+        path: str,
+    ) -> None:
         gs = self.get_game_state(scene_name, game_id)
         component_types = list(SceneService._get_component_types())
         with open(path, "w") as f:
-            f.write(gs.save(component_types))
+            entities, id_counter = gs.dump()
+            f.write(
+                Serializer.serialize(
+                    entities,
+                    id_counter,
+                    component_types,
+                )
+            )
 
-    def get_game_state(self, scene_name: str, game_id: int) -> GameState:
+    def get_game_state(
+        self,
+        scene_name: str,
+        game_id: int,
+    ) -> GameState:
         # Initialize a new set of games for a scene
         games = self.games.setdefault(scene_name, {})
         # Initializing a new game is costly (file read),
@@ -33,6 +50,10 @@ class SceneService:
         if game_id not in games:
             component_types = list(SceneService._get_component_types())
             with open(f"./scenes/{scene_name}.json", "r") as f:
-                gs = GameState.load(f.read(), component_types)
+                entities, id_counter = Serializer.deserialize(
+                    json_data=f.read(),
+                    component_types=component_types,
+                )
+                gs = GameState.load(entities, id_counter)
             self.games[scene_name].setdefault(game_id, gs)
         return self.games[scene_name][game_id]

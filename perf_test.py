@@ -6,6 +6,7 @@ from backend.terrain_service import TerrainTypeTag
 from core.gamestate import GameState
 from core.models import components
 from core.models.vec2 import Vec2
+from core.serializer import Serializer
 from core.systems.move_system import MoveSystem
 
 component_types: list[type[Any]] = []
@@ -17,7 +18,11 @@ component_types.append(TerrainTypeTag)
 path = "./scenes/demo.json"
 
 with open(path, "r") as f:
-    gs = GameState.load(f.read(), component_types)
+    entities, id_counter = Serializer.deserialize(
+        json_data=f.read(),
+        component_types=component_types,
+    )
+    gs = GameState.load(entities, id_counter)
 
 
 MoveSystem.move(gs, 1, Vec2(-50, -200))
