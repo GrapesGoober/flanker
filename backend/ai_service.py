@@ -130,7 +130,7 @@ class AiService:
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
         for action in AiService.get_actions(gs):
-            new_gs = deepcopy(gs)
+            new_gs = AiService.smart_copy(gs)
             log = AiService.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue
@@ -179,20 +179,27 @@ class AiService:
         return result
 
     @staticmethod
-    def smart_copy(
-        gs: GameState,
-        action: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> GameState: ...
+    def smart_copy(gs: GameState) -> GameState:
 
-    @staticmethod
-    def get_mutable_entities(gs: GameState) -> list[int]:
-        entity_ids: set[int] = set()
-
+        mutable_entities: set[int] = set()
+        if (CombatUnit,) in gs._cache:  # type: ignore
+            for id, _ in gs._cache[(CombatUnit,)]:  # type: ignore
+                if id == 10:
+                    break
         for id, _ in gs.query(InitiativeState):
-            entity_ids.add(id)
+            mutable_entities.add(id)
         for id, _ in gs.query(EliminationObjective):
-            entity_ids.add(id)
+            mutable_entities.add(id)
         for id, _ in gs.query(CombatUnit):
-            entity_ids.add(id)
+            # This query is returning id=10, even when it doesnt exist in game state
+            # TODO: debugger, step 1 numstates at a time until entity=10 dissapears
+            # then look into gs.query
+            mutable_entities.add(id)
 
-        return list(entity_ids)
+        entities, id_counter = gs.dump()
+        for mutable_ids in mutable_entities:
+            # Why entitiy_id 10 is missing after a num_states=12?
+            # The numstates are not deterministic too num_states=20 sometimes
+            # Entities are deleted? Cache? Investigate the gs instance itself
+            entities[mutable_ids] = deepcopy(entities[mutable_ids])
+        return GameState.load(entities, id_counter)

@@ -64,7 +64,7 @@ class GameState:
 
     def dump(self) -> tuple[dict[int, dict[type, Any]], int]:
         """Dump the entities table and id counter"""
-        return self._entities, self._id_counter
+        return dict(self._entities), self._id_counter
 
     @staticmethod
     def load(
@@ -73,6 +73,6 @@ class GameState:
     ) -> "GameState":
         """Loads game state from entities table and id counter."""
         gs = GameState()
-        gs._entities = entities
+        gs._entities = dict(entities)
         gs._id_counter = id_counter
         return gs
