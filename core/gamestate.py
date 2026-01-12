@@ -63,8 +63,8 @@ class GameState:
             return result
 
     def dump(self) -> tuple[dict[int, dict[type, Any]], int]:
-        """Dump the entities table and id counter"""
-        return dict(self._entities), self._id_counter
+        """Dump a copy of the entities table and id counter"""
+        return deepcopy(self._entities), self._id_counter
 
     @staticmethod
     def load(
@@ -73,6 +73,6 @@ class GameState:
     ) -> "GameState":
         """Loads game state from entities table and id counter."""
         gs = GameState()
-        gs._entities = dict(entities)
+        gs._entities = deepcopy(entities)
         gs._id_counter = id_counter
         return gs
