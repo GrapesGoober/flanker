@@ -1,4 +1,6 @@
 import random
+from itertools import count
+from typing import Iterator
 
 from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
@@ -23,11 +25,6 @@ from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
-
-num_states: int = 0
-num_depth: int = (
-    0  # TODO: this is a useless metric as tree search is depth first search
-)
 
 
 class AiService:
@@ -117,14 +114,10 @@ class AiService:
     def play_minimax(
         gs: GameState,
         depth: int,
+        iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[ActionLog]]:
         if depth == 0 or len(AiService.get_actions(gs)) == 0:
             return AiService.evaluate(gs), []
-
-        global num_depth
-        if depth > num_depth:
-            num_depth = depth
-        global num_states
 
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
@@ -133,13 +126,16 @@ class AiService:
             log = AiService.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue
-            num_states += 1
             AiService.play(new_gs)
-            if num_states % 100 == 0:
-                print(f"Evaluated {num_depth=} with {num_states=}")
+            if not iter_counter:
+                iter_counter = count(0)
+            iter = next(iter_counter)
+            if iter % 100 == 0:
+                print(f"Evaluated {iter=}")
             score, logs = AiService.play_minimax(
                 new_gs,
                 depth - 1,
+                iter_counter=iter_counter,
             )
             if score > best_score:
                 best_score = score
