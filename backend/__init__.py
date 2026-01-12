@@ -1,19 +1,22 @@
+from timeit import timeit
 from typing import NoReturn
-from fastapi import FastAPI, HTTPException, Request, status, Path, Body
+
+from fastapi import Body, FastAPI, HTTPException, Path, Request, status
+
 from backend.action_service import ActionService
 from backend.ai_service import AiService
-from backend.models import (
-    AssaultActionRequest,
-    FireActionRequest,
-    TerrainModel,
-    MoveActionRequest,
-    CombatUnitsViewState,
-    ActionLog,
-)
 from backend.combat_unit_service import CombatUnitService
+from backend.logging_service import LoggingService
+from backend.models import (
+    ActionLog,
+    AssaultActionRequest,
+    CombatUnitsViewState,
+    FireActionRequest,
+    MoveActionRequest,
+    TerrainModel,
+)
 from backend.scene_service import SceneService
 from backend.terrain_service import TerrainService
-from backend.logging_service import LoggingService
 
 app = FastAPI()
 scene_service = SceneService()
@@ -109,9 +112,14 @@ async def ai_play(
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    _, logs = AiService.play_minimax(gs, 4)
-    for log in logs:
-        LoggingService.log(gs, log)
+
+    def test() -> None:
+        _, logs = AiService.play_minimax(gs, 4)
+        for log in logs:
+            LoggingService.log(gs, log)
+
+    exec_time = timeit(test, number=1)
+    print(f"Execution time: {exec_time:.6f} seconds")
 
 
 @app.put("/api/{sceneName}/{gameId}/terrain")
