@@ -135,7 +135,8 @@ class AiService:
                 continue
             num_states += 1
             AiService.play(new_gs)
-            print(f"Evaluated {num_depth=} with {num_states=}")
+            if num_states % 100 == 0:
+                print(f"Evaluated {num_depth=} with {num_states=}")
             score, logs = AiService.play_minimax(
                 new_gs,
                 depth - 1,
