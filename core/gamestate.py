@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Any, overload
 
 
@@ -76,3 +77,22 @@ class GameState:
         gs._entities = deepcopy(entities)
         gs._id_counter = id_counter
         return gs
+
+    def selective_copy(self, entity_ids: list[int]) -> "GameState":
+        """Deep copies the selected entities, the rest shallow copy."""
+        new_gs = GameState()
+        # Shallow copy everything by default
+        new_gs._entities = dict(self._entities)
+        new_gs._id_counter = self._id_counter
+        new_gs._cache = dict(self._cache)
+        # Deep copy the selected entities.
+        for id in entity_ids:
+            new_gs._entities[id] = deepcopy(self._entities[id])
+            # Clear cache for selected entities.
+            components = list(new_gs._entities[id].keys())
+            for component_type in components:
+                for cache_key in list(new_gs._cache.keys()):
+                    if component_type in cache_key:
+                        new_gs._cache.pop(cache_key)
+
+        return new_gs

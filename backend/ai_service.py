@@ -1,5 +1,4 @@
 import random
-from copy import deepcopy
 
 from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
@@ -130,7 +129,7 @@ class AiService:
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
         for action in AiService.get_actions(gs):
-            new_gs = AiService.smart_copy(gs)
+            new_gs = gs.selective_copy(AiService.get_deep_copy_entities(gs))
             log = AiService.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue
@@ -179,27 +178,12 @@ class AiService:
         return result
 
     @staticmethod
-    def smart_copy(gs: GameState) -> GameState:
-
+    def get_deep_copy_entities(gs: GameState) -> list[int]:
         mutable_entities: set[int] = set()
-        if (CombatUnit,) in gs._cache:  # type: ignore
-            for id, _ in gs._cache[(CombatUnit,)]:  # type: ignore
-                if id == 10:
-                    break
         for id, _ in gs.query(InitiativeState):
             mutable_entities.add(id)
         for id, _ in gs.query(EliminationObjective):
             mutable_entities.add(id)
         for id, _ in gs.query(CombatUnit):
-            # This query is returning id=10, even when it doesnt exist in game state
-            # TODO: debugger, step 1 numstates at a time until entity=10 dissapears
-            # then look into gs.query
             mutable_entities.add(id)
-
-        entities, id_counter = gs.dump()
-        for mutable_ids in mutable_entities:
-            # Why entitiy_id 10 is missing after a num_states=12?
-            # The numstates are not deterministic too num_states=20 sometimes
-            # Entities are deleted? Cache? Investigate the gs instance itself
-            entities[mutable_ids] = deepcopy(entities[mutable_ids])
-        return GameState.load(entities, id_counter)
+        return list(mutable_entities)
