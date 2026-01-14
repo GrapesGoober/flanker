@@ -87,6 +87,8 @@ class GameState:
         new_gs._cache = dict(self._cache)
         # Deep copy the selected entities.
         for id in entity_ids:
+            if id not in new_gs._entities:
+                raise KeyError(f"entity {id=} does not exist.")
             new_gs._entities[id] = deepcopy(self._entities[id])
             # Clear cache for selected entities.
             components = list(new_gs._entities[id].keys())

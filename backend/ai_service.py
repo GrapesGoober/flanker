@@ -121,8 +121,9 @@ class AiService:
 
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
+        deep_copy_entities = AiService.get_deep_copy_entities(gs)
         for action in AiService.get_actions(gs):
-            new_gs = gs.selective_copy(AiService.get_deep_copy_entities(gs))
+            new_gs = gs.selective_copy(deep_copy_entities)
             log = AiService.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue

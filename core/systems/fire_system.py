@@ -108,7 +108,6 @@ class FireSystem:
             case FireOutcomes.KILL:
                 CommandSystem.kill_unit(gs, target_id)
                 return _FireActionResult(outcome=FireOutcomes.KILL)
-        return _FireActionResult(is_valid=False)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
