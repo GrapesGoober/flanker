@@ -31,17 +31,22 @@ x = [v.x for v in verts_transformed] + [verts_transformed[0].x]
 y = [v.y for v in verts_transformed] + [verts_transformed[0].y]
 
 # Point to compare
-px, py = 104, 25
+points = [
+    Vec2(104, 25),
+    Vec2(146, 25),
+]
 
-plt.figure(figsize=(8, 8))
-plt.plot(x, y, "b-", label="Polygon")
-plt.fill(x, y, alpha=0.2)
-plt.plot(px, py, "ro", label="Point (104, 25)")
-plt.text(px, py, f"({px}, {py})", fontsize=12, ha="right")
-plt.axis("equal")
-plt.legend()
-plt.title("Transformed Polygon and Point (104, 25)")
-plt.xlabel("X")
-plt.ylabel("Y")
-plt.grid(True)
-plt.show()
+plt.figure(figsize=(8, 8))  # type: ignore
+plt.plot(x, y, "b-", label="Polygon")  # type: ignore
+plt.fill(x, y, alpha=0.2)  # type: ignore
+for point in points:
+    point_str = f"({point.x}, {point.y})"
+    plt.plot(point.x, point.y, "ro", label=f"Point {point_str}")  # type: ignore
+    plt.text(point.x, point.y, point_str, fontsize=12, ha="right")  # type: ignore
+plt.axis("equal")  # type: ignore
+plt.legend()  # type: ignore
+plt.title("Transformed Polygon and Point (104, 25)")  # type: ignore
+plt.xlabel("X")  # type: ignore
+plt.ylabel("Y")  # type: ignore
+plt.grid(True)  # type: ignore
+plt.show()  # type: ignore
