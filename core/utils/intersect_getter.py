@@ -13,38 +13,38 @@ class IntersectGetter:
     @staticmethod
     def is_inside(
         point: Vec2,
-        vertices: list[Vec2],
+        polygon: list[Vec2],
     ) -> bool:
         """
-        Checks whether a point is inside vertices.
-        Assumes a closed loop that `vertices[-1] == vertices[0]`.
+        Checks whether a point is inside a polygon.
+        Polygon must be closed loop that `vertices[-1] == vertices[0]`.
         """
-        if len(vertices) <= 2:
+        if len(polygon) <= 2:
             raise ValueError("`is_inside` need at least three vertices.")
 
-        line_cast_to = Vec2(max(v.x for v in vertices) + 1, point.y)
+        line_cast_to = Vec2(max(v.x for v in polygon) + 1, point.y)
         intersect_points = IntersectGetter.get_intersects(
             line=(point, line_cast_to),
-            vertices=vertices,
+            polyline=polygon,
         )
         return len(intersect_points) % 2 != 0
 
     @staticmethod
     def get_intersects(
         line: tuple[Vec2, Vec2],
-        vertices: list[Vec2],
+        polyline: list[Vec2],
     ) -> list[Vec2]:
         """
         Returns intersection points between a line and a polyline.
-        Assumes that if closed loop, the last vert `vertices[-1] == vertices[0]`.
+        For a closed loop, the vertices must repeat `polyline[-1] == polyline[0]`.
         """
 
         # Prepare edge vertices and vectors
         edges: list[list[float]] = []
         edge_vectors: list[list[float]] = []
-        if len(vertices) < 2:
+        if len(polyline) < 2:
             return []
-        for v1, v2 in pairwise(vertices):
+        for v1, v2 in pairwise(polyline):
             edges.append([v1.x, v1.y, 0.0])
             delta = v2 - v1
             edge_vectors.append([delta.x, delta.y, 0.0])
