@@ -92,15 +92,20 @@ class IntersectGetter:
         edge_ends = polyline[1:]
         edge_vectors = edge_ends - edge_verts
 
-        # Compute two parametric values t & u of intersect point
+        # Calculate the denominator and filter out parallel edges
         denominator = cross2d(line_vector, edge_vectors)
+        non_parallel_mask = np.abs(denominator) >= 1e-9
+        edge_vectors = edge_vectors[non_parallel_mask]
+        edge_verts = edge_verts[non_parallel_mask]
+        denominator = denominator[non_parallel_mask]
+
+        # Compute two parametric values t & u of intersect point
         q1_p1 = edge_verts - line_start
         t = cross2d(q1_p1, edge_vectors) / denominator
         u = cross2d(q1_p1, line_vector) / denominator
-        parallel_mask = np.abs(denominator) <= 1e-9
 
         # There's intersection if t and u values are in bound [0, 1]
-        intersect_mask = (~parallel_mask) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
+        intersect_mask = (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
 
         # Calculate intersection points using P = start + t * line_vector
         t_valid = t[intersect_mask]
