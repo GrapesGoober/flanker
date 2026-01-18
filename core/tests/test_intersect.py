@@ -32,6 +32,7 @@ def fixture() -> Fixture:
         Vec2(8.0, 15.0),
         Vec2(8.0, 7.0),
         Vec2(5.0, -1.0),
+        Vec2(0.0, 0.0),
     ]
 
     return Fixture(LinearTransform.apply(verts, transform))

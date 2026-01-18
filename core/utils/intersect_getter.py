@@ -24,7 +24,12 @@ class IntersectGetter:
         if polygon[-1] != polygon[0]:
             raise ValueError("Polygon is not closed loop.")
 
+        # Create a line in arbitrary (right-ward) direction to count intersections
+        # Direction doesn't matter. All results are the same.
         line_cast_to = Vec2(max(v.x for v in polygon) + 1, point.y)
+        # Prevent this line from casting directly at a vertex
+        line_cast_to = line_cast_to.rotated(1e-6)
+        # Cast and count
         intersect_points = IntersectGetter.get_intersects(
             line=(point, line_cast_to),
             polyline=polygon,
