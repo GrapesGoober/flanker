@@ -17,10 +17,12 @@ class IntersectGetter:
     ) -> bool:
         """
         Checks whether a point is inside a polygon.
-        Polygon must be closed loop that `vertices[-1] == vertices[0]`.
+        Polygon must be closed loop that `polygon[-1] == polygon[0]`.
         """
         if len(polygon) <= 2:
             raise ValueError("`is_inside` need at least three vertices.")
+        if polygon[-1] != polygon[0]:
+            raise ValueError("Polygon is not closed loop.")
 
         line_cast_to = Vec2(max(v.x for v in polygon) + 1, point.y)
         intersect_points = IntersectGetter.get_intersects(
