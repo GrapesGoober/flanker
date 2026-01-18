@@ -1,5 +1,3 @@
-from itertools import pairwise
-
 import numpy as np
 from numba import njit  # type: ignore
 from numpy.typing import NDArray
@@ -46,25 +44,14 @@ class IntersectGetter:
         For a closed loop, the vertices must repeat `polyline[-1] == polyline[0]`.
         """
 
-        # Prepare edge vertices and vectors
-        edges: list[list[float]] = []
-        edge_vectors: list[list[float]] = []
         if len(polyline) < 2:
             return []
-        for v1, v2 in pairwise(polyline):
-            edges.append([v1.x, v1.y])
-            delta = v2 - v1
-            edge_vectors.append([delta.x, delta.y])
 
-        # Run the optimised intersect getter
-        # Note: Explicitly tell numpy that we're working with 2d vectors with z=0;
-        # this prevents np.cross from freaking out
-        line_vector = line[1] - line[0]
+        # Convert to np arrays and let the compiled function compute
         intersections = IntersectGetter._njit_get_intersect(
-            line_vert=np.array([line[0].x, line[0].y], dtype=np.float64),
-            line_vector=np.array([line_vector.x, line_vector.y], dtype=np.float64),
-            edge_verts=np.array(edges, dtype=np.float64),
-            edge_vectors=np.array(edge_vectors, dtype=np.float64),
+            line_start=np.array([line[0].x, line[0].y], dtype=np.float64),
+            line_end=np.array([line[1].x, line[1].y], dtype=np.float64),
+            polyline=np.array([[v.x, v.y] for v in polyline], dtype=np.float64),
         )
         # Convert to Vec2
         points = [Vec2(float(x), float(y)) for x, y in intersections]
@@ -75,17 +62,16 @@ class IntersectGetter:
     @staticmethod
     @njit(cache=True)  # type: ignore
     def _njit_get_intersect(
-        line_vert: NDArray[np.float64],
-        line_vector: NDArray[np.float64],
-        edge_verts: NDArray[np.float64],
-        edge_vectors: NDArray[np.float64],
+        line_start: NDArray[np.float64],
+        line_end: NDArray[np.float64],
+        polyline: NDArray[np.float64],
     ) -> NDArray[np.float64]:
         """
         Private optimized intersect getter for `get_intersects`.
-        Computes all line segment intersections between a line and a set of edges
-        represented as linear Bezier curves Line = start + t * vector.
-        Returns NDArray (N x 2) of intersection points.
+        Takes line_start, line_end, and polyline (Nx2 array of vertices).
+        Computes all line segment intersections between the line and polyline edges.
         Note: might return duplicate points if edges share a vertex.
+        Returns NDArray (M x 2) of intersection points.
         """
 
         # Use a scalar cross2d, as opposed to np.cross that doesnt support 2D
@@ -94,9 +80,21 @@ class IntersectGetter:
         ) -> NDArray[np.float64]:
             return a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0]
 
+        # Need a line vector for a linear bezier line
+        # Linear Bezier Equation: line = start + t * vector
+        line_vector = line_end - line_start
+
+        # Need bezier edge vectors from polyline
+        n_edges = polyline.shape[0] - 1
+        if n_edges < 1:  # No edges, no intersections
+            return np.empty((0, 2), dtype=np.float64)
+        edge_verts = polyline[:-1]
+        edge_ends = polyline[1:]
+        edge_vectors = edge_ends - edge_verts
+
         # Compute two parametric values t & u of intersect point
         denominator = cross2d(line_vector, edge_vectors)
-        q1_p1 = edge_verts - line_vert
+        q1_p1 = edge_verts - line_start
         t = cross2d(q1_p1, edge_vectors) / denominator
         u = cross2d(q1_p1, line_vector) / denominator
         parallel_mask = np.abs(denominator) <= 1e-9
@@ -106,5 +104,5 @@ class IntersectGetter:
 
         # Calculate intersection points using P = start + t * line_vector
         t_valid = t[intersect_mask]
-        intersection_points = line_vert + t_valid[:, None] * line_vector
+        intersection_points = line_start + t_valid[:, None] * line_vector
         return intersection_points
