@@ -1,5 +1,6 @@
 import random
-from copy import deepcopy
+from itertools import count
+from typing import Iterator
 
 from backend.action_service import AssaultActionRequest
 from backend.combat_unit_service import CombatUnitService
@@ -24,11 +25,6 @@ from core.systems.assault_system import AssaultSystem
 from core.systems.fire_system import FireSystem
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
-
-num_states: int = 0
-num_depth: int = (
-    0  # TODO: this is a useless metric as tree search is depth first search
-)
 
 
 class AiService:
@@ -118,28 +114,29 @@ class AiService:
     def play_minimax(
         gs: GameState,
         depth: int,
+        iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[ActionLog]]:
         if depth == 0 or len(AiService.get_actions(gs)) == 0:
             return AiService.evaluate(gs), []
 
-        global num_depth
-        if depth > num_depth:
-            num_depth = depth
-        global num_states
-
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
+        deep_copy_entities = AiService.get_deep_copy_entities(gs)
         for action in AiService.get_actions(gs):
-            new_gs = deepcopy(gs)
+            new_gs = gs.selective_copy(deep_copy_entities)
             log = AiService.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue
-            num_states += 1
             AiService.play(new_gs)
-            print(f"Evaluated {num_depth=} with {num_states=}")
+            if not iter_counter:
+                iter_counter = count(0)
+            iter = next(iter_counter)
+            if iter % 100 == 0:
+                print(f"Evaluated {iter=}")
             score, logs = AiService.play_minimax(
                 new_gs,
                 depth - 1,
+                iter_counter=iter_counter,
             )
             if score > best_score:
                 best_score = score
@@ -177,3 +174,14 @@ class AiService:
                     unit_state=CombatUnitService.get_units(gs),
                 )
         return result
+
+    @staticmethod
+    def get_deep_copy_entities(gs: GameState) -> list[int]:
+        mutable_entities: set[int] = set()
+        for id, _ in gs.query(InitiativeState):
+            mutable_entities.add(id)
+        for id, _ in gs.query(EliminationObjective):
+            mutable_entities.add(id)
+        for id, _ in gs.query(CombatUnit):
+            mutable_entities.add(id)
+        return list(mutable_entities)

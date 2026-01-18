@@ -98,13 +98,13 @@ class MoveSystem:
             # Check if target is in line of sight
             if IntersectGetter.is_inside(
                 point=transform.position,
-                vertices=spotter_fire_controls.los_polygon,
+                polygon=spotter_fire_controls.los_polygon,
             ):
                 interrupt_candidates.append((transform.position, spotter_id))
                 continue
             if intersects := IntersectGetter.get_intersects(
                 line=(transform.position, to),
-                vertices=spotter_fire_controls.los_polygon,
+                polyline=spotter_fire_controls.los_polygon,
             ):
                 interrupt_candidates.append((intersects[0], spotter_id))
                 continue

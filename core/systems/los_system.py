@@ -54,7 +54,7 @@ class LosSystem:
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
                 if IntersectGetter.is_inside(
-                    point=spotter_transform.position, vertices=vertices
+                    point=spotter_transform.position, polygon=vertices
                 ):
                     continue
 
@@ -195,7 +195,7 @@ class LosSystem:
         for terrain in terrains:
             points = IntersectGetter.get_intersects(
                 line=line,
-                vertices=terrain.vertices,
+                polyline=terrain.vertices,
             )
             for point in points:
                 yield _TerrainIntersection(
