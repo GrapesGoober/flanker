@@ -52,17 +52,17 @@ class IntersectGetter:
         if len(polyline) < 2:
             return []
         for v1, v2 in pairwise(polyline):
-            edges.append([v1.x, v1.y, 0.0])
+            edges.append([v1.x, v1.y])
             delta = v2 - v1
-            edge_vectors.append([delta.x, delta.y, 0.0])
+            edge_vectors.append([delta.x, delta.y])
 
         # Run the optimised intersect getter
         # Note: Explicitly tell numpy that we're working with 2d vectors with z=0;
         # this prevents np.cross from freaking out
         line_vector = line[1] - line[0]
         intersections = IntersectGetter._njit_get_intersect(
-            line_vert=np.array([line[0].x, line[0].y, 0], dtype=np.float64),
-            line_vector=np.array([line_vector.x, line_vector.y, 0], dtype=np.float64),
+            line_vert=np.array([line[0].x, line[0].y], dtype=np.float64),
+            line_vector=np.array([line_vector.x, line_vector.y], dtype=np.float64),
             edge_verts=np.array(edges, dtype=np.float64),
             edge_vectors=np.array(edge_vectors, dtype=np.float64),
         )
@@ -87,21 +87,24 @@ class IntersectGetter:
         Returns NDArray (N x 2) of intersection points.
         Note: might return duplicate points if edges share a vertex.
         """
+
+        # Use a scalar cross2d, as opposed to np.cross that doesnt support 2D
+        def cross2d(
+            a: NDArray[np.float64], b: NDArray[np.float64]
+        ) -> NDArray[np.float64]:
+            return a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0]
+
         # Compute two parametric values t & u of intersect point
-        # TODO: why use np.cross? Wikipedia says use determinant matrix
-        # Is this why we're passing z=0 to prevent np.cross from freaking out?
-        # This might not be the correct way to do this.
-        denominator = np.cross(line_vector, edge_vectors)[:, 2]
+        denominator = cross2d(line_vector, edge_vectors)
         q1_p1 = edge_verts - line_vert
-        t = np.cross(q1_p1, edge_vectors)[:, 2] / denominator
-        u = np.cross(q1_p1, line_vector)[:, 2] / denominator
+        t = cross2d(q1_p1, edge_vectors) / denominator
+        u = cross2d(q1_p1, line_vector) / denominator
         parallel_mask = np.abs(denominator) <= 1e-9
 
         # There's intersection if t and u values are in bound [0, 1]
         intersect_mask = (~parallel_mask) & (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
 
         # Calculate intersection points using P = start + t * line_vector
-        # Only slice [:2] to grab x and y, ignore z=0
         t_valid = t[intersect_mask]
-        intersection_points = line_vert[:2] + t_valid[:, None] * line_vector[:2]
+        intersection_points = line_vert + t_valid[:, None] * line_vector
         return intersection_points
