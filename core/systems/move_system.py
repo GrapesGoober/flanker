@@ -15,7 +15,8 @@ from core.systems.command_system import CommandSystem
 from core.systems.fire_system import FireSystem
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.intersect_system import IntersectSystem
-from core.systems.los_system import IntersectGetter, LosSystem
+from core.systems.los_system import LosSystem
+from core.utils.intersect_getter import IntersectGetter
 
 
 @dataclass
