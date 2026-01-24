@@ -4,7 +4,7 @@ from typing import NoReturn
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
 
 from webapi.action_service import ActionService
-from ai.ai_service import AiService
+from ai.ai_player import AiPlayer
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
@@ -67,7 +67,7 @@ async def action_move(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.move(gs, body)
-    AiService.play(gs)
+    AiPlayer.play(gs)
     return CombatUnitService.get_units(gs)
 
 
@@ -80,7 +80,7 @@ async def action_fire(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.fire(gs, body)
-    AiService.play(gs)
+    AiPlayer.play(gs)
     return CombatUnitService.get_units(gs)
 
 
@@ -93,7 +93,7 @@ async def action_assault(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.assault(gs, body)
-    AiService.play(gs)
+    AiPlayer.play(gs)
     return CombatUnitService.get_units(gs)
 
 
@@ -114,7 +114,7 @@ async def ai_play(
     gs = scene_service.get_game_state(scene_name, game_id)
 
     def test() -> None:
-        _, logs = AiService.play_minimax(gs, 4)
+        _, logs = AiPlayer.play_minimax(gs, 4)
         for log in logs:
             LoggingService.log(gs, log)
 

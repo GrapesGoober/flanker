@@ -2,11 +2,11 @@ import random
 from itertools import count
 from typing import Iterator
 
-from webapi.action_service import AssaultActionRequest
 from webapi.combat_unit_service import CombatUnitService
-from webapi.models import (
+from ai.models import (
     ActionLog,
     AssaultActionLog,
+    AssaultActionRequest,
     FireActionLog,
     FireActionRequest,
     MoveActionLog,
@@ -27,7 +27,7 @@ from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
 
 
-class AiService:
+class AiPlayer:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
@@ -116,24 +116,24 @@ class AiService:
         depth: int,
         iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[ActionLog]]:
-        if depth == 0 or len(AiService.get_actions(gs)) == 0:
-            return AiService.evaluate(gs), []
+        if depth == 0 or len(AiPlayer.get_actions(gs)) == 0:
+            return AiPlayer.evaluate(gs), []
 
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
-        deep_copy_entities = AiService.get_deep_copy_entities(gs)
-        for action in AiService.get_actions(gs):
+        deep_copy_entities = AiPlayer.get_deep_copy_entities(gs)
+        for action in AiPlayer.get_actions(gs):
             new_gs = gs.selective_copy(deep_copy_entities)
-            log = AiService.perform_action(new_gs, action)
+            log = AiPlayer.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue
-            AiService.play(new_gs)
+            AiPlayer.play(new_gs)
             if not iter_counter:
                 iter_counter = count(0)
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, logs = AiService.play_minimax(
+            score, logs = AiPlayer.play_minimax(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,
