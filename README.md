@@ -6,7 +6,7 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 
 ### Prerequisites
 
-- Node.js and npm (for the frontend)
+- Node.js and npm (for the webui)
 - Python 3.11+ (for the backend and core)
 - Recommended: `pip` for Python dependencies
 
@@ -38,7 +38,7 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 
 - Install Node.js dependencies:
   ```
-  cd frontend
+  cd webui
   npm install
   ```
 
@@ -48,20 +48,20 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   ```
   fastapi dev backend
   ```
-- Run the frontend development server and open the app in your browser, `http://localhost:5173/`. Either use vscode debugger or run this in terminal
+- Run the webui development server and open the app in your browser, `http://localhost:5173/`. Either use vscode debugger or run this in terminal
   ```
-  cd frontend
+  cd webui
   npm run dev
   ```
   Or expose to local network
   ```
-  cd frontend
+  cd webui
   npm run dev-expose
   ```
 
 ## Project Structure
 
-### `frontend/`
+### `webui/`
 
 Svelte-based web frontend for the game.
 
@@ -75,7 +75,7 @@ Python FastApi backend implementing game logic and controllers.
 
 - This is the presentation (view) layer and the controllers for actions, AI, combat units, terrain, and scenes.
 - Defines API models and manages the game state.
-- Intended to be run as an API or service for the frontend. This bridges the gap between presentation layer and the core's actions.
+- Intended to be run as an API or service for the webui. This bridges the gap between presentation layer and the core's actions.
 
 ### `core/`
 
