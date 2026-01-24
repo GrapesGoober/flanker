@@ -4,7 +4,7 @@ from typing import NoReturn
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
 
 from webapi.action_service import ActionService
-from webapi.ai_service import AiService
+from ai.ai_service import AiService
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
