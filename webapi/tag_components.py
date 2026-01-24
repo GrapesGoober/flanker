@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from backend.models import TerrainModel
+from webapi.models import TerrainModel
 
 
 @dataclass

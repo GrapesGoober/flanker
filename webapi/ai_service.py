@@ -2,9 +2,9 @@ import random
 from itertools import count
 from typing import Iterator
 
-from backend.action_service import AssaultActionRequest
-from backend.combat_unit_service import CombatUnitService
-from backend.models import (
+from webapi.action_service import AssaultActionRequest
+from webapi.combat_unit_service import CombatUnitService
+from webapi.models import (
     ActionLog,
     AssaultActionLog,
     FireActionLog,

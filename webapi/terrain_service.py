@@ -1,5 +1,5 @@
-from backend.models import TerrainModel
-from backend.tag_components import TerrainTypeTag
+from webapi.models import TerrainModel
+from webapi.tag_components import TerrainTypeTag
 from core.gamestate import GameState
 from core.models.components import TerrainFeature, Transform
 from core.models.vec2 import Vec2

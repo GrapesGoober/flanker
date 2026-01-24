@@ -1,4 +1,4 @@
-from backend.models import CombatUnitsViewState, SquadModel
+from webapi.models import CombatUnitsViewState, SquadModel
 from core.gamestate import GameState
 from core.models.components import (
     CombatUnit,

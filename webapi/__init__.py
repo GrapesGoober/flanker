@@ -3,11 +3,11 @@ from typing import NoReturn
 
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
 
-from backend.action_service import ActionService
-from backend.ai_service import AiService
-from backend.combat_unit_service import CombatUnitService
-from backend.logging_service import LoggingService
-from backend.models import (
+from webapi.action_service import ActionService
+from webapi.ai_service import AiService
+from webapi.combat_unit_service import CombatUnitService
+from webapi.logging_service import LoggingService
+from webapi.models import (
     ActionLog,
     AssaultActionRequest,
     CombatUnitsViewState,
@@ -15,8 +15,8 @@ from backend.models import (
     MoveActionRequest,
     TerrainModel,
 )
-from backend.scene_service import SceneService
-from backend.terrain_service import TerrainService
+from webapi.scene_service import SceneService
+from webapi.terrain_service import TerrainService
 
 app = FastAPI()
 scene_service = SceneService()

@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 
-from backend.combat_unit_service import CombatUnitService
-from backend.logging_service import LoggingService
-from backend.models import (
+from webapi.combat_unit_service import CombatUnitService
+from webapi.logging_service import LoggingService
+from webapi.models import (
     AssaultActionLog,
     AssaultActionRequest,
     FireActionLog,

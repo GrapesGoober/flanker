@@ -2,7 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from backend.terrain_service import TerrainTypeTag
+from webapi.terrain_service import TerrainTypeTag
 from core.gamestate import GameState
 from core.models import components
 from core.models.vec2 import Vec2

@@ -4,7 +4,7 @@ from typing import Any
 
 from matplotlib import pyplot as plt
 
-from backend.tag_components import TerrainTypeTag
+from webapi.tag_components import TerrainTypeTag
 from core.gamestate import GameState
 from core.models import components
 from core.models.vec2 import Vec2

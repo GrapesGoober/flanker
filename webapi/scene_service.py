@@ -2,7 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any, Iterable
 
-from backend.tag_components import TerrainTypeTag
+from webapi.tag_components import TerrainTypeTag
 from core.gamestate import GameState
 from core.models import components
 from core.serializer import Serializer

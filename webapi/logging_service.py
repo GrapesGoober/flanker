@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from backend.models import ActionLog
+from webapi.models import ActionLog
 from core.gamestate import GameState
 
 
