@@ -27,22 +27,11 @@ from core.systems.initiative_system import InitiativeSystem
 from core.systems.move_system import MoveSystem
 
 
-class AiPlayer:
-    """Provides static methods for basic AI behavior."""
+class MinimaxPlayer:
+    """Implements a basic unabstracted minimax AI player."""
 
     @staticmethod
-    def play(gs: GameState) -> None:
-        """Perform a basic AI turn for the given faction."""
-        # Assume that the AI plays RED
-        faction = InitiativeState.Faction.RED
-        if InitiativeSystem.get_initiative(gs) != faction:
-            return
-
-        # For now, pass on initiative without any actions
-        InitiativeSystem.flip_initiative(gs)
-
-    @staticmethod
-    def get_actions(
+    def _get_actions(
         gs: GameState,
     ) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]:
         # Generate an action for each combat unit
@@ -89,7 +78,7 @@ class AiPlayer:
         return actions
 
     @staticmethod
-    def evaluate(gs: GameState) -> float:
+    def _evaluate(gs: GameState) -> float:
         score: float = 0.0
         for _, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
@@ -116,24 +105,26 @@ class AiPlayer:
         depth: int,
         iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[ActionLog]]:
-        if depth == 0 or len(AiPlayer.get_actions(gs)) == 0:
-            return AiPlayer.evaluate(gs), []
+        if depth == 0 or len(MinimaxPlayer._get_actions(gs)) == 0:
+            return MinimaxPlayer._evaluate(gs), []
 
         best_score = float("-inf")
         best_logs: list[ActionLog] = []
-        deep_copy_entities = AiPlayer.get_deep_copy_entities(gs)
-        for action in AiPlayer.get_actions(gs):
+        deep_copy_entities = MinimaxPlayer.get_deep_copy_entities(gs)
+        for action in MinimaxPlayer._get_actions(gs):
             new_gs = gs.selective_copy(deep_copy_entities)
-            log = AiPlayer.perform_action(new_gs, action)
+            log = MinimaxPlayer.perform_action(new_gs, action)
             if isinstance(log, InvalidAction):
                 continue
-            AiPlayer.play(new_gs)
+            # Due to large tree size, I don't want to implement a "min" state
+            # So have the opponent just do nothing (pass on the turn)
+            InitiativeSystem.set_initiative(gs, InitiativeState.Faction.BLUE)
             if not iter_counter:
                 iter_counter = count(0)
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, logs = AiPlayer.play_minimax(
+            score, logs = MinimaxPlayer.play_minimax(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,

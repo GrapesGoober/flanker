@@ -1,10 +1,9 @@
-from timeit import timeit
 from typing import NoReturn
 
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
 
+from webapi.ai_service import AiService
 from webapi.action_service import ActionService
-from ai.ai_player import AiPlayer
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
@@ -67,7 +66,7 @@ async def action_move(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.move(gs, body)
-    AiPlayer.play(gs)
+    AiService.play(gs)
     return CombatUnitService.get_units(gs)
 
 
@@ -80,7 +79,7 @@ async def action_fire(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.fire(gs, body)
-    AiPlayer.play(gs)
+    AiService.play(gs)
     return CombatUnitService.get_units(gs)
 
 
@@ -93,7 +92,7 @@ async def action_assault(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.assault(gs, body)
-    AiPlayer.play(gs)
+    AiService.play(gs)
     return CombatUnitService.get_units(gs)
 
 
@@ -112,14 +111,7 @@ async def ai_play(
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-
-    def test() -> None:
-        _, logs = AiPlayer.play_minimax(gs, 4)
-        for log in logs:
-            LoggingService.log(gs, log)
-
-    exec_time = timeit(test, number=1)
-    print(f"Execution time: {exec_time:.6f} seconds")
+    AiService.play_minimax(gs)
 
 
 @app.put("/api/{sceneName}/{gameId}/terrain")
