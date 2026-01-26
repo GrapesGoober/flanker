@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from webapi.models import ActionLog
+
 from core.gamestate import GameState
+from webapi.models import ActionLog
 
 
 @dataclass
@@ -25,3 +26,9 @@ class LoggingService:
             _, log_records = results[0]
             return log_records.logs
         return []
+
+    @staticmethod
+    def clear_logs(gs: GameState) -> None:
+        if results := gs.query(_LogRecords):
+            _, log_records = results[0]
+            log_records.logs = []

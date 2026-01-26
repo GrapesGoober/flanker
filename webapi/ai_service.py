@@ -1,11 +1,18 @@
-from timeit import timeit
 from ai.minimax_player import MinimaxPlayer
+from ai.models import AssaultActionResult, FireActionResult, MoveActionResult
 from core.gamestate import GameState
-from core.models.components import (
-    InitiativeState,
-)
+from core.models.components import InitiativeState
 from core.systems.initiative_system import InitiativeSystem
+from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
+from webapi.models import (
+    AssaultActionLog,
+    AssaultActionRequest,
+    FireActionLog,
+    FireActionRequest,
+    MoveActionLog,
+    MoveActionRequest,
+)
 
 
 class AiService:
@@ -13,7 +20,7 @@ class AiService:
 
     @staticmethod
     def play(gs: GameState) -> None:
-        """Not implemented. This AI will just pass initiative."""
+        """Not implemented. This REDFOR AI will just pass initiative."""
         # Assume that the AI plays RED
         faction = InitiativeState.Faction.RED
         if InitiativeSystem.get_initiative(gs) != faction:
@@ -22,14 +29,46 @@ class AiService:
         # For now, pass on initiative without any actions
         InitiativeSystem.flip_initiative(gs)
 
-
     @staticmethod
-    def play_minimax(gs: GameState) -> None:
-        
-        def test() -> None:
-            _, logs = MinimaxPlayer.play_minimax(gs, 4)
-            for log in logs:
-                LoggingService.log(gs, log)
+    def play_minimax(gs: GameState, depth: int) -> None:
+        """Runs a minimax search AI for a given game's BLUEFOR faction."""
 
-        exec_time = timeit(test, number=1)
-        print(f"Execution time: {exec_time:.6f} seconds")
+        _, results = MinimaxPlayer.play_minimax(gs, depth)
+        LoggingService.clear_logs(gs)
+        for result in results:
+            match result:
+                case MoveActionResult():
+                    log = MoveActionLog(
+                        body=MoveActionRequest(
+                            unit_id=result.action.unit_id,
+                            to=result.action.to,
+                        ),
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                        unit_state=CombatUnitService.get_units_view_state(
+                            result.result_gs
+                        ),
+                    )
+                case FireActionResult():
+                    log = FireActionLog(
+                        body=FireActionRequest(
+                            unit_id=result.action.unit_id,
+                            target_id=result.action.target_id,
+                        ),
+                        outcome=result.outcome,
+                        unit_state=CombatUnitService.get_units_view_state(
+                            result.result_gs
+                        ),
+                    )
+                case AssaultActionResult():
+                    log = AssaultActionLog(
+                        body=AssaultActionRequest(
+                            unit_id=result.action.unit_id,
+                            target_id=result.action.target_id,
+                        ),
+                        outcome=result.outcome,
+                        unit_state=CombatUnitService.get_units_view_state(
+                            result.result_gs
+                        ),
+                    )
+
+            LoggingService.log(gs, log)

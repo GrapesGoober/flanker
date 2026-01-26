@@ -1,5 +1,10 @@
 from fastapi import HTTPException, status
 
+from core.gamestate import GameState
+from core.models.outcomes import InvalidAction
+from core.systems.assault_system import AssaultSystem
+from core.systems.fire_system import FireSystem
+from core.systems.move_system import MoveSystem
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
@@ -10,11 +15,6 @@ from webapi.models import (
     MoveActionLog,
     MoveActionRequest,
 )
-from core.gamestate import GameState
-from core.models.outcomes import InvalidAction
-from core.systems.assault_system import AssaultSystem
-from core.systems.fire_system import FireSystem
-from core.systems.move_system import MoveSystem
 
 
 class ActionService:
@@ -31,7 +31,7 @@ class ActionService:
             MoveActionLog(
                 body=body,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=CombatUnitService.get_units(gs),
+                unit_state=CombatUnitService.get_units_view_state(gs),
             ),
         )
 
@@ -46,7 +46,7 @@ class ActionService:
             FireActionLog(
                 body=body,
                 outcome=result.outcome,
-                unit_state=CombatUnitService.get_units(gs),
+                unit_state=CombatUnitService.get_units_view_state(gs),
             ),
         )
 
@@ -62,6 +62,6 @@ class ActionService:
                 body=body,
                 outcome=result.outcome,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=CombatUnitService.get_units(gs),
+                unit_state=CombatUnitService.get_units_view_state(gs),
             ),
         )

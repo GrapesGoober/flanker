@@ -1,9 +1,10 @@
+from timeit import timeit
 from typing import NoReturn
 
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
 
-from webapi.ai_service import AiService
 from webapi.action_service import ActionService
+from webapi.ai_service import AiService
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
@@ -44,7 +45,7 @@ async def get_units(
 ) -> CombatUnitsViewState:
     """Get all combat units for the player faction."""
     gs = scene_service.get_game_state(scene_name, game_id)
-    return CombatUnitService.get_units(gs)
+    return CombatUnitService.get_units_view_state(gs)
 
 
 @app.get("/api/{sceneName}/{gameId}/terrain")
@@ -67,7 +68,7 @@ async def action_move(
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.move(gs, body)
     AiService.play(gs)
-    return CombatUnitService.get_units(gs)
+    return CombatUnitService.get_units_view_state(gs)
 
 
 @app.post("/api/{sceneName}/{gameId}/fire")
@@ -80,7 +81,7 @@ async def action_fire(
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.fire(gs, body)
     AiService.play(gs)
-    return CombatUnitService.get_units(gs)
+    return CombatUnitService.get_units_view_state(gs)
 
 
 @app.post("/api/{sceneName}/{gameId}/assault")
@@ -93,7 +94,7 @@ async def action_assault(
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.assault(gs, body)
     AiService.play(gs)
-    return CombatUnitService.get_units(gs)
+    return CombatUnitService.get_units_view_state(gs)
 
 
 @app.get("/api/{sceneName}/{gameId}/logs")
@@ -111,7 +112,8 @@ async def ai_play(
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    AiService.play_minimax(gs)
+    exec_time = timeit(lambda: AiService.play_minimax(gs, depth=4), number=1)
+    print(f"Execution time: {exec_time:.6f} seconds")
 
 
 @app.put("/api/{sceneName}/{gameId}/terrain")

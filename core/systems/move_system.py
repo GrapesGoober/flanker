@@ -30,7 +30,7 @@ class _MoveActionResult:
 class _GroupMoveActionResult:
     """Result of a group move action as multiple singular move results."""
 
-    moveActionLogs: list[_MoveActionResult]
+    results: list[_MoveActionResult]
 
 
 class MoveSystem:
@@ -187,7 +187,7 @@ class MoveSystem:
     ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
 
-        logs: list[_MoveActionResult] = []
+        results: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
         for unit_id, to in moves:
@@ -203,4 +203,4 @@ class MoveSystem:
         if interrupt_count >= len(moves):
             InitiativeSystem.flip_initiative(gs)
 
-        return _GroupMoveActionResult(logs)
+        return _GroupMoveActionResult(results)

@@ -2,15 +2,14 @@ import random
 from itertools import count
 from typing import Iterator
 
-from webapi.combat_unit_service import CombatUnitService
 from ai.models import (
-    ActionLog,
-    AssaultActionLog,
-    AssaultActionRequest,
-    FireActionLog,
-    FireActionRequest,
-    MoveActionLog,
-    MoveActionRequest,
+    ActionResult,
+    AssaultAction,
+    AssaultActionResult,
+    FireAction,
+    FireActionResult,
+    MoveAction,
+    MoveActionResult,
 )
 from core.gamestate import GameState
 from core.models.components import (
@@ -33,15 +32,15 @@ class MinimaxPlayer:
     @staticmethod
     def _get_actions(
         gs: GameState,
-    ) -> list[MoveActionRequest | FireActionRequest | AssaultActionRequest]:
+    ) -> list[MoveAction | FireAction | AssaultAction]:
         # Generate an action for each combat unit
-        actions: list[MoveActionRequest | FireActionRequest | AssaultActionRequest] = []
+        actions: list[MoveAction | FireAction | AssaultAction] = []
         for unit_id, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
                 # 10 random actions for each unit
                 pos = gs.get_component(unit_id, Transform).position
                 actions.append(
-                    MoveActionRequest(
+                    MoveAction(
                         unit_id=unit_id,
                         to=pos,
                     )
@@ -51,7 +50,7 @@ class MinimaxPlayer:
                     rand_y = random.randrange(-50, 50)
                     vec = Vec2(rand_x, rand_y)
                     actions.append(
-                        MoveActionRequest(
+                        MoveAction(
                             unit_id=unit_id,
                             to=pos + vec,
                         )
@@ -62,14 +61,14 @@ class MinimaxPlayer:
                     if target.faction == InitiativeState.Faction.RED:
                         if target.status == CombatUnit.Status.SUPPRESSED:
                             actions.append(
-                                AssaultActionRequest(
+                                AssaultAction(
                                     unit_id=unit_id,
                                     target_id=target_id,
                                 )
                             )
                         else:
                             actions.append(
-                                FireActionRequest(
+                                FireAction(
                                     unit_id=unit_id,
                                     target_id=target_id,
                                 )
@@ -104,17 +103,17 @@ class MinimaxPlayer:
         gs: GameState,
         depth: int,
         iter_counter: Iterator[int] | None = None,
-    ) -> tuple[float, list[ActionLog]]:
+    ) -> tuple[float, list[ActionResult]]:
         if depth == 0 or len(MinimaxPlayer._get_actions(gs)) == 0:
             return MinimaxPlayer._evaluate(gs), []
 
         best_score = float("-inf")
-        best_logs: list[ActionLog] = []
+        best_result: list[ActionResult] = []
         deep_copy_entities = MinimaxPlayer.get_deep_copy_entities(gs)
         for action in MinimaxPlayer._get_actions(gs):
             new_gs = gs.selective_copy(deep_copy_entities)
-            log = MinimaxPlayer.perform_action(new_gs, action)
-            if isinstance(log, InvalidAction):
+            result = MinimaxPlayer.perform_action(new_gs, action)
+            if isinstance(result, InvalidAction):
                 continue
             # Due to large tree size, I don't want to implement a "min" state
             # So have the opponent just do nothing (pass on the turn)
@@ -124,46 +123,47 @@ class MinimaxPlayer:
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, logs = MinimaxPlayer.play_minimax(
+            score, results = MinimaxPlayer.play_minimax(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,
             )
             if score > best_score:
                 best_score = score
-                best_logs = [log] + logs
-        return best_score, best_logs
+                best_result = [result] + results
+        return best_score, best_result
 
     @staticmethod
     def perform_action(
         gs: GameState,
-        body: MoveActionRequest | FireActionRequest | AssaultActionRequest,
-    ) -> ActionLog | InvalidAction:
-        if isinstance(body, MoveActionRequest):
-            result = MoveSystem.move(gs, body.unit_id, body.to)
-            if not isinstance(result, InvalidAction):
-                return MoveActionLog(
-                    body=body,
-                    reactive_fire_outcome=result.reactive_fire_outcome,
-                    unit_state=CombatUnitService.get_units(gs),
-                )
-        elif isinstance(body, FireActionRequest):
-            result = FireSystem.fire(gs, body.unit_id, body.target_id)
-            if not isinstance(result, InvalidAction):
-                return FireActionLog(
-                    body=body,
-                    outcome=result.outcome,
-                    unit_state=CombatUnitService.get_units(gs),
-                )
-        else:
-            result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
-            if not isinstance(result, InvalidAction):
-                return AssaultActionLog(
-                    body=body,
-                    outcome=result.outcome,
-                    reactive_fire_outcome=result.reactive_fire_outcome,
-                    unit_state=CombatUnitService.get_units(gs),
-                )
+        action: MoveAction | FireAction | AssaultAction,
+    ) -> ActionResult | InvalidAction:
+        match action:
+            case MoveAction():
+                result = MoveSystem.move(gs, action.unit_id, action.to)
+                if not isinstance(result, InvalidAction):
+                    return MoveActionResult(
+                        action=action,
+                        result_gs=gs,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+            case FireAction():
+                result = FireSystem.fire(gs, action.unit_id, action.target_id)
+                if not isinstance(result, InvalidAction):
+                    return FireActionResult(
+                        action=action,
+                        result_gs=gs,
+                        outcome=result.outcome,
+                    )
+            case AssaultAction():
+                result = AssaultSystem.assault(gs, action.unit_id, action.target_id)
+                if not isinstance(result, InvalidAction):
+                    return AssaultActionResult(
+                        action=action,
+                        result_gs=gs,
+                        outcome=result.outcome,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
         return result
 
     @staticmethod

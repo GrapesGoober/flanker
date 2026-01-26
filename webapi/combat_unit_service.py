@@ -1,4 +1,3 @@
-from webapi.models import CombatUnitsViewState, SquadModel
 from core.gamestate import GameState
 from core.models.components import (
     CombatUnit,
@@ -10,6 +9,7 @@ from core.models.components import (
 from core.models.vec2 import Vec2
 from core.systems.initiative_system import InitiativeSystem
 from core.systems.objective_system import ObjectiveSystem
+from webapi.models import CombatUnitsViewState, SquadModel
 
 
 class CombatUnitService:
@@ -34,7 +34,7 @@ class CombatUnitService:
         )
 
     @staticmethod
-    def get_units(gs: GameState) -> CombatUnitsViewState:
+    def get_units_view_state(gs: GameState) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
         # Assume player faction is BLUE
         faction = InitiativeState.Faction.BLUE
