@@ -2,7 +2,7 @@ import random
 from itertools import count
 from typing import Iterator
 
-from ai.models import (
+from flanker_ai.models import (
     ActionResult,
     AssaultAction,
     AssaultActionResult,
@@ -11,6 +11,7 @@ from ai.models import (
     MoveAction,
     MoveActionResult,
 )
+
 from core.gamestate import GameState
 from core.models.components import (
     CombatUnit,

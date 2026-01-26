@@ -1,5 +1,6 @@
-from ai.minimax_player import MinimaxPlayer
-from ai.models import AssaultActionResult, FireActionResult, MoveActionResult
+from flanker_ai.minimax_player import MinimaxPlayer
+from flanker_ai.models import AssaultActionResult, FireActionResult, MoveActionResult
+
 from core.gamestate import GameState
 from core.models.components import InitiativeState
 from core.systems.initiative_system import InitiativeSystem
