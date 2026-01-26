@@ -3,5 +3,5 @@ fastapi[standard]
 numpy==2.2.*
 numba==0.61.*
 matplotlib
--e ./packages/flanker-ai
--e ./packages/flanker-core
+-e ./flanker-ai
+-e ./flanker-core
