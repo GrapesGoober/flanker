@@ -49,7 +49,7 @@ print(f"Execution time: {exec_time:.6f} seconds")
 # import cProfile
 # import pstats
 
-# cProfile.run("test()", sort="tottime", filename="perftest.txt")
-# p = pstats.Stats("perftest.txt")
+# cProfile.run("move_many_times()", sort="tottime", filename="perftest.txt")
+# p = pstats.Stats("./scripts/perftest.txt")
 # p.sort_stats("tottime")
 # p.print_stats(20)
