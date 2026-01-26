@@ -3,7 +3,7 @@ requires = ["hatchling >= 1.26"]
 build-backend = "hatchling.build"
 
 [project]
-name = "flanker-ai"
+name = "flanker-core"
 version = "0.1.0"
-description = "AI player for Project Flanker"
+description = "Core game rules for Project Flanker"
 requires-python = ">=3.13"

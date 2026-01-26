@@ -19,7 +19,6 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 - With vscode, you can set up pytest using `.vscode/settings.json`
   ```
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["core/tests", "--color=yes"],
   ```
   Or alternatively, run pytest manually in terminal
   ```

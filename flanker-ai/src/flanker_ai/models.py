@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from core.gamestate import GameState
-from core.models.outcomes import AssaultOutcomes, FireOutcomes
-from core.models.vec2 import Vec2
+from flanker_core.gamestate import GameState
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.vec2 import Vec2
 
 
 @dataclass

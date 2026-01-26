@@ -11,20 +11,19 @@ from flanker_ai.models import (
     MoveAction,
     MoveActionResult,
 )
-
-from core.gamestate import GameState
-from core.models.components import (
+from flanker_core.gamestate import GameState
+from flanker_core.models.components import (
     CombatUnit,
     EliminationObjective,
     InitiativeState,
     Transform,
 )
-from core.models.outcomes import InvalidAction
-from core.models.vec2 import Vec2
-from core.systems.assault_system import AssaultSystem
-from core.systems.fire_system import FireSystem
-from core.systems.initiative_system import InitiativeSystem
-from core.systems.move_system import MoveSystem
+from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.fire_system import FireSystem
+from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.move_system import MoveSystem
 
 
 class MinimaxPlayer:

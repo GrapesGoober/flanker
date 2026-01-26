@@ -2,12 +2,13 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
+from flanker_core.gamestate import GameState
+from flanker_core.models import components
+from flanker_core.models.vec2 import Vec2
+from flanker_core.serializer import Serializer
+from flanker_core.systems.move_system import MoveSystem
+
 from webapi.terrain_service import TerrainTypeTag
-from core.gamestate import GameState
-from core.models import components
-from core.models.vec2 import Vec2
-from core.serializer import Serializer
-from core.systems.move_system import MoveSystem
 
 component_types: list[type[Any]] = []
 for _, cls in vars(components).items():

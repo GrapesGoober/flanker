@@ -1,14 +1,15 @@
-from core.gamestate import GameState
-from core.models.components import (
+from flanker_core.gamestate import GameState
+from flanker_core.models.components import (
     CombatUnit,
     FireControls,
     InitiativeState,
     MoveControls,
     Transform,
 )
-from core.models.vec2 import Vec2
-from core.systems.initiative_system import InitiativeSystem
-from core.systems.objective_system import ObjectiveSystem
+from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
+
 from webapi.models import CombatUnitsViewState, SquadModel
 
 

@@ -2,10 +2,11 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any, Iterable
 
+from flanker_core.gamestate import GameState
+from flanker_core.models import components
+from flanker_core.serializer import Serializer
+
 from webapi.tag_components import TerrainTypeTag
-from core.gamestate import GameState
-from core.models import components
-from core.serializer import Serializer
 
 
 class SceneService:

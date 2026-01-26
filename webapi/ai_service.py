@@ -1,9 +1,9 @@
 from flanker_ai.minimax_player import MinimaxPlayer
 from flanker_ai.models import AssaultActionResult, FireActionResult, MoveActionResult
+from flanker_core.gamestate import GameState
+from flanker_core.models.components import InitiativeState
+from flanker_core.systems.initiative_system import InitiativeSystem
 
-from core.gamestate import GameState
-from core.models.components import InitiativeState
-from core.systems.initiative_system import InitiativeSystem
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (

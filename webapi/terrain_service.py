@@ -1,8 +1,9 @@
+from flanker_core.gamestate import GameState
+from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.vec2 import Vec2
+
 from webapi.models import TerrainModel
 from webapi.tag_components import TerrainTypeTag
-from core.gamestate import GameState
-from core.models.components import TerrainFeature, Transform
-from core.models.vec2 import Vec2
 
 
 class TerrainService:

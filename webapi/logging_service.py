@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from core.gamestate import GameState
+from flanker_core.gamestate import GameState
+
 from webapi.models import ActionLog
 
 
