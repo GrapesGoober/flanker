@@ -9,8 +9,6 @@ from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LinearTransform, LosSystem
 from matplotlib import pyplot as plt
 
-from webapi.tag_components import TerrainTypeTag
-
 
 def visualize_points(verts: list[Vec2], color: str = "C0") -> None:
     xs = [v.x for v in verts]
@@ -27,7 +25,6 @@ if __name__ == "__main__":
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
-    component_types.append(TerrainTypeTag)
 
     path = "./scenes/demo-simple.json"
 
