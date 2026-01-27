@@ -2,3 +2,6 @@ pytest~=8.0
 fastapi[standard]
 numpy==2.2.*
 numba==0.61.*
+matplotlib
+-e ./flanker-ai
+-e ./flanker-core

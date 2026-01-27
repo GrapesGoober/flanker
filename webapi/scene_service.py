@@ -1,0 +1,60 @@
+from dataclasses import is_dataclass
+from inspect import isclass
+from typing import Any, Iterable
+
+from flanker_core.gamestate import GameState
+from flanker_core.models import components
+from flanker_core.serializer import Serializer
+
+from webapi.tag_components import TerrainTypeTag
+
+
+class SceneService:
+
+    def __init__(self) -> None:
+        self.games: dict[str, dict[int, GameState]] = {}
+
+    @staticmethod
+    def _get_component_types() -> Iterable[type[Any]]:
+        for _, cls in vars(components).items():
+            if isclass(cls) and is_dataclass(cls):
+                yield cls
+        yield TerrainTypeTag
+
+    def save_scene(
+        self,
+        scene_name: str,
+        game_id: int,
+        path: str,
+    ) -> None:
+        gs = self.get_game_state(scene_name, game_id)
+        component_types = list(SceneService._get_component_types())
+        with open(path, "w") as f:
+            entities, id_counter = gs.dump()
+            f.write(
+                Serializer.serialize(
+                    entities,
+                    id_counter,
+                    component_types,
+                )
+            )
+
+    def get_game_state(
+        self,
+        scene_name: str,
+        game_id: int,
+    ) -> GameState:
+        # Initialize a new set of games for a scene
+        games = self.games.setdefault(scene_name, {})
+        # Initializing a new game is costly (file read),
+        # So only initialize if not exists
+        if game_id not in games:
+            component_types = list(SceneService._get_component_types())
+            with open(f"./scenes/{scene_name}.json", "r") as f:
+                entities, id_counter = Serializer.deserialize(
+                    json_data=f.read(),
+                    component_types=component_types,
+                )
+                gs = GameState.load(entities, id_counter)
+            self.games[scene_name].setdefault(game_id, gs)
+        return self.games[scene_name][game_id]
