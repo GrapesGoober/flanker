@@ -14,7 +14,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.move_system import IntersectSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -97,19 +96,14 @@ class WaypointScheme:
                 no_fire=not fire_controls.can_reactive_fire,
             )
 
-        # Add edges
-        # TODO this becomes a complete graph, which might be excessive
+        # Add relationships between nodes
+        MOVABLE_DISTANCE = 100
         for waypoint in waypoint_gs.waypoints.values():
             for other_id, other_waypoint in waypoint_gs.waypoints.items():
-                if all(
-                    # Check move action though correct terrain type
-                    intersect.terrain.flag & TerrainFeature.Flag.WALKABLE
-                    for intersect in IntersectSystem.get(
-                        gs,
-                        waypoint.position,
-                        other_waypoint.position,
-                    )
-                ):
+                # Prevent this from generating complete graph
+                # by having a max cap for move distance
+                distance = (waypoint.position - other_waypoint.position).length()
+                if distance < MOVABLE_DISTANCE:
                     waypoint.movable_nodes.append(other_id)
                 if LosSystem.check(
                     gs,

@@ -2,11 +2,12 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
+from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.los_system import LinearTransform, LosSystem
+from flanker_core.systems.los_system import LinearTransform
 from matplotlib import pyplot as plt
 
 
@@ -43,11 +44,9 @@ if __name__ == "__main__":
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
         visualize_polygon(vertices, color="C1")
-    unit_id = 10
-    LosSystem.update_los_polygon(gs, unit_id)
-    center = gs.get_component(unit_id, components.Transform).position
-    poly = gs.get_component(unit_id, components.FireControls).los_polygon
-    assert poly
-    visualize_polygon(poly, color="C0")
-    plt.scatter(center.x, -center.y, color="C0")  # type: ignore
+
+    waypoint_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20)
+    for point in waypoint_gs.waypoints.values():
+        plt.scatter(point.position.x, -point.position.y, color="C0")  # type: ignore
+
     plt.show()  # type: ignore
