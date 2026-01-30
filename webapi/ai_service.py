@@ -1,5 +1,9 @@
-from flanker_ai.minimax_player import MinimaxPlayer
-from flanker_ai.models import AssaultActionResult, FireActionResult, MoveActionResult
+from flanker_ai.unabstracted.models import (
+    AssaultActionResult,
+    FireActionResult,
+    MoveActionResult,
+)
+from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -34,7 +38,7 @@ class AiService:
     def play_minimax(gs: GameState, depth: int) -> None:
         """Runs a minimax search AI for a given game's BLUEFOR faction."""
 
-        _, results = MinimaxPlayer.play_minimax(gs, depth)
+        _, results = TreeSearchPlayer.play_minimax(gs, depth)
         LoggingService.clear_logs(gs)
         for result in results:
             match result:

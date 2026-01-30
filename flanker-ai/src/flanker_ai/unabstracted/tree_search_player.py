@@ -2,7 +2,7 @@ import random
 from itertools import count
 from typing import Iterator
 
-from flanker_ai.models import (
+from flanker_ai.unabstracted.models import (
     ActionResult,
     AssaultAction,
     AssaultActionResult,
@@ -26,7 +26,7 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
-class MinimaxPlayer:
+class TreeSearchPlayer:
     """Implements a basic unabstracted minimax AI player."""
 
     @staticmethod
@@ -104,15 +104,15 @@ class MinimaxPlayer:
         depth: int,
         iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[ActionResult]]:
-        if depth == 0 or len(MinimaxPlayer._get_actions(gs)) == 0:
-            return MinimaxPlayer._evaluate(gs), []
+        if depth == 0 or len(TreeSearchPlayer._get_actions(gs)) == 0:
+            return TreeSearchPlayer._evaluate(gs), []
 
         best_score = float("-inf")
         best_result: list[ActionResult] = []
-        deep_copy_entities = MinimaxPlayer.get_deep_copy_entities(gs)
-        for action in MinimaxPlayer._get_actions(gs):
+        deep_copy_entities = TreeSearchPlayer.get_deep_copy_entities(gs)
+        for action in TreeSearchPlayer._get_actions(gs):
             new_gs = gs.selective_copy(deep_copy_entities)
-            result = MinimaxPlayer.perform_action(new_gs, action)
+            result = TreeSearchPlayer.perform_action(new_gs, action)
             if isinstance(result, InvalidAction):
                 continue
             # Due to large tree size, I don't want to implement a "min" state
@@ -123,7 +123,7 @@ class MinimaxPlayer:
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, results = MinimaxPlayer.play_minimax(
+            score, results = TreeSearchPlayer.play_minimax(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,
