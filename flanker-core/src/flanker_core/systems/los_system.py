@@ -32,13 +32,12 @@ class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
-    def check(gs: GameState, spotter_id: int, target_pos: Vec2) -> bool:
+    def check(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
         """Returns `True` if entity `spotter_id` can see position `target_pos`."""
-        spotter_transform = gs.get_component(spotter_id, Transform)
 
         intersects = IntersectSystem.get(
             gs=gs,
-            start=spotter_transform.position,
+            start=spotter_pos,
             end=target_pos,
             mask=TerrainFeature.Flag.OPAQUE,
         )
@@ -53,9 +52,7 @@ class LosSystem:
             vertices = LinearTransform.apply(terrain.vertices, terrain_transform)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-                if IntersectGetter.is_inside(
-                    point=spotter_transform.position, polygon=vertices
-                ):
+                if IntersectGetter.is_inside(point=spotter_pos, polygon=vertices):
                     continue
 
             if not passed_one_terrain:

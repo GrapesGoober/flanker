@@ -78,6 +78,8 @@ class AiService:
                             result.result_gs
                         ),
                     )
+                case _:
+                    raise ValueError(f"Unknown type {result=}")
 
             LoggingService.log(gs, log)
 

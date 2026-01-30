@@ -37,6 +37,7 @@ class FireSystem:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        attacker_transform = gs.get_component(attacker_id, Transform)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
 
@@ -52,7 +53,9 @@ class FireSystem:
             return InvalidAction.BAD_ENTITY
 
         # Check if target is in line of sight
-        if not LosSystem.check(gs, attacker_id, target_transform.position):
+        if not LosSystem.check(
+            gs, attacker_transform.position, target_transform.position
+        ):
             return InvalidAction.BAD_COORDS
 
     @staticmethod

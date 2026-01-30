@@ -6,10 +6,10 @@ from flanker_core.models.vec2 import Vec2
 
 
 @dataclass
-class AbstractedCombatUnits:
+class AbstractedCombatUnit:
+    # Note: this should be kept flat to be serializable
     unit_id: int
-    current_waypoint: int
-    position: Vec2
+    current_waypoint_id: int
     status: CombatUnit.Status
     faction: InitiativeState.Faction
     no_fire: bool
@@ -25,9 +25,10 @@ class WaypointNode:
 
 @dataclass
 class WaypointsGraphGameState:  # Used for the minimax
+    # Note: this should be kept flat to be serializable
     game_state: GameState
     waypoints: dict[int, WaypointNode]
-    combat_units: dict[int, AbstractedCombatUnits]
+    combat_units: dict[int, AbstractedCombatUnit]
 
 
 @dataclass

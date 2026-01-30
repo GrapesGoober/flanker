@@ -21,7 +21,7 @@ class WaypointsMinimaxPlayer:
         actions: list[WaypointActions] = []
         for combat_unit_id in gs.combat_units:
             combat_unit = gs.combat_units[combat_unit_id]
-            current_waypoint = gs.waypoints[combat_unit.current_waypoint]
+            current_waypoint = gs.waypoints[combat_unit.current_waypoint_id]
             for movable_neighbor_node_id in current_waypoint.movable_nodes:
                 actions.append(
                     WaypointMoveAction(
