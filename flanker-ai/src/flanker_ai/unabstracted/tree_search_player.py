@@ -27,7 +27,7 @@ from flanker_core.systems.move_system import MoveSystem
 
 
 class TreeSearchPlayer:
-    """Implements a basic unabstracted minimax AI player."""
+    """Implements a basic unabstracted one-side tree search AI player."""
 
     @staticmethod
     def _get_actions(

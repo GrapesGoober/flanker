@@ -1,9 +1,12 @@
 from flanker_ai.unabstracted.models import (
+    ActionResult,
     AssaultActionResult,
     FireActionResult,
     MoveActionResult,
 )
 from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
+from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -35,10 +38,10 @@ class AiService:
         InitiativeSystem.flip_initiative(gs)
 
     @staticmethod
-    def play_minimax(gs: GameState, depth: int) -> None:
-        """Runs a minimax search AI for a given game's BLUEFOR faction."""
-
-        _, results = TreeSearchPlayer.play_minimax(gs, depth)
+    def _log_ai_action_results(
+        gs: GameState,
+        results: list[ActionResult],
+    ) -> None:
         LoggingService.clear_logs(gs)
         for result in results:
             match result:
@@ -77,3 +80,18 @@ class AiService:
                     )
 
             LoggingService.log(gs, log)
+
+    @staticmethod
+    def play_minimax(gs: GameState, depth: int) -> None:
+        """Runs a minimax search and logs results for BLUEFOR faction."""
+
+        _, results = TreeSearchPlayer.play_minimax(gs, depth)
+        AiService._log_ai_action_results(gs, results)
+
+    @staticmethod
+    def play_waypointsgraph_minimax(gs: GameState, depth: int) -> None:
+        """Runs a waypoint-minimax search and logs results."""
+        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=10)
+        waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth)
+        results = WaypointScheme.deabstract_actions(waypoint_actions)
+        AiService._log_ai_action_results(gs, results)
