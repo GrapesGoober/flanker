@@ -1,7 +1,9 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from timeit import timeit
 from typing import Any
 
+from flanker_ai.waypoints.models import WaypointActions, WaypointsGraphGameState
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
@@ -22,8 +24,29 @@ with open(path, "r") as f:
     )
     gs = GameState.load(entities, id_counter)
 
-waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
-_, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
+waypoints_gs: WaypointsGraphGameState | None = None
+waypoint_actions: list[WaypointActions] | None = None
+
+
+def run_abstraction() -> None:
+    global waypoints_gs
+    waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+
+
+def run_search() -> None:
+    assert waypoints_gs
+    global waypoint_actions
+    _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
+
+    print("done, searching...")
+
+
+print("abstracting...")
+abstraction_time = timeit(run_abstraction, number=1)
+print("done, searching...")
+searching_time = timeit(run_search, number=1)
 print(waypoint_actions)
-# exec_time = timeit(lambda: AiService.play_waypointsgraph_minimax(gs, depth=4), number=1)
-# print(f"Execution time: {exec_time:.6f} seconds")
+
+print(f"Abstraction time: {abstraction_time:.6f} seconds")
+print(f"Search time: {searching_time:.6f} seconds")
+print(f"Total time: {searching_time+abstraction_time:.6f} seconds")

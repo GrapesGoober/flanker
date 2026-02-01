@@ -42,7 +42,7 @@ class WaypointsMinimaxPlayer:
             if not iter_counter:
                 iter_counter = count(0)
             iter = next(iter_counter)
-            if iter % 100 == 0:
+            if iter % 5000 == 0:
                 print(f"Evaluated {iter=}")
             score, future_actions = WaypointsMinimaxPlayer.play(
                 new_gs,
