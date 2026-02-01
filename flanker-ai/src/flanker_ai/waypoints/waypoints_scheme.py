@@ -29,6 +29,7 @@ class WaypointScheme:
     def create_grid_waypoints(
         gs: GameState,
         spacing: float,
+        offset: float,
     ) -> WaypointsGraphGameState:
 
         # Build an array of grids within the boundary
@@ -46,9 +47,9 @@ class WaypointScheme:
         assert boundary_vertices
 
         # Boundary terrrain might not be a box
-        min_x = min(v.x for v in boundary_vertices)
+        min_x = min(v.x for v in boundary_vertices) + offset
         max_x = max(v.x for v in boundary_vertices)
-        min_y = min(v.y for v in boundary_vertices)
+        min_y = min(v.y for v in boundary_vertices) + offset
         max_y = max(v.y for v in boundary_vertices)
 
         # Generates waypoints at specified spacing

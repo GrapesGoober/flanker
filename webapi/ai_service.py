@@ -93,7 +93,7 @@ class AiService:
     @staticmethod
     def play_waypointsgraph_minimax(gs: GameState, depth: int) -> None:
         """Runs a waypoint-minimax search and logs results."""
-        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=10)
+        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
         waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth)
         results = WaypointScheme.deabstract_actions(waypoint_actions)
         AiService._log_ai_action_results(gs, results)
