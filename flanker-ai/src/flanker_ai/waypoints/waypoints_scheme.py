@@ -77,7 +77,14 @@ class WaypointScheme:
                 id=point_id, position=point, visible_nodes=[], movable_nodes=[]
             )
 
-        # TODO add combat units as waypoints and as abstracted units
+        # Compute LOS polygon for all these waypoints
+        waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
+                gs, waypoint.position
+            )
+
+        # Add combat units as waypoints and as abstracted units
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
@@ -97,11 +104,9 @@ class WaypointScheme:
             )
 
         # Add relationships between nodes
-        MOVABLE_DISTANCE = 100
+        MOVABLE_DISTANCE = 100  # Max distance cap to prevent complete graph
         for waypoint in waypoint_gs.waypoints.values():
             for other_id, other_waypoint in waypoint_gs.waypoints.items():
-                # Prevent this from generating complete graph
-                # by having a max cap for move distance
                 distance = (waypoint.position - other_waypoint.position).length()
                 if distance < MOVABLE_DISTANCE:
                     waypoint.movable_nodes.append(other_id)
