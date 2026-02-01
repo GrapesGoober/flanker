@@ -72,11 +72,16 @@ class WaypointScheme:
             y += spacing
 
         # Assemble waypoint-graph game state
+        if results := gs.query(InitiativeState):
+            _, initiative_state = results[0]
+        else:
+            raise ValueError(f"Component {InitiativeState} doesn't exist")
+        initiative = initiative_state.faction
         waypoint_gs = WaypointsGraphGameState(
             game_state=gs,
             waypoints={},
             combat_units={},
-            initiative=InitiativeState.Faction.BLUE,
+            initiative=initiative,
         )
 
         # Add grid points as a waypoint

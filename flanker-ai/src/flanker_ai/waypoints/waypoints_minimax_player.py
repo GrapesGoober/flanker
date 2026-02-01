@@ -33,16 +33,12 @@ class WaypointsMinimaxPlayer:
         best_actions: list[WaypointActions] = []
         for action in actions:
             new_gs = WaypointsMinimaxPlayer._copy_gs(gs)
-            if isinstance(action, WaypointMoveAction):
-                if action.move_to_waypoint_id == 51:
-                    pass
             WaypointsMinimaxPlayer.perform_action(new_gs, action)
             if not iter_counter:
                 iter_counter = count(0)
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            # TODO: have proper enemy minimax
             score, actions = WaypointsMinimaxPlayer.play(
                 new_gs,
                 depth - 1,
@@ -132,7 +128,6 @@ class WaypointsMinimaxPlayer:
                     )
                 )
             # Adds assault & fire actions
-
             for enemy_id, enemy_unit in gs.combat_units.items():
                 if enemy_unit.faction == combat_unit.faction:
                     continue
@@ -148,6 +143,7 @@ class WaypointsMinimaxPlayer:
                             )
                         )
                 # FIXME: Technically, there should be MOVABLE check
+                # TODO: add move interrupt to assault action
                 if combat_unit.status == CombatUnit.Status.ACTIVE:
                     actions.append(
                         WaypointAssaultAction(
@@ -162,7 +158,7 @@ class WaypointsMinimaxPlayer:
     def _evaluate(gs: WaypointsGraphGameState) -> float:
         score: float = 0.0
         for unit in gs.combat_units.values():
-            if unit.faction == InitiativeState.Faction.BLUE:
+            if unit.faction == gs.initiative:
                 match unit.status:
                     case CombatUnit.Status.ACTIVE:
                         score += 3
