@@ -16,7 +16,8 @@ class WaypointsMinimaxPlayer:
     """
     Implements a basic abstracted waypoints-graph minimax AI player.
     This is just a bare minimum code for the CoG paper, thus doesn't
-    have RNG, determinism, or other fancier rigs.
+    have RNG, determinism, or other fancier rigs. The MAX player is BLUE
+    this the MIN player is RED.
     """
 
     @staticmethod
@@ -25,11 +26,13 @@ class WaypointsMinimaxPlayer:
         depth: int,
         iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[WaypointActions]]:
+
         actions = WaypointsMinimaxPlayer._get_actions(gs)
         if depth == 0 or len(actions) == 0:
             return WaypointsMinimaxPlayer._evaluate(gs), []
 
-        best_score = float("-inf")
+        is_maximizing = gs.initiative == InitiativeState.Faction.BLUE
+        best_score = float("-inf") if is_maximizing else float("inf")
         best_actions: list[WaypointActions] = []
         for action in actions:
             new_gs = WaypointsMinimaxPlayer._copy_gs(gs)
@@ -39,14 +42,19 @@ class WaypointsMinimaxPlayer:
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, actions = WaypointsMinimaxPlayer.play(
+            score, future_actions = WaypointsMinimaxPlayer.play(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,
             )
-            if score > best_score:
-                best_score = score
-                best_actions = [action] + actions
+            if is_maximizing:
+                if score > best_score:
+                    best_score = score
+                    best_actions = [action] + future_actions
+            else:
+                if score < best_score:
+                    best_score = score
+                    best_actions = [action] + future_actions
         return best_score, best_actions
 
     @staticmethod
@@ -82,6 +90,12 @@ class WaypointsMinimaxPlayer:
                         current_unit.status = CombatUnit.Status.PINNED
                     else:
                         current_unit.status = CombatUnit.Status.SUPPRESSED
+                        # Move Failed
+                        match gs.initiative:
+                            case InitiativeState.Faction.BLUE:
+                                gs.initiative = InitiativeState.Faction.RED
+                            case InitiativeState.Faction.RED:
+                                gs.initiative = InitiativeState.Faction.BLUE
                 # Assume that the target waypoint becomes move interrupt
                 current_unit.current_waypoint_id = action.move_to_waypoint_id
 
@@ -90,6 +104,12 @@ class WaypointsMinimaxPlayer:
                 enemy_unit = gs.combat_units[action.target_id]
                 if enemy_unit.faction == InitiativeState.Faction.BLUE:
                     enemy_unit.status = CombatUnit.Status.PINNED
+                    # Firing failed
+                    match gs.initiative:
+                        case InitiativeState.Faction.BLUE:
+                            gs.initiative = InitiativeState.Faction.RED
+                        case InitiativeState.Faction.RED:
+                            gs.initiative = InitiativeState.Faction.BLUE
                 else:
                     enemy_unit.status = CombatUnit.Status.SUPPRESSED
 
@@ -100,6 +120,12 @@ class WaypointsMinimaxPlayer:
                     gs.combat_units.pop(action.target_id)
                 else:
                     gs.combat_units.pop(action.unit_id)
+                    # Assault failed
+                    match gs.initiative:
+                        case InitiativeState.Faction.BLUE:
+                            gs.initiative = InitiativeState.Faction.RED
+                        case InitiativeState.Faction.RED:
+                            gs.initiative = InitiativeState.Faction.BLUE
 
     @staticmethod
     def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointActions]:
@@ -156,22 +182,20 @@ class WaypointsMinimaxPlayer:
 
     @staticmethod
     def _evaluate(gs: WaypointsGraphGameState) -> float:
-        score: float = 0.0
+        """Heuristic valuation from BLUE perspective"""
+        score = 0.0
         for unit in gs.combat_units.values():
-            if unit.faction == gs.initiative:
-                match unit.status:
-                    case CombatUnit.Status.ACTIVE:
-                        score += 3
-                    case CombatUnit.Status.PINNED:
-                        score += 2
-                    case CombatUnit.Status.SUPPRESSED:
-                        score += 1
+            value = 0
+            match unit.status:
+                case CombatUnit.Status.ACTIVE:
+                    value = 3
+                case CombatUnit.Status.PINNED:
+                    value = 2
+                case CombatUnit.Status.SUPPRESSED:
+                    value = 1
+
+            if unit.faction == InitiativeState.Faction.BLUE:
+                score += value
             else:
-                match unit.status:
-                    case CombatUnit.Status.ACTIVE:
-                        score -= 3
-                    case CombatUnit.Status.PINNED:
-                        score -= 2
-                    case CombatUnit.Status.SUPPRESSED:
-                        score -= 1
+                score -= value
         return score
