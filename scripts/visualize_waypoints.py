@@ -54,9 +54,11 @@ if __name__ == "__main__":
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
     points_y: list[float] = []
-    for point in waypoint_gs.waypoints.values():
+    ids: list[int] = []
+    for id, point in waypoint_gs.waypoints.items():
         points_x.append(point.position.x)
         points_y.append(-point.position.y)
+        ids.append(id)
 
         # Draw the interconnected visibility
         for visible_node_id in point.visible_nodes:
@@ -70,6 +72,8 @@ if __name__ == "__main__":
 
     # Draw all points at once
     plt.scatter(points_x, points_y, color="C0", s=5)  # type: ignore
+    for x, y, id_ in zip(points_x, points_y, ids):
+        plt.text(x, y, str(id_), fontsize=6, ha="left", va="bottom")  # type: ignore
 
     # Draw all lines at once
     lc = LineCollection(segments, colors="C0", linewidths=0.5, alpha=0.1)
