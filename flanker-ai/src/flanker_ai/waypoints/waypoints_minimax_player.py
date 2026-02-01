@@ -115,39 +115,46 @@ class WaypointsMinimaxPlayer:
                 continue
 
             # Adds move actions
-            for movable_node_id in current_waypoint.movable_nodes:
+            if combat_unit.status == CombatUnit.Status.ACTIVE:
+                for movable_node_id in current_waypoint.movable_nodes:
+                    actions.append(
+                        WaypointMoveAction(
+                            unit_id=combat_unit_id,
+                            move_to_waypoint_id=movable_node_id,
+                        )
+                    )
+                # FIXME: have it only append RELEVANT nodes, not just distance
+                # Otherwise there's too high branching factor while missing waypoint 51
                 actions.append(
                     WaypointMoveAction(
                         unit_id=combat_unit_id,
-                        move_to_waypoint_id=movable_node_id,
+                        move_to_waypoint_id=51,
                     )
                 )
-            # FIXME: have it only append RELEVANT nodes, not just distance
-            # Otherwise there's too high branching factor while missing waypoint 51
-            actions.append(
-                WaypointMoveAction(
-                    unit_id=combat_unit_id,
-                    move_to_waypoint_id=51,
-                )
-            )
             # Adds assault & fire actions
+
             for enemy_id, enemy_unit in gs.combat_units.items():
                 if enemy_unit.faction == combat_unit.faction:
                     continue
-                if enemy_unit.current_waypoint_id in current_waypoint.visible_nodes:
+                if combat_unit.status in [
+                    CombatUnit.Status.ACTIVE,
+                    CombatUnit.Status.PINNED,
+                ]:
+                    if enemy_unit.current_waypoint_id in current_waypoint.visible_nodes:
+                        actions.append(
+                            WaypointFireAction(
+                                unit_id=combat_unit_id,
+                                target_id=enemy_id,
+                            )
+                        )
+                # FIXME: Technically, there should be MOVABLE check
+                if combat_unit.status == CombatUnit.Status.ACTIVE:
                     actions.append(
-                        WaypointFireAction(
+                        WaypointAssaultAction(
                             unit_id=combat_unit_id,
                             target_id=enemy_id,
                         )
                     )
-                # FIXME: Technically, there should be MOVABLE check
-                actions.append(
-                    WaypointAssaultAction(
-                        unit_id=combat_unit_id,
-                        target_id=enemy_id,
-                    )
-                )
 
         return actions
 
