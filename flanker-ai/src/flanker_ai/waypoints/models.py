@@ -28,6 +28,7 @@ class WaypointsGraphGameState:  # Used for the minimax
     game_state: GameState
     waypoints: dict[int, WaypointNode]
     combat_units: dict[int, AbstractedCombatUnit]
+    initiative: InitiativeState.Faction
 
 
 @dataclass

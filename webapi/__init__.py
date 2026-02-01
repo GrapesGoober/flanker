@@ -112,7 +112,9 @@ async def ai_play(
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    exec_time = timeit(lambda: AiService.play_minimax(gs, depth=4), number=1)
+    exec_time = timeit(
+        lambda: AiService.play_waypointsgraph_minimax(gs, depth=4), number=1
+    )
     print(f"Execution time: {exec_time:.6f} seconds")
 
 

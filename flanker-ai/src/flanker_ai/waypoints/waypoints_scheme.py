@@ -1,7 +1,10 @@
-from flanker_ai.unabstracted.models import ActionResult
+from flanker_ai.unabstracted.models import ActionResult, MoveAction, MoveActionResult
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
     WaypointActions,
+    WaypointAssaultAction,
+    WaypointFireAction,
+    WaypointMoveAction,
     WaypointNode,
     WaypointsGraphGameState,
 )
@@ -9,6 +12,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
+    InitiativeState,
     TerrainFeature,
     Transform,
 )
@@ -69,7 +73,10 @@ class WaypointScheme:
 
         # Assemble waypoint-graph game state
         waypoint_gs = WaypointsGraphGameState(
-            game_state=gs, waypoints={}, combat_units={}
+            game_state=gs,
+            waypoints={},
+            combat_units={},
+            initiative=InitiativeState.Faction.BLUE,
         )
 
         # Add grid points as a waypoint
@@ -104,12 +111,19 @@ class WaypointScheme:
             )
 
         # Add relationships between nodes
-        MOVABLE_DISTANCE = 100  # Max distance cap to prevent complete graph
+        # Max distance cap to prevent complete graph
+        MOVABLE_DISTANCE = 21
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
             for other_id, other_waypoint in waypoint_gs.waypoints.items():
                 distance = (waypoint.position - other_waypoint.position).length()
+                # Add movable relationship
+                # TODO: add move interrupts
+                # FIXME: have it only append RELEVANT nodes, not just distance
+                # Otherwise there's too high branching factor while
                 if distance < MOVABLE_DISTANCE:
                     waypoint.movable_nodes.append(other_id)
+
+                # Add visibility relationship
                 if IntersectGetter.is_inside(
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
                 ):
@@ -120,5 +134,26 @@ class WaypointScheme:
 
     @staticmethod
     def deabstract_actions(
+        gs: WaypointsGraphGameState,
         actions: list[WaypointActions],
-    ) -> list[ActionResult]: ...
+    ) -> list[ActionResult]:
+        results: list[ActionResult] = []
+        for action in actions:
+            match action:
+                case WaypointMoveAction():
+                    results.append(
+                        MoveActionResult(
+                            action=MoveAction(
+                                unit_id=action.unit_id,
+                                to=gs.waypoints[action.move_to_waypoint_id].position,
+                            ),
+                            result_gs=GameState(),
+                            reactive_fire_outcome=None,
+                        )
+                    )
+                    ...
+                case WaypointFireAction():
+                    ...
+                case WaypointAssaultAction():
+                    ...
+        return results
