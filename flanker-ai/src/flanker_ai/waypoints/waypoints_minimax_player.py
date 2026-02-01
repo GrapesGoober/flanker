@@ -24,6 +24,8 @@ class WaypointsMinimaxPlayer:
     def play(
         gs: WaypointsGraphGameState,
         depth: int,
+        alpha: float = float("-inf"),
+        beta: float = float("inf"),
         iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[WaypointActions]]:
 
@@ -45,16 +47,22 @@ class WaypointsMinimaxPlayer:
             score, future_actions = WaypointsMinimaxPlayer.play(
                 new_gs,
                 depth - 1,
+                alpha=alpha,
+                beta=beta,
                 iter_counter=iter_counter,
             )
             if is_maximizing:
                 if score > best_score:
                     best_score = score
                     best_actions = [action] + future_actions
+                alpha = max(alpha, best_score)
             else:
                 if score < best_score:
                     best_score = score
                     best_actions = [action] + future_actions
+                beta = min(beta, best_score)
+            if alpha >= beta:
+                break
         return best_score, best_actions
 
     @staticmethod
@@ -136,23 +144,6 @@ class WaypointsMinimaxPlayer:
             if combat_unit.faction != gs.initiative:
                 continue
 
-            # Adds move actions
-            if combat_unit.status == CombatUnit.Status.ACTIVE:
-                for movable_node_id in current_waypoint.movable_nodes:
-                    actions.append(
-                        WaypointMoveAction(
-                            unit_id=combat_unit_id,
-                            move_to_waypoint_id=movable_node_id,
-                        )
-                    )
-                # FIXME: have it only append RELEVANT nodes, not just distance
-                # Otherwise there's too high branching factor while missing waypoint 51
-                actions.append(
-                    WaypointMoveAction(
-                        unit_id=combat_unit_id,
-                        move_to_waypoint_id=51,
-                    )
-                )
             # Adds assault & fire actions
             for enemy_id, enemy_unit in gs.combat_units.items():
                 if enemy_unit.faction == combat_unit.faction:
@@ -177,6 +168,24 @@ class WaypointsMinimaxPlayer:
                             target_id=enemy_id,
                         )
                     )
+
+            # Adds move actions later, for best alpha-beta pruning
+            if combat_unit.status == CombatUnit.Status.ACTIVE:
+                for movable_node_id in current_waypoint.movable_nodes:
+                    actions.append(
+                        WaypointMoveAction(
+                            unit_id=combat_unit_id,
+                            move_to_waypoint_id=movable_node_id,
+                        )
+                    )
+                # FIXME: have it only append RELEVANT nodes, not just distance
+                # Otherwise there's too high branching factor while missing waypoint 51
+                actions.append(
+                    WaypointMoveAction(
+                        unit_id=combat_unit_id,
+                        move_to_waypoint_id=51,
+                    )
+                )
 
         return actions
 
