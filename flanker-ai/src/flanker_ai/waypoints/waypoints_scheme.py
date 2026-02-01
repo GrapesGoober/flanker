@@ -74,14 +74,7 @@ class WaypointScheme:
         # Add grid points as a waypoint
         for point_id, point in enumerate(points):
             waypoint_gs.waypoints[point_id] = WaypointNode(
-                id=point_id, position=point, visible_nodes=[], movable_nodes=[]
-            )
-
-        # Compute LOS polygon for all these waypoints
-        waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
-            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
-                gs, waypoint.position
+                position=point, visible_nodes=[], movable_nodes=[]
             )
 
         # Add combat units as waypoints and as abstracted units
@@ -90,7 +83,6 @@ class WaypointScheme:
         ):
             waypoint_id = len(waypoint_gs.waypoints.keys())
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
-                id=waypoint_id,
                 position=transform.position,
                 visible_nodes=[],
                 movable_nodes=[],
@@ -103,17 +95,22 @@ class WaypointScheme:
                 no_fire=not fire_controls.can_reactive_fire,
             )
 
+        # Compute LOS polygon for all these waypoints
+        waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
+                gs, waypoint.position
+            )
+
         # Add relationships between nodes
         MOVABLE_DISTANCE = 100  # Max distance cap to prevent complete graph
-        for waypoint in waypoint_gs.waypoints.values():
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
             for other_id, other_waypoint in waypoint_gs.waypoints.items():
                 distance = (waypoint.position - other_waypoint.position).length()
                 if distance < MOVABLE_DISTANCE:
                     waypoint.movable_nodes.append(other_id)
-                if LosSystem.check(
-                    gs,
-                    waypoint.position,
-                    other_waypoint.position,
+                if IntersectGetter.is_inside(
+                    other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
                 ):
                     waypoint.visible_nodes.append(other_id)
 
