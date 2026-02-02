@@ -7,24 +7,18 @@ from flanker_core.models.vec2 import Vec2
 
 @dataclass
 class MoveAction:
-    """Request model for a unit's move action."""
-
     unit_id: int
     to: Vec2
 
 
 @dataclass
 class FireAction:
-    """Request model for a unit's fire action."""
-
     unit_id: int
     target_id: int
 
 
 @dataclass
 class AssaultAction:
-    """Request model for a unit's assault action."""
-
     unit_id: int
     target_id: int
 
@@ -51,4 +45,5 @@ class AssaultActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
+Action = MoveAction | FireAction | AssaultAction
 ActionResult = MoveActionResult | FireActionResult | AssaultActionResult

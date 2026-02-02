@@ -9,6 +9,7 @@ from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
+from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 from webapi.combat_unit_service import CombatUnitService
@@ -27,22 +28,32 @@ class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
-    def play(gs: GameState) -> None:
-        """Not implemented. This REDFOR AI will just pass initiative."""
-        # Assume that the AI plays RED
-        faction = InitiativeState.Faction.RED
-        if InitiativeSystem.get_initiative(gs) != faction:
+    def play_redfor(gs: GameState) -> None:
+        """Runs the default REDFOR AI."""
+        AI_FACTION = InitiativeState.Faction.RED
+        if InitiativeSystem.get_initiative(gs) != AI_FACTION:
             return
-
-        # For now, pass on initiative without any actions
-        InitiativeSystem.flip_initiative(gs)
+        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+        halt_counter = 0
+        while InitiativeSystem.get_initiative(gs) == AI_FACTION:
+            # Runs the abstracted graph search
+            _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
+            current_action = waypoint_actions[0]
+            result = WaypointScheme.apply_action(gs, waypoints_gs, current_action)
+            if isinstance(result, InvalidAction):
+                InitiativeSystem.flip_initiative(gs)
+            if halt_counter > 100:
+                InitiativeSystem.flip_initiative(gs)
+                print("AI is making too many useless actions, breaking")
+            assert isinstance(result, ActionResult)
+            AiService._log_ai_action_results(gs, [result])
+            halt_counter += 1
 
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
         results: list[ActionResult],
     ) -> None:
-        LoggingService.clear_logs(gs)
         for result in results:
             match result:
                 case MoveActionResult():
@@ -85,15 +96,11 @@ class AiService:
 
     @staticmethod
     def play_minimax(gs: GameState, depth: int) -> None:
-        """Runs a minimax search and logs results for BLUEFOR faction."""
+        """
+        (prototype) Runs a minimax search and logs
+        sequential results for BLUEFOR faction.
+        """
 
         _, results = TreeSearchPlayer.play_minimax(gs, depth)
-        AiService._log_ai_action_results(gs, results)
-
-    @staticmethod
-    def play_waypointsgraph_minimax(gs: GameState, depth: int) -> None:
-        """Runs a waypoint-minimax search and logs results."""
-        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
-        _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth)
-        results = WaypointScheme.deabstract_actions(waypoints_gs, waypoint_actions)
+        LoggingService.clear_logs(gs)
         AiService._log_ai_action_results(gs, results)

@@ -1,7 +1,16 @@
-from flanker_ai.unabstracted.models import ActionResult, MoveAction, MoveActionResult
+from flanker_ai.unabstracted.models import (
+    Action,
+    ActionResult,
+    AssaultAction,
+    AssaultActionResult,
+    FireAction,
+    FireActionResult,
+    MoveAction,
+    MoveActionResult,
+)
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
-    WaypointActions,
+    WaypointAction,
     WaypointAssaultAction,
     WaypointFireAction,
     WaypointMoveAction,
@@ -12,12 +21,16 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
-    InitiativeState,
     TerrainFeature,
     Transform,
 )
+from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.fire_system import FireSystem
+from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.move_system import MoveSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -48,7 +61,7 @@ class WaypointScheme:
                 if terrain.is_closed_loop:
                     boundary_vertices.append(boundary_vertices[0])
 
-        assert boundary_vertices
+        assert boundary_vertices, "Can't abstract; boundary terrain missing!"
 
         # Boundary terrrain might not be a box
         min_x = min(v.x for v in boundary_vertices) + offset
@@ -72,13 +85,8 @@ class WaypointScheme:
             y += spacing
 
         # Assemble waypoint-graph game state
-        if results := gs.query(InitiativeState):
-            _, initiative_state = results[0]
-        else:
-            raise ValueError(f"Component {InitiativeState} doesn't exist")
-        initiative = initiative_state.faction
+        initiative = InitiativeSystem.get_initiative(gs)
         waypoint_gs = WaypointsGraphGameState(
-            game_state=gs,
             waypoints={},
             combat_units={},
             initiative=initiative,
@@ -123,7 +131,7 @@ class WaypointScheme:
                 distance = (waypoint.position - other_waypoint.position).length()
                 # Add movable relationship
                 # TODO: add move interrupts
-                # FIXME: have it only append RELEVANT nodes, not just distance
+                # TODO: have it only append RELEVANT nodes, not just distance
                 # Otherwise there's too high branching factor while
                 if distance < MOVABLE_DISTANCE:
                     waypoint.movable_nodes.append(other_id)
@@ -138,27 +146,66 @@ class WaypointScheme:
         return waypoint_gs
 
     @staticmethod
-    def deabstract_actions(
+    def deabstract_action(
         gs: WaypointsGraphGameState,
-        actions: list[WaypointActions],
-    ) -> list[ActionResult]:
-        results: list[ActionResult] = []
-        for action in actions:
-            match action:
-                case WaypointMoveAction():
-                    results.append(
-                        MoveActionResult(
-                            action=MoveAction(
-                                unit_id=action.unit_id,
-                                to=gs.waypoints[action.move_to_waypoint_id].position,
-                            ),
-                            result_gs=GameState(),
-                            reactive_fire_outcome=None,
-                        )
+        action: WaypointAction,
+    ) -> Action:
+        match action:
+            case WaypointMoveAction():
+                return MoveAction(
+                    unit_id=action.unit_id,
+                    to=gs.waypoints[action.move_to_waypoint_id].position,
+                )
+            case WaypointFireAction():
+                return FireAction(
+                    unit_id=action.unit_id,
+                    target_id=action.target_id,
+                )
+            case WaypointAssaultAction():
+                return AssaultAction(
+                    unit_id=action.unit_id,
+                    target_id=action.target_id,
+                )
+
+    @staticmethod
+    def perform_action(
+        gs: GameState,
+        action: MoveAction | FireAction | AssaultAction,
+    ) -> ActionResult | InvalidAction:
+        match action:
+            case MoveAction():
+                result = MoveSystem.move(gs, action.unit_id, action.to)
+                if not isinstance(result, InvalidAction):
+                    return MoveActionResult(
+                        action=action,
+                        result_gs=gs,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
                     )
-                    ...
-                case WaypointFireAction():
-                    ...
-                case WaypointAssaultAction():
-                    ...
-        return results
+            case FireAction():
+                result = FireSystem.fire(gs, action.unit_id, action.target_id)
+                if not isinstance(result, InvalidAction):
+                    return FireActionResult(
+                        action=action,
+                        result_gs=gs,
+                        outcome=result.outcome,
+                    )
+            case AssaultAction():
+                result = AssaultSystem.assault(gs, action.unit_id, action.target_id)
+                if not isinstance(result, InvalidAction):
+                    return AssaultActionResult(
+                        action=action,
+                        result_gs=gs,
+                        outcome=result.outcome,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+        return result
+
+    @staticmethod
+    def apply_action(
+        gs: GameState,
+        waypoint_gs: WaypointsGraphGameState,
+        waypoint_action: WaypointAction,
+    ) -> ActionResult | InvalidAction:
+        action = WaypointScheme.deabstract_action(waypoint_gs, waypoint_action)
+        result = WaypointScheme.perform_action(gs, action)
+        return result

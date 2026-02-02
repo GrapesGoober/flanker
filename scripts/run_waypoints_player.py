@@ -3,7 +3,7 @@ from inspect import isclass
 from timeit import timeit
 from typing import Any
 
-from flanker_ai.waypoints.models import WaypointActions, WaypointsGraphGameState
+from flanker_ai.waypoints.models import WaypointAction, WaypointsGraphGameState
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
@@ -25,7 +25,7 @@ with open(path, "r") as f:
     gs = GameState.load(entities, id_counter)
 
 waypoints_gs: WaypointsGraphGameState | None = None
-waypoint_actions: list[WaypointActions] | None = None
+waypoint_actions: list[WaypointAction] | None = None
 
 
 def run_abstraction() -> None:

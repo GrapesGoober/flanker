@@ -3,7 +3,7 @@ from itertools import count
 from typing import Iterator
 
 from flanker_ai.waypoints.models import (
-    WaypointActions,
+    WaypointAction,
     WaypointAssaultAction,
     WaypointFireAction,
     WaypointMoveAction,
@@ -27,7 +27,7 @@ class WaypointsMinimaxPlayer:
         alpha: float = float("-inf"),
         beta: float = float("inf"),
         iter_counter: Iterator[int] | None = None,
-    ) -> tuple[float, list[WaypointActions]]:
+    ) -> tuple[float, list[WaypointAction]]:
 
         actions = WaypointsMinimaxPlayer._get_actions(gs)
         if depth == 0 or len(actions) == 0:
@@ -35,7 +35,7 @@ class WaypointsMinimaxPlayer:
 
         is_maximizing = gs.initiative == InitiativeState.Faction.BLUE
         best_score = float("-inf") if is_maximizing else float("inf")
-        best_actions: list[WaypointActions] = []
+        best_actions: list[WaypointAction] = []
         for action in actions:
             new_gs = WaypointsMinimaxPlayer._copy_gs(gs)
             WaypointsMinimaxPlayer.perform_action(new_gs, action)
@@ -69,7 +69,6 @@ class WaypointsMinimaxPlayer:
     def _copy_gs(gs: WaypointsGraphGameState) -> WaypointsGraphGameState:
         copied_units = {id: replace(unit) for id, unit in gs.combat_units.items()}
         return WaypointsGraphGameState(
-            game_state=gs.game_state,
             waypoints=gs.waypoints,
             combat_units=copied_units,
             initiative=gs.initiative,
@@ -78,7 +77,7 @@ class WaypointsMinimaxPlayer:
     @staticmethod
     def perform_action(
         gs: WaypointsGraphGameState,
-        action: WaypointActions,
+        action: WaypointAction,
     ) -> None:
         current_unit = gs.combat_units[action.unit_id]
         match action:
@@ -136,9 +135,9 @@ class WaypointsMinimaxPlayer:
                             gs.initiative = InitiativeState.Faction.BLUE
 
     @staticmethod
-    def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointActions]:
+    def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointAction]:
 
-        actions: list[WaypointActions] = []
+        actions: list[WaypointAction] = []
         for combat_unit_id, combat_unit in gs.combat_units.items():
             current_waypoint = gs.waypoints[combat_unit.current_waypoint_id]
             if combat_unit.faction != gs.initiative:
@@ -159,7 +158,7 @@ class WaypointsMinimaxPlayer:
                                 target_id=enemy_id,
                             )
                         )
-                # FIXME: Technically, there should be MOVABLE check
+                # TODO: Technically, there should be MOVABLE check
                 # TODO: add move interrupt to assault action
                 if combat_unit.status == CombatUnit.Status.ACTIVE:
                     actions.append(
@@ -178,7 +177,7 @@ class WaypointsMinimaxPlayer:
                             move_to_waypoint_id=movable_node_id,
                         )
                     )
-                # FIXME: have it only append RELEVANT nodes, not just distance
+                # TODO: have it only append RELEVANT nodes, not just distance
                 # Otherwise there's too high branching factor while missing waypoint 51
                 actions.append(
                     WaypointMoveAction(

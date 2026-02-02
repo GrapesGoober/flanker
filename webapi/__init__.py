@@ -67,7 +67,7 @@ async def action_move(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.move(gs, body)
-    AiService.play(gs)
+    AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 
 
@@ -80,7 +80,7 @@ async def action_fire(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.fire(gs, body)
-    AiService.play(gs)
+    AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 
 
@@ -93,7 +93,7 @@ async def action_assault(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.assault(gs, body)
-    AiService.play(gs)
+    AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 
 
@@ -112,9 +112,7 @@ async def ai_play(
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    exec_time = timeit(
-        lambda: AiService.play_waypointsgraph_minimax(gs, depth=4), number=1
-    )
+    exec_time = timeit(lambda: AiService.play_minimax(gs, depth=4), number=1)
     print(f"Execution time: {exec_time:.6f} seconds")
 
 
