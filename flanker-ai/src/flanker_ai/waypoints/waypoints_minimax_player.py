@@ -84,10 +84,12 @@ class WaypointsMinimaxPlayer:
             case WaypointMoveAction():
                 # Check for move interrupts
                 is_interrupted = False
+                target_waypoint = gs.waypoints[action.move_to_waypoint_id]
                 for enemy_unit in gs.combat_units.values():
                     if enemy_unit.faction == current_unit.faction:
                         continue
-                    target_waypoint = gs.waypoints[action.move_to_waypoint_id]
+                    if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
+                        continue
                     if enemy_unit.current_waypoint_id in target_waypoint.visible_nodes:
                         is_interrupted = True
                         break
@@ -121,8 +123,33 @@ class WaypointsMinimaxPlayer:
                     enemy_unit.status = CombatUnit.Status.SUPPRESSED
 
             case WaypointAssaultAction():
-                # Assumes determinic for now
+                # Check for move interrupts
                 enemy_unit = gs.combat_units[action.target_id]
+                target_waypoint = gs.waypoints[enemy_unit.current_waypoint_id]
+                for other_enemy_unit in gs.combat_units.values():
+                    if other_enemy_unit.faction == current_unit.faction:
+                        continue
+                    if other_enemy_unit.status == CombatUnit.Status.SUPPRESSED:
+                        continue
+                    # If the target waypoint can be seen by other_enemy_unit
+                    if (
+                        other_enemy_unit.current_waypoint_id
+                        in target_waypoint.visible_nodes
+                    ):
+                        current_unit.status = CombatUnit.Status.SUPPRESSED
+                        # Assume that the target waypoint becomes move interrupt
+                        current_unit.current_waypoint_id = (
+                            enemy_unit.current_waypoint_id
+                        )
+                        # Move failed
+                        match gs.initiative:
+                            case InitiativeState.Faction.BLUE:
+                                gs.initiative = InitiativeState.Faction.RED
+                            case InitiativeState.Faction.RED:
+                                gs.initiative = InitiativeState.Faction.BLUE
+                        return
+
+                # Runs the assault dice roll. Assumes determinic for now
                 if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
                     gs.combat_units.pop(action.target_id)
                 else:
@@ -145,6 +172,8 @@ class WaypointsMinimaxPlayer:
 
             # Adds assault & fire actions
             for enemy_id, enemy_unit in gs.combat_units.items():
+
+                # Add fire action if the enemy is on a visible node
                 if enemy_unit.faction == combat_unit.faction:
                     continue
                 if combat_unit.status in [
@@ -158,8 +187,10 @@ class WaypointsMinimaxPlayer:
                                 target_id=enemy_id,
                             )
                         )
-                # TODO: Technically, there should be MOVABLE check
-                # TODO: add move interrupt to assault action
+
+                # Add an assault action
+                # Technically, there should be movable check.
+                # But current abstraction scheme as a distance cap. So no.
                 if combat_unit.status == CombatUnit.Status.ACTIVE:
                     actions.append(
                         WaypointAssaultAction(
