@@ -40,11 +40,11 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   cd webui
   npm install
   ```
-- Add environment variable file to `/webui/.env`. For `VITE_WEBAPI_URL`, use the same URL that the FastApi app is using; the default is `localhost:8000`. For `VITE_PORT`, this configures the port number for webui's VITE app. Use whichever port you prefer. The default is `5173`.
+- Add environment variable file to `/webui/.env`. For `VITE_WEBAPI_URL`, use the same URL that the FastApi app is using; the default is `localhost:8000`. For `VITE_WEBUI_PORT`, this configures the port number for webui's VITE app. Use whichever port you prefer. The default is `5173`.
   ```
   # Note: "VITE_" prefix is required
   VITE_WEBAPI_URL=http://localhost:8000
-  VITE_PORT=5173
+  VITE_WEBUI_PORT=5173
   ```
 
 ## Running App
