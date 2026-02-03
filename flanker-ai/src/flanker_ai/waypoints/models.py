@@ -18,7 +18,6 @@ class AbstractedCombatUnit:
 class WaypointNode:
     position: Vec2
     visible_nodes: list[int]
-    movable_nodes: list[int]
 
 
 @dataclass

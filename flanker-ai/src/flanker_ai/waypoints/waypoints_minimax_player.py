@@ -1,3 +1,4 @@
+import random
 from dataclasses import replace
 from itertools import count
 from typing import Iterator
@@ -201,21 +202,15 @@ class WaypointsMinimaxPlayer:
 
             # Adds move actions later, for best alpha-beta pruning
             if combat_unit.status == CombatUnit.Status.ACTIVE:
-                for movable_node_id in current_waypoint.movable_nodes:
+                # Filter some move actions to reduce branching factor
+                movable_waypoint_ids = list(gs.waypoints.keys())
+                for waypoint_id in random.sample(movable_waypoint_ids, 10):
                     actions.append(
                         WaypointMoveAction(
                             unit_id=combat_unit_id,
-                            move_to_waypoint_id=movable_node_id,
+                            move_to_waypoint_id=waypoint_id,
                         )
                     )
-                # TODO: have it only append RELEVANT nodes, not just distance
-                # Otherwise there's too high branching factor while missing waypoint 51
-                actions.append(
-                    WaypointMoveAction(
-                        unit_id=combat_unit_id,
-                        move_to_waypoint_id=51,
-                    )
-                )
 
         return actions
 

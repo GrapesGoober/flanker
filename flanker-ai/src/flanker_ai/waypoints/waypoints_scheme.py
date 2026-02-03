@@ -95,7 +95,8 @@ class WaypointScheme:
         # Add grid points as a waypoint
         for point_id, point in enumerate(points):
             waypoint_gs.waypoints[point_id] = WaypointNode(
-                position=point, visible_nodes=[], movable_nodes=[]
+                position=point,
+                visible_nodes=[],
             )
 
         # Add combat units as waypoints and as abstracted units
@@ -106,7 +107,6 @@ class WaypointScheme:
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=[],
-                movable_nodes=[],
             )
             waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
@@ -123,18 +123,9 @@ class WaypointScheme:
                 gs, waypoint.position
             )
 
-        # Add relationships between nodes
-        # Max distance cap to prevent complete graph
-        MOVABLE_DISTANCE = 21
+        # Add visibility relationships between nodes
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
             for other_id, other_waypoint in waypoint_gs.waypoints.items():
-                distance = (waypoint.position - other_waypoint.position).length()
-                # Add movable relationship
-                # TODO: add move interrupts
-                # TODO: have it only append RELEVANT nodes, not just distance
-                # Otherwise there's too high branching factor while
-                if distance < MOVABLE_DISTANCE:
-                    waypoint.movable_nodes.append(other_id)
 
                 # Add visibility relationship
                 if IntersectGetter.is_inside(
