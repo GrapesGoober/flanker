@@ -10,6 +10,7 @@ from flanker_ai.unabstracted.models import (
 )
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
+    MovableNode,
     WaypointAction,
     WaypointAssaultAction,
     WaypointFireAction,
@@ -97,6 +98,7 @@ class WaypointScheme:
             waypoint_gs.waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=[],
+                movable_nodes=[],
             )
 
         # Add combat units as waypoints and as abstracted units
@@ -107,6 +109,7 @@ class WaypointScheme:
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=[],
+                movable_nodes=[],
             )
             waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
@@ -132,6 +135,63 @@ class WaypointScheme:
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
                 ):
                     waypoint.visible_nodes.append(other_id)
+
+        # Add move relationships between nodes
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            for move_id, other_waypoint in waypoint_gs.waypoints.items():
+                if waypoint_id == move_id:
+                    continue
+                move_data = MovableNode(
+                    move_to_id=move_id,
+                    interrupts_waypoints={},
+                )
+                waypoint.movable_nodes.append(move_data)
+                move_from = waypoint.position
+                move_to = other_waypoint.position
+
+                # Get move interrupt, if any
+                for visible_id in waypoint_gs.waypoints.keys():
+                    if visible_id == move_id:
+                        continue
+
+                    LOS_polygon = waypoint_LOS_polygons[visible_id]
+                    if IntersectGetter.is_inside(move_from, LOS_polygon):
+                        # The move line is at least inside LOS
+                        interrupt_pos = move_from
+                    else:
+                        intersections = IntersectGetter.get_intersects(
+                            line=(move_from, move_to),
+                            polyline=LOS_polygon,
+                        )
+                        if intersections:
+                            interrupt_pos = intersections[0]
+                        else:
+                            continue
+
+                    # Interrupt found, find the nearest waypoint there
+                    best_interrupt_waypoint_id: int = 0
+                    best_interrupt_distance = float("inf")
+                    for (
+                        interrupt_waypoint_id,
+                        interrupt_waypoint,
+                    ) in waypoint_gs.waypoints.items():
+                        distance = (
+                            interrupt_waypoint.position - interrupt_pos
+                        ).length()
+                        if distance >= best_interrupt_distance:
+                            continue
+
+                        if not IntersectGetter.is_inside(
+                            interrupt_waypoint.position,
+                            LOS_polygon,
+                        ):
+                            continue
+
+                        best_interrupt_distance = distance
+                        best_interrupt_waypoint_id = interrupt_waypoint_id
+                    move_data.interrupts_waypoints[visible_id] = (
+                        best_interrupt_waypoint_id
+                    )
 
         # Assemble the game state
         return waypoint_gs

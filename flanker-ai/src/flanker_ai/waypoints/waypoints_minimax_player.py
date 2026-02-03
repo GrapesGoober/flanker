@@ -107,6 +107,7 @@ class WaypointsMinimaxPlayer:
                             case InitiativeState.Faction.RED:
                                 gs.initiative = InitiativeState.Faction.BLUE
                 # Assume that the target waypoint becomes move interrupt
+                # TODO: put the unit at the move interrupt
                 current_unit.current_waypoint_id = action.move_to_waypoint_id
 
             case WaypointFireAction():
@@ -139,6 +140,7 @@ class WaypointsMinimaxPlayer:
                     ):
                         current_unit.status = CombatUnit.Status.SUPPRESSED
                         # Assume that the target waypoint becomes move interrupt
+                        # TODO: put the unit at the move interrupt
                         current_unit.current_waypoint_id = (
                             enemy_unit.current_waypoint_id
                         )
@@ -203,12 +205,28 @@ class WaypointsMinimaxPlayer:
             # Adds move actions later, for best alpha-beta pruning
             if combat_unit.status == CombatUnit.Status.ACTIVE:
                 # Filter some move actions to reduce branching factor
-                movable_waypoint_ids = list(gs.waypoints.keys())
-                for waypoint_id in random.sample(movable_waypoint_ids, 10):
+                movable_nodes = random.sample(
+                    population=current_waypoint.movable_nodes,
+                    k=10,
+                )
+
+                for movable_node in movable_nodes:
+                    interrupt_at_id: int | None = None
+                    for enemy_id, enemy_unit in gs.combat_units.items():
+                        # Add interrupt if the enemy can do it
+                        if enemy_unit.faction == combat_unit.faction:
+                            continue
+                        if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
+                            continue
+                        interrupt_at_id = movable_node.interrupts_waypoints.get(
+                            enemy_unit.current_waypoint_id, None
+                        )
+                        break
                     actions.append(
                         WaypointMoveAction(
                             unit_id=combat_unit_id,
-                            move_to_waypoint_id=waypoint_id,
+                            move_to_waypoint_id=movable_node.move_to_id,
+                            interrupt_at_id=interrupt_at_id,
                         )
                     )
 
