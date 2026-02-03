@@ -138,6 +138,9 @@ class WaypointScheme:
 
         # Add move relationships between nodes
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            print(
+                f"running {waypoint_id=} out of {len(waypoint_gs.waypoints)}, {waypoint_id/len(waypoint_gs.waypoints) * 100}%"
+            )
             for move_id, other_waypoint in waypoint_gs.waypoints.items():
                 if waypoint_id == move_id:
                     continue
