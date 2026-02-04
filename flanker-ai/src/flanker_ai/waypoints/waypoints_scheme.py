@@ -10,7 +10,6 @@ from flanker_ai.unabstracted.models import (
 )
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
-    MovableNode,
     WaypointAction,
     WaypointAssaultAction,
     WaypointFireAction,
@@ -98,7 +97,7 @@ class WaypointScheme:
             waypoint_gs.waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=[],
-                movable_nodes=[],
+                movable_paths={},
             )
 
         # Add combat units as waypoints and as abstracted units
@@ -109,7 +108,7 @@ class WaypointScheme:
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=[],
-                movable_nodes=[],
+                movable_paths={},
             )
             waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
@@ -119,11 +118,9 @@ class WaypointScheme:
                 no_fire=not fire_controls.can_reactive_fire,
             )
 
-        # Compute LOS polygon for all these waypoints
-        # TODO: just use simple LosSystem.check for now since
-        # we don't need proper move interrupt abstraction yet.
-        # The number of nodes we have is smaller than number of vertices,
-        # thus LosSystem.check is cheaper for fixed-sized predefined nodes.
+        # Compute LOS polygon for all these waypoints.
+        # The LOS polygon might be overkill for now,
+        # but future cases might need it
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
             waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
@@ -146,13 +143,6 @@ class WaypointScheme:
                 progress = waypoint_id / len(waypoint_gs.waypoints)
                 print(f"abstracting {progress * 100:.2f}%")
             for move_id, move_waypoint in waypoint_gs.waypoints.items():
-                if waypoint_id == move_id:
-                    continue
-                move_data = MovableNode(
-                    move_to_id=move_id,
-                    path_nodes=[],
-                )
-                waypoint.movable_nodes.append(move_data)
                 move_from = waypoint.position
                 move_to = move_waypoint.position
                 move_distance = (move_to - move_from).length()
@@ -178,7 +168,9 @@ class WaypointScheme:
                     _, t = node_entry
                     return t
 
-                move_data.path_nodes = [id for id, _ in sorted(path, key=sort_key)]
+                waypoint.movable_paths[move_id] = list(
+                    [id for id, _ in sorted(path, key=sort_key)]
+                )
 
         # Assemble the game state
         return waypoint_gs

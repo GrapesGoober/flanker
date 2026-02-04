@@ -15,16 +15,10 @@ class AbstractedCombatUnit:
 
 
 @dataclass
-class MovableNode:
-    move_to_id: int
-    path_nodes: list[int]
-
-
-@dataclass
 class WaypointNode:
     position: Vec2
     visible_nodes: list[int]
-    movable_nodes: list[MovableNode]
+    movable_paths: dict[int, list[int]]
 
 
 @dataclass
@@ -52,6 +46,7 @@ class WaypointFireAction:
 class WaypointAssaultAction:
     unit_id: int
     target_id: int
+    interrupt_at_id: int | None
 
 
 WaypointAction = WaypointMoveAction | WaypointFireAction | WaypointAssaultAction
