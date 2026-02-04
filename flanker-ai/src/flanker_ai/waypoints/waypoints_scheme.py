@@ -120,6 +120,10 @@ class WaypointScheme:
             )
 
         # Compute LOS polygon for all these waypoints
+        # TODO: just use simple LosSystem.check for now since
+        # we don't need proper move interrupt abstraction yet.
+        # The number of nodes we have is smaller than number of vertices,
+        # thus LosSystem.check is cheaper for fixed-sized predefined nodes.
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
             waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
@@ -138,63 +142,43 @@ class WaypointScheme:
 
         # Add move relationships between nodes
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
-            print(
-                f"running {waypoint_id=} out of {len(waypoint_gs.waypoints)}, {waypoint_id/len(waypoint_gs.waypoints) * 100}%"
-            )
-            for move_id, other_waypoint in waypoint_gs.waypoints.items():
+            if waypoint_id % 10 == 0:
+                progress = waypoint_id / len(waypoint_gs.waypoints)
+                print(f"abstracting {progress * 100:.2f}%")
+            for move_id, move_waypoint in waypoint_gs.waypoints.items():
                 if waypoint_id == move_id:
                     continue
                 move_data = MovableNode(
                     move_to_id=move_id,
-                    interrupts_waypoints={},
+                    path_nodes=[],
                 )
                 waypoint.movable_nodes.append(move_data)
                 move_from = waypoint.position
-                move_to = other_waypoint.position
+                move_to = move_waypoint.position
+                move_distance = (move_to - move_from).length()
+                direction = (move_to - move_from).normalized()
 
-                # Get move interrupt, if any
-                for visible_id in waypoint_gs.waypoints.keys():
-                    if visible_id == move_id:
+                # Define a set of nodes that forms the best path for this move
+                path: list[tuple[int, float]] = []
+                PATH_TOLERANCE = spacing * 0.5
+                for path_id, path_waypoint in waypoint_gs.waypoints.items():
+                    t = (path_waypoint.position - move_from).dot(direction)
+                    if t < 0:
                         continue
+                    if t > move_distance:
+                        continue
+                    distance_to_line = (
+                        (path_waypoint.position - move_from) - (direction * t)
+                    ).length()
+                    if distance_to_line > PATH_TOLERANCE:
+                        continue
+                    path.append((path_id, t))
 
-                    LOS_polygon = waypoint_LOS_polygons[visible_id]
-                    if IntersectGetter.is_inside(move_from, LOS_polygon):
-                        # The move line is at least inside LOS
-                        interrupt_pos = move_from
-                    else:
-                        intersections = IntersectGetter.get_intersects(
-                            line=(move_from, move_to),
-                            polyline=LOS_polygon,
-                        )
-                        if intersections:
-                            interrupt_pos = intersections[0]
-                        else:
-                            continue
+                def sort_key(node_entry: tuple[int, float]) -> float:
+                    _, t = node_entry
+                    return t
 
-                    # Interrupt found, find the nearest waypoint there
-                    best_interrupt_waypoint_id: int = 0
-                    best_interrupt_distance = float("inf")
-                    for (
-                        interrupt_waypoint_id,
-                        interrupt_waypoint,
-                    ) in waypoint_gs.waypoints.items():
-                        distance = (
-                            interrupt_waypoint.position - interrupt_pos
-                        ).length()
-                        if distance >= best_interrupt_distance:
-                            continue
-
-                        if not IntersectGetter.is_inside(
-                            interrupt_waypoint.position,
-                            LOS_polygon,
-                        ):
-                            continue
-
-                        best_interrupt_distance = distance
-                        best_interrupt_waypoint_id = interrupt_waypoint_id
-                    move_data.interrupts_waypoints[visible_id] = (
-                        best_interrupt_waypoint_id
-                    )
+                move_data.path_nodes = [id for id, _ in sorted(path, key=sort_key)]
 
         # Assemble the game state
         return waypoint_gs

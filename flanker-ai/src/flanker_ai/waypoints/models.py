@@ -17,7 +17,7 @@ class AbstractedCombatUnit:
 @dataclass
 class MovableNode:
     move_to_id: int
-    interrupts_waypoints: dict[int, int]  # KEY: visible, VALUE: waypoint
+    path_nodes: list[int]
 
 
 @dataclass
