@@ -1,3 +1,5 @@
+from typing import Literal
+
 from flanker_ai.unabstracted.models import (
     Action,
     ActionResult,
@@ -131,11 +133,29 @@ class WaypointScheme:
                 movable_paths={},
             )
 
+        # Add relationships between nodes
+        WaypointScheme._add_visibility_relationships(waypoint_gs, gs)
+        WaypointScheme._add_move_relationships(
+            waypoint_gs,
+            path_tolerance=spacing * 0.5,
+        )
+
+        # Assemble the game state
+        return waypoint_gs
+
+    @staticmethod
+    def add_combat_units(
+        waypoint_gs: WaypointsGraphGameState,
+        gs: GameState,
+    ) -> None:
+
         # Add combat units as waypoints and as abstracted units
+        new_waypoint_ids: list[int] = []
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
             waypoint_id = len(waypoint_gs.waypoints.keys())
+            new_waypoint_ids.append(waypoint_id)
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=[],
@@ -149,15 +169,12 @@ class WaypointScheme:
                 no_fire=not fire_controls.can_reactive_fire,
             )
 
-        # Add relationships between nodes
-        WaypointScheme._add_visibility_relationships(waypoint_gs, gs)
-        WaypointScheme._add_move_relationships(
-            waypoint_gs,
-            path_tolerance=spacing * 0.5,
+        # Update their visibility
+        WaypointScheme._add_visibility_relationships(
+            waypoint_gs=waypoint_gs,
+            gs=gs,
+            waypoint_ids_to_update=new_waypoint_ids,
         )
-
-        # Assemble the game state
-        return waypoint_gs
 
     @staticmethod
     def _get_grid_coordinates(
@@ -244,20 +261,28 @@ class WaypointScheme:
     def _add_visibility_relationships(
         waypoint_gs: WaypointsGraphGameState,
         gs: GameState,
+        waypoint_ids_to_update: list[int] | Literal["all"] = "all",
     ) -> None:
+        waypoints_to_update: list[tuple[int, WaypointNode]] = []
+        if waypoint_ids_to_update == "all":
+            waypoints_to_update = list(waypoint_gs.waypoints.items())
+        else:
+            waypoints_to_update = list(
+                [(id, waypoint_gs.waypoints[id]) for id in waypoint_ids_to_update]
+            )
+
         # Compute LOS polygon for all these waypoints.
         # The LOS polygon might be overkill for now,
         # but future cases might need it
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+        for waypoint_id, waypoint in waypoints_to_update:
             waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
                 gs, waypoint.position
             )
 
         # Add visibility relationships between nodes
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+        for waypoint_id, waypoint in waypoints_to_update:
             for other_id, other_waypoint in waypoint_gs.waypoints.items():
-
                 # Add visibility relationship
                 if IntersectGetter.is_inside(
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
