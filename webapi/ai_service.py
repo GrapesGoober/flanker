@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from flanker_ai.unabstracted.models import (
     ActionResult,
     AssaultActionResult,
@@ -21,19 +23,30 @@ from webapi.models import (
 )
 
 
+@dataclass
+class _AiPlayer:
+    player: WaypointsMinimaxPlayer
+
+
 class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
     def play_redfor(gs: GameState) -> None:
         """Runs the default REDFOR AI."""
-        player = WaypointsMinimaxPlayer(
-            gs=gs,
-            faction=InitiativeState.Faction.RED,
-            search_depth=4,
-            grid_spacing=20,
-            grid_offset=10,
-        )
+        if results := gs.query(_AiPlayer):
+            _, player_component = results[0]
+            player = player_component.player
+        else:
+            player = WaypointsMinimaxPlayer(
+                gs=gs,
+                faction=InitiativeState.Faction.RED,
+                search_depth=4,
+                grid_spacing=20,
+                grid_offset=10,
+            )
+            gs.add_entity(_AiPlayer(player))
+
         results = player.play_initiative()
         AiService._log_ai_action_results(gs, results)
 
