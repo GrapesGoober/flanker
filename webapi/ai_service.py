@@ -34,6 +34,7 @@ class AiService:
         if InitiativeSystem.get_initiative(gs) != AI_FACTION:
             return
         waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+        WaypointScheme.add_combat_units(waypoints_gs, gs, 10)
         halt_counter = 0
         while InitiativeSystem.get_initiative(gs) == AI_FACTION:
             # Runs the abstracted graph search
@@ -42,7 +43,8 @@ class AiService:
             result = WaypointScheme.apply_action(gs, waypoints_gs, current_action)
             if isinstance(result, InvalidAction):
                 InitiativeSystem.flip_initiative(gs)
-            if halt_counter > 100:
+                break
+            if halt_counter > 20:
                 InitiativeSystem.flip_initiative(gs)
                 print("AI is making too many useless actions, breaking")
             assert isinstance(result, ActionResult)
