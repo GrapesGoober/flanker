@@ -239,10 +239,7 @@ class WaypointScheme:
                 [(id, waypoint_gs.waypoints[id]) for id in waypoint_ids_to_update]
             )
 
-        for waypoint_id, waypoint in waypoints_to_update:
-            if waypoint_id % 10 == 0:
-                progress = waypoint_id / len(waypoint_gs.waypoints)
-                print(f"abstracting {progress * 100:.2f}%")
+        for _, waypoint in waypoints_to_update:
             for move_id, move_waypoint in waypoint_gs.waypoints.items():
                 move_from = waypoint.position
                 move_to = move_waypoint.position
