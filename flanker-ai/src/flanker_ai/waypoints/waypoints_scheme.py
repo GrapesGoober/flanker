@@ -97,6 +97,7 @@ class WaypointScheme:
             waypoint_gs.waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=[],
+                movable_paths={},
             )
 
         # Add combat units as waypoints and as abstracted units
@@ -107,6 +108,7 @@ class WaypointScheme:
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=[],
+                movable_paths={},
             )
             waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
@@ -116,7 +118,9 @@ class WaypointScheme:
                 no_fire=not fire_controls.can_reactive_fire,
             )
 
-        # Compute LOS polygon for all these waypoints
+        # Compute LOS polygon for all these waypoints.
+        # The LOS polygon might be overkill for now,
+        # but future cases might need it
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
         for waypoint_id, waypoint in waypoint_gs.waypoints.items():
             waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
@@ -132,6 +136,41 @@ class WaypointScheme:
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
                 ):
                     waypoint.visible_nodes.append(other_id)
+
+        # Add move relationships between nodes
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            if waypoint_id % 10 == 0:
+                progress = waypoint_id / len(waypoint_gs.waypoints)
+                print(f"abstracting {progress * 100:.2f}%")
+            for move_id, move_waypoint in waypoint_gs.waypoints.items():
+                move_from = waypoint.position
+                move_to = move_waypoint.position
+                move_distance = (move_to - move_from).length()
+                direction = (move_to - move_from).normalized()
+
+                # Define a set of nodes that forms the best path for this move
+                path: list[tuple[int, float]] = []
+                PATH_TOLERANCE = spacing * 0.5
+                for path_id, path_waypoint in waypoint_gs.waypoints.items():
+                    t = (path_waypoint.position - move_from).dot(direction)
+                    if t < 0:
+                        continue
+                    if t > move_distance:
+                        continue
+                    distance_to_line = (
+                        (path_waypoint.position - move_from) - (direction * t)
+                    ).length()
+                    if distance_to_line > PATH_TOLERANCE:
+                        continue
+                    path.append((path_id, t))
+
+                def sort_key(node_entry: tuple[int, float]) -> float:
+                    _, t = node_entry
+                    return t
+
+                waypoint.movable_paths[move_id] = list(
+                    [id for id, _ in sorted(path, key=sort_key)]
+                )
 
         # Assemble the game state
         return waypoint_gs

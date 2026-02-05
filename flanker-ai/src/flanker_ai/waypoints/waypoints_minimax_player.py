@@ -4,6 +4,7 @@ from itertools import count
 from typing import Iterator
 
 from flanker_ai.waypoints.models import (
+    AbstractedCombatUnit,
     WaypointAction,
     WaypointAssaultAction,
     WaypointFireAction,
@@ -84,17 +85,7 @@ class WaypointsMinimaxPlayer:
         match action:
             case WaypointMoveAction():
                 # Check for move interrupts
-                is_interrupted = False
-                target_waypoint = gs.waypoints[action.move_to_waypoint_id]
-                for enemy_unit in gs.combat_units.values():
-                    if enemy_unit.faction == current_unit.faction:
-                        continue
-                    if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
-                        continue
-                    if enemy_unit.current_waypoint_id in target_waypoint.visible_nodes:
-                        is_interrupted = True
-                        break
-                if is_interrupted:
+                if action.interrupt_at_id is not None:
                     # Assumes determinic for now
                     if current_unit.faction == InitiativeState.Faction.BLUE:
                         current_unit.status = CombatUnit.Status.PINNED
@@ -106,8 +97,9 @@ class WaypointsMinimaxPlayer:
                                 gs.initiative = InitiativeState.Faction.RED
                             case InitiativeState.Faction.RED:
                                 gs.initiative = InitiativeState.Faction.BLUE
-                # Assume that the target waypoint becomes move interrupt
-                current_unit.current_waypoint_id = action.move_to_waypoint_id
+                    current_unit.current_waypoint_id = action.interrupt_at_id
+                else:
+                    current_unit.current_waypoint_id = action.move_to_waypoint_id
 
             case WaypointFireAction():
                 # Assumes determinic for now
@@ -126,29 +118,17 @@ class WaypointsMinimaxPlayer:
             case WaypointAssaultAction():
                 # Check for move interrupts
                 enemy_unit = gs.combat_units[action.target_id]
-                target_waypoint = gs.waypoints[enemy_unit.current_waypoint_id]
-                for other_enemy_unit in gs.combat_units.values():
-                    if other_enemy_unit.faction == current_unit.faction:
-                        continue
-                    if other_enemy_unit.status == CombatUnit.Status.SUPPRESSED:
-                        continue
-                    # If the target waypoint can be seen by other_enemy_unit
-                    if (
-                        other_enemy_unit.current_waypoint_id
-                        in target_waypoint.visible_nodes
-                    ):
-                        current_unit.status = CombatUnit.Status.SUPPRESSED
-                        # Assume that the target waypoint becomes move interrupt
-                        current_unit.current_waypoint_id = (
-                            enemy_unit.current_waypoint_id
-                        )
-                        # Move failed
-                        match gs.initiative:
-                            case InitiativeState.Faction.BLUE:
-                                gs.initiative = InitiativeState.Faction.RED
-                            case InitiativeState.Faction.RED:
-                                gs.initiative = InitiativeState.Faction.BLUE
-                        return
+                if action.interrupt_at_id is not None:
+                    # Assumes determinic for now (assumes failed)
+                    current_unit.status = CombatUnit.Status.SUPPRESSED
+                    match gs.initiative:
+                        case InitiativeState.Faction.BLUE:
+                            gs.initiative = InitiativeState.Faction.RED
+                        case InitiativeState.Faction.RED:
+                            gs.initiative = InitiativeState.Faction.BLUE
+                    current_unit.current_waypoint_id = action.interrupt_at_id
+                else:
+                    current_unit.current_waypoint_id = enemy_unit.current_waypoint_id
 
                 # Runs the assault dice roll. Assumes determinic for now
                 if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
@@ -190,29 +170,68 @@ class WaypointsMinimaxPlayer:
                         )
 
                 # Add an assault action
-                # Technically, there should be movable check.
-                # But current abstraction scheme as a distance cap. So no.
                 if combat_unit.status == CombatUnit.Status.ACTIVE:
+                    # Only assault there if it's movable
+                    if (
+                        enemy_unit.current_waypoint_id
+                        not in current_waypoint.movable_paths.keys()
+                    ):
+                        continue
+                    interrupt = WaypointsMinimaxPlayer._get_move_interrupt(
+                        gs, combat_unit, enemy_unit.current_waypoint_id
+                    )
                     actions.append(
                         WaypointAssaultAction(
                             unit_id=combat_unit_id,
                             target_id=enemy_id,
+                            interrupt_at_id=interrupt,
                         )
                     )
 
             # Adds move actions later, for best alpha-beta pruning
             if combat_unit.status == CombatUnit.Status.ACTIVE:
                 # Filter some move actions to reduce branching factor
-                movable_waypoint_ids = list(gs.waypoints.keys())
-                for waypoint_id in random.sample(movable_waypoint_ids, 10):
+                movable_nodes = random.sample(
+                    population=list(current_waypoint.movable_paths.keys()),
+                    k=10,
+                )
+
+                for move_to_id in movable_nodes:
+                    interrupt = WaypointsMinimaxPlayer._get_move_interrupt(
+                        gs, combat_unit, move_to_id
+                    )
                     actions.append(
                         WaypointMoveAction(
                             unit_id=combat_unit_id,
-                            move_to_waypoint_id=waypoint_id,
+                            move_to_waypoint_id=move_to_id,
+                            interrupt_at_id=interrupt,
                         )
                     )
 
         return actions
+
+    @staticmethod
+    def _get_move_interrupt(
+        gs: WaypointsGraphGameState,
+        current_unit: AbstractedCombatUnit,
+        move_to_id: int,
+    ) -> int | None:
+        interrupt_at_id: int | None = None
+        current_waypoint = gs.waypoints[current_unit.current_waypoint_id]
+        for path_id in current_waypoint.movable_paths[move_to_id]:
+            if interrupt_at_id is not None:
+                break
+            for enemy_unit in gs.combat_units.values():
+                # Add interrupt if the enemy can reactive fire it
+                if enemy_unit.faction == current_unit.faction:
+                    continue
+                if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
+                    continue
+                enemy_visible_nodes = gs.waypoints[
+                    enemy_unit.current_waypoint_id
+                ].visible_nodes
+                if path_id in enemy_visible_nodes:
+                    return path_id
 
     @staticmethod
     def _evaluate(gs: WaypointsGraphGameState) -> float:

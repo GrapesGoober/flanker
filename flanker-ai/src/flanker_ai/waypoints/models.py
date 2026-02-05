@@ -18,6 +18,7 @@ class AbstractedCombatUnit:
 class WaypointNode:
     position: Vec2
     visible_nodes: list[int]
+    movable_paths: dict[int, list[int]]
 
 
 @dataclass
@@ -32,6 +33,7 @@ class WaypointsGraphGameState:  # Used for the minimax
 class WaypointMoveAction:
     unit_id: int
     move_to_waypoint_id: int
+    interrupt_at_id: int | None
 
 
 @dataclass
@@ -44,6 +46,7 @@ class WaypointFireAction:
 class WaypointAssaultAction:
     unit_id: int
     target_id: int
+    interrupt_at_id: int | None
 
 
 WaypointAction = WaypointMoveAction | WaypointFireAction | WaypointAssaultAction
