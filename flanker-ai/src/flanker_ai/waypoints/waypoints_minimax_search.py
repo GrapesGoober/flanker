@@ -87,16 +87,7 @@ class WaypointsMinimaxSearch:
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now
-                    if current_unit.faction == InitiativeState.Faction.BLUE:
-                        current_unit.status = CombatUnit.Status.PINNED
-                    else:
-                        current_unit.status = CombatUnit.Status.SUPPRESSED
-                        # Move Failed
-                        match gs.initiative:
-                            case InitiativeState.Faction.BLUE:
-                                gs.initiative = InitiativeState.Faction.RED
-                            case InitiativeState.Faction.RED:
-                                gs.initiative = InitiativeState.Faction.BLUE
+                    current_unit.status = CombatUnit.Status.PINNED
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
@@ -104,16 +95,7 @@ class WaypointsMinimaxSearch:
             case WaypointFireAction():
                 # Assumes determinic for now
                 enemy_unit = gs.combat_units[action.target_id]
-                if enemy_unit.faction == InitiativeState.Faction.BLUE:
-                    enemy_unit.status = CombatUnit.Status.PINNED
-                    # Firing failed
-                    match gs.initiative:
-                        case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
-                        case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
-                else:
-                    enemy_unit.status = CombatUnit.Status.SUPPRESSED
+                enemy_unit.status = CombatUnit.Status.SUPPRESSED
 
             case WaypointAssaultAction():
                 # Check for move interrupts

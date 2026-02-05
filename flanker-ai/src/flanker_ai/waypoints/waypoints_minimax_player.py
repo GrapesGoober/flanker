@@ -34,6 +34,7 @@ class WaypointsMinimaxPlayer:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
             return []
 
+        self._waypoints_gs.initiative = self._faction
         halt_counter = 0
         action_results: list[ActionResult] = []
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
