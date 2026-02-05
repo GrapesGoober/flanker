@@ -43,139 +43,6 @@ class WaypointScheme:
     """
 
     @staticmethod
-    def create_grid_waypoints(
-        gs: GameState,
-        spacing: float,
-        offset: float,
-    ) -> WaypointsGraphGameState:
-
-        # Build an array of grids within the boundary
-        mask = TerrainFeature.Flag.BOUNDARY
-        boundary_vertices: list[Vec2] | None = None
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-
-        assert boundary_vertices, "Can't abstract; boundary terrain missing!"
-
-        # Boundary terrrain might not be a box
-        min_x = min(v.x for v in boundary_vertices) + offset
-        max_x = max(v.x for v in boundary_vertices)
-        min_y = min(v.y for v in boundary_vertices) + offset
-        max_y = max(v.y for v in boundary_vertices)
-
-        # Generates waypoints at specified spacing
-        points: list[Vec2] = []
-        y = min_y
-        while y <= max_y:
-            x = min_x
-            while x <= max_x:
-                p = Vec2(x, y)
-
-                # Keep only points inside polygon
-                if IntersectGetter.is_inside(p, boundary_vertices):
-                    points.append(p)
-
-                x += spacing
-            y += spacing
-
-        # Assemble waypoint-graph game state
-        initiative = InitiativeSystem.get_initiative(gs)
-        waypoint_gs = WaypointsGraphGameState(
-            waypoints={},
-            combat_units={},
-            initiative=initiative,
-        )
-
-        # Add grid points as a waypoint
-        for point_id, point in enumerate(points):
-            waypoint_gs.waypoints[point_id] = WaypointNode(
-                position=point,
-                visible_nodes=[],
-                movable_paths={},
-            )
-
-        # Add combat units as waypoints and as abstracted units
-        for unit_id, transform, combat_unit, fire_controls in gs.query(
-            Transform, CombatUnit, FireControls
-        ):
-            waypoint_id = len(waypoint_gs.waypoints.keys())
-            waypoint_gs.waypoints[waypoint_id] = WaypointNode(
-                position=transform.position,
-                visible_nodes=[],
-                movable_paths={},
-            )
-            waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
-                unit_id=unit_id,
-                current_waypoint_id=waypoint_id,
-                status=combat_unit.status,
-                faction=combat_unit.faction,
-                no_fire=not fire_controls.can_reactive_fire,
-            )
-
-        # Compute LOS polygon for all these waypoints.
-        # The LOS polygon might be overkill for now,
-        # but future cases might need it
-        waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
-            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
-                gs, waypoint.position
-            )
-
-        # Add visibility relationships between nodes
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
-            for other_id, other_waypoint in waypoint_gs.waypoints.items():
-
-                # Add visibility relationship
-                if IntersectGetter.is_inside(
-                    other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
-                ):
-                    waypoint.visible_nodes.append(other_id)
-
-        # Add move relationships between nodes
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
-            if waypoint_id % 10 == 0:
-                progress = waypoint_id / len(waypoint_gs.waypoints)
-                print(f"abstracting {progress * 100:.2f}%")
-            for move_id, move_waypoint in waypoint_gs.waypoints.items():
-                move_from = waypoint.position
-                move_to = move_waypoint.position
-                move_distance = (move_to - move_from).length()
-                direction = (move_to - move_from).normalized()
-
-                # Define a set of nodes that forms the best path for this move
-                path: list[tuple[int, float]] = []
-                PATH_TOLERANCE = spacing * 0.5
-                for path_id, path_waypoint in waypoint_gs.waypoints.items():
-                    t = (path_waypoint.position - move_from).dot(direction)
-                    if t < 0:
-                        continue
-                    if t > move_distance:
-                        continue
-                    distance_to_line = (
-                        (path_waypoint.position - move_from) - (direction * t)
-                    ).length()
-                    if distance_to_line > PATH_TOLERANCE:
-                        continue
-                    path.append((path_id, t))
-
-                def sort_key(node_entry: tuple[int, float]) -> float:
-                    _, t = node_entry
-                    return t
-
-                waypoint.movable_paths[move_id] = list(
-                    [id for id, _ in sorted(path, key=sort_key)]
-                )
-
-        # Assemble the game state
-        return waypoint_gs
-
-    @staticmethod
     def deabstract_action(
         gs: WaypointsGraphGameState,
         action: WaypointAction,
@@ -239,3 +106,160 @@ class WaypointScheme:
         action = WaypointScheme.deabstract_action(waypoint_gs, waypoint_action)
         result = WaypointScheme.perform_action(gs, action)
         return result
+
+    @staticmethod
+    def create_grid_waypoints(
+        gs: GameState,
+        spacing: float,
+        offset: float,
+    ) -> WaypointsGraphGameState:
+
+        # Assemble waypoint-graph game state
+        initiative = InitiativeSystem.get_initiative(gs)
+        waypoint_gs = WaypointsGraphGameState(
+            waypoints={},
+            combat_units={},
+            initiative=initiative,
+        )
+
+        # Add grid points as a waypoint
+        points = WaypointScheme._get_grid_coordinates(gs, spacing, offset)
+        for point_id, point in enumerate(points):
+            waypoint_gs.waypoints[point_id] = WaypointNode(
+                position=point,
+                visible_nodes=[],
+                movable_paths={},
+            )
+
+        # Add combat units as waypoints and as abstracted units
+        for unit_id, transform, combat_unit, fire_controls in gs.query(
+            Transform, CombatUnit, FireControls
+        ):
+            waypoint_id = len(waypoint_gs.waypoints.keys())
+            waypoint_gs.waypoints[waypoint_id] = WaypointNode(
+                position=transform.position,
+                visible_nodes=[],
+                movable_paths={},
+            )
+            waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
+                unit_id=unit_id,
+                current_waypoint_id=waypoint_id,
+                status=combat_unit.status,
+                faction=combat_unit.faction,
+                no_fire=not fire_controls.can_reactive_fire,
+            )
+
+        # Add relationships between nodes
+        WaypointScheme._add_visibility_relationships(waypoint_gs, gs)
+        WaypointScheme._add_move_relationships(
+            waypoint_gs,
+            path_tolerance=spacing * 0.5,
+        )
+
+        # Assemble the game state
+        return waypoint_gs
+
+    @staticmethod
+    def _get_grid_coordinates(
+        gs: GameState,
+        spacing: float,
+        offset: float,
+    ) -> list[Vec2]:
+
+        # Build an array of grids within the boundary
+        mask = TerrainFeature.Flag.BOUNDARY
+        boundary_vertices: list[Vec2] | None = None
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            if terrain.flag & mask:
+                boundary_vertices = LinearTransform.apply(
+                    terrain.vertices,
+                    transform,
+                )
+                if terrain.is_closed_loop:
+                    boundary_vertices.append(boundary_vertices[0])
+
+        assert boundary_vertices, "Can't abstract; boundary terrain missing!"
+
+        # Boundary terrrain might not be a box
+        min_x = min(v.x for v in boundary_vertices) + offset
+        max_x = max(v.x for v in boundary_vertices)
+        min_y = min(v.y for v in boundary_vertices) + offset
+        max_y = max(v.y for v in boundary_vertices)
+
+        # Generates waypoints at specified spacing
+        points: list[Vec2] = []
+        y = min_y
+        while y <= max_y:
+            x = min_x
+            while x <= max_x:
+                p = Vec2(x, y)
+
+                # Keep only points inside polygon
+                if IntersectGetter.is_inside(p, boundary_vertices):
+                    points.append(p)
+
+                x += spacing
+            y += spacing
+        return points
+
+    @staticmethod
+    def _add_move_relationships(
+        waypoint_gs: WaypointsGraphGameState,
+        path_tolerance: float,
+    ) -> None:
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            if waypoint_id % 10 == 0:
+                progress = waypoint_id / len(waypoint_gs.waypoints)
+                print(f"abstracting {progress * 100:.2f}%")
+            for move_id, move_waypoint in waypoint_gs.waypoints.items():
+                move_from = waypoint.position
+                move_to = move_waypoint.position
+                move_distance = (move_to - move_from).length()
+                direction = (move_to - move_from).normalized()
+
+                # Define a set of nodes that forms the best path for this move
+                path: list[tuple[int, float]] = []
+                for path_id, path_waypoint in waypoint_gs.waypoints.items():
+                    t = (path_waypoint.position - move_from).dot(direction)
+                    if t < 0:
+                        continue
+                    if t > move_distance:
+                        continue
+                    distance_to_line = (
+                        (path_waypoint.position - move_from) - (direction * t)
+                    ).length()
+                    if distance_to_line > path_tolerance:
+                        continue
+                    path.append((path_id, t))
+
+                def sort_key(node_entry: tuple[int, float]) -> float:
+                    _, t = node_entry
+                    return t
+
+                waypoint.movable_paths[move_id] = list(
+                    [id for id, _ in sorted(path, key=sort_key)]
+                )
+
+    @staticmethod
+    def _add_visibility_relationships(
+        waypoint_gs: WaypointsGraphGameState,
+        gs: GameState,
+    ) -> None:
+        # Compute LOS polygon for all these waypoints.
+        # The LOS polygon might be overkill for now,
+        # but future cases might need it
+        waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
+                gs, waypoint.position
+            )
+
+        # Add visibility relationships between nodes
+        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+            for other_id, other_waypoint in waypoint_gs.waypoints.items():
+
+                # Add visibility relationship
+                if IntersectGetter.is_inside(
+                    other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
+                ):
+                    waypoint.visible_nodes.append(other_id)
