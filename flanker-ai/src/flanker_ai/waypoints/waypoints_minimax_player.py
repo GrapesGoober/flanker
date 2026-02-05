@@ -219,7 +219,7 @@ class WaypointsMinimaxPlayer:
         interrupt_at_id: int | None = None
         current_waypoint = gs.waypoints[current_unit.current_waypoint_id]
         for path_id in current_waypoint.movable_paths[move_to_id]:
-            if interrupt_at_id is not None:
+            if interrupt_at_id is not None:  # If found interrupt, stop search
                 break
             for enemy_unit in gs.combat_units.values():
                 # Add interrupt if the enemy can reactive fire it

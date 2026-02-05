@@ -36,14 +36,13 @@ def run_abstraction() -> None:
 def run_search() -> None:
     assert waypoints_gs
     global waypoint_actions
+    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
     _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
-
-    print("done, searching...")
 
 
 print("abstracting...")
 abstraction_time = timeit(run_abstraction, number=1)
-print("done, searching...")
+print("done, adding combat units and searching...")
 searching_time = timeit(run_search, number=1)
 print(waypoint_actions)
 

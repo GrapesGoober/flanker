@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # Plot the waypoints in blue
     print("Creating waypoints...")
     waypoint_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
-    WaypointScheme.add_combat_units(waypoint_gs, gs)
+    WaypointScheme.add_combat_units(waypoint_gs, gs, path_tolerance=10)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []

@@ -129,13 +129,13 @@ class WaypointScheme:
         for point_id, point in enumerate(points):
             waypoint_gs.waypoints[point_id] = WaypointNode(
                 position=point,
-                visible_nodes=[],
+                visible_nodes=set(),
                 movable_paths={},
             )
 
         # Add relationships between nodes
         WaypointScheme._add_visibility_relationships(waypoint_gs, gs)
-        WaypointScheme._add_move_relationships(
+        WaypointScheme._add_path_relationships(
             waypoint_gs,
             path_tolerance=spacing * 0.5,
         )
@@ -147,6 +147,7 @@ class WaypointScheme:
     def add_combat_units(
         waypoint_gs: WaypointsGraphGameState,
         gs: GameState,
+        path_tolerance: float,
     ) -> None:
 
         # Add combat units as waypoints and as abstracted units
@@ -158,7 +159,7 @@ class WaypointScheme:
             new_waypoint_ids.append(waypoint_id)
             waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
-                visible_nodes=[],
+                visible_nodes=set(),
                 movable_paths={},
             )
             waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
@@ -169,7 +170,12 @@ class WaypointScheme:
                 no_fire=not fire_controls.can_reactive_fire,
             )
 
-        # Update their visibility
+        # Update their relationships
+        WaypointScheme._add_path_relationships(
+            waypoint_gs=waypoint_gs,
+            path_tolerance=path_tolerance,
+            waypoint_ids_to_update=new_waypoint_ids,
+        )
         WaypointScheme._add_visibility_relationships(
             waypoint_gs=waypoint_gs,
             gs=gs,
@@ -220,11 +226,20 @@ class WaypointScheme:
         return points
 
     @staticmethod
-    def _add_move_relationships(
+    def _add_path_relationships(
         waypoint_gs: WaypointsGraphGameState,
         path_tolerance: float,
+        waypoint_ids_to_update: list[int] | Literal["all"] = "all",
     ) -> None:
-        for waypoint_id, waypoint in waypoint_gs.waypoints.items():
+        waypoints_to_update: list[tuple[int, WaypointNode]] = []
+        if waypoint_ids_to_update == "all":
+            waypoints_to_update = list(waypoint_gs.waypoints.items())
+        else:
+            waypoints_to_update = list(
+                [(id, waypoint_gs.waypoints[id]) for id in waypoint_ids_to_update]
+            )
+
+        for waypoint_id, waypoint in waypoints_to_update:
             if waypoint_id % 10 == 0:
                 progress = waypoint_id / len(waypoint_gs.waypoints)
                 print(f"abstracting {progress * 100:.2f}%")
@@ -287,4 +302,5 @@ class WaypointScheme:
                 if IntersectGetter.is_inside(
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
                 ):
-                    waypoint.visible_nodes.append(other_id)
+                    waypoint.visible_nodes.add(other_id)
+                    other_waypoint.visible_nodes.add(waypoint_id)
