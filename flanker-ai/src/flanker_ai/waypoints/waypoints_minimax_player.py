@@ -51,8 +51,8 @@ class WaypointsMinimaxPlayer:
             )
             # Check redundant moves (stop search)
             if halt_counter > self._MAX_ACTION_PER_INITIATIVE:
-                InitiativeSystem.flip_initiative(self._gs)
                 print("AI made useless actions, breaking")
+                InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
             _, waypoint_actions = WaypointsMinimaxSearch.play(
@@ -61,6 +61,8 @@ class WaypointsMinimaxPlayer:
             )
             if len(waypoint_actions) == 0:
                 print("No valid action for AI, breaking")
+                InitiativeSystem.flip_initiative(self._gs)
+                break
 
             current_action = waypoint_actions[0]
             result = WaypointScheme.apply_action(
@@ -69,8 +71,8 @@ class WaypointsMinimaxPlayer:
                 waypoint_action=current_action,
             )
             if isinstance(result, InvalidAction):
-                InitiativeSystem.flip_initiative(self._gs)
                 print("AI made invalid action, breaking")
+                InitiativeSystem.flip_initiative(self._gs)
                 break
 
             action_results.append(result)
