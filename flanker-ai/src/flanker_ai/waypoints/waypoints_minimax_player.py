@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Callable
 
 from flanker_ai.unabstracted.models import ActionResult
 from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
@@ -30,7 +31,10 @@ class WaypointsMinimaxPlayer:
         self._depth = search_depth
         self._MAX_ACTION_PER_INITIATIVE = max_action_per_initiative
 
-    def play_initiative(self) -> list[ActionResult]:
+    def play_initiative(
+        self,
+        action_callback: Callable[[ActionResult], None] | None = None,
+    ) -> list[ActionResult]:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
             return []
 
@@ -39,11 +43,11 @@ class WaypointsMinimaxPlayer:
         action_results: list[ActionResult] = []
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
             # Prepare the abstraction for searching
-            new_gs = deepcopy(self._waypoints_gs)
+            new_waypoint_gs = deepcopy(self._waypoints_gs)
             WaypointScheme.add_combat_units(
-                new_gs,
+                new_waypoint_gs,
                 self._gs,
-                path_tolerance=self._grid_spacing,
+                path_tolerance=self._grid_spacing / 2,
             )
             # Check redundant moves (stop search)
             if halt_counter > self._MAX_ACTION_PER_INITIATIVE:
@@ -52,7 +56,7 @@ class WaypointsMinimaxPlayer:
                 break
             # Runs the abstracted graph search
             _, waypoint_actions = WaypointsMinimaxSearch.play(
-                new_gs,
+                new_waypoint_gs,
                 depth=self._depth,
             )
             if len(waypoint_actions) == 0:
@@ -61,7 +65,7 @@ class WaypointsMinimaxPlayer:
             current_action = waypoint_actions[0]
             result = WaypointScheme.apply_action(
                 gs=self._gs,
-                waypoint_gs=new_gs,
+                waypoint_gs=new_waypoint_gs,
                 waypoint_action=current_action,
             )
             if isinstance(result, InvalidAction):
@@ -71,4 +75,6 @@ class WaypointsMinimaxPlayer:
 
             action_results.append(result)
             halt_counter += 1
+            if action_callback:
+                action_callback(result)
         return action_results
