@@ -4,7 +4,7 @@ from timeit import timeit
 from typing import Any
 
 from flanker_ai.waypoints.models import WaypointAction, WaypointsGraphGameState
-from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -37,7 +37,7 @@ def run_search() -> None:
     assert waypoints_gs
     global waypoint_actions
     WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
-    _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
+    _, waypoint_actions = WaypointsMinimaxSearch.play(waypoints_gs, depth=4)
 
 
 print("abstracting...")
