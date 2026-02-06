@@ -26,6 +26,7 @@ from webapi.models import (
 
 @dataclass
 class _AiPlayer:
+    faction: InitiativeState.Faction
     player: WaypointsMinimaxPlayer
 
 
@@ -33,32 +34,40 @@ class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
-    def play_redfor(gs: GameState) -> None:
-        """Runs the default REDFOR AI."""
-        if results := gs.query(_AiPlayer):
-            _, player_component = results[0]
+    def get_player(
+        gs: GameState, faction: InitiativeState.Faction
+    ) -> WaypointsMinimaxPlayer:
+
+        player: WaypointsMinimaxPlayer | None = None
+        for _, player_component in gs.query(_AiPlayer):
+            if player_component.faction != faction:
+                continue
             player = player_component.player
-        else:
+        if player is None:
             player = WaypointsMinimaxPlayer(
                 gs=gs,
-                faction=InitiativeState.Faction.RED,
+                faction=faction,
                 search_depth=4,
                 grid_spacing=20,
                 grid_offset=10,
             )
-            gs.add_entity(_AiPlayer(player))
+            gs.add_entity(_AiPlayer(faction=faction, player=player))
+        return player
 
-        def log_results(result: ActionResult) -> None:
-            result_gs = result.result_gs
-            AiService._log_ai_action_results(result_gs, [result])
+    @staticmethod
+    def play_redfor(gs: GameState) -> None:
+        """Runs the default REDFOR AI."""
+
+        player = AiService.get_player(gs, InitiativeState.Faction.RED)
 
         def print_actions_sequence(actions: list[WaypointAction]) -> None:
             print(f"Action sequences {actions}")
 
         results = player.play_initiative(
-            action_callback=log_results,
             sequence_callback=print_actions_sequence,
         )
+
+        AiService._log_ai_action_results(gs, results)
 
     @staticmethod
     def _log_ai_action_results(
@@ -115,3 +124,18 @@ class AiService:
         _, results = TreeSearchPlayer.play_minimax(gs, depth)
         LoggingService.clear_logs(gs)
         AiService._log_ai_action_results(gs, results)
+
+    # @staticmethod
+    # def upsert_waypoints(gs: GameState, points: list[Vec2]) -> None:
+    #     if results := gs.query(_AiPlayer):
+    #         _, player_component = results[0]
+    #         player = player_component.player
+    #     else:
+    #         player = WaypointsMinimaxPlayer(
+    #             gs=gs,
+    #             faction=InitiativeState.Faction.RED,
+    #             search_depth=4,
+    #             grid_spacing=20,
+    #             grid_offset=10,
+    #         )
+    #         gs.add_entity(_AiPlayer(player, points=[]))

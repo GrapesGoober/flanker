@@ -34,7 +34,6 @@ class WaypointsMinimaxPlayer:
 
     def play_initiative(
         self,
-        action_callback: Callable[[ActionResult], None] | None = None,
         sequence_callback: Callable[[list[WaypointAction]], None] | None = None,
     ) -> list[ActionResult]:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
@@ -77,11 +76,11 @@ class WaypointsMinimaxPlayer:
                 print("AI made invalid action, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
-
+            # These result objects would be used for logging
+            # Thus, prevent mutation by creating a copy
+            result = deepcopy(result)
             action_results.append(result)
             halt_counter += 1
-            if action_callback:
-                action_callback(result)
             if sequence_callback:
                 sequence_callback(waypoint_actions)
         return action_results

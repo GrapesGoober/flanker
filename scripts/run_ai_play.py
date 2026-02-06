@@ -3,7 +3,6 @@ from inspect import isclass
 from typing import Any
 
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
-from flanker_ai.waypoints.waypoints_scheme import ActionResult
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -47,14 +46,13 @@ if __name__ == "__main__":
         grid_offset=10,
     )
 
-    def print_result_red(result: ActionResult) -> None:
-        print(f"RED made action {result}")
-
-    def print_result_blue(result: ActionResult) -> None:
-        print(f"BLUE made action {result}")
-
     while ObjectiveSystem.get_winning_faction(gs) == None:
-        red_player.play_initiative(action_callback=print_result_red)
-        blue_player.play_initiative(action_callback=print_result_blue)
+        results = red_player.play_initiative()
+        if results:
+            print(f"RED made actions {results}")
+
+        results = blue_player.play_initiative()
+        if results:
+            print(f"BLUE made actions {results}")
 
     print(f"Winner is {ObjectiveSystem.get_winning_faction(gs)}")
