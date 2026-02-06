@@ -47,11 +47,11 @@ class AiService:
             )
             gs.add_entity(_AiPlayer(player))
 
-        def callback(result: ActionResult) -> None:
+        def log_results(result: ActionResult) -> None:
             result_gs = result.result_gs
             AiService._log_ai_action_results(result_gs, [result])
 
-        results = player.play_initiative(action_callback=callback)
+        results = player.play_initiative(action_callback=log_results)
 
     @staticmethod
     def _log_ai_action_results(

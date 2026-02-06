@@ -1,7 +1,5 @@
 import random
 from dataclasses import replace
-from itertools import count
-from typing import Iterator
 
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
@@ -28,7 +26,6 @@ class WaypointsMinimaxSearch:
         depth: int,
         alpha: float = float("-inf"),
         beta: float = float("inf"),
-        iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[WaypointAction]]:
 
         actions = WaypointsMinimaxSearch._get_actions(gs)
@@ -41,17 +38,11 @@ class WaypointsMinimaxSearch:
         for action in actions:
             new_gs = WaypointsMinimaxSearch._copy_gs(gs)
             WaypointsMinimaxSearch._perform_action(new_gs, action)
-            if not iter_counter:
-                iter_counter = count(0)
-            iter = next(iter_counter)
-            if iter % 5000 == 0:
-                print(f"Evaluated {iter=}")
             score, future_actions = WaypointsMinimaxSearch.play(
                 new_gs,
                 depth - 1,
                 alpha=alpha,
                 beta=beta,
-                iter_counter=iter_counter,
             )
             if is_maximizing:
                 if score > best_score:
