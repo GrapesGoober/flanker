@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import Callable
 
 from flanker_ai.unabstracted.models import ActionResult
+from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
@@ -34,6 +35,7 @@ class WaypointsMinimaxPlayer:
     def play_initiative(
         self,
         action_callback: Callable[[ActionResult], None] | None = None,
+        sequence_callback: Callable[[list[WaypointAction]], None] | None = None,
     ) -> list[ActionResult]:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
             return []
@@ -41,6 +43,7 @@ class WaypointsMinimaxPlayer:
         self._waypoints_gs.initiative = self._faction
         halt_counter = 0
         action_results: list[ActionResult] = []
+        # TODO: should this while loop be done away? Let caller manage it.
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
             # Prepare the abstraction for searching
             new_waypoint_gs = deepcopy(self._waypoints_gs)
@@ -79,4 +82,6 @@ class WaypointsMinimaxPlayer:
             halt_counter += 1
             if action_callback:
                 action_callback(result)
+            if sequence_callback:
+                sequence_callback(waypoint_actions)
         return action_results

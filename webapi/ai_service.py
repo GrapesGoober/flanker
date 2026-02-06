@@ -7,6 +7,7 @@ from flanker_ai.unabstracted.models import (
     MoveActionResult,
 )
 from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
+from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -51,7 +52,13 @@ class AiService:
             result_gs = result.result_gs
             AiService._log_ai_action_results(result_gs, [result])
 
-        results = player.play_initiative(action_callback=log_results)
+        def print_actions_sequence(actions: list[WaypointAction]) -> None:
+            print(f"Action sequences {actions}")
+
+        results = player.play_initiative(
+            action_callback=log_results,
+            sequence_callback=print_actions_sequence,
+        )
 
     @staticmethod
     def _log_ai_action_results(
