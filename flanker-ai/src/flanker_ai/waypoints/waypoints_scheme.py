@@ -110,10 +110,10 @@ class WaypointScheme:
         return result
 
     @staticmethod
-    def create_grid_waypoints(
+    def create_base_waypoints(
         gs: GameState,
-        spacing: float,
-        offset: float,
+        points: list[Vec2],
+        path_tolerance: float,
     ) -> WaypointsGraphGameState:
 
         # Assemble waypoint-graph game state
@@ -125,7 +125,6 @@ class WaypointScheme:
         )
 
         # Add grid points as a waypoint
-        points = WaypointScheme._get_grid_coordinates(gs, spacing, offset)
         for point_id, point in enumerate(points):
             waypoint_gs.waypoints[point_id] = WaypointNode(
                 position=point,
@@ -137,7 +136,7 @@ class WaypointScheme:
         WaypointScheme._add_visibility_relationships(waypoint_gs, gs)
         WaypointScheme._add_path_relationships(
             waypoint_gs,
-            path_tolerance=spacing * 0.5,
+            path_tolerance=path_tolerance,
         )
 
         # Assemble the game state
@@ -183,7 +182,7 @@ class WaypointScheme:
         )
 
     @staticmethod
-    def _get_grid_coordinates(
+    def get_grid_coordinates(
         gs: GameState,
         spacing: float,
         offset: float,

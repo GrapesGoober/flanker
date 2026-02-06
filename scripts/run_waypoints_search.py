@@ -30,7 +30,11 @@ waypoint_actions: list[WaypointAction] | None = None
 
 def run_abstraction() -> None:
     global waypoints_gs
-    waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+    waypoints_gs = WaypointScheme.create_base_waypoints(
+        gs=gs,
+        points=WaypointScheme.get_grid_coordinates(gs, 20, 10),
+        path_tolerance=10,
+    )
 
 
 def run_search() -> None:

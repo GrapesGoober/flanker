@@ -3,6 +3,7 @@ from inspect import isclass
 from typing import Any
 
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -34,16 +35,16 @@ if __name__ == "__main__":
         gs,
         InitiativeState.Faction.RED,
         search_depth=4,
-        grid_spacing=20,
-        grid_offset=10,
+        waypoint_coordinates=WaypointScheme.get_grid_coordinates(gs, 20, 10),
+        path_tolerance=10,
     )
     print("Creating BLUE player...")
     blue_player = WaypointsMinimaxPlayer(
         gs,
         InitiativeState.Faction.BLUE,
         search_depth=4,
-        grid_spacing=20,
-        grid_offset=10,
+        waypoint_coordinates=WaypointScheme.get_grid_coordinates(gs, 20, 10),
+        path_tolerance=10,
     )
 
     while ObjectiveSystem.get_winning_faction(gs) == None:

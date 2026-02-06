@@ -9,8 +9,10 @@ from flanker_ai.unabstracted.models import (
 from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
 from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
+from flanker_core.models.vec2 import Vec2
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
@@ -24,41 +26,59 @@ from webapi.models import (
 )
 
 
+# TODO: this AI config things could be moved to flanker_ai package
+# keep the configuration logic shared and standardized.
 @dataclass
-class _AiPlayer:
+class _AiConfig:
     faction: InitiativeState.Faction
-    player: WaypointsMinimaxPlayer
+    points: list[Vec2]
+    player: WaypointsMinimaxPlayer | None = None
 
 
 class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
-    def get_player(
+    def _get_ai_config(gs: GameState, faction: InitiativeState.Faction) -> _AiConfig:
+        # Get the singleton config. If not exist, create a new empty one
+        config: _AiConfig | None = None
+        for _, c in gs.query(_AiConfig):
+            if c.faction != faction:
+                continue
+            config = c
+            break
+        if config is None:
+            gs.add_entity(config := _AiConfig(faction=faction, points=[]))
+        return config
+
+    @staticmethod
+    def _get_player(
         gs: GameState, faction: InitiativeState.Faction
     ) -> WaypointsMinimaxPlayer:
 
-        player: WaypointsMinimaxPlayer | None = None
-        for _, player_component in gs.query(_AiPlayer):
-            if player_component.faction != faction:
-                continue
-            player = player_component.player
-        if player is None:
-            player = WaypointsMinimaxPlayer(
+        config = AiService._get_ai_config(gs, faction)
+
+        # Add a new player if not exist
+        if config.player is None:
+            if config.points == []:
+                config.points = WaypointScheme.get_grid_coordinates(
+                    gs, spacing=20, offset=10
+                )
+            config.player = WaypointsMinimaxPlayer(
                 gs=gs,
                 faction=faction,
                 search_depth=4,
-                grid_spacing=20,
-                grid_offset=10,
+                waypoint_coordinates=config.points,
+                path_tolerance=10,
             )
-            gs.add_entity(_AiPlayer(faction=faction, player=player))
-        return player
+
+        return config.player
 
     @staticmethod
     def play_redfor(gs: GameState) -> None:
         """Runs the default REDFOR AI."""
 
-        player = AiService.get_player(gs, InitiativeState.Faction.RED)
+        player = AiService._get_player(gs, InitiativeState.Faction.RED)
 
         def print_actions_sequence(actions: list[WaypointAction]) -> None:
             print(f"Action sequences {actions}")
@@ -125,17 +145,11 @@ class AiService:
         LoggingService.clear_logs(gs)
         AiService._log_ai_action_results(gs, results)
 
-    # @staticmethod
-    # def upsert_waypoints(gs: GameState, points: list[Vec2]) -> None:
-    #     if results := gs.query(_AiPlayer):
-    #         _, player_component = results[0]
-    #         player = player_component.player
-    #     else:
-    #         player = WaypointsMinimaxPlayer(
-    #             gs=gs,
-    #             faction=InitiativeState.Faction.RED,
-    #             search_depth=4,
-    #             grid_spacing=20,
-    #             grid_offset=10,
-    #         )
-    #         gs.add_entity(_AiPlayer(player, points=[]))
+    @staticmethod
+    def set_ai_waypoints(
+        gs: GameState,
+        points: list[Vec2],
+        faction: InitiativeState.Faction,
+    ) -> None:
+        config = AiService._get_ai_config(gs, faction)
+        config.points = points

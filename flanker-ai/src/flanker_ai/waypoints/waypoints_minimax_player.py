@@ -8,6 +8,7 @@ from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
@@ -17,18 +18,18 @@ class WaypointsMinimaxPlayer:
         gs: GameState,
         faction: InitiativeState.Faction,
         search_depth: int,
-        grid_spacing: float,
-        grid_offset: float,
+        waypoint_coordinates: list[Vec2],
+        path_tolerance: float,
         max_action_per_initiative: int = 20,
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
-        self._waypoints_gs = WaypointScheme.create_grid_waypoints(
+        self._waypoints_gs = WaypointScheme.create_base_waypoints(
             gs,
-            spacing=grid_spacing,
-            offset=grid_offset,
+            points=waypoint_coordinates,
+            path_tolerance=path_tolerance,
         )
-        self._grid_spacing = grid_spacing
+        self._path_tolerance = path_tolerance
         self._depth = search_depth
         self._MAX_ACTION_PER_INITIATIVE = max_action_per_initiative
 
@@ -49,7 +50,7 @@ class WaypointsMinimaxPlayer:
             WaypointScheme.add_combat_units(
                 new_waypoint_gs,
                 self._gs,
-                path_tolerance=self._grid_spacing / 2,
+                path_tolerance=self._path_tolerance,
             )
             # Check redundant moves (stop search)
             if halt_counter > self._MAX_ACTION_PER_INITIATIVE:

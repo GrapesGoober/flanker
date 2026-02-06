@@ -49,21 +49,25 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    waypoint_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
-    WaypointScheme.add_combat_units(waypoint_gs, gs, path_tolerance=10)
+    waypoints_gs = WaypointScheme.create_base_waypoints(
+        gs=gs,
+        points=WaypointScheme.get_grid_coordinates(gs, 20, 10),
+        path_tolerance=10,
+    )
+    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
     points_y: list[float] = []
     ids: list[int] = []
-    for id, point in waypoint_gs.waypoints.items():
+    for id, point in waypoints_gs.waypoints.items():
         points_x.append(point.position.x)
         points_y.append(-point.position.y)
         ids.append(id)
 
         # Draw the interconnected visibility
         for visible_node_id in point.visible_nodes:
-            visible_node = waypoint_gs.waypoints[visible_node_id]
+            visible_node = waypoints_gs.waypoints[visible_node_id]
             segments.append(
                 [
                     (point.position.x, -point.position.y),
