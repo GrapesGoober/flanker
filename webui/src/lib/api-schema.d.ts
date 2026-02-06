@@ -154,8 +154,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ai Play */
-        post: operations["ai_play_api__sceneName___gameId__ai_play_post"];
+        /** Ai Config Waypoints */
+        post: operations["ai_config_waypoints_api__sceneName___gameId__ai_play_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -166,6 +166,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AiWaypointConfigRequest */
+        AiWaypointConfigRequest: {
+            faction: components["schemas"]["Faction"];
+            /** Points */
+            points: components["schemas"]["Vec2"][];
+        };
         /** AssaultActionLog */
         AssaultActionLog: {
             /**
@@ -205,6 +211,11 @@ export interface components {
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
         };
+        /**
+         * Faction
+         * @enum {string}
+         */
+        Faction: "BLUE" | "RED";
         /** FireActionLog */
         FireActionLog: {
             /**
@@ -599,7 +610,7 @@ export interface operations {
             };
         };
     };
-    ai_play_api__sceneName___gameId__ai_play_post: {
+    ai_config_waypoints_api__sceneName___gameId__ai_play_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -609,7 +620,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiWaypointConfigRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

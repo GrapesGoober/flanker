@@ -17,6 +17,7 @@ from flanker_core.models.vec2 import Vec2
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
+    AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
     FireActionLog,
@@ -146,10 +147,9 @@ class AiService:
         AiService._log_ai_action_results(gs, results)
 
     @staticmethod
-    def set_ai_waypoints(
+    def update_ai_config(
         gs: GameState,
-        points: list[Vec2],
-        faction: InitiativeState.Faction,
+        request: AiWaypointConfigRequest,
     ) -> None:
-        config = AiService._get_ai_config(gs, faction)
-        config.points = points
+        config = AiService._get_ai_config(gs, request.faction)
+        config.points = request.points

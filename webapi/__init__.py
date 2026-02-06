@@ -9,6 +9,7 @@ from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
+    AiWaypointConfigRequest,
     AssaultActionRequest,
     CombatUnitsViewState,
     FireActionRequest,
@@ -114,6 +115,16 @@ async def ai_play(
     gs = scene_service.get_game_state(scene_name, game_id)
     exec_time = timeit(lambda: AiService.play_minimax(gs, depth=4), number=1)
     print(f"Execution time: {exec_time:.6f} seconds")
+
+
+@app.post("/api/{sceneName}/{gameId}/ai-play")
+async def ai_config_waypoints(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    body: AiWaypointConfigRequest = Body(...),
+) -> None:
+    gs = scene_service.get_game_state(scene_name, game_id)
+    AiService.update_ai_config(gs, body)
 
 
 @app.put("/api/{sceneName}/{gameId}/terrain")
