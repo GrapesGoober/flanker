@@ -117,7 +117,7 @@ async def ai_play(
     print(f"Execution time: {exec_time:.6f} seconds")
 
 
-@app.post("/api/{sceneName}/{gameId}/ai-play")
+@app.post("/api/{sceneName}/{gameId}/ai-config")
 async def ai_config_waypoints(
     scene_name: str = Path(..., alias="sceneName"),
     game_id: int = Path(..., alias="gameId"),

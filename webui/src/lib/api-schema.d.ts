@@ -154,8 +154,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Ai Play */
+        post: operations["ai_play_api__sceneName___gameId__ai_play_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/{sceneName}/{gameId}/ai-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /** Ai Config Waypoints */
-        post: operations["ai_config_waypoints_api__sceneName___gameId__ai_play_post"];
+        post: operations["ai_config_waypoints_api__sceneName___gameId__ai_config_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -610,7 +627,39 @@ export interface operations {
             };
         };
     };
-    ai_config_waypoints_api__sceneName___gameId__ai_play_post: {
+    ai_play_api__sceneName___gameId__ai_play_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_config_waypoints_api__sceneName___gameId__ai_config_post: {
         parameters: {
             query?: never;
             header?: never;
