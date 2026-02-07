@@ -30,7 +30,7 @@ waypoint_actions: list[WaypointAction] | None = None
 
 def run_abstraction() -> None:
     global waypoints_gs
-    waypoints_gs = WaypointScheme.create_base_waypoints(
+    waypoints_gs = WaypointScheme.create_template_waypoints(
         gs=gs,
         points=WaypointScheme.get_grid_coordinates(gs, 20, 10),
         path_tolerance=10,
@@ -40,7 +40,7 @@ def run_abstraction() -> None:
 def run_search() -> None:
     assert waypoints_gs
     global waypoint_actions
-    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
+    WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
     _, waypoint_actions = WaypointsMinimaxSearch.play(waypoints_gs, depth=4)
 
 

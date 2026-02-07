@@ -23,7 +23,7 @@ class WaypointsMinimaxPlayer:
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
-        self._waypoints_gs = WaypointScheme.create_base_waypoints(
+        self._template_waypoints_gs = WaypointScheme.create_template_waypoints(
             gs,
             points=waypoint_coordinates,
             path_tolerance=path_tolerance,
@@ -36,7 +36,7 @@ class WaypointsMinimaxPlayer:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
             return []
 
-        self._waypoints_gs.initiative = self._faction
+        self._template_waypoints_gs.initiative = self._faction
         halt_counter = 0
         action_results: list[ActionResult] = []
         # TODO: should this while loop be done away? Let caller manage it.
@@ -44,9 +44,8 @@ class WaypointsMinimaxPlayer:
             if ObjectiveSystem.get_winning_faction(self._gs) != None:
                 break
             # Prepare the abstraction for searching
-            new_waypoint_gs = deepcopy(self._waypoints_gs)
-            WaypointScheme.add_combat_units(
-                new_waypoint_gs,
+            new_waypoint_gs = WaypointScheme.update_template(
+                self._template_waypoints_gs,
                 self._gs,
                 path_tolerance=self._path_tolerance,
             )

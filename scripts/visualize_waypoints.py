@@ -53,12 +53,12 @@ if __name__ == "__main__":
     # Plot the waypoints in blue
     print("Creating waypoints...")
     config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED)
-    waypoints_gs = WaypointScheme.create_base_waypoints(
+    waypoints_gs = WaypointScheme.create_template_waypoints(
         gs=gs,
         points=config.waypoint_coordinates,
         path_tolerance=10,
     )
-    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
+    WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []

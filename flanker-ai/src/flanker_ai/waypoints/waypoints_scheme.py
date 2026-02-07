@@ -20,6 +20,7 @@ from flanker_ai.waypoints.models import (
     WaypointNode,
     WaypointsGraphGameState,
 )
+from flanker_ai.waypoints.waypoints_minimax_player import deepcopy
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -112,7 +113,7 @@ class WaypointScheme:
         return result
 
     @staticmethod
-    def create_base_waypoints(
+    def create_template_waypoints(
         gs: GameState,
         points: list[Vec2],
         path_tolerance: float,
@@ -149,25 +150,31 @@ class WaypointScheme:
         return waypoint_gs
 
     @staticmethod
-    def add_combat_units(
+    def update_template(
         waypoint_gs: WaypointsGraphGameState,
         gs: GameState,
         path_tolerance: float,
-    ) -> None:
+    ) -> WaypointsGraphGameState:
+        """Prepares an empty waypoints template into a searchable model."""
+
+        # Deepcopies for now, as it's most correct
+        # Note that the new waypoints would append to the visibility
+        # of the existing waypoints, making shallow copy incorrect
+        new_waypoint_gs = deepcopy(waypoint_gs)
 
         # Add combat units as waypoints and as abstracted units
         new_waypoint_ids: list[int] = []
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
-            waypoint_id = len(waypoint_gs.waypoints.keys())
+            waypoint_id = len(new_waypoint_gs.waypoints.keys())
             new_waypoint_ids.append(waypoint_id)
-            waypoint_gs.waypoints[waypoint_id] = WaypointNode(
+            new_waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=set(),
                 movable_paths={},
             )
-            waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
+            new_waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
                 status=combat_unit.status,
@@ -192,6 +199,8 @@ class WaypointScheme:
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
         waypoint_gs.objectives = objectives
+
+        return new_waypoint_gs
 
     @staticmethod
     def get_grid_coordinates(
