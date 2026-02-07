@@ -73,6 +73,8 @@ class WaypointsMinimaxPlayer:
                 waypoint_gs=new_waypoint_gs,
                 waypoint_action=current_action,
             )
+            if sequence_callback:
+                sequence_callback(waypoint_actions)
             if isinstance(result, InvalidAction):
                 print("AI made invalid action, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
@@ -82,6 +84,5 @@ class WaypointsMinimaxPlayer:
             result = deepcopy(result)
             action_results.append(result)
             halt_counter += 1
-            if sequence_callback:
-                sequence_callback(waypoint_actions)
+
         return action_results

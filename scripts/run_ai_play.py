@@ -2,8 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
-from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
+from flanker_ai.ai_config_manager import AiConfigComponent, AiConfigManager
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -16,6 +15,7 @@ GRID_SPACING = 20
 
 def load_game(path: str) -> GameState:
     component_types: list[type[Any]] = []
+    component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
@@ -31,21 +31,9 @@ def load_game(path: str) -> GameState:
 if __name__ == "__main__":
     gs = load_game(path="./scenes/demo-simple-stochastic.json")
     print("Creating RED player...")
-    red_player = WaypointsMinimaxPlayer(
-        gs,
-        InitiativeState.Faction.RED,
-        search_depth=4,
-        waypoint_coordinates=WaypointScheme.get_grid_coordinates(gs, 20, 10),
-        path_tolerance=10,
-    )
+    red_player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
     print("Creating BLUE player...")
-    blue_player = WaypointsMinimaxPlayer(
-        gs,
-        InitiativeState.Faction.BLUE,
-        search_depth=4,
-        waypoint_coordinates=WaypointScheme.get_grid_coordinates(gs, 20, 10),
-        path_tolerance=10,
-    )
+    blue_player = AiConfigManager.get_player(gs, InitiativeState.Faction.BLUE)
 
     while ObjectiveSystem.get_winning_faction(gs) == None:
         results = red_player.play_initiative()
