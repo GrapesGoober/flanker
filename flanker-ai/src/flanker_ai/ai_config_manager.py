@@ -11,6 +11,7 @@ from flanker_core.models.vec2 import Vec2
 class AiConfigComponent:
     faction: InitiativeState.Faction
     waypoint_coordinates: list[Vec2]
+    path_tolerance: float
 
 
 @dataclass
@@ -38,6 +39,7 @@ class AiConfigManager:
                 config := AiConfigComponent(
                     faction=faction,
                     waypoint_coordinates=[],
+                    path_tolerance=0,
                 )
             )
         return config
@@ -61,15 +63,17 @@ class AiConfigManager:
             config = AiConfigManager.get_ai_config(gs, faction)
             # Add a new set of waypoints if not exists.
             if len(config.waypoint_coordinates) == 0:
+                DEFAULT_GRID_SIZE = 20
+                config.path_tolerance = DEFAULT_GRID_SIZE
                 config.waypoint_coordinates = WaypointScheme.get_grid_coordinates(
-                    gs, spacing=20, offset=10
+                    gs, spacing=DEFAULT_GRID_SIZE, offset=DEFAULT_GRID_SIZE / 2
                 )
             player = WaypointsMinimaxPlayer(
                 gs=gs,
                 faction=faction,
                 search_depth=4,
                 waypoint_coordinates=config.waypoint_coordinates,
-                path_tolerance=10,
+                path_tolerance=config.path_tolerance,
             )
             gs.add_entity(_AiPlayerInstance(faction=faction, player=player))
 
