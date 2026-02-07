@@ -244,7 +244,7 @@ class WaypointScheme:
                 [(id, waypoint_gs.waypoints[id]) for id in waypoint_ids_to_update]
             )
 
-        for _, waypoint in waypoints_to_update:
+        for waypoint_id, waypoint in waypoints_to_update:
             for move_id, move_waypoint in waypoint_gs.waypoints.items():
                 move_from = waypoint.position
                 move_to = move_waypoint.position
@@ -255,6 +255,9 @@ class WaypointScheme:
                 path: list[tuple[int, float]] = []
                 for path_id, path_waypoint in waypoint_gs.waypoints.items():
                     t = (path_waypoint.position - move_from).dot(direction)
+                    if path_id in [waypoint_id, move_id]:
+                        path.append((path_id, t))
+                        continue
                     if t < 0:
                         continue
                     if t > move_distance:
