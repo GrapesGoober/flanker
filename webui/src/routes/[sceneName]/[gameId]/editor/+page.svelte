@@ -13,7 +13,6 @@
 	let controller: EditorController = $state(new EditorController());
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
-	let currentChosenWaypointsFaction: 'BLUE' | 'RED' = $state('RED');
 
 	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
@@ -45,7 +44,7 @@
 
 	/** Switches the editor to waypoints mode. */
 	function waypointsMode() {
-		controller.waypointsMode(currentChosenWaypointsFaction);
+		controller.waypointsMode('RED');
 	}
 
 	/** Updates the waypoints to the webapi. */
@@ -86,7 +85,7 @@ mode = {controller.state.type}
 	degrees =
 	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
 {:else if controller.state.type == 'draw-waypoints'}
-	<select bind:value={currentChosenWaypointsFaction}>
+	<select bind:value={controller.state.waypoints.faction}>
 		<option value="BLUE">BLUE</option>
 		<option value="RED">RED</option>
 	</select>

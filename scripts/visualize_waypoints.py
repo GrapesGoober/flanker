@@ -2,9 +2,11 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
+from flanker_ai.ai_config_manager import AiConfigComponent, AiConfigManager
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LinearTransform
@@ -24,11 +26,12 @@ def visualize_polyline(verts: list[Vec2], color: str = "C0") -> None:
 if __name__ == "__main__":
 
     component_types: list[type[Any]] = []
+    component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    path = "./scenes/demo-simple.json"
+    path = "./scenes/demo-simple-stochastic-waypoints.json"
 
     with open(path, "r") as f:
         entities, id_counter = Serializer.deserialize(
@@ -49,9 +52,10 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
+    config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED)
     waypoints_gs = WaypointScheme.create_base_waypoints(
         gs=gs,
-        points=WaypointScheme.get_grid_coordinates(gs, 20, 10),
+        points=config.waypoint_coordinates,
         path_tolerance=10,
     )
     WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
