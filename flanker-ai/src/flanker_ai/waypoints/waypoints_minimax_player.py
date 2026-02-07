@@ -1,8 +1,6 @@
 from copy import deepcopy
-from typing import Callable
 
 from flanker_ai.unabstracted.models import ActionResult
-from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
@@ -10,6 +8,7 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class WaypointsMinimaxPlayer:
@@ -33,10 +32,7 @@ class WaypointsMinimaxPlayer:
         self._depth = search_depth
         self._MAX_ACTION_PER_INITIATIVE = max_action_per_initiative
 
-    def play_initiative(
-        self,
-        sequence_callback: Callable[[list[WaypointAction]], None] | None = None,
-    ) -> list[ActionResult]:
+    def play_initiative(self) -> list[ActionResult]:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
             return []
 
@@ -45,6 +41,8 @@ class WaypointsMinimaxPlayer:
         action_results: list[ActionResult] = []
         # TODO: should this while loop be done away? Let caller manage it.
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
+            if ObjectiveSystem.get_winning_faction(self._gs) != None:
+                break
             # Prepare the abstraction for searching
             new_waypoint_gs = deepcopy(self._waypoints_gs)
             WaypointScheme.add_combat_units(
@@ -62,6 +60,7 @@ class WaypointsMinimaxPlayer:
                 new_waypoint_gs,
                 depth=self._depth,
             )
+
             if len(waypoint_actions) == 0:
                 print("No valid action for AI, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
@@ -73,8 +72,6 @@ class WaypointsMinimaxPlayer:
                 waypoint_gs=new_waypoint_gs,
                 waypoint_action=current_action,
             )
-            if sequence_callback:
-                sequence_callback(waypoint_actions)
             if isinstance(result, InvalidAction):
                 print("AI made invalid action, breaking")
                 InitiativeSystem.flip_initiative(self._gs)

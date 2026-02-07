@@ -187,6 +187,12 @@ class WaypointScheme:
             waypoint_ids_to_update=new_waypoint_ids,
         )
 
+        # Update their objectives
+        objectives: list[EliminationObjective] = list(
+            [replace(objective) for _, objective in gs.query(EliminationObjective)]
+        )
+        waypoint_gs.objectives = objectives
+
     @staticmethod
     def get_grid_coordinates(
         gs: GameState,

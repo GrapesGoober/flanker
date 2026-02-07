@@ -6,7 +6,6 @@ from flanker_ai.unabstracted.models import (
     MoveActionResult,
 )
 from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
-from flanker_ai.waypoints.models import WaypointAction
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -32,12 +31,7 @@ class AiService:
 
         player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
 
-        def print_actions_sequence(actions: list[WaypointAction]) -> None:
-            print(f"Action sequences {actions}")
-
-        results = player.play_initiative(
-            sequence_callback=print_actions_sequence,
-        )
+        results = player.play_initiative()
 
         AiService._log_ai_action_results(gs, results)
 

@@ -1,6 +1,4 @@
 import random
-from copy import deepcopy
-from dataclasses import replace
 
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
@@ -10,6 +8,7 @@ from flanker_ai.waypoints.models import (
     WaypointMoveAction,
     WaypointsGraphGameState,
 )
+from flanker_ai.waypoints.waypoints_scheme import replace
 from flanker_core.models.components import CombatUnit, InitiativeState
 
 
@@ -29,6 +28,13 @@ class WaypointsMinimaxSearch:
         beta: float = float("inf"),
     ) -> tuple[float, list[WaypointAction]]:
 
+        winner = WaypointsMinimaxSearch._get_winning_faction(gs)
+        # Have it prefer earlier win
+        if winner == InitiativeState.Faction.BLUE:
+            return 10000 + depth, []
+        elif winner == InitiativeState.Faction.RED:
+            return -10000 - depth, []
+
         actions = WaypointsMinimaxSearch._get_actions(gs)
         if depth == 0 or len(actions) == 0:
             return WaypointsMinimaxSearch._evaluate(gs), []
@@ -39,19 +45,12 @@ class WaypointsMinimaxSearch:
         for action in actions:
             new_gs = WaypointsMinimaxSearch._copy_gs(gs)
             WaypointsMinimaxSearch._perform_action(new_gs, action)
-            if winner := WaypointsMinimaxSearch._get_winning_faction(gs):
-                future_actions = []
-                if winner == InitiativeState.Faction.BLUE:
-                    score = float("inf")
-                else:
-                    score = float("-inf")
-            else:
-                score, future_actions = WaypointsMinimaxSearch.play(
-                    new_gs,
-                    depth - 1,
-                    alpha=alpha,
-                    beta=beta,
-                )
+            score, future_actions = WaypointsMinimaxSearch.play(
+                new_gs,
+                depth - 1,
+                alpha=alpha,
+                beta=beta,
+            )
             if is_maximizing:
                 if score > best_score:
                     best_score = score
@@ -71,11 +70,12 @@ class WaypointsMinimaxSearch:
     @staticmethod
     def _copy_gs(gs: WaypointsGraphGameState) -> WaypointsGraphGameState:
         copied_units = {id: replace(unit) for id, unit in gs.combat_units.items()}
+        copied_objectives = [replace(obj) for obj in gs.objectives]
         return WaypointsGraphGameState(
             waypoints=gs.waypoints,
             combat_units=copied_units,
             initiative=gs.initiative,
-            objectives=deepcopy(gs.objectives),
+            objectives=copied_objectives,
         )
 
     @staticmethod
@@ -96,12 +96,12 @@ class WaypointsMinimaxSearch:
 
             case WaypointFireAction():
                 # Assumes determinic for now
-                enemy_unit = gs.combat_units[action.target_id]
-                enemy_unit.status = CombatUnit.Status.SUPPRESSED
+                target_unit = gs.combat_units[action.target_id]
+                target_unit.status = CombatUnit.Status.SUPPRESSED
 
             case WaypointAssaultAction():
                 # Check for move interrupts
-                enemy_unit = gs.combat_units[action.target_id]
+                target_unit = gs.combat_units[action.target_id]
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
@@ -112,13 +112,13 @@ class WaypointsMinimaxSearch:
                             gs.initiative = InitiativeState.Faction.BLUE
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
-                    current_unit.current_waypoint_id = enemy_unit.current_waypoint_id
+                    current_unit.current_waypoint_id = target_unit.current_waypoint_id
 
                 # Runs the assault dice roll. Assumes determinic for now
                 killed_unit: AbstractedCombatUnit
-                if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
+                if target_unit.status == CombatUnit.Status.SUPPRESSED:
                     gs.combat_units.pop(action.target_id)
-                    killed_unit = enemy_unit
+                    killed_unit = target_unit
                 else:
                     killed_unit = current_unit
                     gs.combat_units.pop(action.unit_id)
@@ -207,11 +207,8 @@ class WaypointsMinimaxSearch:
         current_unit: AbstractedCombatUnit,
         move_to_id: int,
     ) -> int | None:
-        interrupt_at_id: int | None = None
         current_waypoint = gs.waypoints[current_unit.current_waypoint_id]
         for path_id in current_waypoint.movable_paths[move_to_id]:
-            if interrupt_at_id is not None:  # If found interrupt, stop search
-                break
             for enemy_unit in gs.combat_units.values():
                 # Add interrupt if the enemy can reactive fire it
                 if enemy_unit.faction == current_unit.faction:
@@ -223,6 +220,7 @@ class WaypointsMinimaxSearch:
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
                     return path_id
+        return None
 
     @staticmethod
     def _evaluate(gs: WaypointsGraphGameState) -> float:
