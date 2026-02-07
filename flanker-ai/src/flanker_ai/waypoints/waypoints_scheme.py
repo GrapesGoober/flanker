@@ -1,3 +1,4 @@
+from dataclasses import replace
 from typing import Literal
 
 from flanker_ai.unabstracted.models import (
@@ -22,6 +23,7 @@ from flanker_ai.waypoints.models import (
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
+    EliminationObjective,
     FireControls,
     TerrainFeature,
     Transform,
@@ -118,10 +120,14 @@ class WaypointScheme:
 
         # Assemble waypoint-graph game state
         initiative = InitiativeSystem.get_initiative(gs)
+        objectives: list[EliminationObjective] = list(
+            [replace(objective) for _, objective in gs.query(EliminationObjective)]
+        )
         waypoint_gs = WaypointsGraphGameState(
             waypoints={},
             combat_units={},
             initiative=initiative,
+            objectives=objectives,
         )
 
         # Add grid points as a waypoint

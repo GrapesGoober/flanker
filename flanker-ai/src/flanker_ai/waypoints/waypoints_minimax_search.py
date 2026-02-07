@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 from dataclasses import replace
 
 from flanker_ai.waypoints.models import (
@@ -38,24 +39,33 @@ class WaypointsMinimaxSearch:
         for action in actions:
             new_gs = WaypointsMinimaxSearch._copy_gs(gs)
             WaypointsMinimaxSearch._perform_action(new_gs, action)
-            score, future_actions = WaypointsMinimaxSearch.play(
-                new_gs,
-                depth - 1,
-                alpha=alpha,
-                beta=beta,
-            )
+            if winner := WaypointsMinimaxSearch._get_winning_faction(gs):
+                future_actions = []
+                if winner == InitiativeState.Faction.BLUE:
+                    score = float("inf")
+                else:
+                    score = float("-inf")
+            else:
+                score, future_actions = WaypointsMinimaxSearch.play(
+                    new_gs,
+                    depth - 1,
+                    alpha=alpha,
+                    beta=beta,
+                )
             if is_maximizing:
                 if score > best_score:
                     best_score = score
                     best_actions = [action] + future_actions
+                if best_score >= beta:
+                    break
                 alpha = max(alpha, best_score)
             else:
                 if score < best_score:
                     best_score = score
                     best_actions = [action] + future_actions
+                if best_score <= alpha:
+                    break
                 beta = min(beta, best_score)
-            if alpha >= beta:
-                break
         return best_score, best_actions
 
     @staticmethod
@@ -65,6 +75,7 @@ class WaypointsMinimaxSearch:
             waypoints=gs.waypoints,
             combat_units=copied_units,
             initiative=gs.initiative,
+            objectives=deepcopy(gs.objectives),
         )
 
     @staticmethod
@@ -104,9 +115,12 @@ class WaypointsMinimaxSearch:
                     current_unit.current_waypoint_id = enemy_unit.current_waypoint_id
 
                 # Runs the assault dice roll. Assumes determinic for now
+                killed_unit: AbstractedCombatUnit
                 if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
                     gs.combat_units.pop(action.target_id)
+                    killed_unit = enemy_unit
                 else:
+                    killed_unit = current_unit
                     gs.combat_units.pop(action.unit_id)
                     # Assault failed
                     match gs.initiative:
@@ -114,6 +128,10 @@ class WaypointsMinimaxSearch:
                             gs.initiative = InitiativeState.Faction.RED
                         case InitiativeState.Faction.RED:
                             gs.initiative = InitiativeState.Faction.BLUE
+
+                for objective in gs.objectives:
+                    if killed_unit.faction == objective.target_faction:
+                        objective.units_destroyed_counter += 1
 
     @staticmethod
     def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointAction]:
@@ -208,7 +226,7 @@ class WaypointsMinimaxSearch:
 
     @staticmethod
     def _evaluate(gs: WaypointsGraphGameState) -> float:
-        """Heuristic valuation from BLUE perspective"""
+        """Heuristic non-terminal valuation from BLUE perspective"""
         score = 0.0
         for unit in gs.combat_units.values():
             value = 0
@@ -225,3 +243,13 @@ class WaypointsMinimaxSearch:
             else:
                 score -= value
         return score
+
+    @staticmethod
+    def _get_winning_faction(
+        gs: WaypointsGraphGameState,
+    ) -> InitiativeState.Faction | None:
+        """If terminal, returns which faction wins."""
+        for objective in gs.objectives:
+            if objective.units_to_destroy == objective.units_destroyed_counter:
+                return objective.winning_faction
+        return None
