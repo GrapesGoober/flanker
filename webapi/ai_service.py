@@ -5,9 +5,9 @@ from flanker_ai.unabstracted.models import (
     FireActionResult,
     MoveActionResult,
 )
-from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
@@ -36,15 +36,21 @@ class AiService:
         AiService._log_ai_action_results(gs, results)
 
     @staticmethod
-    def play_minimax(gs: GameState, depth: int) -> None:
-        """
-        (prototype) Runs an unabstracted minimax search and logs
-        sequential results for a BLUE faction.
-        """
+    def play_trial(gs: GameState) -> None:
+        """Runs a trial where AI plays against each other."""
+        red_player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
+        blue_player = AiConfigManager.get_player(gs, InitiativeState.Faction.BLUE)
 
-        _, results = TreeSearchPlayer.play_minimax(gs, depth)
-        LoggingService.clear_logs(gs)
-        AiService._log_ai_action_results(gs, results)
+        while ObjectiveSystem.get_winning_faction(gs) == None:
+            results = red_player.play_initiative()
+            if results:
+                AiService._log_ai_action_results(gs, results)
+
+            results = blue_player.play_initiative()
+            if results:
+                AiService._log_ai_action_results(gs, results)
+
+        print(f"Winner is {ObjectiveSystem.get_winning_faction(gs)}")
 
     @staticmethod
     def update_ai_config(

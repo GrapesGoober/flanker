@@ -184,12 +184,12 @@ class WaypointScheme:
 
         # Update their relationships
         WaypointScheme._add_path_relationships(
-            waypoint_gs=waypoint_gs,
+            waypoint_gs=new_waypoint_gs,
             path_tolerance=path_tolerance,
             waypoint_ids_to_update=new_waypoint_ids,
         )
         WaypointScheme._add_visibility_relationships(
-            waypoint_gs=waypoint_gs,
+            waypoint_gs=new_waypoint_gs,
             gs=gs,
             waypoint_ids_to_update=new_waypoint_ids,
         )
@@ -198,7 +198,7 @@ class WaypointScheme:
         objectives: list[EliminationObjective] = list(
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
-        waypoint_gs.objectives = objectives
+        new_waypoint_gs.objectives = objectives
 
         return new_waypoint_gs
 

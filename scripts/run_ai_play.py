@@ -9,9 +9,6 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-MAX_ACTION_PER_INITIATIVE = 20
-GRID_SPACING = 20
-
 
 def load_game(path: str) -> GameState:
     component_types: list[type[Any]] = []
@@ -29,7 +26,7 @@ def load_game(path: str) -> GameState:
 
 
 if __name__ == "__main__":
-    gs = load_game(path="./scenes/demo-simple-stochastic.json")
+    gs = load_game(path="./scenes/demo-simple-stochastic-waypoints.json")
     print("Creating RED player...")
     red_player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
     print("Creating BLUE player...")
