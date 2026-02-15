@@ -46,4 +46,22 @@ export class EditorController {
 	drawMode() {
 		this.state = { type: 'draw', drawPolygon: [] };
 	}
+	/** Finishes the draw and saves the polygon as a new forest terrain. */
+	async finishDraw() {
+		if (this.state.type != 'draw' || this.state.drawPolygon.length < 3) return;
+		const polygon = this.state.drawPolygon;
+		const position = polygon[0];
+		const vertices = polygon.map(v => ({ x: v.x - position.x, y: v.y - position.y }));
+		const maxId = this.terrainData.length > 0 ? Math.max(...this.terrainData.map(t => t.terrainId)) : 0;
+		const terrain: TerrainModel = {
+			terrainId: maxId + 1,
+			position: position,
+			degrees: 0,
+			vertices: vertices,
+			terrainType: 'FOREST'
+		};
+		await UpdateTerrainData(terrain);
+		this.refreshTerrain();
+		this.reset();
+	}
 }
