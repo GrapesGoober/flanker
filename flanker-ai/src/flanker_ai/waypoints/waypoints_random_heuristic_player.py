@@ -160,8 +160,6 @@ class WaypointsRandomHeuristicPlayer:
                     value = 2
                 case CombatUnit.Status.SUPPRESSED:
                     value = 1
-                case CombatUnit.Status.ELIMINATED:
-                    value = 0
 
             if unit.faction == InitiativeState.Faction.BLUE:
                 score += value
