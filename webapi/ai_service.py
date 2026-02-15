@@ -6,6 +6,7 @@ from flanker_ai.unabstracted.models import (
 )
 from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
 from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_random_heuristic_player import WaypointsRandomHeuristicPlayer
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -24,6 +25,36 @@ from webapi.models import (
 )
 
 
+class RandomHeuristicPlayer:
+    """Full player object for random heuristic AI, keeps track of initiative, stalls, etc."""
+
+    def __init__(self, faction: InitiativeState.Faction):
+        self.faction = faction
+        self.halt_counter = 0
+
+    def play(self, gs: GameState) -> None:
+        """Plays for the faction until initiative flips or stalls."""
+        if InitiativeSystem.get_initiative(gs) != self.faction:
+            return
+        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+        while InitiativeSystem.get_initiative(gs) == self.faction:
+            _, waypoint_actions = WaypointsRandomHeuristicPlayer.play(waypoints_gs)
+            if not waypoint_actions:
+                InitiativeSystem.flip_initiative(gs)
+                continue
+            current_action = waypoint_actions[0]
+            result = WaypointScheme.apply_action(gs, waypoints_gs, current_action)
+            if isinstance(result, InvalidAction):
+                InitiativeSystem.flip_initiative(gs)
+            self.halt_counter += 1
+            if self.halt_counter > 100:
+                InitiativeSystem.flip_initiative(gs)
+                print("AI is making too many useless actions, breaking")
+                break
+            assert isinstance(result, ActionResult)
+            AiService._log_ai_action_results(gs, [result])
+
+
 class AiService:
     """Provides static methods for basic AI behavior."""
 
@@ -38,6 +69,32 @@ class AiService:
         while InitiativeSystem.get_initiative(gs) == AI_FACTION:
             # Runs the abstracted graph search
             _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
+            current_action = waypoint_actions[0]
+            result = WaypointScheme.apply_action(gs, waypoints_gs, current_action)
+            if isinstance(result, InvalidAction):
+                InitiativeSystem.flip_initiative(gs)
+            if halt_counter > 100:
+                InitiativeSystem.flip_initiative(gs)
+                print("AI is making too many useless actions, breaking")
+            assert isinstance(result, ActionResult)
+            AiService._log_ai_action_results(gs, [result])
+            halt_counter += 1
+
+    @staticmethod
+    def play_random_heuristic(gs: GameState) -> None:
+        """Runs the random heuristic AI for REDFOR."""
+        AI_FACTION = InitiativeState.Faction.RED
+        if InitiativeSystem.get_initiative(gs) != AI_FACTION:
+            return
+        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+        halt_counter = 0
+        while InitiativeSystem.get_initiative(gs) == AI_FACTION:
+            # Runs the random heuristic
+            _, waypoint_actions = WaypointsRandomHeuristicPlayer.play(waypoints_gs)
+            if not waypoint_actions:
+                # No actions, flip initiative
+                InitiativeSystem.flip_initiative(gs)
+                continue
             current_action = waypoint_actions[0]
             result = WaypointScheme.apply_action(gs, waypoints_gs, current_action)
             if isinstance(result, InvalidAction):
