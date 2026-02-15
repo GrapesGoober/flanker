@@ -51,6 +51,10 @@
 	function confirmsWaypoints() {
 		controller.updateWaypoint();
 	}
+	/** Finishes the current draw and saves as terrain. */
+	async function finishDraw() {
+		await controller.finishDraw();
+	}
 </script>
 
 {#snippet mapSvgSnippet()}
@@ -77,6 +81,9 @@ mode = {controller.state.type}
 <button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
 <button onclick={waypointsMode} style="margin-bottom: 1em;">Waypoints Mode</button>
+{#if controller.state.type == 'draw'}
+	<button onclick={finishDraw} style="margin-bottom: 1em;">Finish Draw</button>
+{/if}
 
 {#if controller.state.type == 'selected'}
 	id = {controller.state.terrain.terrainId}
