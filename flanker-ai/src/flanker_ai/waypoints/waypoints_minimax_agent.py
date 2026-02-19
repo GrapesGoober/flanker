@@ -48,7 +48,7 @@ class WaypointsMinimaxAgent:
             # Make sure to add to a new graph instance to avoid mutation.
             new_waypoint_gs = deepcopy(self._template_waypoints_gs)
             WaypointScheme.add_combat_units(
-                self._template_waypoints_gs,
+                new_waypoint_gs,
                 self._gs,
                 path_tolerance=self._path_tolerance,
             )
