@@ -41,12 +41,13 @@ class WaypointsMinimaxAgent:
         self._template_waypoints_gs.initiative = self._faction
         halt_counter = 0
         action_results: list[ActionResult] = []
-        # TODO: should this while loop be done away? Let caller manage it.
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
             if ObjectiveSystem.get_winning_faction(self._gs) != None:
                 break
-            # Prepare the abstraction for searching
-            new_waypoint_gs = WaypointScheme.update_template(
+            # Add the combat units to the graph.
+            # Make sure to add to a new graph instance to avoid mutation.
+            new_waypoint_gs = deepcopy(self._template_waypoints_gs)
+            WaypointScheme.add_combat_units(
                 self._template_waypoints_gs,
                 self._gs,
                 path_tolerance=self._path_tolerance,

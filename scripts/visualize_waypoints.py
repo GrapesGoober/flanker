@@ -65,7 +65,7 @@ if __name__ == "__main__":
         points=config.waypoint_coordinates,
         path_tolerance=10,
     )
-    WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
+    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
