@@ -26,8 +26,8 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
-class TreeSearchPlayer:
-    """Implements a basic unabstracted one-side tree search AI player."""
+class TreeSearchAgent:
+    """Implements a basic unabstracted one-side tree search AI player agent."""
 
     @staticmethod
     def _get_actions(
@@ -104,15 +104,17 @@ class TreeSearchPlayer:
         depth: int,
         iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[ActionResult]]:
-        if depth == 0 or len(TreeSearchPlayer._get_actions(gs)) == 0:
-            return TreeSearchPlayer._evaluate(gs), []
+        """Runs minimax and returns the best scoring action sequence."""
+
+        if depth == 0 or len(TreeSearchAgent._get_actions(gs)) == 0:
+            return TreeSearchAgent._evaluate(gs), []
 
         best_score = float("-inf")
         best_result: list[ActionResult] = []
-        deep_copy_entities = TreeSearchPlayer.get_deep_copy_entities(gs)
-        for action in TreeSearchPlayer._get_actions(gs):
+        deep_copy_entities = TreeSearchAgent.get_deep_copy_entities(gs)
+        for action in TreeSearchAgent._get_actions(gs):
             new_gs = gs.selective_copy(deep_copy_entities)
-            result = TreeSearchPlayer.perform_action(new_gs, action)
+            result = TreeSearchAgent._perform_action(new_gs, action)
             if isinstance(result, InvalidAction):
                 continue
             # Due to large tree size, I don't want to implement a "min" state
@@ -123,7 +125,7 @@ class TreeSearchPlayer:
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, results = TreeSearchPlayer.play_minimax(
+            score, results = TreeSearchAgent.play_minimax(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,
@@ -134,7 +136,7 @@ class TreeSearchPlayer:
         return best_score, best_result
 
     @staticmethod
-    def perform_action(
+    def _perform_action(
         gs: GameState,
         action: MoveAction | FireAction | AssaultAction,
     ) -> ActionResult | InvalidAction:

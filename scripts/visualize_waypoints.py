@@ -2,9 +2,11 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
+from flanker_ai.ai_config_manager import AiConfigComponent, AiConfigManager
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LinearTransform
@@ -24,11 +26,12 @@ def visualize_polyline(verts: list[Vec2], color: str = "C0") -> None:
 if __name__ == "__main__":
 
     component_types: list[type[Any]] = []
+    component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    path = "./scenes/demo-simple.json"
+    path = "./scenes/demo-simple-stochastic-waypoints.json"
 
     with open(path, "r") as f:
         entities, id_counter = Serializer.deserialize(
@@ -49,20 +52,26 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    waypoint_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+    config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED)
+    waypoints_gs = WaypointScheme.create_template_waypoints(
+        gs=gs,
+        points=config.waypoint_coordinates,
+        path_tolerance=10,
+    )
+    WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
     points_y: list[float] = []
     ids: list[int] = []
-    for id, point in waypoint_gs.waypoints.items():
+    for id, point in waypoints_gs.waypoints.items():
         points_x.append(point.position.x)
         points_y.append(-point.position.y)
         ids.append(id)
 
         # Draw the interconnected visibility
         for visible_node_id in point.visible_nodes:
-            visible_node = waypoint_gs.waypoints[visible_node_id]
+            visible_node = waypoints_gs.waypoints[visible_node_id]
             segments.append(
                 [
                     (point.position.x, -point.position.y),

@@ -4,7 +4,7 @@ from timeit import timeit
 from typing import Any
 
 from flanker_ai.waypoints.models import WaypointAction, WaypointsGraphGameState
-from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -30,20 +30,25 @@ waypoint_actions: list[WaypointAction] | None = None
 
 def run_abstraction() -> None:
     global waypoints_gs
-    waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
+    waypoints_gs = WaypointScheme.create_template_waypoints(
+        gs=gs,
+        points=WaypointScheme.get_grid_coordinates(gs, 20, 10),
+        path_tolerance=10,
+    )
 
 
 def run_search() -> None:
     assert waypoints_gs
     global waypoint_actions
-    _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
-
-    print("done, searching...")
+    WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
+    _, waypoint_actions = WaypointsMinimaxSearch.search_best_actions(
+        waypoints_gs, depth=4
+    )
 
 
 print("abstracting...")
 abstraction_time = timeit(run_abstraction, number=1)
-print("done, searching...")
+print("done, adding combat units and searching...")
 searching_time = timeit(run_search, number=1)
 print(waypoint_actions)
 

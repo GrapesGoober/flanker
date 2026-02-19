@@ -1,9 +1,17 @@
-import { GetTerrainData, UpdateTerrainData, type TerrainModel, type Vec2 } from '$lib/api';
+import {
+	GetTerrainData,
+	UpdateTerrainData,
+	UpdateWaypointsData,
+	type AiWaypointsModel,
+	type TerrainModel,
+	type Vec2
+} from '$lib/api';
 
 type EditorControllerState =
 	| { type: 'default' }
 	| { type: 'selected'; terrain: TerrainModel }
-	| { type: 'draw'; drawPolygon: Vec2[] };
+	| { type: 'draw'; drawPolygon: Vec2[] }
+	| { type: 'draw-waypoints'; waypoints: AiWaypointsModel };
 
 /**
  * Controller for managing terrain editing and polygon drawing in the editor.
@@ -45,5 +53,19 @@ export class EditorController {
 	/** Switches the editor to draw mode and initializes a new polygon. */
 	drawMode() {
 		this.state = { type: 'draw', drawPolygon: [] };
+	}
+	/** Switches the editor to draw-waypoints mode and sets a new empty waypoints list. */
+	waypointsMode(faction: 'BLUE' | 'RED') {
+		this.state = { type: 'draw-waypoints', waypoints: { faction, points: [] } };
+	}
+	/** Adds a new waypoint */
+	addWaypoint(point: Vec2) {
+		if (this.state.type != 'draw-waypoints') return;
+		this.state.waypoints.points.push(point);
+	}
+	/** Async updates the waypoints to server */
+	async updateWaypoint() {
+		if (this.state.type != 'draw-waypoints') return;
+		await UpdateWaypointsData(this.state.waypoints);
 	}
 }

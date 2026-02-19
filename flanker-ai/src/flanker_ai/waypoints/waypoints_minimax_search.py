@@ -1,7 +1,4 @@
 import random
-from dataclasses import replace
-from itertools import count
-from typing import Iterator
 
 from flanker_ai.waypoints.models import (
     AbstractedCombatUnit,
@@ -11,73 +8,78 @@ from flanker_ai.waypoints.models import (
     WaypointMoveAction,
     WaypointsGraphGameState,
 )
+from flanker_ai.waypoints.waypoints_scheme import replace
 from flanker_core.models.components import CombatUnit, InitiativeState
 
 
-class WaypointsMinimaxPlayer:
+class WaypointsMinimaxSearch:
     """
-    Implements a basic abstracted waypoints-graph minimax AI player.
+    Implements a basic abstracted waypoints-graph minimax AI search.
     This is just a bare minimum code for the CoG paper, thus doesn't
-    have RNG, determinism, or other fancier rigs. The MAX player is BLUE
-    this the MIN player is RED.
+    have RNG, determinism, or other fancier rigs. The MAX ply is BLUE
+    this the MIN ply is RED.
     """
 
     @staticmethod
-    def play(
+    def search_best_actions(
         gs: WaypointsGraphGameState,
         depth: int,
         alpha: float = float("-inf"),
         beta: float = float("inf"),
-        iter_counter: Iterator[int] | None = None,
     ) -> tuple[float, list[WaypointAction]]:
 
-        actions = WaypointsMinimaxPlayer._get_actions(gs)
+        winner = WaypointsMinimaxSearch._get_winning_faction(gs)
+        # Have it prefer earlier win
+        if winner == InitiativeState.Faction.BLUE:
+            return 10000 + depth, []
+        elif winner == InitiativeState.Faction.RED:
+            return -10000 - depth, []
+
+        actions = WaypointsMinimaxSearch._get_actions(gs)
         if depth == 0 or len(actions) == 0:
-            return WaypointsMinimaxPlayer._evaluate(gs), []
+            return WaypointsMinimaxSearch._evaluate(gs), []
 
         is_maximizing = gs.initiative == InitiativeState.Faction.BLUE
         best_score = float("-inf") if is_maximizing else float("inf")
         best_actions: list[WaypointAction] = []
         for action in actions:
-            new_gs = WaypointsMinimaxPlayer._copy_gs(gs)
-            WaypointsMinimaxPlayer.perform_action(new_gs, action)
-            if not iter_counter:
-                iter_counter = count(0)
-            iter = next(iter_counter)
-            if iter % 5000 == 0:
-                print(f"Evaluated {iter=}")
-            score, future_actions = WaypointsMinimaxPlayer.play(
+            new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+            WaypointsMinimaxSearch._perform_action(new_gs, action)
+            score, future_actions = WaypointsMinimaxSearch.search_best_actions(
                 new_gs,
                 depth - 1,
                 alpha=alpha,
                 beta=beta,
-                iter_counter=iter_counter,
             )
             if is_maximizing:
                 if score > best_score:
                     best_score = score
                     best_actions = [action] + future_actions
+                if best_score >= beta:
+                    break
                 alpha = max(alpha, best_score)
             else:
                 if score < best_score:
                     best_score = score
                     best_actions = [action] + future_actions
+                if best_score <= alpha:
+                    break
                 beta = min(beta, best_score)
-            if alpha >= beta:
-                break
         return best_score, best_actions
 
     @staticmethod
     def _copy_gs(gs: WaypointsGraphGameState) -> WaypointsGraphGameState:
         copied_units = {id: replace(unit) for id, unit in gs.combat_units.items()}
+        copied_objectives = [replace(obj) for obj in gs.objectives]
         return WaypointsGraphGameState(
             waypoints=gs.waypoints,
             combat_units=copied_units,
             initiative=gs.initiative,
+            objectives=copied_objectives,
         )
 
     @staticmethod
-    def perform_action(
+    def _perform_action(
         gs: WaypointsGraphGameState,
         action: WaypointAction,
     ) -> None:
@@ -87,37 +89,19 @@ class WaypointsMinimaxPlayer:
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now
-                    if current_unit.faction == InitiativeState.Faction.BLUE:
-                        current_unit.status = CombatUnit.Status.PINNED
-                    else:
-                        current_unit.status = CombatUnit.Status.SUPPRESSED
-                        # Move Failed
-                        match gs.initiative:
-                            case InitiativeState.Faction.BLUE:
-                                gs.initiative = InitiativeState.Faction.RED
-                            case InitiativeState.Faction.RED:
-                                gs.initiative = InitiativeState.Faction.BLUE
+                    current_unit.status = CombatUnit.Status.PINNED
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
 
             case WaypointFireAction():
                 # Assumes determinic for now
-                enemy_unit = gs.combat_units[action.target_id]
-                if enemy_unit.faction == InitiativeState.Faction.BLUE:
-                    enemy_unit.status = CombatUnit.Status.PINNED
-                    # Firing failed
-                    match gs.initiative:
-                        case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
-                        case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
-                else:
-                    enemy_unit.status = CombatUnit.Status.SUPPRESSED
+                target_unit = gs.combat_units[action.target_id]
+                target_unit.status = CombatUnit.Status.SUPPRESSED
 
             case WaypointAssaultAction():
                 # Check for move interrupts
-                enemy_unit = gs.combat_units[action.target_id]
+                target_unit = gs.combat_units[action.target_id]
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
@@ -128,12 +112,15 @@ class WaypointsMinimaxPlayer:
                             gs.initiative = InitiativeState.Faction.BLUE
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
-                    current_unit.current_waypoint_id = enemy_unit.current_waypoint_id
+                    current_unit.current_waypoint_id = target_unit.current_waypoint_id
 
                 # Runs the assault dice roll. Assumes determinic for now
-                if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
+                killed_unit: AbstractedCombatUnit
+                if target_unit.status == CombatUnit.Status.SUPPRESSED:
                     gs.combat_units.pop(action.target_id)
+                    killed_unit = target_unit
                 else:
+                    killed_unit = current_unit
                     gs.combat_units.pop(action.unit_id)
                     # Assault failed
                     match gs.initiative:
@@ -141,6 +128,10 @@ class WaypointsMinimaxPlayer:
                             gs.initiative = InitiativeState.Faction.RED
                         case InitiativeState.Faction.RED:
                             gs.initiative = InitiativeState.Faction.BLUE
+
+                for objective in gs.objectives:
+                    if killed_unit.faction == objective.target_faction:
+                        objective.units_destroyed_counter += 1
 
     @staticmethod
     def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointAction]:
@@ -177,7 +168,7 @@ class WaypointsMinimaxPlayer:
                         not in current_waypoint.movable_paths.keys()
                     ):
                         continue
-                    interrupt = WaypointsMinimaxPlayer._get_move_interrupt(
+                    interrupt = WaypointsMinimaxSearch._get_move_interrupt(
                         gs, combat_unit, enemy_unit.current_waypoint_id
                     )
                     actions.append(
@@ -197,7 +188,7 @@ class WaypointsMinimaxPlayer:
                 )
 
                 for move_to_id in movable_nodes:
-                    interrupt = WaypointsMinimaxPlayer._get_move_interrupt(
+                    interrupt = WaypointsMinimaxSearch._get_move_interrupt(
                         gs, combat_unit, move_to_id
                     )
                     actions.append(
@@ -216,11 +207,8 @@ class WaypointsMinimaxPlayer:
         current_unit: AbstractedCombatUnit,
         move_to_id: int,
     ) -> int | None:
-        interrupt_at_id: int | None = None
         current_waypoint = gs.waypoints[current_unit.current_waypoint_id]
         for path_id in current_waypoint.movable_paths[move_to_id]:
-            if interrupt_at_id is not None:
-                break
             for enemy_unit in gs.combat_units.values():
                 # Add interrupt if the enemy can reactive fire it
                 if enemy_unit.faction == current_unit.faction:
@@ -232,10 +220,11 @@ class WaypointsMinimaxPlayer:
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
                     return path_id
+        return None
 
     @staticmethod
     def _evaluate(gs: WaypointsGraphGameState) -> float:
-        """Heuristic valuation from BLUE perspective"""
+        """Heuristic non-terminal valuation from BLUE perspective"""
         score = 0.0
         for unit in gs.combat_units.values():
             value = 0
@@ -252,3 +241,13 @@ class WaypointsMinimaxPlayer:
             else:
                 score -= value
         return score
+
+    @staticmethod
+    def _get_winning_faction(
+        gs: WaypointsGraphGameState,
+    ) -> InitiativeState.Faction | None:
+        """If terminal, returns which faction wins."""
+        for objective in gs.objectives:
+            if objective.units_to_destroy == objective.units_destroyed_counter:
+                return objective.winning_faction
+        return None
