@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
 from flanker_ai.waypoints.waypoints_minimax_agent import WaypointsMinimaxAgent
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
@@ -8,7 +9,7 @@ from flanker_core.models.vec2 import Vec2
 
 
 @dataclass
-class AiConfigComponent:
+class AiWaypointsConfigComponent:
     faction: InitiativeState.Faction
     waypoint_coordinates: list[Vec2]
     path_tolerance: float
@@ -17,26 +18,26 @@ class AiConfigComponent:
 @dataclass
 class _AiAgentInstance:
     faction: InitiativeState.Faction
-    agent: WaypointsMinimaxAgent
+    agent: WaypointsMinimaxAgent | RandomHeuristicAgent
 
 
 class AiConfigManager:
 
     @staticmethod
-    def get_ai_config(
+    def get_ai_waypoints_config(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> AiConfigComponent:
+    ) -> AiWaypointsConfigComponent:
         # Get the config. If not exist, create a new empty one
-        config: AiConfigComponent | None = None
-        for _, c in gs.query(AiConfigComponent):
+        config: AiWaypointsConfigComponent | None = None
+        for _, c in gs.query(AiWaypointsConfigComponent):
             if c.faction != faction:
                 continue
             config = c
             break
         if config is None:
             gs.add_entity(
-                config := AiConfigComponent(
+                config := AiWaypointsConfigComponent(
                     faction=faction,
                     waypoint_coordinates=[],
                     path_tolerance=0,
@@ -48,19 +49,19 @@ class AiConfigManager:
     def get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> WaypointsMinimaxAgent:
+    ) -> WaypointsMinimaxAgent | RandomHeuristicAgent:
         """Use the `AiConfig` to build an AI agent."""
 
         # Get the agent instance component.
-        agent: WaypointsMinimaxAgent | None = None
-        for _, comp in gs.query(_AiAgentInstance):
-            if comp.faction != faction:
+        agent: WaypointsMinimaxAgent | RandomHeuristicAgent | None = None
+        for _, agent_instance in gs.query(_AiAgentInstance):
+            if agent_instance.faction != faction:
                 continue
-            agent = comp.agent
+            agent = agent_instance.agent
             break
         # If not exist, create a new empty one
         if agent is None:
-            config = AiConfigManager.get_ai_config(gs, faction)
+            config = AiConfigManager.get_ai_waypoints_config(gs, faction)
             # Add a new set of waypoints if not exists.
             if len(config.waypoint_coordinates) == 0:
                 DEFAULT_GRID_SIZE = 20

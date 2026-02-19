@@ -938,7 +938,7 @@
       }
     },
     "58": {
-      "AiConfigComponent": {
+      "AiWaypointsConfigComponent": {
         "faction": "RED",
         "waypoint_coordinates": [
           {
@@ -1282,7 +1282,7 @@
       }
     },
     "59": {
-      "AiConfigComponent": {
+      "AiWaypointsConfigComponent": {
         "faction": "BLUE",
         "waypoint_coordinates": [
           {

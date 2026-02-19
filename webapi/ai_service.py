@@ -57,7 +57,7 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
-        config = AiConfigManager.get_ai_config(gs, request.faction)
+        config = AiConfigManager.get_ai_waypoints_config(gs, request.faction)
         config.waypoint_coordinates = request.points
 
     @staticmethod
