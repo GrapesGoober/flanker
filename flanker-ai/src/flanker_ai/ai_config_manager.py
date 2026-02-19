@@ -36,12 +36,12 @@ class AiConfigManager:
     def get_ai_config(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> AiConfigComponent:
+    ) -> AiWaypointConfig | AiRandomHeuristicConfig:
         # Get the config. If not exist, create a new empty one
         for _, config_component in gs.query(AiConfigComponent):
             if config_component.faction != faction:
                 continue
-            return config_component
+            return config_component.config
         raise ValueError(f"No AI config for {gs}")
 
     @staticmethod
@@ -49,7 +49,7 @@ class AiConfigManager:
         gs: GameState,
         faction: InitiativeState.Faction,
     ) -> WaypointsMinimaxAgent | RandomHeuristicAgent:
-        """Use the `AiConfig` to build an AI agent, or reuse agent if exists."""
+        """Use the config to build an AI agent, or reuse agent if exists."""
 
         # Get the agent instance component.
         agent: WaypointsMinimaxAgent | RandomHeuristicAgent | None = None
@@ -60,7 +60,7 @@ class AiConfigManager:
             break
         # If not exist, create a new empty one
         if agent is None:
-            config = AiConfigManager.get_ai_config(gs, faction).config
+            config = AiConfigManager.get_ai_config(gs, faction)
             match config:
                 case AiWaypointConfig():
                     # if len(config.waypoint_coordinates) == 0:

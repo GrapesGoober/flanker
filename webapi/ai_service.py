@@ -58,8 +58,8 @@ class AiService:
         request: AiWaypointConfigRequest,
     ) -> None:
         config = AiConfigManager.get_ai_config(gs, request.faction)
-        if isinstance(config.config, AiWaypointConfig):
-            config.config.waypoint_coordinates = request.points
+        if isinstance(config, AiWaypointConfig):
+            config.waypoint_coordinates = request.points
 
     @staticmethod
     def _log_ai_action_results(

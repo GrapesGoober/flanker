@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED).config
+    config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED)
     assert isinstance(
         config, AiWaypointConfig
     ), "Can't visualize non-waypoints AI config"
