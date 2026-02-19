@@ -16,7 +16,7 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
-class RandomHeuristicPlayer:
+class RandomHeuristicAgent:
     """
     Random Heuristic (Baseline).
     Logic:
