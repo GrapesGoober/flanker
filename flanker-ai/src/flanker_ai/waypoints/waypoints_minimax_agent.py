@@ -12,6 +12,8 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class WaypointsMinimaxAgent:
+    """Provides agent instance for waypoints-minimax search to play the game."""
+
     def __init__(
         self,
         gs: GameState,
@@ -55,7 +57,7 @@ class WaypointsMinimaxAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
-            _, waypoint_actions = WaypointsMinimaxSearch.play(
+            _, waypoint_actions = WaypointsMinimaxSearch.search_best_actions(
                 new_waypoint_gs,
                 depth=self._depth,
             )

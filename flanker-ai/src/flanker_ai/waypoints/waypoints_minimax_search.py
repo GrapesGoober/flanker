@@ -21,7 +21,7 @@ class WaypointsMinimaxSearch:
     """
 
     @staticmethod
-    def play(
+    def search_best_actions(
         gs: WaypointsGraphGameState,
         depth: int,
         alpha: float = float("-inf"),
@@ -45,7 +45,7 @@ class WaypointsMinimaxSearch:
         for action in actions:
             new_gs = WaypointsMinimaxSearch._copy_gs(gs)
             WaypointsMinimaxSearch._perform_action(new_gs, action)
-            score, future_actions = WaypointsMinimaxSearch.play(
+            score, future_actions = WaypointsMinimaxSearch.search_best_actions(
                 new_gs,
                 depth - 1,
                 alpha=alpha,

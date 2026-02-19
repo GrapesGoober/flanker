@@ -41,7 +41,9 @@ def run_search() -> None:
     assert waypoints_gs
     global waypoint_actions
     WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
-    _, waypoint_actions = WaypointsMinimaxSearch.play(waypoints_gs, depth=4)
+    _, waypoint_actions = WaypointsMinimaxSearch.search_best_actions(
+        waypoints_gs, depth=4
+    )
 
 
 print("abstracting...")
