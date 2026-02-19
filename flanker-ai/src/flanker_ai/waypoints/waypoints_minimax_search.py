@@ -14,10 +14,10 @@ from flanker_core.models.components import CombatUnit, InitiativeState
 
 class WaypointsMinimaxSearch:
     """
-    Implements a basic abstracted waypoints-graph minimax AI player.
+    Implements a basic abstracted waypoints-graph minimax AI search.
     This is just a bare minimum code for the CoG paper, thus doesn't
-    have RNG, determinism, or other fancier rigs. The MAX player is BLUE
-    this the MIN player is RED.
+    have RNG, determinism, or other fancier rigs. The MAX ply is BLUE
+    this the MIN ply is RED.
     """
 
     @staticmethod

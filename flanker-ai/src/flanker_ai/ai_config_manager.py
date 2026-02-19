@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
+from flanker_ai.waypoints.waypoints_minimax_agent import WaypointsMinimaxAgent
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -15,9 +15,9 @@ class AiConfigComponent:
 
 
 @dataclass
-class _AiPlayerInstance:
+class _AiAgentInstance:
     faction: InitiativeState.Faction
-    player: WaypointsMinimaxPlayer
+    agent: WaypointsMinimaxAgent
 
 
 class AiConfigManager:
@@ -45,21 +45,21 @@ class AiConfigManager:
         return config
 
     @staticmethod
-    def get_player(
+    def get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> WaypointsMinimaxPlayer:
-        """Use the `AiConfig` to build an AI player."""
+    ) -> WaypointsMinimaxAgent:
+        """Use the `AiConfig` to build an AI agent."""
 
-        # Get the player instance component.
-        player: WaypointsMinimaxPlayer | None = None
-        for _, comp in gs.query(_AiPlayerInstance):
+        # Get the agent instance component.
+        agent: WaypointsMinimaxAgent | None = None
+        for _, comp in gs.query(_AiAgentInstance):
             if comp.faction != faction:
                 continue
-            player = comp.player
+            agent = comp.agent
             break
         # If not exist, create a new empty one
-        if player is None:
+        if agent is None:
             config = AiConfigManager.get_ai_config(gs, faction)
             # Add a new set of waypoints if not exists.
             if len(config.waypoint_coordinates) == 0:
@@ -68,13 +68,13 @@ class AiConfigManager:
                 config.waypoint_coordinates = WaypointScheme.get_grid_coordinates(
                     gs, spacing=DEFAULT_GRID_SIZE, offset=DEFAULT_GRID_SIZE / 2
                 )
-            player = WaypointsMinimaxPlayer(
+            agent = WaypointsMinimaxAgent(
                 gs=gs,
                 faction=faction,
                 search_depth=4,
                 waypoint_coordinates=config.waypoint_coordinates,
                 path_tolerance=config.path_tolerance,
             )
-            gs.add_entity(_AiPlayerInstance(faction=faction, player=player))
+            gs.add_entity(_AiAgentInstance(faction=faction, agent=agent))
 
-        return player
+        return agent

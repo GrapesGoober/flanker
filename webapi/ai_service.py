@@ -29,24 +29,24 @@ class AiService:
     def play_redfor(gs: GameState) -> None:
         """Runs the default REDFOR AI."""
 
-        player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
+        agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
 
-        results = player.play_initiative()
+        results = agent.play_initiative()
 
         AiService._log_ai_action_results(gs, results)
 
     @staticmethod
     def play_trial(gs: GameState) -> None:
         """Runs a trial where AI plays against each other."""
-        red_player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
-        blue_player = AiConfigManager.get_player(gs, InitiativeState.Faction.BLUE)
+        red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+        blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
 
         while ObjectiveSystem.get_winning_faction(gs) == None:
-            results = red_player.play_initiative()
+            results = red_agent.play_initiative()
             if results:
                 AiService._log_ai_action_results(gs, results)
 
-            results = blue_player.play_initiative()
+            results = blue_agent.play_initiative()
             if results:
                 AiService._log_ai_action_results(gs, results)
 

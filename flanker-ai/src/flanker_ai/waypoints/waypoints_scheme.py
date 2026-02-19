@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import replace
 from typing import Literal
 
@@ -20,7 +21,6 @@ from flanker_ai.waypoints.models import (
     WaypointNode,
     WaypointsGraphGameState,
 )
-from flanker_ai.waypoints.waypoints_minimax_player import deepcopy
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,

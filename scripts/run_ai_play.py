@@ -27,17 +27,17 @@ def load_game(path: str) -> GameState:
 
 if __name__ == "__main__":
     gs = load_game(path="./scenes/demo-simple-stochastic-waypoints.json")
-    print("Creating RED player...")
-    red_player = AiConfigManager.get_player(gs, InitiativeState.Faction.RED)
-    print("Creating BLUE player...")
-    blue_player = AiConfigManager.get_player(gs, InitiativeState.Faction.BLUE)
+    print("Creating RED agent...")
+    red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+    print("Creating BLUE agent...")
+    blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
 
     while ObjectiveSystem.get_winning_faction(gs) == None:
-        results = red_player.play_initiative()
+        results = red_agent.play_initiative()
         if results:
             print(f"RED made actions {results}")
 
-        results = blue_player.play_initiative()
+        results = blue_agent.play_initiative()
         if results:
             print(f"BLUE made actions {results}")
 

@@ -11,7 +11,7 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
-class WaypointsMinimaxPlayer:
+class WaypointsMinimaxAgent:
     def __init__(
         self,
         gs: GameState,
