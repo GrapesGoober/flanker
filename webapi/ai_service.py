@@ -1,20 +1,18 @@
+from flanker_ai.ai_config_manager import AiConfigManager
 from flanker_ai.unabstracted.models import (
     ActionResult,
     AssaultActionResult,
     FireActionResult,
     MoveActionResult,
 )
-from flanker_ai.unabstracted.tree_search_player import TreeSearchPlayer
-from flanker_ai.waypoints.waypoints_minimax_player import WaypointsMinimaxPlayer
-from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
-from flanker_core.models.outcomes import InvalidAction
-from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
+    AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
     FireActionLog,
@@ -30,24 +28,37 @@ class AiService:
     @staticmethod
     def play_redfor(gs: GameState) -> None:
         """Runs the default REDFOR AI."""
-        AI_FACTION = InitiativeState.Faction.RED
-        if InitiativeSystem.get_initiative(gs) != AI_FACTION:
-            return
-        waypoints_gs = WaypointScheme.create_grid_waypoints(gs, spacing=20, offset=10)
-        halt_counter = 0
-        while InitiativeSystem.get_initiative(gs) == AI_FACTION:
-            # Runs the abstracted graph search
-            _, waypoint_actions = WaypointsMinimaxPlayer.play(waypoints_gs, depth=4)
-            current_action = waypoint_actions[0]
-            result = WaypointScheme.apply_action(gs, waypoints_gs, current_action)
-            if isinstance(result, InvalidAction):
-                InitiativeSystem.flip_initiative(gs)
-            if halt_counter > 100:
-                InitiativeSystem.flip_initiative(gs)
-                print("AI is making too many useless actions, breaking")
-            assert isinstance(result, ActionResult)
-            AiService._log_ai_action_results(gs, [result])
-            halt_counter += 1
+
+        agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+
+        results = agent.play_initiative()
+
+        AiService._log_ai_action_results(gs, results)
+
+    @staticmethod
+    def play_trial(gs: GameState) -> None:
+        """Runs a trial where AI plays against each other."""
+        red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+        blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
+
+        while ObjectiveSystem.get_winning_faction(gs) == None:
+            results = red_agent.play_initiative()
+            if results:
+                AiService._log_ai_action_results(gs, results)
+
+            results = blue_agent.play_initiative()
+            if results:
+                AiService._log_ai_action_results(gs, results)
+
+        print(f"Winner is {ObjectiveSystem.get_winning_faction(gs)}")
+
+    @staticmethod
+    def update_ai_config(
+        gs: GameState,
+        request: AiWaypointConfigRequest,
+    ) -> None:
+        config = AiConfigManager.get_ai_config(gs, request.faction)
+        config.waypoint_coordinates = request.points
 
     @staticmethod
     def _log_ai_action_results(
@@ -93,14 +104,3 @@ class AiService:
                     raise ValueError(f"Unknown type {result=}")
 
             LoggingService.log(gs, log)
-
-    @staticmethod
-    def play_minimax(gs: GameState, depth: int) -> None:
-        """
-        (prototype) Runs a minimax search and logs
-        sequential results for BLUEFOR faction.
-        """
-
-        _, results = TreeSearchPlayer.play_minimax(gs, depth)
-        LoggingService.clear_logs(gs)
-        AiService._log_ai_action_results(gs, results)

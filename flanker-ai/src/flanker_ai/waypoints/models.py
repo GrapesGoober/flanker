@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 
-from flanker_core.models.components import CombatUnit, InitiativeState
+from flanker_core.models.components import (
+    CombatUnit,
+    EliminationObjective,
+    InitiativeState,
+)
 from flanker_core.models.vec2 import Vec2
 
 
@@ -17,16 +21,17 @@ class AbstractedCombatUnit:
 @dataclass
 class WaypointNode:
     position: Vec2
-    visible_nodes: list[int]
+    visible_nodes: set[int]
     movable_paths: dict[int, list[int]]
 
 
 @dataclass
 class WaypointsGraphGameState:  # Used for the minimax
-    # Note: this should be kept flat to be serializable
+    # Note: this should be kept flat to be serializable in the future
     waypoints: dict[int, WaypointNode]
     combat_units: dict[int, AbstractedCombatUnit]
     initiative: InitiativeState.Faction
+    objectives: list[EliminationObjective]
 
 
 @dataclass

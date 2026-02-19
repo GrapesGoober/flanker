@@ -162,10 +162,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/{sceneName}/{gameId}/ai-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ai Config Waypoints */
+        post: operations["ai_config_waypoints_api__sceneName___gameId__ai_config_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AiWaypointConfigRequest */
+        AiWaypointConfigRequest: {
+            faction: components["schemas"]["Faction"];
+            /** Points */
+            points: components["schemas"]["Vec2"][];
+        };
         /** AssaultActionLog */
         AssaultActionLog: {
             /**
@@ -205,6 +228,11 @@ export interface components {
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
         };
+        /**
+         * Faction
+         * @enum {string}
+         */
+        Faction: "BLUE" | "RED";
         /** FireActionLog */
         FireActionLog: {
             /**
@@ -610,6 +638,42 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_config_waypoints_api__sceneName___gameId__ai_config_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiWaypointConfigRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

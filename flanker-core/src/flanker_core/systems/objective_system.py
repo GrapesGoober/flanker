@@ -21,6 +21,6 @@ class ObjectiveSystem:
     @staticmethod
     def get_winning_faction(gs: GameState) -> InitiativeState.Faction | None:
         """Get the faction that completed its objectives, if any."""
-        for _, _, objective in gs.query(InitiativeState, EliminationObjective):
+        for _, objective in gs.query(EliminationObjective):
             if objective.units_destroyed_counter >= objective.units_to_destroy:
                 return objective.winning_faction

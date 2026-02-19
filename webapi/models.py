@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Annotated, Literal, Union
 
-from flanker_core.models.components import CombatUnit
+from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
@@ -99,6 +99,11 @@ class AssaultActionLog(BaseModel, CamelCaseConfig):
     outcome: AssaultOutcomes | None = None
     reactive_fire_outcome: FireOutcomes | None = None
     unit_state: CombatUnitsViewState
+
+
+class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
+    faction: InitiativeState.Faction
+    points: list[Vec2]
 
 
 ActionLog = Annotated[
