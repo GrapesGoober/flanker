@@ -1,4 +1,4 @@
-from flanker_ai.ai_config_manager import AiConfigManager
+from flanker_ai.ai_config_manager import AiConfigManager, AiWaypointConfig
 from flanker_ai.unabstracted.models import (
     ActionResult,
     AssaultActionResult,
@@ -57,8 +57,9 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
-        config = AiConfigManager.get_ai_waypoints_config(gs, request.faction)
-        config.waypoint_coordinates = request.points
+        config = AiConfigManager.get_ai_config(gs, request.faction)
+        if isinstance(config.config, AiWaypointConfig):
+            config.config.waypoint_coordinates = request.points
 
     @staticmethod
     def _log_ai_action_results(

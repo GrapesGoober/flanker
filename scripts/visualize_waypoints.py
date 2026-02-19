@@ -2,7 +2,11 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.ai_config_manager import AiConfigManager, AiWaypointsConfigComponent
+from flanker_ai.ai_config_manager import (
+    AiConfigComponent,
+    AiConfigManager,
+    AiWaypointConfig,
+)
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -26,7 +30,7 @@ def visualize_polyline(verts: list[Vec2], color: str = "C0") -> None:
 if __name__ == "__main__":
 
     component_types: list[type[Any]] = []
-    component_types.append(AiWaypointsConfigComponent)
+    component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
@@ -52,7 +56,10 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    config = AiConfigManager.get_ai_waypoints_config(gs, InitiativeState.Faction.RED)
+    config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED).config
+    assert isinstance(
+        config, AiWaypointConfig
+    ), "Can't visualize non-waypoints AI config"
     waypoints_gs = WaypointScheme.create_template_waypoints(
         gs=gs,
         points=config.waypoint_coordinates,
