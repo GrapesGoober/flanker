@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
 from flanker_ai.waypoints.waypoints_minimax_agent import WaypointsMinimaxAgent
@@ -6,18 +7,17 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 
-# TODO: clean up or design this config
-# It's hard to read and reason in the game file what AI is fighting what
-
 
 @dataclass
 class AiWaypointConfig:
+    type: Literal["AiWaypointConfig"]
     waypoint_coordinates: list[Vec2]
     path_tolerance: float
 
 
 @dataclass
 class AiRandomHeuristicConfig:  # No config for this one
+    type: Literal["AiRandomHeuristicConfig"]
     ...
 
 
@@ -28,7 +28,7 @@ class AiConfigComponent:
 
 
 @dataclass
-class _AiAgentInstance:
+class _AiAgentInstanceComponent:
     faction: InitiativeState.Faction
     agent: WaypointsMinimaxAgent | RandomHeuristicAgent
 
@@ -56,7 +56,7 @@ class AiConfigManager:
 
         # Get the agent instance component.
         agent: WaypointsMinimaxAgent | RandomHeuristicAgent | None = None
-        for _, agent_instance in gs.query(_AiAgentInstance):
+        for _, agent_instance in gs.query(_AiAgentInstanceComponent):
             if agent_instance.faction != faction:
                 continue
             agent = agent_instance.agent
@@ -79,6 +79,6 @@ class AiConfigManager:
                         faction=faction,
                     )
 
-            gs.add_entity(_AiAgentInstance(faction=faction, agent=agent))
+            gs.add_entity(_AiAgentInstanceComponent(faction=faction, agent=agent))
 
         return agent

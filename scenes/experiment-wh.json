@@ -940,13 +940,14 @@
     "58": {
       "AiConfigComponent": {
         "faction": "RED",
-        "config": {}
+        "config": { "type": "AiRandomHeuristicConfig" }
       }
     },
     "59": {
       "AiConfigComponent": {
         "faction": "BLUE",
         "config": {
+          "type": "AiWaypointConfig",
           "waypoint_coordinates": [
             {
               "x": 87.62042836884623,

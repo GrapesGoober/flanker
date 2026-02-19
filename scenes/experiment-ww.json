@@ -941,6 +941,7 @@
       "AiConfigComponent": {
         "faction": "RED",
         "config": {
+          "type": "AiWaypointConfig",
           "waypoint_coordinates": [
             {
               "x": 87.62042836884623,
@@ -1287,6 +1288,7 @@
       "AiConfigComponent": {
         "faction": "BLUE",
         "config": {
+          "type": "AiWaypointConfig",
           "waypoint_coordinates": [
             {
               "x": 87.62042836884623,
