@@ -42,13 +42,13 @@ class AiService:
         blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
 
         while ObjectiveSystem.get_winning_faction(gs) == None:
-            results = red_agent.play_initiative()
-            if results:
-                AiService._log_ai_action_results(gs, results)
+            blue_action_results = blue_agent.play_initiative()
+            if blue_action_results:
+                AiService._log_ai_action_results(gs, blue_action_results)
 
-            results = blue_agent.play_initiative()
-            if results:
-                AiService._log_ai_action_results(gs, results)
+            red_action_results = red_agent.play_initiative()
+            if red_action_results:
+                AiService._log_ai_action_results(gs, red_action_results)
 
         print(f"Winner is {ObjectiveSystem.get_winning_faction(gs)}")
 
