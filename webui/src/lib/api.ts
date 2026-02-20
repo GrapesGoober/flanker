@@ -60,6 +60,15 @@ export async function AddTerrainData(terrain: TerrainModel) {
 	if (error) throw new Error(JSON.stringify(error));
 }
 
+/** Delete terrain data for the current game. */
+export async function DeleteTerrainData(terrain_id: number) {
+	const { data, error } = await client.DELETE('/api/{sceneName}/{gameId}/terrain', {
+		params: GetParams(),
+		body: terrain_id
+	});
+	if (error) throw new Error(JSON.stringify(error));
+}
+
 /** Get current combat unit states for the game. */
 export async function GetUnitStatesData(): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/units', {

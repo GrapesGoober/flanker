@@ -66,7 +66,11 @@ export interface paths {
          * @description Edit the terrain polygon.
          */
         post: operations["add_terrain_api__sceneName___gameId__terrain_post"];
-        delete?: never;
+        /**
+         * Delete Terrain
+         * @description Edit the terrain polygon.
+         */
+        delete: operations["delete_terrain_api__sceneName___gameId__terrain_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -504,6 +508,42 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TerrainModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_terrain_api__sceneName___gameId__terrain_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": number;
             };
         };
         responses: {

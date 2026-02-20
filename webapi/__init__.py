@@ -147,3 +147,14 @@ async def add_terrain(
     """Edit the terrain polygon."""
     gs = scene_service.get_game_state(scene_name, game_id)
     TerrainService.add_terrain(gs, body)
+
+
+@app.delete("/api/{sceneName}/{gameId}/terrain")
+async def delete_terrain(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    terrain_id: int = Body(...),
+) -> None:
+    """Edit the terrain polygon."""
+    gs = scene_service.get_game_state(scene_name, game_id)
+    TerrainService.delete_terrain(gs, terrain_id)

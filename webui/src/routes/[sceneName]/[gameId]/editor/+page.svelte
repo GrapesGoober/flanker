@@ -42,6 +42,12 @@
 		controller.drawMode();
 	}
 
+	/** Finishes the current draw and saves as terrain. */
+	async function deleteTerrain() {
+		await controller.deleteTerrain();
+		resetMode();
+	}
+
 	/** Switches the editor to waypoints mode. */
 	function waypointsMode() {
 		controller.waypointsMode('RED');
@@ -88,6 +94,7 @@ mode = {controller.state.type}
 	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
 	degrees =
 	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
+	<button onclick={deleteTerrain} style="margin-bottom: 1em;">Delete Terrain</button>
 {:else if controller.state.type == 'draw'}
 	<button onclick={finishDraw} style="margin-bottom: 1em;">Finish Draw</button>
 {:else if controller.state.type == 'draw-waypoints'}

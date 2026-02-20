@@ -1,5 +1,6 @@
 import {
 	AddTerrainData,
+	DeleteTerrainData,
 	GetTerrainData,
 	UpdateTerrainData,
 	UpdateWaypointsData,
@@ -84,10 +85,15 @@ export class EditorController {
 			position: position,
 			degrees: 0,
 			vertices: vertices,
-			terrainType: 'FOREST'
+			terrainType: 'FOREST' // TODO: add a select box to choose terrain
 		};
 		await AddTerrainData(terrain);
 		this.refreshTerrain();
 		this.reset();
+	}
+
+	async deleteTerrain() {
+		if (this.state.type != 'selected') return;
+		await DeleteTerrainData(this.state.terrain.terrainId);
 	}
 }
