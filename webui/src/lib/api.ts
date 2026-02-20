@@ -6,6 +6,7 @@ const client = createClient<paths>();
 export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
+export type TerrainType = components['schemas']['Types'];
 export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type CombatUnitsViewState = components['schemas']['CombatUnitsViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];

@@ -6,6 +6,7 @@ import {
 	UpdateWaypointsData,
 	type AiWaypointsModel,
 	type TerrainModel,
+	type TerrainType,
 	type Vec2
 } from '$lib/api';
 import { transform } from '$lib/map-utils';
@@ -13,7 +14,7 @@ import { transform } from '$lib/map-utils';
 type EditorControllerState =
 	| { type: 'default' }
 	| { type: 'selected'; terrain: TerrainModel }
-	| { type: 'draw'; drawPolygon: Vec2[] }
+	| { type: 'draw'; drawPolygon: Vec2[]; terrainType: TerrainType }
 	| { type: 'draw-waypoints'; waypoints: AiWaypointsModel };
 
 /**
@@ -37,7 +38,7 @@ export class EditorController {
 	}
 	/** Switches the editor to draw mode and initializes a new polygon. */
 	drawMode() {
-		this.state = { type: 'draw', drawPolygon: [] };
+		this.state = { type: 'draw', drawPolygon: [], terrainType: 'FOREST' };
 	}
 	/** Switches the editor to draw-waypoints mode and sets a new empty waypoints list. */
 	waypointsMode(faction: 'BLUE' | 'RED') {
@@ -63,7 +64,7 @@ export class EditorController {
 			position: position,
 			degrees: 0,
 			vertices: vertices,
-			terrainType: 'FOREST' // TODO: add a select box to choose terrain
+			terrainType: this.state.terrainType
 		};
 		await AddTerrainData(terrain);
 		this.refreshTerrain();
