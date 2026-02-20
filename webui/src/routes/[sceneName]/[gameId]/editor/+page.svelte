@@ -81,9 +81,6 @@ mode = {controller.state.type}
 <button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
 <button onclick={waypointsMode} style="margin-bottom: 1em;">Waypoints Mode</button>
-{#if controller.state.type == 'draw'}
-	<button onclick={finishDraw} style="margin-bottom: 1em;">Finish Draw</button>
-{/if}
 
 {#if controller.state.type == 'selected'}
 	id = {controller.state.terrain.terrainId}
@@ -91,6 +88,8 @@ mode = {controller.state.type}
 	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
 	degrees =
 	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
+{:else if controller.state.type == 'draw'}
+	<button onclick={finishDraw} style="margin-bottom: 1em;">Finish Draw</button>
 {:else if controller.state.type == 'draw-waypoints'}
 	<select bind:value={controller.state.waypoints.faction}>
 		<option value="BLUE">BLUE</option>

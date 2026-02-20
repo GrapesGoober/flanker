@@ -1,4 +1,5 @@
 import {
+	AddTerrainData,
 	GetTerrainData,
 	UpdateTerrainData,
 	UpdateWaypointsData,
@@ -6,6 +7,7 @@ import {
 	type TerrainModel,
 	type Vec2
 } from '$lib/api';
+import { transform } from '$lib/map-utils';
 
 type EditorControllerState =
 	| { type: 'default' }
@@ -72,18 +74,19 @@ export class EditorController {
 	async finishDraw() {
 		if (this.state.type != 'draw' || this.state.drawPolygon.length < 3) return;
 		const polygon = this.state.drawPolygon;
-		const position = polygon[0];
-		const vertices = polygon.map((v) => ({ x: v.x - position.x, y: v.y - position.y }));
-		const maxId =
-			this.terrainData.length > 0 ? Math.max(...this.terrainData.map((t) => t.terrainId)) : 0;
+		const position = polygon[0]; // Assume first polygon as position
+		if (position === undefined) return;
+		const vertices = transform(polygon, { x: -position.x, y: -position.y }, 0);
 		const terrain: TerrainModel = {
-			terrainId: maxId + 1,
+			// The ID is ignored as it will create a new one
+			// The pain of not using UUID is haunting me
+			terrainId: 0,
 			position: position,
 			degrees: 0,
 			vertices: vertices,
 			terrainType: 'FOREST'
 		};
-		await UpdateTerrainData(terrain);
+		await AddTerrainData(terrain);
 		this.refreshTerrain();
 		this.reset();
 	}

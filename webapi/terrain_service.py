@@ -47,18 +47,16 @@ class TerrainService:
     @staticmethod
     def add_terrain(
         gs: GameState,
-        pivot: Vec2,
-        vertices: list[Vec2],
-        terrain_type: TerrainModel.Types,
+        terrain: TerrainModel,
     ) -> None:
         """Add a new terrain feature to the game state."""
         gs.add_entity(
-            Transform(position=pivot, degrees=0),
+            Transform(position=terrain.position, degrees=0),
             TerrainFeature(
-                vertices=vertices,
-                flag=TerrainService.get_terrain_flags(terrain_type),
+                vertices=terrain.vertices,
+                flag=TerrainService.get_terrain_flags(terrain.terrain_type),
             ),
-            TerrainTypeTag(terrain_type),
+            TerrainTypeTag(terrain.terrain_type),
         )
 
     @staticmethod

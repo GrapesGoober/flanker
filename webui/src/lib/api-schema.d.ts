@@ -61,7 +61,11 @@ export interface paths {
          * @description Edit the terrain polygon.
          */
         put: operations["update_terrain_api__sceneName___gameId__terrain_put"];
-        post?: never;
+        /**
+         * Add Terrain
+         * @description Edit the terrain polygon.
+         */
+        post: operations["add_terrain_api__sceneName___gameId__terrain_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -452,6 +456,42 @@ export interface operations {
         };
     };
     update_terrain_api__sceneName___gameId__terrain_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerrainModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_terrain_api__sceneName___gameId__terrain_post: {
         parameters: {
             query?: never;
             header?: never;

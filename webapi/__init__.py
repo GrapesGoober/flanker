@@ -136,3 +136,14 @@ async def update_terrain(
     """Edit the terrain polygon."""
     gs = scene_service.get_game_state(scene_name, game_id)
     TerrainService.update_terrain(gs, body)
+
+
+@app.post("/api/{sceneName}/{gameId}/terrain")
+async def add_terrain(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    body: TerrainModel = Body(...),
+) -> None:
+    """Edit the terrain polygon."""
+    gs = scene_service.get_game_state(scene_name, game_id)
+    TerrainService.add_terrain(gs, body)
