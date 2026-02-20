@@ -30,25 +30,7 @@ export class EditorController {
 			this.terrainData = data;
 		});
 	}
-	/** Adds a vertex to the current draw polygon if in draw mode. */
-	addVertex(worldPos: Vec2) {
-		if (this.state.type != 'draw') return;
-		this.state.drawPolygon.push(worldPos);
-	}
-	/** Selects a terrain object and updates its data if already selected. */
-	selectTerrain(terrain: TerrainModel) {
-		if (this.state.type != 'default' && this.state.type != 'selected') return;
-		if (this.state.type == 'selected') UpdateTerrainData(this.state.terrain);
-		this.state = {
-			type: 'selected',
-			terrain: terrain
-		};
-	}
-	/** Asynchronously updates the selected terrain data via the API. */
-	async updateTerrainAsync() {
-		if (this.state.type != 'selected') return;
-		await UpdateTerrainData(this.state.terrain);
-	}
+
 	/** Resets the editor state to default. */
 	reset() {
 		this.state = { type: 'default' };
@@ -61,15 +43,11 @@ export class EditorController {
 	waypointsMode(faction: 'BLUE' | 'RED') {
 		this.state = { type: 'draw-waypoints', waypoints: { faction, points: [] } };
 	}
-	/** Adds a new waypoint */
-	addWaypoint(point: Vec2) {
-		if (this.state.type != 'draw-waypoints') return;
-		this.state.waypoints.points.push(point);
-	}
-	/** Async updates the waypoints to server */
-	async updateWaypoint() {
-		if (this.state.type != 'draw-waypoints') return;
-		await UpdateWaypointsData(this.state.waypoints);
+
+	/** Adds a vertex to the current draw polygon if in draw mode. */
+	addVertex(worldPos: Vec2) {
+		if (this.state.type != 'draw') return;
+		this.state.drawPolygon.push(worldPos);
 	}
 	/** Finishes the draw and saves the polygon as a new forest terrain. */
 	async finishDraw() {
@@ -92,8 +70,35 @@ export class EditorController {
 		this.reset();
 	}
 
+	/** Selects a terrain object and updates its data if already selected. */
+	selectTerrain(terrain: TerrainModel) {
+		if (this.state.type != 'default' && this.state.type != 'selected') return;
+		if (this.state.type == 'selected') UpdateTerrainData(this.state.terrain);
+		this.state = {
+			type: 'selected',
+			terrain: terrain
+		};
+	}
+
+	/** Deletes the selected terrain */
 	async deleteTerrain() {
 		if (this.state.type != 'selected') return;
 		await DeleteTerrainData(this.state.terrain.terrainId);
+	}
+	/** Asynchronously updates the selected terrain data via the API. */
+	async updateTerrainAsync() {
+		if (this.state.type != 'selected') return;
+		await UpdateTerrainData(this.state.terrain);
+	}
+
+	/** Adds a new waypoint */
+	addWaypoint(point: Vec2) {
+		if (this.state.type != 'draw-waypoints') return;
+		this.state.waypoints.points.push(point);
+	}
+	/** Async updates the waypoints to server */
+	async updateWaypoint() {
+		if (this.state.type != 'draw-waypoints') return;
+		await UpdateWaypointsData(this.state.waypoints);
 	}
 }
