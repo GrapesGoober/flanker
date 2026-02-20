@@ -42,6 +42,12 @@
 		controller.drawMode();
 	}
 
+	/** Finishes the current draw and saves as terrain. */
+	async function deleteTerrain() {
+		await controller.deleteTerrain();
+		resetMode();
+	}
+
 	/** Switches the editor to waypoints mode. */
 	function waypointsMode() {
 		controller.waypointsMode('RED');
@@ -50,6 +56,10 @@
 	/** Updates the waypoints to the webapi. */
 	function confirmsWaypoints() {
 		controller.updateWaypoint();
+	}
+	/** Finishes the current draw and saves as terrain. */
+	async function finishDraw() {
+		await controller.finishDraw();
 	}
 </script>
 
@@ -84,6 +94,17 @@ mode = {controller.state.type}
 	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
 	degrees =
 	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
+	<button onclick={deleteTerrain} style="margin-bottom: 1em;">Delete Terrain</button>
+{:else if controller.state.type == 'draw'}
+	<select bind:value={controller.state.terrainType}>
+		<option value="FOREST">FOREST</option>
+		<option value="ROAD">ROAD</option>
+		<option value="FIELD">FIELD</option>
+		<option value="WATER">WATER</option>
+		<option value="BUILDING">BUILDING</option>
+	</select>
+
+	<button onclick={finishDraw} style="margin-bottom: 1em;">Finish Draw</button>
 {:else if controller.state.type == 'draw-waypoints'}
 	<select bind:value={controller.state.waypoints.faction}>
 		<option value="BLUE">BLUE</option>
