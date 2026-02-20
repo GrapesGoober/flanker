@@ -61,10 +61,14 @@ export async function AddTerrainData(terrain: TerrainModel) {
 }
 
 /** Delete terrain data for the current game. */
-export async function DeleteTerrainData(terrain_id: number) {
-	const { data, error } = await client.DELETE('/api/{sceneName}/{gameId}/terrain', {
-		params: GetParams(),
-		body: terrain_id
+export async function DeleteTerrainData(terrainId: number) {
+	const { data, error } = await client.DELETE('/api/{sceneName}/{gameId}/terrain/{terrainId}', {
+		params: {
+			path: {
+				...GetParams().path,
+				terrainId: terrainId
+			}
+		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
 }
