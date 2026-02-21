@@ -61,7 +61,11 @@ export interface paths {
          * @description Edit the terrain polygon.
          */
         put: operations["update_terrain_api__sceneName___gameId__terrain_put"];
-        post?: never;
+        /**
+         * Add Terrain
+         * @description Edit the terrain polygon.
+         */
+        post: operations["add_terrain_api__sceneName___gameId__terrain_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -174,6 +178,26 @@ export interface paths {
         /** Ai Config Waypoints */
         post: operations["ai_config_waypoints_api__sceneName___gameId__ai_config_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/{sceneName}/{gameId}/terrain/{terrainId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Terrain
+         * @description Edit the terrain polygon.
+         */
+        delete: operations["delete_terrain_api__sceneName___gameId__terrain__terrainId__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -487,6 +511,42 @@ export interface operations {
             };
         };
     };
+    add_terrain_api__sceneName___gameId__terrain_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerrainModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     action_move_api__sceneName___gameId__move_post: {
         parameters: {
             query?: never;
@@ -674,6 +734,39 @@ export interface operations {
                 "application/json": components["schemas"]["AiWaypointConfigRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_terrain_api__sceneName___gameId__terrain__terrainId__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+                terrainId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

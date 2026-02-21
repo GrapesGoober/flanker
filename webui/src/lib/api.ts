@@ -6,6 +6,7 @@ const client = createClient<paths>();
 export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
+export type TerrainType = components['schemas']['Types'];
 export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type CombatUnitsViewState = components['schemas']['CombatUnitsViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
@@ -47,6 +48,28 @@ export async function UpdateTerrainData(terrain: TerrainModel) {
 	const { data, error } = await client.PUT('/api/{sceneName}/{gameId}/terrain', {
 		params: GetParams(),
 		body: terrain
+	});
+	if (error) throw new Error(JSON.stringify(error));
+}
+
+/** Add terrain data for the current game. */
+export async function AddTerrainData(terrain: TerrainModel) {
+	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/terrain', {
+		params: GetParams(),
+		body: terrain
+	});
+	if (error) throw new Error(JSON.stringify(error));
+}
+
+/** Delete terrain data for the current game. */
+export async function DeleteTerrainData(terrainId: number) {
+	const { data, error } = await client.DELETE('/api/{sceneName}/{gameId}/terrain/{terrainId}', {
+		params: {
+			path: {
+				...GetParams().path,
+				terrainId: terrainId
+			}
+		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
 }
