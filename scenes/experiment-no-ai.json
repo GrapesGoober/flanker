@@ -8,11 +8,19 @@
       "EliminationObjective": {
         "target_faction": "RED",
         "winning_faction": "BLUE",
-        "units_to_destroy": 1,
+        "units_to_destroy": 3,
         "units_destroyed_counter": 0
       }
     },
     "1": {
+      "EliminationObjective": {
+        "target_faction": "BLUE",
+        "winning_faction": "RED",
+        "units_to_destroy": 3,
+        "units_destroyed_counter": 0
+      }
+    },
+    "2": {
       "Transform": {
         "position": {
           "x": 0.0,
@@ -43,7 +51,7 @@
         "flag": 33
       }
     },
-    "2": {
+    "3": {
       "Transform": {
         "position": {
           "x": 30.0,
@@ -63,7 +71,7 @@
       },
       "AssaultControls": {}
     },
-    "3": {
+    "4": {
       "Transform": {
         "position": {
           "x": 50.0,
@@ -83,7 +91,7 @@
       },
       "AssaultControls": {}
     },
-    "4": {
+    "5": {
       "Transform": {
         "position": {
           "x": 70.0,
