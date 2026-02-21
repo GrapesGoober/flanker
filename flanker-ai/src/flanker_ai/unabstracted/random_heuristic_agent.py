@@ -105,14 +105,14 @@ class RandomHeuristicAgent:
             # Find nearest enemy
             my_pos = self._gs.get_component(unit_id, Transform).position
             nearest_enemy_pos: Vec2 | None = None
-            min_dist: float = float("inf")
+            nearest_enemy_distance: float = float("inf")
 
             for target_id, target in self._gs.query(CombatUnit):
                 if target.faction != self._faction:
                     target_pos = self._gs.get_component(target_id, Transform).position
                     dist = (target_pos - my_pos).length()
-                    if dist < min_dist:
-                        min_dist = dist
+                    if dist < nearest_enemy_distance:
+                        nearest_enemy_distance = dist
                         nearest_enemy_pos = target_pos
 
             # Nearest enemy found, move there
@@ -122,7 +122,9 @@ class RandomHeuristicAgent:
 
                 # Randomize distance (between 1m and 10m, or up to enemy)
                 # TODO: this is very small steps. Idea: move until interrupt?
-                max_step = min(10.0, min_dist - 1.0)  # Stop 1m short
+                max_step = min(  # Stop 1m short
+                    nearest_enemy_distance / 2, nearest_enemy_distance - 1.0
+                )
                 step_size = random.uniform(1.0, max(1.1, max_step))
 
                 target_pos = my_pos + (direction * step_size)
