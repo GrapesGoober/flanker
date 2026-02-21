@@ -1,10 +1,11 @@
-from flanker_ai.ai_config_manager import AiConfigManager
+from flanker_ai.ai_config_manager import AiConfigManager, AiWaypointConfig
 from flanker_ai.unabstracted.models import (
     ActionResult,
     AssaultActionResult,
     FireActionResult,
     MoveActionResult,
 )
+from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -12,6 +13,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
+    AiWaypointConfigGridRequest,
     AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
@@ -53,12 +55,25 @@ class AiService:
         print(f"Winner is {ObjectiveSystem.get_winning_faction(gs)}")
 
     @staticmethod
-    def update_ai_config(
+    def set_ai_waypoints_config(
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
         config = AiConfigManager.get_ai_config(gs, request.faction)
-        config.waypoint_coordinates = request.points
+        if isinstance(config, AiWaypointConfig):
+            config.waypoint_coordinates = request.points
+
+    @staticmethod
+    def set_ai_waypoints_config_to_grid(
+        gs: GameState,
+        request: AiWaypointConfigGridRequest,
+    ) -> None:
+        config = AiConfigManager.get_ai_config(gs, request.faction)
+        if isinstance(config, AiWaypointConfig):
+            config.path_tolerance = request.spacing
+            config.waypoint_coordinates = WaypointScheme.get_grid_coordinates(
+                gs, spacing=request.spacing, offset=request.spacing / 2
+            )
 
     @staticmethod
     def _log_ai_action_results(

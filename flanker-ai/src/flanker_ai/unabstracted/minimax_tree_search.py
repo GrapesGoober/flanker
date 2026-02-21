@@ -26,8 +26,8 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
-class TreeSearchAgent:
-    """Implements a basic unabstracted one-side tree search AI player agent."""
+class MinimaxTreeSearch:
+    """Implements a basic unabstracted one-sided minimax tree search."""
 
     @staticmethod
     def _get_actions(
@@ -106,15 +106,15 @@ class TreeSearchAgent:
     ) -> tuple[float, list[ActionResult]]:
         """Runs minimax and returns the best scoring action sequence."""
 
-        if depth == 0 or len(TreeSearchAgent._get_actions(gs)) == 0:
-            return TreeSearchAgent._evaluate(gs), []
+        if depth == 0 or len(MinimaxTreeSearch._get_actions(gs)) == 0:
+            return MinimaxTreeSearch._evaluate(gs), []
 
         best_score = float("-inf")
         best_result: list[ActionResult] = []
-        deep_copy_entities = TreeSearchAgent.get_deep_copy_entities(gs)
-        for action in TreeSearchAgent._get_actions(gs):
+        deep_copy_entities = MinimaxTreeSearch.get_deep_copy_entities(gs)
+        for action in MinimaxTreeSearch._get_actions(gs):
             new_gs = gs.selective_copy(deep_copy_entities)
-            result = TreeSearchAgent._perform_action(new_gs, action)
+            result = MinimaxTreeSearch._perform_action(new_gs, action)
             if isinstance(result, InvalidAction):
                 continue
             # Due to large tree size, I don't want to implement a "min" state
@@ -125,7 +125,7 @@ class TreeSearchAgent:
             iter = next(iter_counter)
             if iter % 100 == 0:
                 print(f"Evaluated {iter=}")
-            score, results = TreeSearchAgent.play_minimax(
+            score, results = MinimaxTreeSearch.play_minimax(
                 new_gs,
                 depth - 1,
                 iter_counter=iter_counter,

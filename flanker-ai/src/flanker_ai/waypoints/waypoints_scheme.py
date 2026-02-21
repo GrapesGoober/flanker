@@ -1,4 +1,3 @@
-from copy import deepcopy
 from dataclasses import replace
 from typing import Literal
 
@@ -118,6 +117,7 @@ class WaypointScheme:
         points: list[Vec2],
         path_tolerance: float,
     ) -> WaypointsGraphGameState:
+        """Create a waypoint-graph from the given list of points."""
 
         # Assemble waypoint-graph game state
         initiative = InitiativeSystem.get_initiative(gs)
@@ -150,31 +150,26 @@ class WaypointScheme:
         return waypoint_gs
 
     @staticmethod
-    def update_template(
+    def add_combat_units(
         waypoint_gs: WaypointsGraphGameState,
         gs: GameState,
         path_tolerance: float,
-    ) -> WaypointsGraphGameState:
-        """Prepares an empty waypoints template into a searchable model."""
-
-        # Deepcopies for now, as it's most correct
-        # Note that the new waypoints would append to the visibility
-        # of the existing waypoints, making shallow copy incorrect
-        new_waypoint_gs = deepcopy(waypoint_gs)
+    ) -> None:
+        """Adds combat unit positions as waypoints."""
 
         # Add combat units as waypoints and as abstracted units
         new_waypoint_ids: list[int] = []
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
-            waypoint_id = len(new_waypoint_gs.waypoints.keys())
+            waypoint_id = len(waypoint_gs.waypoints.keys())
             new_waypoint_ids.append(waypoint_id)
-            new_waypoint_gs.waypoints[waypoint_id] = WaypointNode(
+            waypoint_gs.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=set(),
                 movable_paths={},
             )
-            new_waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
+            waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
                 status=combat_unit.status,
@@ -184,12 +179,12 @@ class WaypointScheme:
 
         # Update their relationships
         WaypointScheme._add_path_relationships(
-            waypoint_gs=new_waypoint_gs,
+            waypoint_gs=waypoint_gs,
             path_tolerance=path_tolerance,
             waypoint_ids_to_update=new_waypoint_ids,
         )
         WaypointScheme._add_visibility_relationships(
-            waypoint_gs=new_waypoint_gs,
+            waypoint_gs=waypoint_gs,
             gs=gs,
             waypoint_ids_to_update=new_waypoint_ids,
         )
@@ -198,9 +193,7 @@ class WaypointScheme:
         objectives: list[EliminationObjective] = list(
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
-        new_waypoint_gs.objectives = objectives
-
-        return new_waypoint_gs
+        waypoint_gs.objectives = objectives
 
     @staticmethod
     def get_grid_coordinates(

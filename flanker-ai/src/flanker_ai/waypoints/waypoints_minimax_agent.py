@@ -10,6 +10,8 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
+_MAX_ACTION_PER_INITIATIVE = 20
+
 
 class WaypointsMinimaxAgent:
     """Provides agent instance for waypoints-minimax search to play the game."""
@@ -21,7 +23,6 @@ class WaypointsMinimaxAgent:
         search_depth: int,
         waypoint_coordinates: list[Vec2],
         path_tolerance: float,
-        max_action_per_initiative: int = 20,
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
@@ -32,7 +33,6 @@ class WaypointsMinimaxAgent:
         )
         self._path_tolerance = path_tolerance
         self._depth = search_depth
-        self._MAX_ACTION_PER_INITIATIVE = max_action_per_initiative
 
     def play_initiative(self) -> list[ActionResult]:
         if InitiativeSystem.get_initiative(self._gs) != self._faction:
@@ -41,18 +41,19 @@ class WaypointsMinimaxAgent:
         self._template_waypoints_gs.initiative = self._faction
         halt_counter = 0
         action_results: list[ActionResult] = []
-        # TODO: should this while loop be done away? Let caller manage it.
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
             if ObjectiveSystem.get_winning_faction(self._gs) != None:
                 break
-            # Prepare the abstraction for searching
-            new_waypoint_gs = WaypointScheme.update_template(
-                self._template_waypoints_gs,
+            # Add the combat units to the graph.
+            # Make sure to add to a new graph instance to avoid mutation.
+            new_waypoint_gs = deepcopy(self._template_waypoints_gs)
+            WaypointScheme.add_combat_units(
+                new_waypoint_gs,
                 self._gs,
                 path_tolerance=self._path_tolerance,
             )
             # Check redundant moves (stop search)
-            if halt_counter > self._MAX_ACTION_PER_INITIATIVE:
+            if halt_counter > _MAX_ACTION_PER_INITIATIVE:
                 print("AI made useless actions, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
@@ -79,8 +80,7 @@ class WaypointsMinimaxAgent:
                 break
             # These result objects would be used for logging
             # Thus, prevent mutation by creating a copy
-            result = deepcopy(result)
-            action_results.append(result)
+            action_results.append(deepcopy(result))
             halt_counter += 1
 
         return action_results

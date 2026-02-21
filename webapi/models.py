@@ -106,6 +106,11 @@ class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
     points: list[Vec2]
 
 
+class AiWaypointConfigGridRequest(BaseModel, CamelCaseConfig):
+    faction: InitiativeState.Faction
+    spacing: float
+
+
 ActionLog = Annotated[
     Union[MoveActionLog, FireActionLog, AssaultActionLog],
     Field(discriminator="log_type"),

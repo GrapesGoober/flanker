@@ -26,7 +26,9 @@ def load_game(path: str) -> GameState:
 
 
 if __name__ == "__main__":
-    gs = load_game(path="./scenes/demo-simple-stochastic-waypoints.json")
+    gs = load_game(path="./scenes/experiment-wh.json")
+    print("Creating RED agent...")
+    red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
     print("Creating BLUE agent...")
     blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
     print("Creating RED agent...")
