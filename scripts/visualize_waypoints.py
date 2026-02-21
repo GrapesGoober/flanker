@@ -35,7 +35,7 @@ if __name__ == "__main__":
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    path = "./scenes/demo-simple-stochastic-waypoints.json"
+    path = "./scenes/experiment-w1-w1.json"
 
     with open(path, "r") as f:
         entities, id_counter = Serializer.deserialize(

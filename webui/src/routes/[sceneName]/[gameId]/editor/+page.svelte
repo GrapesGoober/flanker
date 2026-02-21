@@ -106,6 +106,7 @@ mode = {controller.state.type}
 
 	<button onclick={finishDraw} style="margin-bottom: 1em;">Finish Draw</button>
 {:else if controller.state.type == 'draw-waypoints'}
+	length = {controller.state.waypoints.points.length}
 	<select bind:value={controller.state.waypoints.faction}>
 		<option value="BLUE">BLUE</option>
 		<option value="RED">RED</option>
