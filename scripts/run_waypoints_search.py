@@ -40,7 +40,7 @@ def run_abstraction() -> None:
 def run_search() -> None:
     assert waypoints_gs
     global waypoint_actions
-    WaypointScheme.update_template(waypoints_gs, gs, path_tolerance=10)
+    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
     _, waypoint_actions = WaypointsMinimaxSearch.search_best_actions(
         waypoints_gs, depth=4
     )
