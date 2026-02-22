@@ -1,3 +1,4 @@
+import csv
 from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
@@ -32,28 +33,48 @@ def initialize_game_state(path: str) -> GameState:
     return gs
 
 
-def run_test(gs: GameState, n: int = 1):
-    for i in range(n):
-        print(f"Running Trial {i=}...")
-        new_gs = deepcopy(gs)
-        blue_agent = AiConfigManager.get_agent(new_gs, InitiativeState.Faction.BLUE)
-        red_agent = AiConfigManager.get_agent(new_gs, InitiativeState.Faction.RED)
-        while ObjectiveSystem.get_winning_faction(new_gs) == None:
-            blue_action_results = blue_agent.play_initiative()
-            if blue_action_results:
-                print(f"BLUE made actions {blue_action_results}")
+def run_test(
+    gs: GameState,
+    record_file: str,
+    n: int = 1,
+) -> None:
+    with open(record_file, mode="w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["trial", "winner"])
+        for i in range(n):
+            print(f"Running Trial {i=}...")
+            new_gs = deepcopy(gs)
+            blue_agent = AiConfigManager.get_agent(
+                new_gs,
+                InitiativeState.Faction.BLUE,
+            )
+            red_agent = AiConfigManager.get_agent(
+                new_gs,
+                InitiativeState.Faction.RED,
+            )
+            while (winner := ObjectiveSystem.get_winning_faction(new_gs)) == None:
+                blue_action_results = blue_agent.play_initiative()
+                if blue_action_results:
+                    print(f"BLUE made actions {blue_action_results}")
 
-            red_action_results = red_agent.play_initiative()
-            if red_action_results:
-                print(f"RED made actions {red_action_results}")
+                red_action_results = red_agent.play_initiative()
+                if red_action_results:
+                    print(f"RED made actions {red_action_results}")
 
-            if not red_action_results and not blue_action_results:
-                print(f"No Valid Actions; Draw")
-                break
-        print(f"Winner is {ObjectiveSystem.get_winning_faction(new_gs)}")
+                if not red_action_results and not blue_action_results:
+                    print(f"No Valid Actions; Draw")
+                    break
+            if winner == None:
+                print(f"No winner; draw")
+                writer.writerow([i, "DRAW"])
+            else:
+                print(f"Winner is {winner}")
+                writer.writerow([i, winner.value])
 
 
 if __name__ == "__main__":
-    SCENE_FILE = "./scenes/experiment-w1-w1-2v2.json"
+    SCENE_NAME = "experiment-w1-w1-2v2"
+    SCENE_FILE = f"./scenes/{SCENE_NAME}.json"
+    RECORD_FILE = f"./scripts/experiment_results/{SCENE_NAME}.csv"
     gs = initialize_game_state(path=SCENE_FILE)
-    run_test(gs, n=2)
+    run_test(gs, RECORD_FILE, n=2)
