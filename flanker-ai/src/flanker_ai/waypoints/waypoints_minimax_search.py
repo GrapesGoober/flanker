@@ -117,6 +117,14 @@ class WaypointsMinimaxSearch:
                                 action.move_to_waypoint_id
                             )
 
+                        case FireOutcomes.PIN:
+                            current_unit.status = CombatUnit.Status.PINNED
+                            current_unit.current_waypoint_id = action.interrupt_at_id
+
+                        case FireOutcomes.SUPPRESS:
+                            current_unit.status = CombatUnit.Status.SUPPRESSED
+                            current_unit.current_waypoint_id = action.interrupt_at_id
+
                             # Flip initiative
                             match new_gs.initiative:
                                 case InitiativeState.Faction.BLUE:
@@ -124,21 +132,15 @@ class WaypointsMinimaxSearch:
                                 case InitiativeState.Faction.RED:
                                     new_gs.initiative = InitiativeState.Faction.BLUE
 
-                        case FireOutcomes.PIN:
-                            current_unit.status = CombatUnit.Status.PINNED
-                            current_unit.current_waypoint_id = action.interrupt_at_id
+                        case FireOutcomes.KILL:
 
+                            # Flip initiative
                             match new_gs.initiative:
                                 case InitiativeState.Faction.BLUE:
                                     new_gs.initiative = InitiativeState.Faction.RED
                                 case InitiativeState.Faction.RED:
                                     new_gs.initiative = InitiativeState.Faction.BLUE
 
-                        case FireOutcomes.SUPPRESS:
-                            current_unit.status = CombatUnit.Status.SUPPRESSED
-                            current_unit.current_waypoint_id = action.interrupt_at_id
-
-                        case FireOutcomes.KILL:
                             killed_unit = new_gs.combat_units.pop(action.unit_id)
 
                             for objective in new_gs.objectives:
