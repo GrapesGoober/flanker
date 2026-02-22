@@ -137,13 +137,21 @@ class WaypointsMinimaxSearch:
     def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointAction]:
 
         actions: list[WaypointAction] = []
+        friendly_units: list[tuple[int, AbstractedCombatUnit]] = []
+        enemy_units: list[tuple[int, AbstractedCombatUnit]] = []
         for combat_unit_id, combat_unit in gs.combat_units.items():
+            if combat_unit.faction == gs.initiative:
+                friendly_units.append((combat_unit_id, combat_unit))
+            if combat_unit.faction != gs.initiative:
+                enemy_units.append((combat_unit_id, combat_unit))
+
+        for combat_unit_id, combat_unit in friendly_units:
             current_waypoint = gs.waypoints[combat_unit.current_waypoint_id]
             if combat_unit.faction != gs.initiative:
                 continue
 
             # Adds assault & fire actions
-            for enemy_id, enemy_unit in gs.combat_units.items():
+            for enemy_id, enemy_unit in enemy_units:
 
                 # Add fire action if the enemy is on a visible node
                 if enemy_unit.faction == combat_unit.faction:
@@ -180,6 +188,8 @@ class WaypointsMinimaxSearch:
                     )
 
             # Adds move actions later, for best alpha-beta pruning
+            # TODO: is this causing the speed decrease for 3v3?
+            # It creates new population list every branch
             if combat_unit.status == CombatUnit.Status.ACTIVE:
                 # Filter some move actions to reduce branching factor
                 movable_nodes = random.sample(

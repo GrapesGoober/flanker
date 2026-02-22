@@ -26,12 +26,13 @@ def load_game(path: str) -> GameState:
 
 
 if __name__ == "__main__":
-    gs = load_game(path="./scenes/experiment-wh.json")
+    gs = load_game(path="./scenes/experiment-w1-w1.json")
     print("Creating BLUE agent...")
     blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
     print("Creating RED agent...")
     red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
 
+    print("Running trial...")
     while ObjectiveSystem.get_winning_faction(gs) == None:
         blue_action_results = blue_agent.play_initiative()
         if blue_action_results:
