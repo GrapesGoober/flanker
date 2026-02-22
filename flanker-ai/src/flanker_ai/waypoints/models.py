@@ -26,7 +26,7 @@ class WaypointNode:
 
 
 @dataclass
-class WaypointsGraphGameState:  # Used for the minimax
+class WaypointsGraphGameState:  # Used as state representation
     # Note: this should be kept flat to be serializable in the future
     waypoints: dict[int, WaypointNode]
     combat_units: dict[int, AbstractedCombatUnit]
