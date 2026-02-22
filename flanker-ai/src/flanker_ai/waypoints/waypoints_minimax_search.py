@@ -94,16 +94,60 @@ class WaypointsMinimaxSearch:
     ) -> list[tuple[float, WaypointsGraphGameState]]:
         match action:
             case WaypointMoveAction():
-                new_gs = WaypointsMinimaxSearch._copy_gs(gs)
-                current_unit = new_gs.combat_units[action.unit_id]
-                # Check for move interrupts
-                if action.interrupt_at_id is not None:
-                    # Assumes determinic for now
-                    current_unit.status = CombatUnit.Status.PINNED
-                    current_unit.current_waypoint_id = action.interrupt_at_id
-                else:
+                outcomes: list[tuple[float, WaypointsGraphGameState]] = []
+
+                # No interrupt, deterministic move
+                if action.interrupt_at_id is None:
+                    new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+                    current_unit = new_gs.combat_units[action.unit_id]
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
-                return [(1, new_gs)]
+                    return [(1, new_gs)]
+
+                # Interrupt exists, reactive fire probabilistic
+                # This is rudementary reactive fire chance node (not correct)
+                for outcome, prob in _FIRE_OUTCOME_PROBABILITIES.items():
+                    new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+                    current_unit = new_gs.combat_units[action.unit_id]
+
+                    match outcome:
+
+                        case FireOutcomes.MISS:
+                            # Continues movement
+                            current_unit.current_waypoint_id = (
+                                action.move_to_waypoint_id
+                            )
+
+                            # Flip initiative
+                            match new_gs.initiative:
+                                case InitiativeState.Faction.BLUE:
+                                    new_gs.initiative = InitiativeState.Faction.RED
+                                case InitiativeState.Faction.RED:
+                                    new_gs.initiative = InitiativeState.Faction.BLUE
+
+                        case FireOutcomes.PIN:
+                            current_unit.status = CombatUnit.Status.PINNED
+                            current_unit.current_waypoint_id = action.interrupt_at_id
+
+                            match new_gs.initiative:
+                                case InitiativeState.Faction.BLUE:
+                                    new_gs.initiative = InitiativeState.Faction.RED
+                                case InitiativeState.Faction.RED:
+                                    new_gs.initiative = InitiativeState.Faction.BLUE
+
+                        case FireOutcomes.SUPPRESS:
+                            current_unit.status = CombatUnit.Status.SUPPRESSED
+                            current_unit.current_waypoint_id = action.interrupt_at_id
+
+                        case FireOutcomes.KILL:
+                            killed_unit = new_gs.combat_units.pop(action.unit_id)
+
+                            for objective in new_gs.objectives:
+                                if killed_unit.faction == objective.target_faction:
+                                    objective.units_destroyed_counter += 1
+
+                    outcomes.append((prob, new_gs))
+
+                return outcomes
 
             case WaypointFireAction():
                 outcomes: list[tuple[float, WaypointsGraphGameState]] = []
