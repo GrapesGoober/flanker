@@ -10,6 +10,14 @@ from flanker_ai.waypoints.models import (
 )
 from flanker_ai.waypoints.waypoints_scheme import replace
 from flanker_core.models.components import CombatUnit, InitiativeState
+from flanker_core.models.outcomes import FireOutcomes
+
+_FIRE_OUTCOME_PROBABILITIES = {
+    FireOutcomes.MISS: 0.3,
+    FireOutcomes.PIN: 0.4,
+    FireOutcomes.SUPPRESS: 0.25,
+    FireOutcomes.KILL: 0.05,
+}
 
 
 class WaypointsMinimaxSearch:
@@ -98,11 +106,39 @@ class WaypointsMinimaxSearch:
                 return [(1, new_gs)]
 
             case WaypointFireAction():
-                # Assumes determinic for now
-                new_gs = WaypointsMinimaxSearch._copy_gs(gs)
-                target_unit = new_gs.combat_units[action.target_id]
-                target_unit.status = CombatUnit.Status.SUPPRESSED
-                return [(1, new_gs)]
+                outcomes: list[tuple[float, WaypointsGraphGameState]] = []
+                for outcome, prob in _FIRE_OUTCOME_PROBABILITIES.items():
+                    new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+                    match outcome:
+                        case FireOutcomes.MISS:
+                            # Miss, flips initiative
+                            match new_gs.initiative:
+                                case InitiativeState.Faction.BLUE:
+                                    new_gs.initiative = InitiativeState.Faction.RED
+                                case InitiativeState.Faction.RED:
+                                    new_gs.initiative = InitiativeState.Faction.BLUE
+                        case FireOutcomes.PIN:
+                            target_unit = new_gs.combat_units[action.target_id]
+                            target_unit.status = CombatUnit.Status.PINNED
+                            # Pinned, failed, flips initiative
+                            match new_gs.initiative:
+                                case InitiativeState.Faction.BLUE:
+                                    new_gs.initiative = InitiativeState.Faction.RED
+                                case InitiativeState.Faction.RED:
+                                    new_gs.initiative = InitiativeState.Faction.BLUE
+
+                        case FireOutcomes.SUPPRESS:
+                            target_unit = new_gs.combat_units[action.target_id]
+                            target_unit.status = CombatUnit.Status.SUPPRESSED
+
+                        case FireOutcomes.KILL:
+                            target_unit = new_gs.combat_units[action.target_id]
+                            for objective in new_gs.objectives:
+                                if target_unit.faction == objective.target_faction:
+                                    objective.units_destroyed_counter += 1
+                            new_gs.combat_units.pop(action.target_id)
+                    outcomes.append((prob, new_gs))
+                return outcomes
 
             case WaypointAssaultAction():
                 new_gs = WaypointsMinimaxSearch._copy_gs(gs)
