@@ -77,4 +77,4 @@ if __name__ == "__main__":
     SCENE_FILE = f"./scenes/{SCENE_NAME}.json"
     RECORD_FILE = f"./scripts/experiment_results/{SCENE_NAME}.csv"
     gs = initialize_game_state(path=SCENE_FILE)
-    run_test(gs, RECORD_FILE, n=2)
+    run_test(gs, RECORD_FILE, n=1)

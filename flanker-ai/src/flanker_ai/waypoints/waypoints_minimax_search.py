@@ -14,10 +14,7 @@ from flanker_core.models.components import CombatUnit, InitiativeState
 
 class WaypointsMinimaxSearch:
     """
-    Implements a basic abstracted waypoints-graph minimax AI search.
-    This is just a bare minimum code for the CoG paper, thus doesn't
-    have RNG, determinism, or other fancier rigs. The MAX ply is BLUE
-    this the MIN ply is RED.
+    Implements a basic abstracted waypoints-graph expectimax AI search.
     """
 
     @staticmethod
@@ -43,24 +40,28 @@ class WaypointsMinimaxSearch:
         best_score = float("-inf") if is_maximizing else float("inf")
         best_action: WaypointAction | None = None
         for action in actions:
-            new_gs = WaypointsMinimaxSearch._copy_gs(gs)
-            WaypointsMinimaxSearch._perform_action(new_gs, action)
-            score, _ = WaypointsMinimaxSearch.search_best_action(
-                new_gs,
-                depth - 1,
-                alpha=alpha,
-                beta=beta,
-            )
+            outcomes = WaypointsMinimaxSearch._perform_action(gs, action)
+            expected_score = 0.0
+            for prob, outcome_gs in outcomes:
+                score, _ = WaypointsMinimaxSearch.search_best_action(
+                    outcome_gs,
+                    depth - 1,
+                    alpha=alpha,
+                    beta=beta,
+                )
+                expected_score += prob * score
+
+            # TODO: expected_score doesnt work optimally for pruning
             if is_maximizing:
-                if score > best_score:
-                    best_score = score
+                if expected_score > best_score:
+                    best_score = expected_score
                     best_action = action
                 if best_score >= beta:
                     break
                 alpha = max(alpha, best_score)
             else:
-                if score < best_score:
-                    best_score = score
+                if expected_score < best_score:
+                    best_score = expected_score
                     best_action = action
                 if best_score <= alpha:
                     break
@@ -82,10 +83,11 @@ class WaypointsMinimaxSearch:
     def _perform_action(
         gs: WaypointsGraphGameState,
         action: WaypointAction,
-    ) -> None:
-        current_unit = gs.combat_units[action.unit_id]
+    ) -> list[tuple[float, WaypointsGraphGameState]]:
         match action:
             case WaypointMoveAction():
+                new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+                current_unit = new_gs.combat_units[action.unit_id]
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now
@@ -93,23 +95,28 @@ class WaypointsMinimaxSearch:
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
+                return [(1, new_gs)]
 
             case WaypointFireAction():
                 # Assumes determinic for now
-                target_unit = gs.combat_units[action.target_id]
+                new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+                target_unit = new_gs.combat_units[action.target_id]
                 target_unit.status = CombatUnit.Status.SUPPRESSED
+                return [(1, new_gs)]
 
             case WaypointAssaultAction():
+                new_gs = WaypointsMinimaxSearch._copy_gs(gs)
+                current_unit = new_gs.combat_units[action.unit_id]
                 # Check for move interrupts
-                target_unit = gs.combat_units[action.target_id]
+                target_unit = new_gs.combat_units[action.target_id]
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
-                    match gs.initiative:
+                    match new_gs.initiative:
                         case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
+                            new_gs.initiative = InitiativeState.Faction.RED
                         case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
+                            new_gs.initiative = InitiativeState.Faction.BLUE
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = target_unit.current_waypoint_id
@@ -117,21 +124,23 @@ class WaypointsMinimaxSearch:
                 # Runs the assault dice roll. Assumes determinic for now
                 killed_unit: AbstractedCombatUnit
                 if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                    gs.combat_units.pop(action.target_id)
+                    new_gs.combat_units.pop(action.target_id)
                     killed_unit = target_unit
                 else:
                     killed_unit = current_unit
-                    gs.combat_units.pop(action.unit_id)
+                    new_gs.combat_units.pop(action.unit_id)
                     # Assault failed
-                    match gs.initiative:
+                    match new_gs.initiative:
                         case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
+                            new_gs.initiative = InitiativeState.Faction.RED
                         case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
+                            new_gs.initiative = InitiativeState.Faction.BLUE
 
-                for objective in gs.objectives:
+                for objective in new_gs.objectives:
                     if killed_unit.faction == objective.target_faction:
                         objective.units_destroyed_counter += 1
+
+                return [(1, new_gs)]
 
     @staticmethod
     def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointAction]:
