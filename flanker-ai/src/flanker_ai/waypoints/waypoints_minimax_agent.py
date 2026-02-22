@@ -58,21 +58,20 @@ class WaypointsMinimaxAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
-            _, waypoint_actions = WaypointsMinimaxSearch.search_best_actions(
+            _, waypoint_action = WaypointsMinimaxSearch.search_best_action(
                 new_waypoint_gs,
                 depth=self._depth,
             )
 
-            if len(waypoint_actions) == 0:
+            if waypoint_action == None:
                 print("No valid action for AI, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
 
-            current_action = waypoint_actions[0]
             result = WaypointScheme.apply_action(
                 gs=self._gs,
                 waypoint_gs=new_waypoint_gs,
-                waypoint_action=current_action,
+                waypoint_action=waypoint_action,
             )
             if isinstance(result, InvalidAction):
                 print("AI made invalid action, breaking")
