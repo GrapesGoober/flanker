@@ -1,0 +1,138 @@
+{
+  "id_counter": 20,
+  "entities": {
+    "0": {
+      "InitiativeState": {
+        "faction": "BLUE"
+      },
+      "EliminationObjective": {
+        "target_faction": "RED",
+        "winning_faction": "BLUE",
+        "units_to_destroy": 2,
+        "units_destroyed_counter": 0
+      }
+    },
+    "1": {
+      "EliminationObjective": {
+        "target_faction": "BLUE",
+        "winning_faction": "RED",
+        "units_to_destroy": 2,
+        "units_destroyed_counter": 0
+      }
+    },
+    "2": {
+      "Transform": {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "degrees": 0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 300,
+            "y": 0
+          },
+          {
+            "x": 300,
+            "y": 300
+          },
+          {
+            "x": 0,
+            "y": 300
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
+      }
+    },
+    "3": {
+      "Transform": {
+        "position": {
+          "x": 40,
+          "y": 40
+        },
+        "degrees": 0.0
+      },
+      "CombatUnit": {
+        "faction": "BLUE",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "can_reactive_fire": true,
+        "los_polygon": null
+      },
+      "AssaultControls": {}
+    },
+    "4": {
+      "Transform": {
+        "position": {
+          "x": 60,
+          "y": 40
+        },
+        "degrees": 0.0
+      },
+      "CombatUnit": {
+        "faction": "BLUE",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "can_reactive_fire": true
+      },
+      "AssaultControls": {}
+    },
+    "10": {
+      "Transform": {
+        "position": {
+          "x": 270,
+          "y": 260
+        },
+        "degrees": 0.0
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE",
+        "los_polygon": null
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "can_reactive_fire": true
+      },
+      "AssaultControls": {}
+    },
+    "11": {
+      "Transform": {
+        "position": {
+          "x": 250,
+          "y": 260
+        },
+        "degrees": 0.0
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "can_reactive_fire": true,
+        "los_polygon": null
+      },
+      "AssaultControls": {}
+    }
+  }
+}
