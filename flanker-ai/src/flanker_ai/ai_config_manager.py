@@ -2,16 +2,16 @@ from dataclasses import dataclass
 from typing import Literal
 
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
-from flanker_ai.waypoints.models import WaypointsGraphGameState
 from flanker_ai.waypoints.waypoints_minimax_agent import WaypointsMinimaxAgent
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
+from flanker_core.models.vec2 import Vec2
 
 
 @dataclass
 class AiWaypointConfig:
     type: Literal["AiWaypointConfig"]
-    template_waypoint_gs: WaypointsGraphGameState
+    waypoint_coordinates: list[Vec2]
     path_tolerance: float
 
 
@@ -70,7 +70,7 @@ class AiConfigManager:
                         gs=gs,
                         faction=faction,
                         search_depth=4,
-                        template_waypoints_gs=config.template_waypoint_gs,
+                        waypoint_coordinates=config.waypoint_coordinates,
                         path_tolerance=config.path_tolerance,
                     )
                 case AiRandomHeuristicConfig():

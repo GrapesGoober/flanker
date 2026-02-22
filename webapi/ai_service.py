@@ -61,11 +61,7 @@ class AiService:
     ) -> None:
         config = AiConfigManager.get_ai_config(gs, request.faction)
         if isinstance(config, AiWaypointConfig):
-            config.template_waypoint_gs = WaypointScheme.create_template_waypoints(
-                gs,
-                points=request.points,
-                path_tolerance=config.path_tolerance,
-            )
+            config.waypoint_coordinates = request.points
 
     @staticmethod
     def set_ai_waypoints_config_to_grid(
@@ -75,13 +71,8 @@ class AiService:
         config = AiConfigManager.get_ai_config(gs, request.faction)
         if isinstance(config, AiWaypointConfig):
             config.path_tolerance = request.spacing
-            points = WaypointScheme.get_grid_coordinates(
+            config.waypoint_coordinates = WaypointScheme.get_grid_coordinates(
                 gs, spacing=request.spacing, offset=request.spacing / 2
-            )
-            config.template_waypoint_gs = WaypointScheme.create_template_waypoints(
-                gs,
-                points=points,
-                path_tolerance=request.spacing,
             )
 
     @staticmethod

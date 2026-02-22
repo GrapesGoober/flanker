@@ -1,12 +1,12 @@
 from copy import deepcopy
 
 from flanker_ai.unabstracted.models import ActionResult
-from flanker_ai.waypoints.models import WaypointsGraphGameState
 from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -21,12 +21,16 @@ class WaypointsMinimaxAgent:
         gs: GameState,
         faction: InitiativeState.Faction,
         search_depth: int,
+        waypoint_coordinates: list[Vec2],
         path_tolerance: float,
-        template_waypoints_gs: WaypointsGraphGameState,
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
-        self._template_waypoints_gs = template_waypoints_gs
+        self._template_waypoints_gs = WaypointScheme.create_template_waypoints(
+            gs,
+            points=waypoint_coordinates,
+            path_tolerance=path_tolerance,
+        )
         self._path_tolerance = path_tolerance
         self._depth = search_depth
 

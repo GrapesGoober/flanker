@@ -60,7 +60,11 @@ if __name__ == "__main__":
     assert isinstance(
         config, AiWaypointConfig
     ), "Can't visualize non-waypoints AI config"
-    waypoints_gs = config.template_waypoint_gs
+    waypoints_gs = WaypointScheme.create_template_waypoints(
+        gs=gs,
+        points=config.waypoint_coordinates,
+        path_tolerance=10,
+    )
     WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []

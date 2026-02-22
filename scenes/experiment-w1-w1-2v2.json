@@ -8,7 +8,7 @@
       "EliminationObjective": {
         "target_faction": "RED",
         "winning_faction": "BLUE",
-        "units_to_destroy": 3,
+        "units_to_destroy": 2,
         "units_destroyed_counter": 0
       }
     },
@@ -16,7 +16,7 @@
       "EliminationObjective": {
         "target_faction": "BLUE",
         "winning_faction": "RED",
-        "units_to_destroy": 3,
+        "units_to_destroy": 2,
         "units_destroyed_counter": 0
       }
     },
@@ -91,26 +91,6 @@
       },
       "AssaultControls": {}
     },
-    "5": {
-      "Transform": {
-        "position": {
-          "x": 70.0,
-          "y": 20.0
-        },
-        "degrees": 0.0
-      },
-      "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE"
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "can_reactive_fire": true
-      },
-      "AssaultControls": {}
-    },
     "9": {
       "Transform": {
         "position": {
@@ -136,26 +116,6 @@
         "position": {
           "x": 200.0,
           "y": 270.0
-        },
-        "degrees": 0.0
-      },
-      "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE"
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "can_reactive_fire": true
-      },
-      "AssaultControls": {}
-    },
-    "11": {
-      "Transform": {
-        "position": {
-          "x": 220.0,
-          "y": 260.0
         },
         "degrees": 0.0
       },
