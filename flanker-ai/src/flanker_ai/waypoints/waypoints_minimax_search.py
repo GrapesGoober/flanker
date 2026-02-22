@@ -15,8 +15,13 @@ from flanker_core.models.outcomes import FireOutcomes
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
     FireOutcomes.PIN: 0.4,
-    FireOutcomes.SUPPRESS: 0.25,
-    FireOutcomes.KILL: 0.05,
+    FireOutcomes.SUPPRESS: 0.3,
+}
+
+_REACTIVE_FIRE_OUTCOME_PROBABILITIES = {
+    FireOutcomes.MISS: 0.3,
+    FireOutcomes.PIN: 0.3,
+    FireOutcomes.SUPPRESS: 0.4,
 }
 
 
@@ -36,9 +41,9 @@ class WaypointsMinimaxSearch:
         winner = WaypointsMinimaxSearch._get_winning_faction(gs)
         # Have it prefer earlier win
         if winner == InitiativeState.Faction.BLUE:
-            return 10000 + depth, None
+            return 100 + depth, None
         elif winner == InitiativeState.Faction.RED:
-            return -10000 - depth, None
+            return -100 - depth, None
 
         actions = WaypointsMinimaxSearch._get_actions(gs)
         if depth == 0 or len(actions) == 0:
@@ -105,14 +110,13 @@ class WaypointsMinimaxSearch:
 
                 # Interrupt exists, reactive fire probabilistic
                 # This is rudementary reactive fire chance node (not correct)
-                for outcome, prob in _FIRE_OUTCOME_PROBABILITIES.items():
+                for outcome, prob in _REACTIVE_FIRE_OUTCOME_PROBABILITIES.items():
                     new_gs = WaypointsMinimaxSearch._copy_gs(gs)
                     current_unit = new_gs.combat_units[action.unit_id]
 
                     match outcome:
 
                         case FireOutcomes.MISS:
-                            # Continues movement
                             current_unit.current_waypoint_id = (
                                 action.move_to_waypoint_id
                             )
