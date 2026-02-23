@@ -45,11 +45,11 @@ class AiService:
         while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
             blue_action_results = blue_agent.play_initiative()
             if blue_action_results:
-                print(f"BLUE made actions {blue_action_results}")
+                AiService._log_ai_action_results(gs, blue_action_results)
 
             red_action_results = red_agent.play_initiative()
             if red_action_results:
-                print(f"RED made actions {red_action_results}")
+                AiService._log_ai_action_results(gs, blue_action_results)
 
             if not red_action_results and not blue_action_results:
                 print(f"No Valid Actions; Draw")
