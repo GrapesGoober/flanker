@@ -5,6 +5,7 @@ from flanker_ai.i_game_state import IGameState
 from flanker_core.models.components import InitiativeState
 
 count = 0
+MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
 class MinimaxSearch:
@@ -26,24 +27,23 @@ class MinimaxSearch:
         if winner is not None:  # Winner found
             # TODO: write a state-independent maximizing
             # way to prefer shallower wins
-            match winner:
-                case InitiativeState.Faction.BLUE:
-                    return state.get_score() + depth, None
-                case InitiativeState.Faction.RED:
-                    return state.get_score() - depth, None
-        if depth == 0 or winner is not None:
-            return state.get_score(), None
+            if winner == MAXIMIZING_FACTION:
+                return state.get_score(MAXIMIZING_FACTION) + depth, None
+            else:
+                return state.get_score(MAXIMIZING_FACTION) - depth, None
+        if depth == 0:
+            return state.get_score(MAXIMIZING_FACTION), None
         actions = state.get_actions()
         if not actions:  # No moves available
-            return state.get_score(), None
+            return state.get_score(MAXIMIZING_FACTION), None
 
         best_action: T | None = None
-        if state.is_maximizing():
+        if state.get_initiative() == MAXIMIZING_FACTION:
             best_score = -inf
             for action in actions:
                 branches = state.get_branches(action)
                 if not branches:  # No branching available
-                    return state.get_score(), None
+                    return state.get_score(MAXIMIZING_FACTION), None
                 # This assumes deterministic outcome (normal minimax)
                 for branch in branches:
                     score, _ = MinimaxSearch.search(branch, depth - 1)
@@ -57,7 +57,7 @@ class MinimaxSearch:
             for action in actions:
                 branches = state.get_branches(action)
                 if not branches:  # No branching available
-                    return state.get_score(), None
+                    return state.get_score(MAXIMIZING_FACTION), None
                 # This assumes deterministic outcome (normal minimax)
                 for branch in branches:
                     score, _ = MinimaxSearch.search(branch, depth - 1)

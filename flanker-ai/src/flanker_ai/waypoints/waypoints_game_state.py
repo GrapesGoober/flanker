@@ -56,15 +56,19 @@ class WaypointsGameState(IGameState[WaypointAction]):
             objectives=copied_objectives,
         )
 
+    def get_initiative(self) -> InitiativeState.Faction:
+        return self.initiative
+
     def is_maximizing(self) -> bool:
         return self.initiative == InitiativeState.Faction.BLUE
 
-    def get_score(self) -> float:
+    def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         winner = self.get_winner()
-        if winner == InitiativeState.Faction.BLUE:
-            return 10000
-        elif winner == InitiativeState.Faction.RED:
-            return -10000
+        if winner is not None:
+            if winner == maximizing_faction:
+                return 10000
+            else:
+                return -10000
 
         score = 0.0
         for unit in self.combat_units.values():
@@ -77,7 +81,7 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 case CombatUnit.Status.SUPPRESSED:
                     value = 1
 
-            if unit.faction == InitiativeState.Faction.BLUE:
+            if unit.faction == maximizing_faction:
                 score += value
             else:
                 score -= value

@@ -11,7 +11,7 @@ class IGameState[T](Protocol):
         """Implements copying mechanism for Game State."""
         ...
 
-    def get_score(self) -> float:
+    def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         """Implements objective scoring for heuristic or terminal."""
         ...
 
@@ -27,6 +27,6 @@ class IGameState[T](Protocol):
         """Get the winning faction, if any"""
         ...
 
-    def is_maximizing(self) -> bool:
-        """Returns whether the current state is maximizing."""
+    def get_initiative(self) -> InitiativeState.Faction:
+        """Get the current initiative holder."""
         ...
