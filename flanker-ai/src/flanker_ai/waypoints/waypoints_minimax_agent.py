@@ -54,17 +54,18 @@ class WaypointsMinimaxAgent:
             )
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
-                print("AI made useless actions, breaking")
+                print(f"{self._faction.value} AI made useless actions, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
-            _, waypoint_action = MinimaxSearch.search(
+            score, waypoint_action = MinimaxSearch.search(
                 state=new_waypoint_gs,
                 depth=4,
             )
+            print(f"{self._faction.value} AI made action: {score=}, {waypoint_action}")
 
             if waypoint_action == None:
-                print("No valid action for AI, breaking")
+                print(f"No valid action for {self._faction.value} AI, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
 
@@ -74,7 +75,7 @@ class WaypointsMinimaxAgent:
                 waypoint_action=waypoint_action,
             )
             if isinstance(result, InvalidAction):
-                print("AI made invalid action, breaking")
+                print(f"{self._faction.value} AI made invalid action, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
             # These result objects would be used for logging

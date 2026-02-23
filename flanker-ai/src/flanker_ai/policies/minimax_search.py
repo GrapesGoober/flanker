@@ -1,5 +1,4 @@
 from math import inf
-from typing import Tuple
 
 from flanker_ai.i_game_state import IGameState
 from flanker_core.models.components import InitiativeState
@@ -13,20 +12,19 @@ class MinimaxSearch:
     def search[T](
         state: IGameState[T],
         depth: int,
-    ) -> Tuple[float, T | None]:
+    ) -> tuple[float, T | None]:
         """
         Returns (best_score, best_action)
         """
 
         global count
-        print(count)
+        if count % 50000 == 0:
+            print(count)
         count += 1
 
         # Check for early cutoff
         winner = state.get_winner()
         if winner is not None:  # Winner found
-            # TODO: write a state-independent maximizing
-            # way to prefer shallower wins
             if winner == MAXIMIZING_FACTION:
                 return state.get_score(MAXIMIZING_FACTION) + depth, None
             else:
