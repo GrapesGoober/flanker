@@ -13,7 +13,14 @@ from flanker_core.models.components import (
     EliminationObjective,
     InitiativeState,
 )
+from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
+
+_FIRE_OUTCOME_PROBABILITIES = {
+    FireOutcomes.MISS: 0.3,
+    FireOutcomes.PIN: 0.4,
+    FireOutcomes.SUPPRESS: 0.3,
+}
 
 
 @dataclass
@@ -230,7 +237,62 @@ class WaypointsGameState(IGameState[WaypointAction]):
     def get_branches(
         self, action: WaypointAction
     ) -> list[tuple[float, "WaypointsGameState"]]:
-        raise NotImplementedError()
+        match action:
+            case WaypointMoveAction():
+                gs = self.copy()
+                current_unit = gs.combat_units[action.unit_id]
+                # Check for move interrupts
+                if action.interrupt_at_id is not None:
+                    # Assumes determinic for now
+                    current_unit.status = CombatUnit.Status.PINNED
+                    current_unit.current_waypoint_id = action.interrupt_at_id
+                else:
+                    current_unit.current_waypoint_id = action.move_to_waypoint_id
+                return [(1, gs)]
+
+            case WaypointFireAction():
+                gs = self.copy()
+                # Assumes determinic for now
+                target_unit = gs.combat_units[action.target_id]
+                target_unit.status = CombatUnit.Status.SUPPRESSED
+                return [(1, gs)]
+
+            case WaypointAssaultAction():
+                gs = self.copy()
+                # Check for move interrupts
+                current_unit = gs.combat_units[action.unit_id]
+                target_unit = gs.combat_units[action.target_id]
+                if action.interrupt_at_id is not None:
+                    # Assumes determinic for now (assumes failed)
+                    current_unit.status = CombatUnit.Status.SUPPRESSED
+                    match gs.initiative:
+                        case InitiativeState.Faction.BLUE:
+                            gs.initiative = InitiativeState.Faction.RED
+                        case InitiativeState.Faction.RED:
+                            gs.initiative = InitiativeState.Faction.BLUE
+                    current_unit.current_waypoint_id = action.interrupt_at_id
+                else:
+                    current_unit.current_waypoint_id = target_unit.current_waypoint_id
+
+                # Runs the assault dice roll. Assumes determinic for now
+                killed_unit: AbstractedCombatUnit
+                if target_unit.status == CombatUnit.Status.SUPPRESSED:
+                    gs.combat_units.pop(action.target_id)
+                    killed_unit = target_unit
+                else:
+                    killed_unit = current_unit
+                    gs.combat_units.pop(action.unit_id)
+                    # Assault failed
+                    match gs.initiative:
+                        case InitiativeState.Faction.BLUE:
+                            gs.initiative = InitiativeState.Faction.RED
+                        case InitiativeState.Faction.RED:
+                            gs.initiative = InitiativeState.Faction.BLUE
+
+                for objective in gs.objectives:
+                    if killed_unit.faction == objective.target_faction:
+                        objective.units_destroyed_counter += 1
+                return [(1, gs)]
 
     def get_winner(self) -> InitiativeState.Faction | None:
         for objective in self.objectives:

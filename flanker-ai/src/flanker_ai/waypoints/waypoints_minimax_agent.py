@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from flanker_ai.policies.minimax_search import MinimaxSearch
+from flanker_ai.policies.expectimax_search import ExpectimaxSearch
 from flanker_ai.unabstracted.models import ActionResult
 from flanker_ai.waypoints.waypoints_converter import WaypointConverter
 from flanker_core.gamestate import GameState
@@ -58,7 +58,7 @@ class WaypointsMinimaxAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
-            score, waypoint_action = MinimaxSearch.search(
+            score, waypoint_action = ExpectimaxSearch.search(
                 state=new_waypoint_gs,
                 depth=4,
             )
