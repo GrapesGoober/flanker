@@ -17,9 +17,9 @@ from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 
 _FIRE_OUTCOME_PROBABILITIES = {
-    FireOutcomes.MISS: 0.3,
-    FireOutcomes.PIN: 0.4,
-    FireOutcomes.SUPPRESS: 0.3,
+    FireOutcomes.MISS: 0.2,
+    FireOutcomes.PIN: 0.2,
+    FireOutcomes.SUPPRESS: 0.6,
 }
 
 
@@ -239,25 +239,57 @@ class WaypointsGameState(IGameState[WaypointAction]):
     ) -> list[tuple[float, "WaypointsGameState"]]:
         match action:
             case WaypointMoveAction():
-                gs = self.copy()
-                current_unit = gs.combat_units[action.unit_id]
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
-                    # Assumes determinic for now
-                    current_unit.status = CombatUnit.Status.PINNED
-                    current_unit.current_waypoint_id = action.interrupt_at_id
+                    outcomes: list[tuple[float, "WaypointsGameState"]] = []
+                    for outcome, probability in _FIRE_OUTCOME_PROBABILITIES.items():
+                        gs = self.copy()
+                        current_unit = gs.combat_units[action.unit_id]
+                        match outcome:
+                            case FireOutcomes.MISS:
+                                current_unit.current_waypoint_id = (
+                                    action.move_to_waypoint_id
+                                )
+                            case FireOutcomes.PIN:
+                                current_unit.status = CombatUnit.Status.PINNED
+                                current_unit.current_waypoint_id = (
+                                    action.interrupt_at_id
+                                )
+                            case FireOutcomes.SUPPRESS:
+                                current_unit.status = CombatUnit.Status.SUPPRESSED
+                                gs._flip_initiative()
+                            case FireOutcomes.KILL:
+                                gs._kill_unit(action.unit_id)
+                                gs._flip_initiative()
+
+                        outcomes.append((probability, gs))
+                    return outcomes
                 else:
+                    gs = self.copy()
+                    current_unit = gs.combat_units[action.unit_id]
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
-                return [(1, gs)]
+                    return [(1, gs)]
 
             case WaypointFireAction():
-                gs = self.copy()
-                # Assumes determinic for now
-                target_unit = gs.combat_units[action.target_id]
-                target_unit.status = CombatUnit.Status.SUPPRESSED
-                return [(1, gs)]
+                outcomes: list[tuple[float, "WaypointsGameState"]] = []
+                for outcome, probability in _FIRE_OUTCOME_PROBABILITIES.items():
+                    gs = self.copy()
+                    target_unit = gs.combat_units[action.target_id]
+                    match outcome:
+                        case FireOutcomes.MISS:
+                            gs._flip_initiative()
+                        case FireOutcomes.PIN:
+                            target_unit.status = CombatUnit.Status.PINNED
+                            gs._flip_initiative()
+                        case FireOutcomes.SUPPRESS:
+                            target_unit.status = CombatUnit.Status.SUPPRESSED
+                        case FireOutcomes.KILL:
+                            gs._kill_unit(action.target_id)
+                    outcomes.append((probability, gs))
 
-            case WaypointAssaultAction():
+                return outcomes
+
+            case WaypointAssaultAction():  # Assumes determinic for now
                 gs = self.copy()
                 # Check for move interrupts
                 current_unit = gs.combat_units[action.unit_id]
@@ -265,33 +297,18 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
-                    match gs.initiative:
-                        case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
-                        case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
+                    gs._flip_initiative()
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = target_unit.current_waypoint_id
 
-                # Runs the assault dice roll. Assumes determinic for now
-                killed_unit: AbstractedCombatUnit
+                # Runs the assault dice roll.
                 if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                    gs.combat_units.pop(action.target_id)
-                    killed_unit = target_unit
+                    gs._kill_unit(action.target_id)
                 else:
-                    killed_unit = current_unit
-                    gs.combat_units.pop(action.unit_id)
-                    # Assault failed
-                    match gs.initiative:
-                        case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
-                        case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
+                    gs._kill_unit(action.unit_id)
+                    gs._flip_initiative()
 
-                for objective in gs.objectives:
-                    if killed_unit.faction == objective.target_faction:
-                        objective.units_destroyed_counter += 1
                 return [(1, gs)]
 
     def get_winner(self) -> InitiativeState.Faction | None:
@@ -319,3 +336,17 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 if path_id in enemy_visible_nodes:
                     return path_id
         return None
+
+    def _flip_initiative(self) -> None:
+        match self.initiative:
+            case InitiativeState.Faction.BLUE:
+                self.initiative = InitiativeState.Faction.RED
+            case InitiativeState.Faction.RED:
+                self.initiative = InitiativeState.Faction.BLUE
+
+    def _kill_unit(self, unit_id: int) -> None:
+        killed_unit = self.combat_units[unit_id]
+        self.combat_units.pop(unit_id)
+        for objective in self.objectives:
+            if killed_unit.faction == objective.target_faction:
+                objective.units_destroyed_counter += 1
