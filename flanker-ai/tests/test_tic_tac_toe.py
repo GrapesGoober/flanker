@@ -10,7 +10,7 @@ def fixture() -> TicTacToeGameState:
         board=[
             ["X", None, "O"],
             [None, "X", None],
-            [None, None, "O"],
+            ["X", None, "O"],
         ],
         current_player=InitiativeState.Faction.BLUE,  # O
     )
@@ -22,7 +22,7 @@ def test_str_simple_board(fixture: TicTacToeGameState) -> None:
         [
             "X . O",
             ". X .",
-            ". . O",
+            "X . O",
         ]
     )
 
@@ -34,7 +34,7 @@ def test_minimax_move(fixture: TicTacToeGameState) -> None:
         [
             "X . O",
             ". X O",
-            ". . O",
+            "X . O",
         ]
     )
     _, new_state = MinimaxSearch.search(fixture, 1, True)
