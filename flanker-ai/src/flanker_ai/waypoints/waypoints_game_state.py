@@ -165,10 +165,10 @@ class WaypointsGameState(IGameState[WaypointAction]):
 
         return actions
 
-    def get_branches(
+    def get_deterministic_branch(
         self,
         action: WaypointAction,
-    ) -> list["WaypointsGameState"]:
+    ) -> "WaypointsGameState":
 
         match action:
             case WaypointMoveAction():
@@ -181,14 +181,14 @@ class WaypointsGameState(IGameState[WaypointAction]):
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
-                return [gs]
+                return gs
 
             case WaypointFireAction():
                 gs = self.copy()
                 # Assumes determinic for now
                 target_unit = gs.combat_units[action.target_id]
                 target_unit.status = CombatUnit.Status.SUPPRESSED
-                return [gs]
+                return gs
 
             case WaypointAssaultAction():
                 gs = self.copy()
@@ -225,7 +225,10 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 for objective in gs.objectives:
                     if killed_unit.faction == objective.target_faction:
                         objective.units_destroyed_counter += 1
-                return [gs]
+                return gs
+
+    def get_branches(self, action: WaypointAction) -> list["WaypointsGameState"]:
+        raise NotImplementedError()
 
     def get_winner(self) -> InitiativeState.Faction | None:
         for objective in self.objectives:

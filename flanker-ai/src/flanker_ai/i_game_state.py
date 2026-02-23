@@ -12,7 +12,7 @@ class IGameState[T](Protocol):
         ...
 
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
-        """Implements objective scoring for heuristic or terminal."""
+        """Implements objective scoring given a maximizer."""
         ...
 
     def get_actions(self) -> Sequence[T]:
@@ -20,7 +20,11 @@ class IGameState[T](Protocol):
         ...
 
     def get_branches(self, action: T) -> Sequence["IGameState[T]"]:
-        """Generates possible brances from the current action."""
+        """Generates possible branches from the current action."""
+        ...
+
+    def get_deterministic_branch(self, action: T) -> "IGameState[T] | None":
+        """Generates one most likely branch deterministically."""
         ...
 
     def get_winner(self) -> InitiativeState.Faction | None:

@@ -64,21 +64,21 @@ class TicTacToeGameState(IGameState[TicTacToeAction]):
 
         return None
 
-    def get_branches(
+    def get_deterministic_branch(
         self,
         action: TicTacToeAction,
-    ) -> list["TicTacToeGameState"]:
+    ) -> "TicTacToeGameState | None":
         if self.get_winner() is not None:
-            return []
+            return None
 
-        branches: list[TicTacToeGameState] = []
         if self.board[action.row][action.column] is None:
             new_state = self.copy()
             new_state.board[action.row][action.column] = self.current_player
             new_state.current_player = "X" if self.current_player == "O" else "O"
-            branches.append(new_state)
+            return new_state
 
-        return branches
+    def get_branches(self, action: TicTacToeAction) -> list["TicTacToeGameState"]:
+        raise NotImplementedError()
 
     def get_actions(self) -> Sequence[TicTacToeAction]:
         actions: list[TicTacToeAction] = []

@@ -40,6 +40,6 @@ def test_minimax_move(fixture: TicTacToeGameState) -> None:
     )
     _, action = MinimaxSearch.search(fixture, 1)
     assert action != None, "One optimal solution exists!"
-    new_state = fixture.get_branches(action)
+    new_state = fixture.get_deterministic_branch(action)
     assert action == TicTacToeAction(row=1, column=2)
-    assert str(new_state[0]) == expected
+    assert str(new_state) == expected

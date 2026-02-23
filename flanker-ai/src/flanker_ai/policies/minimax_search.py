@@ -8,6 +8,8 @@ MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
 class MinimaxSearch:
+    "Minimax tree search with alpha-beta pruning."
+
     @staticmethod
     def search[T](
         state: IGameState[T],
@@ -41,61 +43,32 @@ class MinimaxSearch:
             return state.get_score(MAXIMIZING_FACTION), None
 
         best_action: T | None = None
+        best_score = -inf if state.get_initiative() == MAXIMIZING_FACTION else inf
 
-        if state.get_initiative() == MAXIMIZING_FACTION:
-            best_score = -inf
+        for action in actions:
+            # Assume the branches are deterministic
+            branch = state.get_deterministic_branch(action)
+            if branch is None:
+                continue
+            score, _ = MinimaxSearch.search(
+                branch,
+                depth - 1,
+                alpha,
+                beta,
+            )
 
-            for action in actions:
-                branches = state.get_branches(action)
-                if not branches:
-                    return state.get_score(MAXIMIZING_FACTION), None
+            if state.get_initiative() == MAXIMIZING_FACTION:
+                if score > best_score:
+                    best_score = score
+                    best_action = action
+                alpha = max(alpha, best_score)
+            else:
+                if score < best_score:
+                    best_score = score
+                    best_action = action
+                beta = min(beta, best_score)
 
-                for branch in branches:
-                    score, _ = MinimaxSearch.search(
-                        branch,
-                        depth - 1,
-                        alpha,
-                        beta,
-                    )
+            if beta <= alpha:
+                break  # Beta cutoff
 
-                    if score > best_score:
-                        best_score = score
-                        best_action = action
-
-                    alpha = max(alpha, best_score)
-                    if beta <= alpha:
-                        break  # Beta cutoff
-
-                if beta <= alpha:
-                    break  # Beta cutoff
-
-            return best_score, best_action
-
-        else:
-            best_score = inf
-
-            for action in actions:
-                branches = state.get_branches(action)
-                if not branches:
-                    return state.get_score(MAXIMIZING_FACTION), None
-
-                for branch in branches:
-                    score, _ = MinimaxSearch.search(
-                        branch,
-                        depth - 1,
-                        alpha,
-                        beta,
-                    )
-
-                    if score < best_score:
-                        best_score = score
-                        best_action = action
-
-                    beta = min(beta, best_score)
-                    if beta <= alpha:
-                        break  # Alpha cutoff
-
-                if beta <= alpha:
-                    break  # Alpha cutoff
-
-            return best_score, best_action
+        return best_score, best_action
