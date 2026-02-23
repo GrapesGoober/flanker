@@ -77,7 +77,9 @@ class TicTacToeGameState(IGameState[TicTacToeAction]):
             new_state.current_player = "X" if self.current_player == "O" else "O"
             return new_state
 
-    def get_branches(self, action: TicTacToeAction) -> list["TicTacToeGameState"]:
+    def get_branches(
+        self, action: TicTacToeAction
+    ) -> list[tuple[float, "TicTacToeGameState"]]:
         raise NotImplementedError()
 
     def get_actions(self) -> Sequence[TicTacToeAction]:

@@ -19,8 +19,8 @@ class IGameState[T](Protocol):
         """Generates possible actions from the current state"""
         ...
 
-    def get_branches(self, action: T) -> Sequence["IGameState[T]"]:
-        """Generates possible branches from the current action."""
+    def get_branches(self, action: T) -> Sequence[tuple[float, "IGameState[T]"]]:
+        """Generate branches and their probability from the current action."""
         ...
 
     def get_deterministic_branch(self, action: T) -> "IGameState[T] | None":

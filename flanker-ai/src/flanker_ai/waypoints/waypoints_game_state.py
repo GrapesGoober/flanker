@@ -227,7 +227,9 @@ class WaypointsGameState(IGameState[WaypointAction]):
                         objective.units_destroyed_counter += 1
                 return gs
 
-    def get_branches(self, action: WaypointAction) -> list["WaypointsGameState"]:
+    def get_branches(
+        self, action: WaypointAction
+    ) -> list[tuple[float, "WaypointsGameState"]]:
         raise NotImplementedError()
 
     def get_winner(self) -> InitiativeState.Faction | None:
