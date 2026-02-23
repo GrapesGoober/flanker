@@ -1,5 +1,5 @@
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from flanker_ai.i_game_state import IGameState
 from flanker_ai.waypoints.models import (
@@ -8,7 +8,6 @@ from flanker_ai.waypoints.models import (
     WaypointFireAction,
     WaypointMoveAction,
 )
-from flanker_ai.waypoints.waypoints_scheme import replace
 from flanker_core.models.components import (
     CombatUnit,
     EliminationObjective,

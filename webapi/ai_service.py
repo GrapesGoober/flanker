@@ -5,7 +5,7 @@ from flanker_ai.unabstracted.models import (
     FireActionResult,
     MoveActionResult,
 )
-from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
+from flanker_ai.waypoints.waypoints_converter import WaypointConverter
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -71,7 +71,7 @@ class AiService:
         config = AiConfigManager.get_ai_config(gs, request.faction)
         if isinstance(config, AiWaypointConfig):
             config.path_tolerance = request.spacing
-            config.waypoint_coordinates = WaypointScheme.get_grid_coordinates(
+            config.waypoint_coordinates = WaypointConverter.get_grid_coordinates(
                 gs, spacing=request.spacing, offset=request.spacing / 2
             )
 
