@@ -40,19 +40,24 @@ class AiService:
     @staticmethod
     def play_trial(gs: GameState) -> None:
         """Runs a trial where AI plays against each other."""
-        red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
         blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
-
-        while ObjectiveSystem.get_winning_faction(gs) == None:
+        red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+        while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
             blue_action_results = blue_agent.play_initiative()
             if blue_action_results:
-                AiService._log_ai_action_results(gs, blue_action_results)
+                print(f"BLUE made actions {blue_action_results}")
 
             red_action_results = red_agent.play_initiative()
             if red_action_results:
-                AiService._log_ai_action_results(gs, red_action_results)
+                print(f"RED made actions {red_action_results}")
 
-        print(f"Winner is {ObjectiveSystem.get_winning_faction(gs)}")
+            if not red_action_results and not blue_action_results:
+                print(f"No Valid Actions; Draw")
+                break
+        if winner == None:
+            print(f"No winner; draw")
+        else:
+            print(f"Winner is {winner}")
 
     @staticmethod
     def set_ai_waypoints_config(
