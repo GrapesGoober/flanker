@@ -41,6 +41,7 @@ from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
 
+# TODO: this shouldn't be a separate class, but built into waypoint gs
 class WaypointConverter:
     """
     Provides conversion logic between waypoints-graph and game state.
@@ -114,7 +115,7 @@ class WaypointConverter:
         return result
 
     @staticmethod
-    def create_template_waypoints(
+    def create_template_state(
         gs: GameState,
         points: list[Vec2],
         path_tolerance: float,

@@ -38,6 +38,9 @@ class TicTacToeGameState(IGameState[TicTacToeAction]):
             board=deepcopy(self.board),
         )
 
+    def is_maximizing(self) -> bool:
+        return self.current_player == "O"
+
     def get_winner(self) -> Optional[InitiativeState.Faction]:
         lines: list[list[MARK | None]] = []
 
@@ -90,6 +93,7 @@ class TicTacToeGameState(IGameState[TicTacToeAction]):
     def get_score(self) -> float:
         winner = self.get_winner()
 
+        # BLUE is maximizing
         if winner == InitiativeState.Faction.BLUE:
             return 1.0
         elif winner == InitiativeState.Faction.RED:

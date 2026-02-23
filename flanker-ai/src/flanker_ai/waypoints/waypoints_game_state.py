@@ -57,6 +57,9 @@ class WaypointsGameState(IGameState[WaypointAction]):
             objectives=copied_objectives,
         )
 
+    def is_maximizing(self) -> bool:
+        return self.initiative == InitiativeState.Faction.BLUE
+
     def get_score(self) -> float:
         winner = self.get_winner()
         if winner == InitiativeState.Faction.BLUE:
@@ -221,7 +224,11 @@ class WaypointsGameState(IGameState[WaypointAction]):
                         objective.units_destroyed_counter += 1
                 return [gs]
 
-    def get_winner(self) -> InitiativeState.Faction | None: ...
+    def get_winner(self) -> InitiativeState.Faction | None:
+        for objective in self.objectives:
+            if objective.units_to_destroy == objective.units_destroyed_counter:
+                return objective.winning_faction
+        return None
 
     def _get_move_interrupt(
         self,

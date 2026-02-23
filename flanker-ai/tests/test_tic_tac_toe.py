@@ -38,7 +38,7 @@ def test_minimax_move(fixture: TicTacToeGameState) -> None:
             "X . O",
         ]
     )
-    _, action = MinimaxSearch.search(fixture, 1, True)
+    _, action = MinimaxSearch.search(fixture, 1)
     assert action != None, "One optimal solution exists!"
     new_state = fixture.get_branches(action)
     assert action == TicTacToeAction(row=1, column=2)

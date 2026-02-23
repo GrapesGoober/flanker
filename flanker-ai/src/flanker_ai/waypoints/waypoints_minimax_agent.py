@@ -1,8 +1,8 @@
 from copy import deepcopy
 
+from flanker_ai.policies.minimax_search import MinimaxSearch
 from flanker_ai.unabstracted.models import ActionResult
-from flanker_ai.waypoints.waypoints_minimax_search import WaypointsMinimaxSearch
-from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
+from flanker_ai.waypoints.waypoints_converter import WaypointConverter
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -26,7 +26,7 @@ class WaypointsMinimaxAgent:
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
-        self._template_waypoints_gs = WaypointScheme.create_template_waypoints(
+        self._template_waypoints_gs = WaypointConverter.create_template_state(
             gs,
             points=waypoint_coordinates,
             path_tolerance=path_tolerance,
@@ -47,7 +47,7 @@ class WaypointsMinimaxAgent:
             # Add the combat units to the graph.
             # Make sure to add to a new graph instance to avoid mutation.
             new_waypoint_gs = deepcopy(self._template_waypoints_gs)
-            WaypointScheme.add_combat_units(
+            WaypointConverter.add_combat_units(
                 new_waypoint_gs,
                 self._gs,
                 path_tolerance=self._path_tolerance,
@@ -58,9 +58,9 @@ class WaypointsMinimaxAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
-            _, waypoint_action = WaypointsMinimaxSearch.search_best_action(
-                new_waypoint_gs,
-                depth=self._depth,
+            _, waypoint_action = MinimaxSearch.search(
+                state=new_waypoint_gs,
+                depth=4,
             )
 
             if waypoint_action == None:
@@ -68,7 +68,7 @@ class WaypointsMinimaxAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
 
-            result = WaypointScheme.apply_action(
+            result = WaypointConverter.apply_action(
                 gs=self._gs,
                 waypoint_gs=new_waypoint_gs,
                 waypoint_action=waypoint_action,

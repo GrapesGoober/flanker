@@ -26,3 +26,7 @@ class IGameState[T](Protocol):
     def get_winner(self) -> InitiativeState.Faction | None:
         """Get the winning faction, if any"""
         ...
+
+    def is_maximizing(self) -> bool:
+        """Returns whether the current state is maximizing."""
+        ...
