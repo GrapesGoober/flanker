@@ -6,13 +6,13 @@ from flanker_ai.i_game_state import IGameState
 
 class MinimaxSearch:
     @staticmethod
-    def search(
-        state: IGameState,
+    def search[T](
+        state: IGameState[T],
         depth: int,
         maximizing: bool,
-    ) -> Tuple[float, IGameState | None]:
+    ) -> Tuple[float, T | None]:
         """
-        Returns (best_score, best_child_state)
+        Returns (best_score, best_action)
         """
 
         winner = state.get_winner()
@@ -21,28 +21,35 @@ class MinimaxSearch:
         if depth == 0 or winner is not None:
             return state.get_score(), None
 
-        branches = state.get_branches()
-
-        if not branches:
-            # No moves available
+        actions = state.get_actions()
+        if not actions:  # No moves available
             return state.get_score(), None
 
-        best_state = None
-
+        best_action: T | None = None
         if maximizing:
             best_score = -inf
-            for child in branches:
-                score, _ = MinimaxSearch.search(child, depth - 1, False)
-                if score > best_score:
-                    best_score = score
-                    best_state = child
-            return best_score, best_state
+            for action in actions:
+                branches = state.get_branches(action)
+                if not branches:  # No branching available
+                    return state.get_score(), None
+                # This assumes deterministic outcome (normal minimax)
+                for branch in branches:
+                    score, _ = MinimaxSearch.search(branch, depth - 1, False)
+                    if score > best_score:
+                        best_score = score
+                        best_action = action
+            return best_score, best_action
 
         else:
             best_score = inf
-            for child in branches:
-                score, _ = MinimaxSearch.search(child, depth - 1, True)
-                if score < best_score:
-                    best_score = score
-                    best_state = child
-            return best_score, best_state
+            for action in actions:
+                branches = state.get_branches(action)
+                if not branches:  # No branching available
+                    return state.get_score(), None
+                # This assumes deterministic outcome (normal minimax)
+                for branch in branches:
+                    score, _ = MinimaxSearch.search(branch, depth - 1, True)
+                    if score < best_score:
+                        best_score = score
+                        best_action = action
+            return best_score, best_action

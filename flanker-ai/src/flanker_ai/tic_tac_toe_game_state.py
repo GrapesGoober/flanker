@@ -1,6 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal, Optional, Sequence
 
 from flanker_ai.i_game_state import IGameState
 from flanker_core.models.components import InitiativeState
@@ -19,19 +19,22 @@ FACTION_TO_MARK: dict[InitiativeState.Faction, MARK] = {
 
 
 @dataclass
-class TicTacToeGameState(IGameState):
-    board: list[list[MARK | None]]
-    current_player: MARK
+class TicTacToeAction:
+    row: int
+    column: int
+
+
+class TicTacToeGameState(IGameState[TicTacToeAction]):
 
     def __init__(
         self,
         current_player: InitiativeState.Faction,
         board: list[list[MARK | None]] | None = None,
-    ):
+    ) -> None:
         if board is None:
             board = [[None for _ in range(3)] for _ in range(3)]
-        self.board = board
-        self.current_player = FACTION_TO_MARK[current_player]
+        self.board: list[list[MARK | None]] = board
+        self.current_player: MARK = FACTION_TO_MARK[current_player]
 
     # ---------- Core Protocol Methods ----------
 
@@ -61,23 +64,34 @@ class TicTacToeGameState(IGameState):
 
         return None
 
-    def get_branches(self) -> list["TicTacToeGameState"]:
+    def get_branches(
+        self,
+        action: TicTacToeAction,
+    ) -> list["TicTacToeGameState"]:
         if self.get_winner() is not None:
             return []
 
         branches: list[TicTacToeGameState] = []
+        if self.board[action.row][action.column] is None:
+            new_state = self.copy()
+            new_state.board[action.row][action.column] = self.current_player
+            new_state.current_player = "X" if self.current_player == "O" else "O"
+            branches.append(new_state)
 
+        return branches
+
+    def get_actions(self) -> Sequence[TicTacToeAction]:
+        actions: list[TicTacToeAction] = []
         for r in range(3):
             for c in range(3):
                 if self.board[r][c] is None:
-                    new_state = self.copy()
-                    new_state.board[r][c] = self.current_player
-                    new_state.current_player = (
-                        "X" if self.current_player == "O" else "O"
+                    actions.append(
+                        TicTacToeAction(
+                            row=r,
+                            column=c,
+                        )
                     )
-                    branches.append(new_state)
-
-        return branches
+        return actions
 
     def get_score(self) -> float:
         winner = self.get_winner()
