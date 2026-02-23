@@ -166,7 +166,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/{sceneName}/{gameId}/ai-config": {
+    "/api/{sceneName}/{gameId}/ai-config-waypoints": {
         parameters: {
             query?: never;
             header?: never;
@@ -176,7 +176,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Ai Config Waypoints */
-        post: operations["ai_config_waypoints_api__sceneName___gameId__ai_config_post"];
+        post: operations["ai_config_waypoints_api__sceneName___gameId__ai_config_waypoints_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -207,6 +207,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AiWaypointConfigGridRequest */
+        AiWaypointConfigGridRequest: {
+            faction: components["schemas"]["Faction"];
+            /** Spacing */
+            spacing: number;
+        };
         /** AiWaypointConfigRequest */
         AiWaypointConfigRequest: {
             faction: components["schemas"]["Faction"];
@@ -719,7 +725,7 @@ export interface operations {
             };
         };
     };
-    ai_config_waypoints_api__sceneName___gameId__ai_config_post: {
+    ai_config_waypoints_api__sceneName___gameId__ai_config_waypoints_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -731,7 +737,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AiWaypointConfigRequest"];
+                "application/json": components["schemas"]["AiWaypointConfigRequest"] | components["schemas"]["AiWaypointConfigGridRequest"];
             };
         };
         responses: {

@@ -142,7 +142,7 @@ export async function GetLogs(): Promise<ActionLog[]> {
 
 /** Update waypoints data for the current game. */
 export async function UpdateWaypointsData(waypoints: AiWaypointsModel) {
-	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/ai-config', {
+	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/ai-config-waypoints', {
 		params: GetParams(),
 		body: waypoints
 	});

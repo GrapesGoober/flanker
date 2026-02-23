@@ -21,31 +21,31 @@ class WaypointsMinimaxSearch:
     """
 
     @staticmethod
-    def search_best_actions(
+    def search_best_action(
         gs: WaypointsGraphGameState,
         depth: int,
         alpha: float = float("-inf"),
         beta: float = float("inf"),
-    ) -> tuple[float, list[WaypointAction]]:
+    ) -> tuple[float, WaypointAction | None]:
 
         winner = WaypointsMinimaxSearch._get_winning_faction(gs)
         # Have it prefer earlier win
         if winner == InitiativeState.Faction.BLUE:
-            return 10000 + depth, []
+            return 10000 + depth, None
         elif winner == InitiativeState.Faction.RED:
-            return -10000 - depth, []
+            return -10000 - depth, None
 
         actions = WaypointsMinimaxSearch._get_actions(gs)
         if depth == 0 or len(actions) == 0:
-            return WaypointsMinimaxSearch._evaluate(gs), []
+            return WaypointsMinimaxSearch._evaluate(gs), None
 
         is_maximizing = gs.initiative == InitiativeState.Faction.BLUE
         best_score = float("-inf") if is_maximizing else float("inf")
-        best_actions: list[WaypointAction] = []
+        best_action: WaypointAction | None = None
         for action in actions:
             new_gs = WaypointsMinimaxSearch._copy_gs(gs)
             WaypointsMinimaxSearch._perform_action(new_gs, action)
-            score, future_actions = WaypointsMinimaxSearch.search_best_actions(
+            score, _ = WaypointsMinimaxSearch.search_best_action(
                 new_gs,
                 depth - 1,
                 alpha=alpha,
@@ -54,18 +54,18 @@ class WaypointsMinimaxSearch:
             if is_maximizing:
                 if score > best_score:
                     best_score = score
-                    best_actions = [action] + future_actions
+                    best_action = action
                 if best_score >= beta:
                     break
                 alpha = max(alpha, best_score)
             else:
                 if score < best_score:
                     best_score = score
-                    best_actions = [action] + future_actions
+                    best_action = action
                 if best_score <= alpha:
                     break
                 beta = min(beta, best_score)
-        return best_score, best_actions
+        return best_score, best_action
 
     @staticmethod
     def _copy_gs(gs: WaypointsGraphGameState) -> WaypointsGraphGameState:
@@ -137,13 +137,21 @@ class WaypointsMinimaxSearch:
     def _get_actions(gs: WaypointsGraphGameState) -> list[WaypointAction]:
 
         actions: list[WaypointAction] = []
+        friendly_units: list[tuple[int, AbstractedCombatUnit]] = []
+        enemy_units: list[tuple[int, AbstractedCombatUnit]] = []
         for combat_unit_id, combat_unit in gs.combat_units.items():
+            if combat_unit.faction == gs.initiative:
+                friendly_units.append((combat_unit_id, combat_unit))
+            if combat_unit.faction != gs.initiative:
+                enemy_units.append((combat_unit_id, combat_unit))
+
+        for combat_unit_id, combat_unit in friendly_units:
             current_waypoint = gs.waypoints[combat_unit.current_waypoint_id]
             if combat_unit.faction != gs.initiative:
                 continue
 
             # Adds assault & fire actions
-            for enemy_id, enemy_unit in gs.combat_units.items():
+            for enemy_id, enemy_unit in enemy_units:
 
                 # Add fire action if the enemy is on a visible node
                 if enemy_unit.faction == combat_unit.faction:
@@ -180,6 +188,8 @@ class WaypointsMinimaxSearch:
                     )
 
             # Adds move actions later, for best alpha-beta pruning
+            # TODO: is this causing the speed decrease for 3v3?
+            # It creates new population list every branch
             if combat_unit.status == CombatUnit.Status.ACTIVE:
                 # Filter some move actions to reduce branching factor
                 movable_nodes = random.sample(
