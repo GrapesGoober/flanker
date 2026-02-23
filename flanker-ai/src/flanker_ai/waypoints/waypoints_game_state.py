@@ -16,10 +16,14 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 
-_FIRE_OUTCOME_PROBABILITIES = {
-    FireOutcomes.MISS: 0.2,
-    FireOutcomes.PIN: 0.2,
+_FIRE_ACTION_PROBABILITIES = {
+    FireOutcomes.PIN: 0.4,
     FireOutcomes.SUPPRESS: 0.6,
+}
+
+_FIRE_REACTION_PROBABILITIES = {
+    FireOutcomes.PIN: 0.6,
+    FireOutcomes.SUPPRESS: 0.4,
 }
 
 
@@ -154,7 +158,7 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 # Filter some move actions to reduce branching factor
                 movable_nodes = random.sample(
                     population=list(current_waypoint.movable_paths.keys()),
-                    k=10,
+                    k=9,
                 )
 
                 for move_to_id in movable_nodes:
@@ -242,7 +246,7 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
                     outcomes: list[tuple[float, "WaypointsGameState"]] = []
-                    for outcome, probability in _FIRE_OUTCOME_PROBABILITIES.items():
+                    for outcome, probability in _FIRE_REACTION_PROBABILITIES.items():
                         gs = self.copy()
                         current_unit = gs.combat_units[action.unit_id]
                         match outcome:
@@ -272,7 +276,7 @@ class WaypointsGameState(IGameState[WaypointAction]):
 
             case WaypointFireAction():
                 outcomes: list[tuple[float, "WaypointsGameState"]] = []
-                for outcome, probability in _FIRE_OUTCOME_PROBABILITIES.items():
+                for outcome, probability in _FIRE_ACTION_PROBABILITIES.items():
                     gs = self.copy()
                     target_unit = gs.combat_units[action.target_id]
                     match outcome:

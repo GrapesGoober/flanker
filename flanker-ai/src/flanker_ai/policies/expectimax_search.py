@@ -44,19 +44,22 @@ class ExpectimaxSearch:
 
         for action in actions:
             branches = state.get_branches(action)
+            if branches == []:
+                continue  # Escapes; prevents expected_score=0 being used
+            expected_score = 0
             for probability, branch in branches:
                 score, _ = ExpectimaxSearch.search(
                     branch,
                     depth - 1,
                 )
-                expected_score = score * probability
-                if state.get_initiative() == MAXIMIZING_FACTION:
-                    if expected_score > best_score:
-                        best_score = expected_score
-                        best_action = action
-                else:
-                    if expected_score < best_score:
-                        best_score = expected_score
-                        best_action = action
+                expected_score += score * probability
+            if state.get_initiative() == MAXIMIZING_FACTION:
+                if expected_score > best_score:
+                    best_score = expected_score
+                    best_action = action
+            else:
+                if expected_score < best_score:
+                    best_score = expected_score
+                    best_action = action
 
         return best_score, best_action
