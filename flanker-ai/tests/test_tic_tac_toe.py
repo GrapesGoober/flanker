@@ -1,6 +1,7 @@
 import pytest
-from flanker_ai.minimax_search import MinimaxSearch
-from flanker_ai.tic_tac_toe_game_state import TicTacToeAction, TicTacToeGameState
+from flanker_ai.policies.minimax_search import MinimaxSearch
+from flanker_ai.tic_tac_toe.actions import TicTacToeAction
+from flanker_ai.tic_tac_toe.state import TicTacToeGameState
 from flanker_core.models.components import InitiativeState
 
 
