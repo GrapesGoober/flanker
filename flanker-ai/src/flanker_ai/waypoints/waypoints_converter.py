@@ -43,15 +43,20 @@ from flanker_core.utils.linear_transform import LinearTransform
 
 
 # TODO: this shouldn't be a separate class, but built into waypoint gs
-class WaypointConverter(IGameStateConverter[WaypointAction]):
+class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState]):
     """
     Provides conversion logic between waypoints-graph and game state.
     This is done specifically for the CoG, thus the implementation here
     is aweful. The interconnections between nodes are too many.
     """
 
-    def __init__(self) -> None:
-        ...
+    def __init__(
+        self,
+        points: list[Vec2],
+        path_tolerance: float,
+    ) -> None:
+        self._points = points
+        self._path_tolerance = path_tolerance
 
     @staticmethod
     def deabstract_action(
@@ -111,18 +116,16 @@ class WaypointConverter(IGameStateConverter[WaypointAction]):
     def apply_action(
         self,
         action: WaypointAction,
-        representation: WaypointsGameState, # Interface expects IGameState can't assign
-        gs: GameState
+        representation: WaypointsGameState,
+        gs: GameState,
     ) -> ActionResult | InvalidAction:
         raw_action = WaypointConverter.deabstract_action(representation, action)
         result = WaypointConverter._perform_action(gs, raw_action)
         return result
 
-    @staticmethod
-    def create_template_state(
+    def create_template(
+        self,
         gs: GameState,
-        points: list[Vec2],
-        path_tolerance: float,
     ) -> WaypointsGameState:
         """Create a waypoint-graph from the given list of points."""
 
@@ -139,7 +142,7 @@ class WaypointConverter(IGameStateConverter[WaypointAction]):
         )
 
         # Add grid points as a waypoint
-        for point_id, point in enumerate(points):
+        for point_id, point in enumerate(self._points):
             waypoint_gs.waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=set(),
@@ -150,33 +153,34 @@ class WaypointConverter(IGameStateConverter[WaypointAction]):
         WaypointConverter._add_visibility_relationships(waypoint_gs, gs)
         WaypointConverter._add_path_relationships(
             waypoint_gs,
-            path_tolerance=path_tolerance,
+            path_tolerance=self._path_tolerance,
         )
 
         # Assemble the game state
         return waypoint_gs
 
-    @staticmethod
-    def add_combat_units(
-        waypoint_gs: WaypointsGameState,
+    def update_template(
+        self,
         gs: GameState,
-        path_tolerance: float,
-    ) -> None:
+        template: WaypointsGameState,
+    ) -> WaypointsGameState:
         """Adds combat unit positions as waypoints."""
+
+        new_waypoints = template.copy()
 
         # Add combat units as waypoints and as abstracted units
         new_waypoint_ids: list[int] = []
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
-            waypoint_id = len(waypoint_gs.waypoints.keys())
+            waypoint_id = len(new_waypoints.waypoints.keys())
             new_waypoint_ids.append(waypoint_id)
-            waypoint_gs.waypoints[waypoint_id] = WaypointNode(
+            new_waypoints.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=set(),
                 movable_paths={},
             )
-            waypoint_gs.combat_units[unit_id] = AbstractedCombatUnit(
+            new_waypoints.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
                 status=combat_unit.status,
@@ -186,12 +190,12 @@ class WaypointConverter(IGameStateConverter[WaypointAction]):
 
         # Update their relationships
         WaypointConverter._add_path_relationships(
-            waypoint_gs=waypoint_gs,
-            path_tolerance=path_tolerance,
+            waypoint_gs=new_waypoints,
+            path_tolerance=self._path_tolerance,
             waypoint_ids_to_update=new_waypoint_ids,
         )
         WaypointConverter._add_visibility_relationships(
-            waypoint_gs=waypoint_gs,
+            waypoint_gs=new_waypoints,
             gs=gs,
             waypoint_ids_to_update=new_waypoint_ids,
         )
@@ -200,7 +204,9 @@ class WaypointConverter(IGameStateConverter[WaypointAction]):
         objectives: list[EliminationObjective] = list(
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
-        waypoint_gs.objectives = objectives
+        new_waypoints.objectives = objectives
+
+        return new_waypoints
 
     @staticmethod
     def get_grid_coordinates(

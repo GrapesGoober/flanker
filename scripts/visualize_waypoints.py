@@ -3,8 +3,8 @@ from inspect import isclass
 from typing import Any
 
 from flanker_ai.ai_agent_factory import (
-    AiConfigComponent,
     AiAgentFactory,
+    AiConfigComponent,
     AiWaypointConfig,
 )
 from flanker_ai.waypoints.waypoints_converter import WaypointConverter
@@ -60,12 +60,12 @@ if __name__ == "__main__":
     assert isinstance(
         config, AiWaypointConfig
     ), "Can't visualize non-waypoints AI config"
-    waypoints_gs = WaypointConverter.create_template_state(
-        gs=gs,
+    converter = WaypointConverter(
         points=config.waypoint_coordinates,
         path_tolerance=10,
     )
-    WaypointConverter.add_combat_units(waypoints_gs, gs, path_tolerance=10)
+    waypoints_gs = converter.create_template(gs)
+    waypoints_gs = converter.update_template(gs, waypoints_gs)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []

@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from typing import Literal
 
+from flanker_ai.ai_agent import AiAgent
+from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
-from flanker_ai.waypoints.waypoints_minimax_agent import WaypointsMinimaxAgent
+from flanker_ai.waypoints.models import WaypointAction
+from flanker_ai.waypoints.waypoints_converter import WaypointConverter
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
@@ -30,7 +33,7 @@ class AiConfigComponent:
 @dataclass
 class _AiAgentInstanceComponent:
     faction: InitiativeState.Faction
-    agent: WaypointsMinimaxAgent | RandomHeuristicAgent
+    agent: AiAgent | RandomHeuristicAgent
 
 
 class AiAgentFactory:
@@ -51,11 +54,11 @@ class AiAgentFactory:
     def get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> WaypointsMinimaxAgent | RandomHeuristicAgent:
+    ) -> AiAgent | RandomHeuristicAgent:
         """Use the config to build an AI agent, or reuse agent if exists."""
 
         # Get the agent instance component.
-        agent: WaypointsMinimaxAgent | RandomHeuristicAgent | None = None
+        agent: AiAgent | RandomHeuristicAgent | None = None
         for _, agent_instance in gs.query(_AiAgentInstanceComponent):
             if agent_instance.faction != faction:
                 continue
@@ -66,13 +69,23 @@ class AiAgentFactory:
             config = AiAgentFactory.get_ai_config(gs, faction)
             match config:
                 case AiWaypointConfig():
-                    agent = WaypointsMinimaxAgent(
+                    agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        search_depth=4,
-                        waypoint_coordinates=config.waypoint_coordinates,
-                        path_tolerance=config.path_tolerance,
+                        converter=WaypointConverter(
+                            points=config.waypoint_coordinates,
+                            path_tolerance=config.path_tolerance,
+                        ),
+                        policy=ExpectimaxPolicy[WaypointAction](depth=4),
                     )
+
+                    # (
+                    #     gs=gs,
+                    #     faction=faction,
+                    #     search_depth=4,
+                    #     waypoint_coordinates=config.waypoint_coordinates,
+                    #     path_tolerance=config.path_tolerance,
+                    # )
                 case AiRandomHeuristicConfig():
                     agent = RandomHeuristicAgent(
                         gs=gs,

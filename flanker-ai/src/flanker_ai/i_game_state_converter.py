@@ -1,17 +1,18 @@
 from typing import Any
+
 from flanker_ai.i_game_state import IGameState
 from flanker_ai.unabstracted.models import ActionResult
 from flanker_core.gamestate import GameState
 from flanker_core.models.outcomes import InvalidAction
 
 
-class IGameStateConverter[TAction]:
+class IGameStateConverter[TAction, TState: IGameState[Any]]:
     """
     Provides logic to convert between original game state and
     AI representation game state
     """
 
-    def create_template(self, gs: GameState) -> IGameState[TAction]:
+    def create_template(self, gs: GameState) -> TState:
         """
         Create a template representation state from original state.
         Expensive precomputation goes here.
@@ -21,14 +22,14 @@ class IGameStateConverter[TAction]:
     def update_template(
         self,
         gs: GameState,
-        template: IGameState[TAction],
-    ) -> IGameState[TAction]:
+        template: TState,
+    ) -> TState:
         """Update the template representation state to make it ready for AI."""
         ...
 
     def apply_action[T: IGameState[Any]](
         self,
         action: TAction,
-        representation: IGameState[TAction],
+        representation: TState,
         gs: GameState,
     ) -> ActionResult | InvalidAction: ...

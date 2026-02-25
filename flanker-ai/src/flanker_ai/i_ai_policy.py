@@ -4,7 +4,7 @@ from flanker_ai.i_game_state import IGameState
 
 
 @runtime_checkable
-class IAiPolicy[T](Protocol):
+class IAiPolicy[TAction](Protocol):
     """Interface for defining a decision policy for AI."""
 
-    def get_action_sequence(self, gs: IGameState[T]) -> Sequence[T]: ...
+    def get_action_sequence(self, gs: IGameState[TAction]) -> Sequence[TAction]: ...

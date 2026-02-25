@@ -1,6 +1,9 @@
 from copy import deepcopy
-from flanker_ai.i_game_state_converter import IGameStateConverter
+from typing import Any
+
 from flanker_ai.i_ai_policy import IAiPolicy
+from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state_converter import IGameStateConverter
 from flanker_ai.unabstracted.models import ActionResult
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -10,12 +13,13 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
 
+
 class AiAgent:
-    def __init__[TAction](
+    def __init__[TAction, TGameState: IGameState[Any]](
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
-        converter: IGameStateConverter[TAction],
+        converter: IGameStateConverter[TAction, TGameState],
         policy: IAiPolicy[TAction],
     ) -> None:
         self._raw_gs = gs
@@ -23,7 +27,7 @@ class AiAgent:
         self._converter = converter
         self.policy = policy
         self._template_gs = converter.create_template(gs)
-        
+
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
 
@@ -55,8 +59,9 @@ class AiAgent:
                 break
 
             result = self._converter.apply_action(
-                action[0], # TODO: make have the initiative take action sequence
-                representation=gs
+                action=action[0],  # TODO: make have the initiative take action sequence
+                gs=self._raw_gs,
+                representation=gs,
             )
             if isinstance(result, InvalidAction):
                 print(f"{self._faction.value} AI made invalid action, breaking")
