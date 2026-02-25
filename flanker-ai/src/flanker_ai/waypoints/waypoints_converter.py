@@ -1,6 +1,7 @@
 from dataclasses import replace
 from typing import Literal
 
+from flanker_ai.i_game_state_converter import IGameStateConverter
 from flanker_ai.unabstracted.models import (
     Action,
     ActionResult,
@@ -42,12 +43,15 @@ from flanker_core.utils.linear_transform import LinearTransform
 
 
 # TODO: this shouldn't be a separate class, but built into waypoint gs
-class WaypointConverter:
+class WaypointConverter(IGameStateConverter[WaypointAction]):
     """
     Provides conversion logic between waypoints-graph and game state.
     This is done specifically for the CoG, thus the implementation here
     is aweful. The interconnections between nodes are too many.
     """
+
+    def __init__(self) -> None:
+        ...
 
     @staticmethod
     def deabstract_action(
@@ -72,7 +76,7 @@ class WaypointConverter:
                 )
 
     @staticmethod
-    def perform_action(
+    def _perform_action(
         gs: GameState,
         action: MoveAction | FireAction | AssaultAction,
     ) -> ActionResult | InvalidAction:
@@ -104,14 +108,14 @@ class WaypointConverter:
                     )
         return result
 
-    @staticmethod
     def apply_action(
-        gs: GameState,
-        waypoint_gs: WaypointsGameState,
-        waypoint_action: WaypointAction,
+        self,
+        action: WaypointAction,
+        representation: WaypointsGameState, # Interface expects IGameState can't assign
+        gs: GameState
     ) -> ActionResult | InvalidAction:
-        action = WaypointConverter.deabstract_action(waypoint_gs, waypoint_action)
-        result = WaypointConverter.perform_action(gs, action)
+        raw_action = WaypointConverter.deabstract_action(representation, action)
+        result = WaypointConverter._perform_action(gs, raw_action)
         return result
 
     @staticmethod

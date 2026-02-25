@@ -1,4 +1,4 @@
-from flanker_ai.ai_config_manager import AiConfigManager, AiWaypointConfig
+from flanker_ai.ai_agent_factory import AiAgentFactory, AiWaypointConfig
 from flanker_ai.unabstracted.models import (
     ActionResult,
     AssaultActionResult,
@@ -31,7 +31,7 @@ class AiService:
     def play_redfor(gs: GameState) -> None:
         """Runs the default REDFOR AI."""
 
-        agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+        agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
 
         results = agent.play_initiative()
 
@@ -40,8 +40,8 @@ class AiService:
     @staticmethod
     def play_trial(gs: GameState) -> None:
         """Runs a trial where AI plays against each other."""
-        blue_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
-        red_agent = AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+        blue_agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.BLUE)
+        red_agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
         while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
             blue_action_results = blue_agent.play_initiative()
             if blue_action_results:
@@ -64,7 +64,7 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
-        config = AiConfigManager.get_ai_config(gs, request.faction)
+        config = AiAgentFactory.get_ai_config(gs, request.faction)
         if isinstance(config, AiWaypointConfig):
             config.waypoint_coordinates = request.points
 
@@ -73,7 +73,7 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigGridRequest,
     ) -> None:
-        config = AiConfigManager.get_ai_config(gs, request.faction)
+        config = AiAgentFactory.get_ai_config(gs, request.faction)
         if isinstance(config, AiWaypointConfig):
             config.path_tolerance = request.spacing
             config.waypoint_coordinates = WaypointConverter.get_grid_coordinates(

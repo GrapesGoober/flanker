@@ -4,10 +4,10 @@ from flanker_core.models.components import InitiativeState
 
 
 @runtime_checkable
-class IGameState[T](Protocol):
+class IGameState[TAction](Protocol):
     """Interface for defining game state representation for AI"""
 
-    def copy(self) -> "IGameState[T]":
+    def copy(self) -> "IGameState[TAction]":
         """Implements copying mechanism for Game State."""
         ...
 
@@ -15,15 +15,20 @@ class IGameState[T](Protocol):
         """Implements objective scoring given a maximizer."""
         ...
 
-    def get_actions(self) -> Sequence[T]:
+    def get_actions(self) -> Sequence[TAction]:
         """Generates possible actions from the current state"""
         ...
 
-    def get_branches(self, action: T) -> Sequence[tuple[float, "IGameState[T]"]]:
+    def get_branches(
+        self, action: TAction
+    ) -> Sequence[tuple[float, "IGameState[TAction]"]]:
         """Generate branches and their probability from the current action."""
         ...
 
-    def get_deterministic_branch(self, action: T) -> "IGameState[T] | None":
+    def get_deterministic_branch(
+        self,
+        action: TAction,
+    ) -> "IGameState[TAction] | None":
         """Generates one most likely branch deterministically."""
         ...
 

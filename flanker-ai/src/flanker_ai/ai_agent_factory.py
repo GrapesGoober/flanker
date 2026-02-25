@@ -33,7 +33,7 @@ class _AiAgentInstanceComponent:
     agent: WaypointsMinimaxAgent | RandomHeuristicAgent
 
 
-class AiConfigManager:
+class AiAgentFactory:
 
     @staticmethod
     def get_ai_config(
@@ -63,7 +63,7 @@ class AiConfigManager:
             break
         # If not exist, create a new empty one
         if agent is None:
-            config = AiConfigManager.get_ai_config(gs, faction)
+            config = AiAgentFactory.get_ai_config(gs, faction)
             match config:
                 case AiWaypointConfig():
                     agent = WaypointsMinimaxAgent(

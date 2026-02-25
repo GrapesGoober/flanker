@@ -4,7 +4,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.ai_config_manager import AiConfigComponent, AiConfigManager
+from flanker_ai.ai_agent_factory import AiConfigComponent, AiAgentFactory
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -27,9 +27,9 @@ def initialize_game_state(path: str) -> GameState:
         gs = GameState.load(entities, id_counter)
 
     print("Creating BLUE agent...")
-    AiConfigManager.get_agent(gs, InitiativeState.Faction.BLUE)
+    AiAgentFactory.get_agent(gs, InitiativeState.Faction.BLUE)
     print("Creating RED agent...")
-    AiConfigManager.get_agent(gs, InitiativeState.Faction.RED)
+    AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
     return gs
 
 
@@ -44,11 +44,11 @@ def run_test(
         for i in range(n):
             print(f"Running Trial {i=}...")
             new_gs = deepcopy(gs)
-            blue_agent = AiConfigManager.get_agent(
+            blue_agent = AiAgentFactory.get_agent(
                 new_gs,
                 InitiativeState.Faction.BLUE,
             )
-            red_agent = AiConfigManager.get_agent(
+            red_agent = AiAgentFactory.get_agent(
                 new_gs,
                 InitiativeState.Faction.RED,
             )
