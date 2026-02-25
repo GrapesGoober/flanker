@@ -283,7 +283,8 @@ class WaypointsGameState(IGameState[WaypointAction]):
                         case FireOutcomes.MISS:
                             gs._flip_initiative()
                         case FireOutcomes.PIN:
-                            target_unit.status = CombatUnit.Status.PINNED
+                            if target_unit.status == CombatUnit.Status.ACTIVE:
+                                target_unit.status = CombatUnit.Status.PINNED
                             gs._flip_initiative()
                         case FireOutcomes.SUPPRESS:
                             target_unit.status = CombatUnit.Status.SUPPRESSED
