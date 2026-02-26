@@ -79,7 +79,7 @@ class GameState:
         return gs
 
     def selective_copy(self, entity_ids: list[int]) -> "GameState":
-        """Deep copies the selected entities, the rest shallow copy."""
+        """Deep copies the selected entities."""
         new_gs = GameState()
         # Shallow copy everything by default
         new_gs._entities = dict(self._entities)
