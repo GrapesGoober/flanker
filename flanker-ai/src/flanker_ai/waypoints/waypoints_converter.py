@@ -19,14 +19,12 @@ from flanker_core.models.components import (
     CombatUnit,
     EliminationObjective,
     FireControls,
-    TerrainFeature,
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
 
 
 # TODO: this shouldn't be a separate class, but built into waypoint gs
@@ -153,49 +151,6 @@ class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState])
         new_waypoints.objectives = objectives
 
         return new_waypoints
-
-    @staticmethod
-    def get_grid_coordinates(
-        gs: GameState,
-        spacing: float,
-        offset: float,
-    ) -> list[Vec2]:
-
-        # Build an array of grids within the boundary
-        mask = TerrainFeature.Flag.BOUNDARY
-        boundary_vertices: list[Vec2] | None = None
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-
-        assert boundary_vertices, "Can't abstract; boundary terrain missing!"
-
-        # Boundary terrrain might not be a box
-        min_x = min(v.x for v in boundary_vertices) + offset
-        max_x = max(v.x for v in boundary_vertices)
-        min_y = min(v.y for v in boundary_vertices) + offset
-        max_y = max(v.y for v in boundary_vertices)
-
-        # Generates waypoints at specified spacing
-        points: list[Vec2] = []
-        y = min_y
-        while y <= max_y:
-            x = min_x
-            while x <= max_x:
-                p = Vec2(x, y)
-
-                # Keep only points inside polygon
-                if IntersectGetter.is_inside(p, boundary_vertices):
-                    points.append(p)
-
-                x += spacing
-            y += spacing
-        return points
 
     @staticmethod
     def _add_path_relationships(
