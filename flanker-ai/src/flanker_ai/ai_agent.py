@@ -6,7 +6,16 @@ from flanker_ai.i_ai_policy import IAiPolicy
 from flanker_ai.i_game_state import IGameState
 from flanker_ai.i_game_state_converter import IGameStateConverter
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
-from flanker_ai.unabstracted.models import ActionResult
+from flanker_ai.unabstracted.models import (
+    Action,
+    ActionResult,
+    AssaultAction,
+    AssaultActionResult,
+    FireAction,
+    FireActionResult,
+    MoveAction,
+    MoveActionResult,
+)
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
 from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_converter import WaypointConverter
@@ -14,7 +23,10 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
@@ -81,19 +93,21 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self._raw_gs)
                 break
             # Runs the abstracted graph search
-            action = self.policy.get_action_sequence(gs)
-            print(f"{self._faction.value} AI made action: {action}")
+            actions = self.policy.get_action_sequence(gs)
+            print(f"{self._faction.value} AI made action: {actions}")
 
-            if action == []:
+            if actions == []:
                 print(f"No valid action for {self._faction.value} AI, breaking")
                 InitiativeSystem.flip_initiative(self._raw_gs)
                 break
 
-            result = self._converter.apply_action(
-                action=action[0],  # TODO: make have the initiative take action sequence
-                gs=self._raw_gs,
+            action = self._converter.deabstract_action(
+                actions[0],
                 representation=gs,
+                gs=self._raw_gs,
             )
+
+            result = self._perform_action(action)
             if isinstance(result, InvalidAction):
                 print(f"{self._faction.value} AI made invalid action, breaking")
                 InitiativeSystem.flip_initiative(self._raw_gs)
@@ -154,3 +168,47 @@ class AiAgent:
             gs.add_entity(_AiAgentInstanceComponent(faction=faction, agent=agent))
 
         return agent
+
+    def _perform_action(
+        self,
+        action: Action,
+    ) -> ActionResult | InvalidAction:
+        match action:
+            case MoveAction():
+                result = MoveSystem.move(
+                    self._raw_gs,
+                    action.unit_id,
+                    action.to,
+                )
+                if not isinstance(result, InvalidAction):
+                    return MoveActionResult(
+                        action=action,
+                        result_gs=self._raw_gs,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+            case FireAction():
+                result = FireSystem.fire(
+                    self._raw_gs,
+                    action.unit_id,
+                    action.target_id,
+                )
+                if not isinstance(result, InvalidAction):
+                    return FireActionResult(
+                        action=action,
+                        result_gs=self._raw_gs,
+                        outcome=result.outcome,
+                    )
+            case AssaultAction():
+                result = AssaultSystem.assault(
+                    self._raw_gs,
+                    action.unit_id,
+                    action.target_id,
+                )
+                if not isinstance(result, InvalidAction):
+                    return AssaultActionResult(
+                        action=action,
+                        result_gs=self._raw_gs,
+                        outcome=result.outcome,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+        return result

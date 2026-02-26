@@ -1,9 +1,8 @@
 from typing import Any
 
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.unabstracted.models import ActionResult
+from flanker_ai.unabstracted.models import Action
 from flanker_core.gamestate import GameState
-from flanker_core.models.outcomes import InvalidAction
 
 
 class IGameStateConverter[TAction, TState: IGameState[Any]]:
@@ -27,9 +26,13 @@ class IGameStateConverter[TAction, TState: IGameState[Any]]:
         """Update the template representation state to make it ready for AI."""
         ...
 
-    def apply_action[T: IGameState[Any]](
+    def deabstract_action(
         self,
         action: TAction,
         representation: TState,
         gs: GameState,
-    ) -> ActionResult | InvalidAction: ...
+    ) -> Action:
+        """
+        Converts the abstract action within the abstract representation
+        into a raw game state action."""
+        ...

@@ -2,16 +2,7 @@ from dataclasses import replace
 from typing import Literal
 
 from flanker_ai.i_game_state_converter import IGameStateConverter
-from flanker_ai.unabstracted.models import (
-    Action,
-    ActionResult,
-    AssaultAction,
-    AssaultActionResult,
-    FireAction,
-    FireActionResult,
-    MoveAction,
-    MoveActionResult,
-)
+from flanker_ai.unabstracted.models import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import (
     WaypointAction,
     WaypointAssaultAction,
@@ -31,13 +22,9 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
-from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.move_system import MoveSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -58,16 +45,17 @@ class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState])
         self._points = points
         self._path_tolerance = path_tolerance
 
-    @staticmethod
-    def _deabstract_action(
-        gs: WaypointsGameState,
+    def deabstract_action(
+        self,
         action: WaypointAction,
+        representation: WaypointsGameState,
+        gs: GameState,
     ) -> Action:
         match action:
             case WaypointMoveAction():
                 return MoveAction(
                     unit_id=action.unit_id,
-                    to=gs.waypoints[action.move_to_waypoint_id].position,
+                    to=representation.waypoints[action.move_to_waypoint_id].position,
                 )
             case WaypointFireAction():
                 return FireAction(
@@ -79,49 +67,6 @@ class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState])
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
-
-    @staticmethod
-    def _perform_action(
-        gs: GameState,
-        action: MoveAction | FireAction | AssaultAction,
-    ) -> ActionResult | InvalidAction:
-        match action:
-            case MoveAction():
-                result = MoveSystem.move(gs, action.unit_id, action.to)
-                if not isinstance(result, InvalidAction):
-                    return MoveActionResult(
-                        action=action,
-                        result_gs=gs,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case FireAction():
-                result = FireSystem.fire(gs, action.unit_id, action.target_id)
-                if not isinstance(result, InvalidAction):
-                    return FireActionResult(
-                        action=action,
-                        result_gs=gs,
-                        outcome=result.outcome,
-                    )
-            case AssaultAction():
-                result = AssaultSystem.assault(gs, action.unit_id, action.target_id)
-                if not isinstance(result, InvalidAction):
-                    return AssaultActionResult(
-                        action=action,
-                        result_gs=gs,
-                        outcome=result.outcome,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-        return result
-
-    def apply_action(
-        self,
-        action: WaypointAction,
-        representation: WaypointsGameState,
-        gs: GameState,
-    ) -> ActionResult | InvalidAction:
-        raw_action = WaypointConverter._deabstract_action(representation, action)
-        result = WaypointConverter._perform_action(gs, raw_action)
-        return result
 
     def create_template(
         self,
