@@ -1,10 +1,9 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Literal
 
 from flanker_ai.i_ai_policy import IAiPolicy
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.i_game_state_converter import IGameStateConverter
 from flanker_ai.models import (
     Action,
     ActionResult,
@@ -18,7 +17,7 @@ from flanker_ai.models import (
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
 from flanker_ai.waypoints.models import WaypointAction
-from flanker_ai.waypoints.waypoints_converter import WaypointConverter
+from flanker_ai.waypoints.waypoints_game_state import WaypointsGameState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -58,18 +57,18 @@ class _AiAgentInstanceComponent:
 
 
 class AiAgent:
-    def __init__[TAction, TGameState: IGameState[Any]](
+    def __init__[TAction](
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
-        converter: IGameStateConverter[TAction, TGameState],
+        representation: IGameState[TAction],
         policy: IAiPolicy[TAction],
     ) -> None:
         self._raw_gs = gs
         self._faction: InitiativeState.Faction = faction
-        self._converter = converter
         self.policy = policy
-        self._template_gs = converter.create_template(gs)
+        self.representation = representation
+        self.representation.initialize_state(gs)
 
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
@@ -83,10 +82,8 @@ class AiAgent:
             if ObjectiveSystem.get_winning_faction(self._raw_gs) != None:
                 break
             # Prepare the template into state usable for AI
-            gs = self._converter.update_template(
-                self._raw_gs,
-                self._template_gs,
-            )
+            gs = self.representation.copy()
+            gs.update_state(self._raw_gs)
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
                 print(f"{self._faction.value} AI made useless actions, breaking")
@@ -101,9 +98,8 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self._raw_gs)
                 break
 
-            action = self._converter.deabstract_action(
-                actions[0],
-                representation=gs,
+            action = self.representation.deabstract_action(
+                action=actions[0],
                 gs=self._raw_gs,
             )
 
@@ -153,7 +149,7 @@ class AiAgent:
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        converter=WaypointConverter(
+                        representation=WaypointsGameState(
                             points=config.waypoint_coordinates,
                             path_tolerance=config.path_tolerance,
                         ),

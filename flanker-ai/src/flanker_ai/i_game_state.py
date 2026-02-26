@@ -1,5 +1,7 @@
 from typing import Protocol, Sequence, runtime_checkable
 
+from flanker_ai.models import Action
+from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
 
@@ -38,4 +40,22 @@ class IGameState[TAction](Protocol):
 
     def get_initiative(self) -> InitiativeState.Faction:
         """Get the current initiative holder."""
+        ...
+
+    def initialize_state(self, gs: GameState) -> None:
+        """Precompute the state to make this ready for AI."""
+        ...
+
+    def update_state(self, gs: GameState) -> None:
+        """Update the state to match the original game state."""
+        ...
+
+    def deabstract_action(
+        self,
+        action: TAction,
+        gs: GameState,
+    ) -> Action:
+        """
+        Converts the abstract action within the abstract representation
+        into a raw game state action."""
         ...

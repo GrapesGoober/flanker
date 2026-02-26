@@ -2,7 +2,9 @@ from copy import deepcopy
 from typing import Literal, Optional, Sequence
 
 from flanker_ai.i_game_state import IGameState
+from flanker_ai.models import Action
 from flanker_ai.tic_tac_toe.actions import TicTacToeAction
+from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
 MARK = Literal["O"] | Literal["X"]
@@ -121,3 +123,12 @@ class TicTacToeGameState(IGameState[TicTacToeAction]):
             " ".join(cell if cell is not None else "." for cell in row)
             for row in self.board
         )
+
+    def initialize_state(self, gs: GameState) -> None:
+        raise NotImplementedError
+
+    def update_state(self, gs: GameState) -> None:
+        raise NotImplementedError
+
+    def deabstract_action(self, action: TicTacToeAction, gs: GameState) -> Action:
+        raise NotImplementedError
