@@ -43,7 +43,7 @@ class IGameState[TAction](Protocol):
         ...
 
     def initialize_state(self, gs: GameState) -> None:
-        """Precompute the state to make this ready for AI."""
+        """Expensive precompute phase the state to make this ready for AI."""
         ...
 
     def update_state(self, gs: GameState) -> None:
