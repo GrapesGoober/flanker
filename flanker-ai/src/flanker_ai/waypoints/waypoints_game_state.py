@@ -209,11 +209,7 @@ class WaypointsGameState(IGameState[WaypointAction]):
                 if action.interrupt_at_id is not None:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
-                    match gs.initiative:
-                        case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
-                        case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
+                    gs._flip_initiative()
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
                     current_unit.current_waypoint_id = target_unit.current_waypoint_id
@@ -227,11 +223,7 @@ class WaypointsGameState(IGameState[WaypointAction]):
                     killed_unit = current_unit
                     gs.combat_units.pop(action.unit_id)
                     # Assault failed
-                    match gs.initiative:
-                        case InitiativeState.Faction.BLUE:
-                            gs.initiative = InitiativeState.Faction.RED
-                        case InitiativeState.Faction.RED:
-                            gs.initiative = InitiativeState.Faction.BLUE
+                    gs._flip_initiative()
 
                 for objective in gs.objectives:
                     if killed_unit.faction == objective.target_faction:

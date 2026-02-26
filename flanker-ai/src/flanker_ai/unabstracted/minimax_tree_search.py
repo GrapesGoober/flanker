@@ -2,7 +2,7 @@ import random
 from itertools import count
 from typing import Iterator
 
-from flanker_ai.unabstracted.models import (
+from flanker_ai.models import (
     ActionResult,
     AssaultAction,
     AssaultActionResult,

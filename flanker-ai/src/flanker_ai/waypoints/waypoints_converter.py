@@ -2,7 +2,7 @@ from dataclasses import replace
 from typing import Literal
 
 from flanker_ai.i_game_state_converter import IGameStateConverter
-from flanker_ai.unabstracted.models import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.models import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import (
     WaypointAction,
     WaypointAssaultAction,

@@ -1,5 +1,5 @@
 from flanker_ai.ai_agent import AiAgent, AiWaypointConfig
-from flanker_ai.unabstracted.models import (
+from flanker_ai.models import (
     ActionResult,
     AssaultActionResult,
     FireActionResult,

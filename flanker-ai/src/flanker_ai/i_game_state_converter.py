@@ -1,7 +1,7 @@
 from typing import Any
 
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.unabstracted.models import Action
+from flanker_ai.models import Action
 from flanker_core.gamestate import GameState
 
 

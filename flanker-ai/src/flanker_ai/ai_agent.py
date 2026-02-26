@@ -5,8 +5,7 @@ from typing import Any, Literal
 from flanker_ai.i_ai_policy import IAiPolicy
 from flanker_ai.i_game_state import IGameState
 from flanker_ai.i_game_state_converter import IGameStateConverter
-from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
-from flanker_ai.unabstracted.models import (
+from flanker_ai.models import (
     Action,
     ActionResult,
     AssaultAction,
@@ -16,6 +15,7 @@ from flanker_ai.unabstracted.models import (
     MoveAction,
     MoveActionResult,
 )
+from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
 from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_converter import WaypointConverter

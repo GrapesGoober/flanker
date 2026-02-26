@@ -1,7 +1,7 @@
 import random
 from copy import deepcopy
 
-from flanker_ai.unabstracted.models import (
+from flanker_ai.models import (
     ActionResult,
     FireAction,
     FireActionResult,
