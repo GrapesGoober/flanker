@@ -59,7 +59,7 @@ class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState])
         self._path_tolerance = path_tolerance
 
     @staticmethod
-    def deabstract_action(
+    def _deabstract_action(
         gs: WaypointsGameState,
         action: WaypointAction,
     ) -> Action:
@@ -119,7 +119,7 @@ class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState])
         representation: WaypointsGameState,
         gs: GameState,
     ) -> ActionResult | InvalidAction:
-        raw_action = WaypointConverter.deabstract_action(representation, action)
+        raw_action = WaypointConverter._deabstract_action(representation, action)
         result = WaypointConverter._perform_action(gs, raw_action)
         return result
 

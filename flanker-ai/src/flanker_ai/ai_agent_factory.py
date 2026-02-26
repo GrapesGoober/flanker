@@ -78,14 +78,6 @@ class AiAgentFactory:
                         ),
                         policy=ExpectimaxPolicy[WaypointAction](depth=4),
                     )
-
-                    # (
-                    #     gs=gs,
-                    #     faction=faction,
-                    #     search_depth=4,
-                    #     waypoint_coordinates=config.waypoint_coordinates,
-                    #     path_tolerance=config.path_tolerance,
-                    # )
                 case AiRandomHeuristicConfig():
                     agent = RandomHeuristicAgent(
                         gs=gs,
