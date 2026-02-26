@@ -2,11 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.ai_agent_factory import (
-    AiAgentFactory,
-    AiConfigComponent,
-    AiWaypointConfig,
-)
+from flanker_ai.ai_agent import AiAgent, AiConfigComponent, AiWaypointConfig
 from flanker_ai.waypoints.waypoints_converter import WaypointConverter
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -56,7 +52,7 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    config = AiAgentFactory.get_ai_config(gs, InitiativeState.Faction.RED)
+    config = AiAgent.get_ai_config(gs, InitiativeState.Faction.RED)
     assert isinstance(
         config, AiWaypointConfig
     ), "Can't visualize non-waypoints AI config"

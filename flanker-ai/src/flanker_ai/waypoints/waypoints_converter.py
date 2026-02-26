@@ -167,6 +167,7 @@ class WaypointConverter(IGameStateConverter[WaypointAction, WaypointsGameState])
         """Adds combat unit positions as waypoints."""
 
         new_waypoints = template.copy()
+        new_waypoints.initiative = InitiativeSystem.get_initiative(gs)
 
         # Add combat units as waypoints and as abstracted units
         new_waypoint_ids: list[int] = []
