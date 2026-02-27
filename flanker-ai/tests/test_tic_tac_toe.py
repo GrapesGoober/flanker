@@ -1,5 +1,5 @@
 import pytest
-from flanker_ai.policies.minimax_search import MinimaxSearch
+from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.tic_tac_toe.actions import TicTacToeAction
 from flanker_ai.tic_tac_toe.state import TicTacToeGameState
 from flanker_core.models.components import InitiativeState
@@ -38,8 +38,9 @@ def test_minimax_move(fixture: TicTacToeGameState) -> None:
             "X . O",
         ]
     )
-    _, action = MinimaxSearch.search(fixture, 1)
-    assert action != None, "One optimal solution exists!"
+    minimax = MinimaxPolicy[TicTacToeAction](depth=1)
+    actions = minimax.get_action_sequence(fixture)
+    action = actions[0]
     new_state = fixture.get_deterministic_branch(action)
     assert action == TicTacToeAction(row=1, column=2)
     assert str(new_state) == expected
