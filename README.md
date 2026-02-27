@@ -22,9 +22,9 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   ```
   Or alternatively, run pytest manually in terminal
   ```
-  python -m pytest core/tests
+  python -m pytest
   ```
-- With vscode, you can set up FastApi debugger using `.vscode/launch.json`
+- With vscode, you can set up FastApi debugger using `.vscode/launch.json`. You can use your own port with `--port` argument.
 
   ```
   "name": "Python Debugger: FastAPI",
@@ -40,10 +40,16 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   cd webui
   npm install
   ```
+- Add environment variable file to `/webui/.env`. For `VITE_WEBAPI_URL`, use the same URL that the FastApi app is using; the default is `localhost:8000`. For `VITE_WEBUI_PORT`, this configures the port number for webui's VITE app. Use whichever port you prefer. The default is `5173`.
+  ```
+  # Note: "VITE_" prefix is required
+  VITE_WEBAPI_URL=http://localhost:8000
+  VITE_WEBUI_PORT=5173
+  ```
 
 ## Running App
 
-- Start the webapi server `http://127.0.0.1:8000`. Either use the vscode debugger to run fastapi, or run this command in terminal
+- Start the webapi server `http://localhost:8000`. Either use the vscode debugger to run fastapi, or run this command in terminal. You can use your own port with `--port` argument.
   ```
   fastapi dev webapi
   ```
