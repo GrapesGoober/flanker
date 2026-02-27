@@ -6,15 +6,21 @@ from flanker_ai.models import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import EliminationObjective
 from flanker_ai.waypoints.waypoints_game_state import CombatUnit
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import InitiativeState, Transform
+from flanker_core.models.components import FireControls, InitiativeState, Transform
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.fire_system import FireSystem
+from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class UnabstractedGameState(IGameState[Action]):
     def __init__(self, gs: GameState) -> None:
         self._gs = gs
 
-    def copy(self) -> IGameState[Action]:
+    def copy(self) -> "UnabstractedGameState":
         mutable_entities: set[int] = set()
         for id, _ in self._gs.query(InitiativeState):
             mutable_entities.add(id)
@@ -97,23 +103,47 @@ class UnabstractedGameState(IGameState[Action]):
     def get_branches(
         self,
         action: Action,
-    ) -> Sequence[tuple[float, IGameState[Action]]]:
-        raise NotImplementedError
+    ) -> Sequence[tuple[float, "UnabstractedGameState"]]:
+        branch = self.get_deterministic_branch(action)
+        if branch == None:
+            return []
+        return [(1, branch)]
 
-    def get_deterministic_branch(self, action: Action) -> IGameState[Action] | None:
-        raise NotImplementedError
+    def get_deterministic_branch(
+        self, action: Action
+    ) -> "UnabstractedGameState | None":
+        new_gs = self.copy()._gs
+        match action:
+            case MoveAction():
+                for _, fire_controls in new_gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.PIN
+                result = MoveSystem.move(new_gs, action.unit_id, action.to)
+            case FireAction():
+                for _, fire_controls in new_gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.SUPPRESS
+                result = FireSystem.fire(new_gs, action.unit_id, action.target_id)
+            case AssaultAction():
+                for _, fire_controls in new_gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.PIN
+                result = AssaultSystem.assault(new_gs, action.unit_id, action.target_id)
+        for _, fire_controls in new_gs.query(FireControls):
+            fire_controls.override = None
+
+        if isinstance(result, InvalidAction):
+            return None
+        return UnabstractedGameState(new_gs)
 
     def get_winner(self) -> InitiativeState.Faction | None:
-        raise NotImplementedError
+        return ObjectiveSystem.get_winning_faction(self._gs)
 
     def get_initiative(self) -> InitiativeState.Faction:
-        raise NotImplementedError
+        return InitiativeSystem.get_initiative(self._gs)
 
     def initialize_state(self, gs: GameState) -> None:
-        raise NotImplementedError
+        self._gs = gs
 
     def update_state(self, gs: GameState) -> None:
-        raise NotImplementedError
+        self._gs = gs
 
     def deabstract_action(self, action: Action, gs: GameState) -> Action:
-        raise NotImplementedError
+        return action
