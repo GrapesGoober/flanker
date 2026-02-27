@@ -6,7 +6,12 @@ from flanker_ai.models import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import EliminationObjective
 from flanker_ai.waypoints.waypoints_game_state import CombatUnit
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import FireControls, InitiativeState, Transform
+from flanker_core.models.components import (
+    FireControls,
+    InitiativeState,
+    TerrainFeature,
+    Transform,
+)
 from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
@@ -14,11 +19,26 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.utils.linear_transform import LinearTransform
 
 
 class UnabstractedGameState(IGameState[Action]):
     def __init__(self, gs: GameState) -> None:
         self._gs = gs
+        boundary_vertices: list[Vec2] = []
+        mask = TerrainFeature.Flag.BOUNDARY
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            if terrain.flag & mask:
+                boundary_vertices = LinearTransform.apply(
+                    terrain.vertices,
+                    transform,
+                )
+                if terrain.is_closed_loop:
+                    boundary_vertices.append(boundary_vertices[0])
+        self.min_x = int(min(v.x for v in boundary_vertices))
+        self.max_x = int(max(v.x for v in boundary_vertices))
+        self.min_y = int(min(v.y for v in boundary_vertices))
+        self.max_y = int(max(v.y for v in boundary_vertices))
 
     def copy(self) -> "UnabstractedGameState":
         mutable_entities: set[int] = set()
@@ -61,7 +81,6 @@ class UnabstractedGameState(IGameState[Action]):
         actions: list[Action] = []
         for unit_id, unit in self._gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
-                # 10 random actions for each unit
                 pos = self._gs.get_component(unit_id, Transform).position
                 actions.append(
                     MoveAction(
@@ -69,9 +88,9 @@ class UnabstractedGameState(IGameState[Action]):
                         to=pos,
                     )
                 )
-                for _ in range(5):
-                    rand_x = random.randrange(-50, 50)
-                    rand_y = random.randrange(-50, 50)
+                for _ in range(10):
+                    rand_x = random.randrange(self.min_x, self.max_x)
+                    rand_y = random.randrange(self.min_y, self.max_y)
                     vec = Vec2(rand_x, rand_y)
                     actions.append(
                         MoveAction(

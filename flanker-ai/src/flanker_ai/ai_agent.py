@@ -16,6 +16,7 @@ from flanker_ai.models import (
 )
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
+from flanker_ai.unabstracted.unabstracted_game_state import UnabstractedGameState
 from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_game_state import WaypointsGameState
 from flanker_core.gamestate import GameState
@@ -45,9 +46,15 @@ class AiRandomHeuristicConfig:  # No config for this one
 
 
 @dataclass
+class AiUnabstractedConfig:  # No config for this one
+    type: Literal["AiUnabstractedConfig"]
+    ...
+
+
+@dataclass
 class AiConfigComponent:
     faction: InitiativeState.Faction
-    config: AiWaypointConfig | AiRandomHeuristicConfig
+    config: AiWaypointConfig | AiRandomHeuristicConfig | AiUnabstractedConfig
 
 
 @dataclass
@@ -119,7 +126,7 @@ class AiAgent:
     def get_ai_config(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> AiWaypointConfig | AiRandomHeuristicConfig:
+    ) -> AiWaypointConfig | AiRandomHeuristicConfig | AiUnabstractedConfig:
         # Get the config. If not exist, create a new empty one
         for _, config_component in gs.query(AiConfigComponent):
             if config_component.faction != faction:
@@ -159,6 +166,13 @@ class AiAgent:
                     agent = RandomHeuristicAgent(
                         gs=gs,
                         faction=faction,
+                    )
+                case AiUnabstractedConfig():
+                    agent = AiAgent(
+                        gs=gs,
+                        faction=faction,
+                        representation=UnabstractedGameState(gs),
+                        policy=ExpectimaxPolicy[Action](depth=4),
                     )
 
             gs.add_entity(_AiAgentInstanceComponent(faction=faction, agent=agent))
