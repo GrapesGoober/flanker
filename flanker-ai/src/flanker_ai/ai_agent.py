@@ -15,7 +15,7 @@ from flanker_ai.models import (
     MoveActionResult,
 )
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
-from flanker_ai.unabstracted.random_heuristic_agent import RandomHeuristicAgent
+from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.unabstracted.unabstracted_game_state import UnabstractedGameState
 from flanker_ai.waypoints.models import WaypointAction
 from flanker_ai.waypoints.waypoints_game_state import WaypointsGameState
@@ -60,7 +60,7 @@ class AiConfigComponent:
 @dataclass
 class _AiAgentInstanceComponent:
     faction: InitiativeState.Faction
-    agent: "AiAgent | RandomHeuristicAgent"
+    agent: "AiAgent"
 
 
 class AiAgent:
@@ -138,11 +138,11 @@ class AiAgent:
     def get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> "AiAgent | RandomHeuristicAgent":
+    ) -> "AiAgent":
         """Use the config to build an AI agent, or reuse agent if exists."""
 
         # Get the agent instance component.
-        agent: AiAgent | RandomHeuristicAgent | None = None
+        agent: AiAgent | None = None
         for _, agent_instance in gs.query(_AiAgentInstanceComponent):
             if agent_instance.faction != faction:
                 continue
@@ -163,9 +163,11 @@ class AiAgent:
                         policy=ExpectimaxPolicy[WaypointAction](depth=4),
                     )
                 case AiRandomHeuristicConfig():
-                    agent = RandomHeuristicAgent(
+                    agent = AiAgent(
                         gs=gs,
                         faction=faction,
+                        representation=UnabstractedGameState(gs),
+                        policy=RandomHeuristicPolicy(gs),
                     )
                 case AiUnabstractedConfig():
                     agent = AiAgent(

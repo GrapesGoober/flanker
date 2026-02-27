@@ -4,7 +4,6 @@ from typing import Literal, override
 
 from flanker_ai.i_game_state import IGameState
 from flanker_ai.models import Action, AssaultAction, FireAction, MoveAction
-from flanker_ai.unabstracted.random_heuristic_agent import InitiativeSystem
 from flanker_ai.waypoints.models import (
     WaypointAction,
     WaypointAssaultAction,
@@ -21,6 +20,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 
