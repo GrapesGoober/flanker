@@ -34,10 +34,9 @@ class RandomHeuristicPolicy[TAction](IAiPolicy[TAction]):
         if not actions:
             return []
 
+        # Categorizes actions into candidante fire actions or move actions
         fire_actions: list[TAction] = []
         move_actions: list[TAction] = []
-
-        # --- Categorize actions by real type ---
         for action in actions:
             result = gs.get_deterministic_branch(action)
             if result == None:  # Ignore invalid actions
@@ -57,7 +56,7 @@ class RandomHeuristicPolicy[TAction](IAiPolicy[TAction]):
         if fire_actions:
             return [random.choice(fire_actions)]
 
-        # If any move actions are valid, perform it
+        # Fallback: if any move actions are valid, perform it
         if move_actions:
             return [random.choice(move_actions)]
 
