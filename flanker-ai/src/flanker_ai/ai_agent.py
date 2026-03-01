@@ -5,7 +5,7 @@ from flanker_ai.components import (
     AiConfigComponent,
 )
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state import IRepresentationState
 from flanker_ai.actions import (
     Action,
     ActionResult,
@@ -44,13 +44,13 @@ class AiAgent:
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
-        representation: IGameState[TAction],
+        rs: IRepresentationState[TAction],
         policy: IAiPolicy[TAction],
     ) -> None:
         self._raw_gs = gs
         self._faction: InitiativeState.Faction = faction
         self.policy = policy
-        self.representation = representation
+        self.representation = rs
         self.representation.initialize_state(gs)
 
     def play_initiative(self) -> list[ActionResult]:
@@ -132,7 +132,7 @@ class AiAgent:
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        representation=WaypointsGameState(
+                        rs=WaypointsGameState(
                             points=config.waypoint_coordinates,
                             path_tolerance=config.path_tolerance,
                         ),
@@ -142,14 +142,14 @@ class AiAgent:
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        representation=UnabstractedGameState(gs),
+                        rs=UnabstractedGameState(gs),
                         policy=RandomHeuristicPolicy(gs),
                     )
                 case AiConfigComponent.UnabstractedConfig():
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        representation=UnabstractedGameState(gs),
+                        rs=UnabstractedGameState(gs),
                         policy=ExpectimaxPolicy[Action](depth=4),
                     )
 

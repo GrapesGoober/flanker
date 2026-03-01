@@ -2,7 +2,7 @@ from math import inf
 from typing import Sequence
 
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
 count = 0
@@ -14,15 +14,15 @@ class MinimaxPolicy[TAction](IAiPolicy[TAction]):
     def __init__(self, depth: int) -> None:
         self._depth = depth
 
-    def get_action_sequence(self, gs: IGameState[TAction]) -> Sequence[TAction]:
-        _, action = self._search(gs, self._depth, -inf, inf)
+    def get_action_sequence(self, rs: IRepresentationState[TAction]) -> Sequence[TAction]:
+        _, action = self._search(rs, self._depth, -inf, inf)
         if action is None:
             return []
         return [action]
 
     def _search(
         self,
-        state: IGameState[TAction],
+        rs: IRepresentationState[TAction],
         depth: int,
         alpha: float,
         beta: float,
@@ -33,26 +33,26 @@ class MinimaxPolicy[TAction](IAiPolicy[TAction]):
             print(count)
         count += 1
 
-        winner = state.get_winner()
+        winner = rs.get_winner()
         if winner is not None:
             if winner == MAXIMIZING_FACTION:
-                return state.get_score(MAXIMIZING_FACTION) + depth, None
+                return rs.get_score(MAXIMIZING_FACTION) + depth, None
             else:
-                return state.get_score(MAXIMIZING_FACTION) - depth, None
+                return rs.get_score(MAXIMIZING_FACTION) - depth, None
 
         if depth == 0:
-            return state.get_score(MAXIMIZING_FACTION), None
+            return rs.get_score(MAXIMIZING_FACTION), None
 
-        actions = state.get_actions()
+        actions = rs.get_actions()
         if not actions:
-            return state.get_score(MAXIMIZING_FACTION), None
+            return rs.get_score(MAXIMIZING_FACTION), None
 
-        maximizing = state.get_initiative() == MAXIMIZING_FACTION
+        maximizing = rs.get_initiative() == MAXIMIZING_FACTION
         best_score = -inf if maximizing else inf
         best_action: TAction | None = None
 
         for action in actions:
-            branch = state.get_deterministic_branch(action)
+            branch = rs.get_deterministic_branch(action)
             if branch is None:
                 continue
 

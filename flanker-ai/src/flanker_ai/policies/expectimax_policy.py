@@ -2,7 +2,7 @@ from math import inf
 from typing import Sequence
 
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
 count = 0
@@ -14,18 +14,18 @@ class ExpectimaxPolicy[TAction](IAiPolicy[TAction]):
     def __init__(self, depth: int) -> None:
         self._depth = depth
 
-    def get_action_sequence(self, gs: IGameState[TAction]) -> Sequence[TAction]:
+    def get_action_sequence(self, rs: IRepresentationState[TAction]) -> Sequence[TAction]:
         """
         Returns the best actions sequence given a current game state.
         """
-        _, action = self._search(gs, self._depth)
+        _, action = self._search(rs, self._depth)
         if action == None:
             return []
         return [action]
 
     def _search(
         self,
-        state: IGameState[TAction],
+        state: IRepresentationState[TAction],
         depth: int,
     ) -> tuple[float, TAction | None]:
         """

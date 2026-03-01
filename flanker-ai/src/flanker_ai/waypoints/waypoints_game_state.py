@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass, replace
 from typing import Literal, override
 
-from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state import IRepresentationState
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import (
     WaypointAction,
@@ -52,7 +52,7 @@ class WaypointNode:
     movable_paths: dict[int, list[int]]
 
 
-class WaypointsGameState(IGameState[WaypointAction]):
+class WaypointsGameState(IRepresentationState[WaypointAction]):
     def __init__(
         self,
         points: list[Vec2],

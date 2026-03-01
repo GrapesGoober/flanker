@@ -1,7 +1,7 @@
 import random
 from typing import Sequence
 
-from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state import IRepresentationState
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import EliminationObjective
 from flanker_ai.waypoints.waypoints_game_state import CombatUnit
@@ -22,7 +22,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.linear_transform import LinearTransform
 
 
-class UnabstractedGameState(IGameState[Action]):
+class UnabstractedGameState(IRepresentationState[Action]):
     def __init__(self, gs: GameState) -> None:
         self._gs = gs
         boundary_vertices: list[Vec2] = []

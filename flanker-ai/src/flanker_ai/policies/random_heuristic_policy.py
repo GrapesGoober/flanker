@@ -2,7 +2,7 @@ import random
 from typing import Sequence
 
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IGameState
+from flanker_ai.i_game_state import IRepresentationState
 from flanker_ai.actions import AssaultAction, FireAction, MoveAction
 from flanker_core.gamestate import GameState
 
@@ -24,13 +24,13 @@ class RandomHeuristicPolicy[TAction](IAiPolicy[TAction]):
     ) -> None:
         self._raw_gs = gs
 
-    def get_action_sequence(self, gs: IGameState[TAction]) -> Sequence[TAction]:
+    def get_action_sequence(self, rs: IRepresentationState[TAction]) -> Sequence[TAction]:
 
-        winner = gs.get_winner()
+        winner = rs.get_winner()
         if winner is not None:
             return []
 
-        actions = list(gs.get_actions())
+        actions = list(rs.get_actions())
         if not actions:
             return []
 
@@ -38,11 +38,11 @@ class RandomHeuristicPolicy[TAction](IAiPolicy[TAction]):
         fire_actions: list[TAction] = []
         move_actions: list[TAction] = []
         for action in actions:
-            result = gs.get_deterministic_branch(action)
+            result = rs.get_deterministic_branch(action)
             if result == None:  # Ignore invalid actions
                 continue
 
-            real_action = gs.deabstract_action(action, self._raw_gs)
+            real_action = rs.deabstract_action(action, self._raw_gs)
 
             match real_action:
                 case FireAction():
