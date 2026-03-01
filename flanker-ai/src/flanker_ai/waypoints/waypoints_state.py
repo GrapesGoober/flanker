@@ -2,7 +2,7 @@ import random
 from dataclasses import dataclass, replace
 from typing import Literal, override
 
-from flanker_ai.i_game_state import IRepresentationState
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import (
     WaypointAction,
@@ -52,7 +52,7 @@ class WaypointNode:
     movable_paths: dict[int, list[int]]
 
 
-class WaypointsGameState(IRepresentationState[WaypointAction]):
+class WaypointsState(IRepresentationState[WaypointAction]):
     def __init__(
         self,
         points: list[Vec2],
@@ -66,10 +66,10 @@ class WaypointsGameState(IRepresentationState[WaypointAction]):
         self.path_tolerance = path_tolerance
 
     @override
-    def copy(self) -> "WaypointsGameState":
+    def copy(self) -> "WaypointsState":
         copied_units = {id: replace(unit) for id, unit in self.combat_units.items()}
         copied_objectives = [replace(obj) for obj in self.objectives]
-        new_gs = WaypointsGameState(
+        new_gs = WaypointsState(
             points=self.points,
             path_tolerance=self.path_tolerance,
         )
@@ -195,7 +195,7 @@ class WaypointsGameState(IRepresentationState[WaypointAction]):
     def get_deterministic_branch(
         self,
         action: WaypointAction,
-    ) -> "WaypointsGameState":
+    ) -> "WaypointsState":
 
         match action:
             case WaypointMoveAction():
@@ -249,12 +249,12 @@ class WaypointsGameState(IRepresentationState[WaypointAction]):
     @override
     def get_branches(
         self, action: WaypointAction
-    ) -> list[tuple[float, "WaypointsGameState"]]:
+    ) -> list[tuple[float, "WaypointsState"]]:
         match action:
             case WaypointMoveAction():
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
-                    outcomes: list[tuple[float, "WaypointsGameState"]] = []
+                    outcomes: list[tuple[float, "WaypointsState"]] = []
                     for outcome, probability in _FIRE_REACTION_PROBABILITIES.items():
                         gs = self.copy()
                         current_unit = gs.combat_units[action.unit_id]
@@ -284,7 +284,7 @@ class WaypointsGameState(IRepresentationState[WaypointAction]):
                     return [(1, gs)]
 
             case WaypointFireAction():
-                outcomes: list[tuple[float, "WaypointsGameState"]] = []
+                outcomes: list[tuple[float, "WaypointsState"]] = []
                 for outcome, probability in _FIRE_ACTION_PROBABILITIES.items():
                     gs = self.copy()
                     target_unit = gs.combat_units[action.target_id]

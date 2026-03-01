@@ -1,12 +1,12 @@
 import random
 from typing import Sequence
 
-from flanker_ai.i_game_state import IRepresentationState
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
-from flanker_ai.waypoints.models import EliminationObjective
-from flanker_ai.waypoints.waypoints_game_state import CombatUnit
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    CombatUnit,
+    EliminationObjective,
     FireControls,
     InitiativeState,
     TerrainFeature,
@@ -22,7 +22,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.linear_transform import LinearTransform
 
 
-class UnabstractedGameState(IRepresentationState[Action]):
+class UnabstractedState(IRepresentationState[Action]):
     def __init__(self, gs: GameState) -> None:
         self._gs = gs
         boundary_vertices: list[Vec2] = []
@@ -40,7 +40,7 @@ class UnabstractedGameState(IRepresentationState[Action]):
         self.min_y = int(min(v.y for v in boundary_vertices))
         self.max_y = int(max(v.y for v in boundary_vertices))
 
-    def copy(self) -> "UnabstractedGameState":
+    def copy(self) -> "UnabstractedState":
         mutable_entities: set[int] = set()
         for id, _ in self._gs.query(InitiativeState):
             mutable_entities.add(id)
@@ -49,7 +49,7 @@ class UnabstractedGameState(IRepresentationState[Action]):
         for id, _ in self._gs.query(CombatUnit):
             mutable_entities.add(id)
         new_gs = self._gs.selective_copy(list(mutable_entities))
-        return UnabstractedGameState(new_gs)
+        return UnabstractedState(new_gs)
 
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         winner = self.get_winner()
@@ -122,15 +122,13 @@ class UnabstractedGameState(IRepresentationState[Action]):
     def get_branches(
         self,
         action: Action,
-    ) -> Sequence[tuple[float, "UnabstractedGameState"]]:
+    ) -> Sequence[tuple[float, "UnabstractedState"]]:
         branch = self.get_deterministic_branch(action)
         if branch == None:
             return []
         return [(1, branch)]
 
-    def get_deterministic_branch(
-        self, action: Action
-    ) -> "UnabstractedGameState | None":
+    def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
         new_gs = self.copy()._gs
         match action:
             case MoveAction():
@@ -150,7 +148,7 @@ class UnabstractedGameState(IRepresentationState[Action]):
 
         if isinstance(result, InvalidAction):
             return None
-        return UnabstractedGameState(new_gs)
+        return UnabstractedState(new_gs)
 
     def get_winner(self) -> InitiativeState.Faction | None:
         return ObjectiveSystem.get_winning_faction(self._gs)

@@ -5,7 +5,7 @@ from flanker_ai.components import (
     AiConfigComponent,
 )
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IRepresentationState
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import (
     Action,
     ActionResult,
@@ -18,9 +18,9 @@ from flanker_ai.actions import (
 )
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.unabstracted.unabstracted_game_state import UnabstractedGameState
+from flanker_ai.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.waypoints.models import WaypointAction
-from flanker_ai.waypoints.waypoints_game_state import WaypointsGameState
+from flanker_ai.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -132,7 +132,7 @@ class AiAgent:
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        rs=WaypointsGameState(
+                        rs=WaypointsState(
                             points=config.waypoint_coordinates,
                             path_tolerance=config.path_tolerance,
                         ),
@@ -142,14 +142,14 @@ class AiAgent:
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        rs=UnabstractedGameState(gs),
+                        rs=UnabstractedState(gs),
                         policy=RandomHeuristicPolicy(gs),
                     )
                 case AiConfigComponent.UnabstractedConfig():
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        rs=UnabstractedGameState(gs),
+                        rs=UnabstractedState(gs),
                         policy=ExpectimaxPolicy[Action](depth=4),
                     )
 

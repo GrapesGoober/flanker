@@ -3,7 +3,7 @@ from inspect import isclass
 from typing import Any
 
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
-from flanker_ai.waypoints.waypoints_game_state import WaypointsGameState
+from flanker_ai.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     assert isinstance(
         config, AiConfigComponent.WaypointsConfig
     ), "Can't visualize non-waypoints AI config"
-    waypoints_gs = WaypointsGameState(
+    waypoints_gs = WaypointsState(
         points=config.waypoint_coordinates,
         path_tolerance=10,
     )

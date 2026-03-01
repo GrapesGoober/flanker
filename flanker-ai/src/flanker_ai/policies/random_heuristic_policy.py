@@ -2,7 +2,7 @@ import random
 from typing import Sequence
 
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IRepresentationState
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import AssaultAction, FireAction, MoveAction
 from flanker_core.gamestate import GameState
 

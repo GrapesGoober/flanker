@@ -1,6 +1,6 @@
 from typing import Protocol, Sequence, runtime_checkable
 
-from flanker_ai.i_game_state import IRepresentationState
+from flanker_ai.i_representation_state import IRepresentationState
 
 
 @runtime_checkable

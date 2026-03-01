@@ -2,7 +2,7 @@ from math import inf
 from typing import Sequence
 
 from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_game_state import IRepresentationState
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
 count = 0
