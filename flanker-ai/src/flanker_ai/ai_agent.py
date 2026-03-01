@@ -97,15 +97,27 @@ class AiAgent:
         return action_results
 
     @staticmethod
-    def get_ai_config(
+    def get_state_config(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> AiConfigComponent.AiConfigTypes:
+    ) -> AiConfigComponent.StateConfigTypes:
         # Get the config. If not exist, create a new empty one
         for _, config_component in gs.query(AiConfigComponent):
             if config_component.faction != faction:
                 continue
-            return config_component.config
+            return config_component.state_config
+        raise ValueError(f"No AI config for {gs}")
+
+    @staticmethod
+    def get_policy_config(
+        gs: GameState,
+        faction: InitiativeState.Faction,
+    ) -> AiConfigComponent.PolicyConfigTypes:
+        # Get the config. If not exist, create a new empty one
+        for _, config_component in gs.query(AiConfigComponent):
+            if config_component.faction != faction:
+                continue
+            return config_component.policy_config
         raise ValueError(f"No AI config for {gs}")
 
     @staticmethod
@@ -124,31 +136,38 @@ class AiAgent:
             break
         # If not exist, create a new empty one
         if agent is None:
-            config = AiAgent.get_ai_config(gs, faction)
-            match config:
-                case AiConfigComponent.WaypointsConfig():
+            state_config = AiAgent.get_state_config(gs, faction)
+            policy_config = AiAgent.get_policy_config(gs, faction)
+
+            match state_config:
+                case AiConfigComponent.UnabstractedStateConfig():
+                    rs = UnabstractedState(gs)
+                    match policy_config:
+                        case AiConfigComponent.ExpectimaxPolicyConfig():
+                            policy = ExpectimaxPolicy[Action](depth=4)
+                        case AiConfigComponent.RandomHeuristicPolicyConfig():
+                            policy = RandomHeuristicPolicy[Action](gs)
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        rs=WaypointsState(
-                            points=config.waypoint_coordinates,
-                            path_tolerance=config.path_tolerance,
-                        ),
-                        policy=ExpectimaxPolicy[WaypointAction](depth=4),
+                        rs=rs,
+                        policy=policy,
                     )
-                case AiConfigComponent.RandomHeuristicConfig():
-                    agent = AiAgent(
-                        gs=gs,
-                        faction=faction,
-                        rs=UnabstractedState(gs),
-                        policy=RandomHeuristicPolicy(gs),
+                case AiConfigComponent.WaypointsStateConfig():
+                    rs = WaypointsState(
+                        points=state_config.waypoint_coordinates,
+                        path_tolerance=state_config.path_tolerance,
                     )
-                case AiConfigComponent.UnabstractedConfig():
+                    match policy_config:
+                        case AiConfigComponent.ExpectimaxPolicyConfig():
+                            policy = ExpectimaxPolicy[WaypointAction](depth=4)
+                        case AiConfigComponent.RandomHeuristicPolicyConfig():
+                            policy = RandomHeuristicPolicy[WaypointAction](gs)
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
-                        rs=UnabstractedState(gs),
-                        policy=ExpectimaxPolicy[Action](depth=4),
+                        rs=rs,
+                        policy=policy,
                     )
 
             gs.add_entity(_AiAgentInstanceComponent(faction=faction, agent=agent))

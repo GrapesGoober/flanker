@@ -542,15 +542,23 @@
     "32": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "config": {
-          "type": "AiRandomHeuristicConfig"
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
         }
       }
     },
     "33": {
       "AiConfigComponent": {
         "faction": "RED",
-        "config": { "type": "AiRandomHeuristicConfig" }
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
       }
     }
   }

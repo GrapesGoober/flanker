@@ -542,13 +542,23 @@
     "32": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "config": { "type": "AiUnabstractedConfig" }
+        "policy_config": {
+          "type": "ExpectimaxPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
       }
     },
     "33": {
       "AiConfigComponent": {
         "faction": "RED",
-        "config": { "type": "AiUnabstractedConfig" }
+        "policy_config": {
+          "type": "ExpectimaxPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
       }
     }
   }

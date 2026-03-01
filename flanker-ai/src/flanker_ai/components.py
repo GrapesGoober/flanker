@@ -1,34 +1,36 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from flanker_core.models.components import Vec2
-from flanker_core.models.components import InitiativeState
-
+from flanker_core.models.components import InitiativeState, Vec2
 
 
 @dataclass
 class AiConfigComponent:
-    
 
     @dataclass
-    class WaypointsConfig:
-        type: Literal["AiWaypointConfig"]
+    class WaypointsStateConfig:
+        type: Literal["WaypointsStateConfig"]
         waypoint_coordinates: list[Vec2]
         path_tolerance: float
 
-
     @dataclass
-    class RandomHeuristicConfig:  # No config for this one
-        type: Literal["AiRandomHeuristicConfig"]
+    class UnabstractedStateConfig:
+        type: Literal["UnabstractedStateConfig"]
         ...
 
-
     @dataclass
-    class UnabstractedConfig:  # No config for this one
-        type: Literal["AiUnabstractedConfig"]
+    class RandomHeuristicPolicyConfig:
+        type: Literal["RandomHeuristicPolicyConfig"]
         ...
 
+    @dataclass
+    class ExpectimaxPolicyConfig:
+        type: Literal["ExpectimaxPolicyConfig"]
+        ...
 
-    AiConfigTypes = WaypointsConfig | RandomHeuristicConfig | UnabstractedConfig
+    StateConfigTypes = WaypointsStateConfig | UnabstractedStateConfig
+    PolicyConfigTypes = RandomHeuristicPolicyConfig | ExpectimaxPolicyConfig
+
     faction: InitiativeState.Faction
-    config: AiConfigTypes
+    state_config: StateConfigTypes
+    policy_config: PolicyConfigTypes

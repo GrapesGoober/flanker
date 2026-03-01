@@ -52,9 +52,9 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    config = AiAgent.get_ai_config(gs, InitiativeState.Faction.RED)
+    config = AiAgent.get_state_config(gs, InitiativeState.Faction.RED)
     assert isinstance(
-        config, AiConfigComponent.WaypointsConfig
+        config, AiConfigComponent.WaypointsStateConfig
     ), "Can't visualize non-waypoints AI config"
     waypoints_gs = WaypointsState(
         points=config.waypoint_coordinates,

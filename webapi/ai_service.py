@@ -1,11 +1,11 @@
-from flanker_ai.ai_agent import AiAgent
-from flanker_ai.components import AiConfigComponent
 from flanker_ai.actions import (
     ActionResult,
     AssaultActionResult,
     FireActionResult,
     MoveActionResult,
 )
+from flanker_ai.ai_agent import AiAgent
+from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -67,8 +67,8 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
-        config = AiAgent.get_ai_config(gs, request.faction)
-        if isinstance(config, AiConfigComponent.WaypointsConfig):
+        config = AiAgent.get_state_config(gs, request.faction)
+        if isinstance(config, AiConfigComponent.WaypointsStateConfig):
             config.waypoint_coordinates = request.points
 
     @staticmethod
@@ -76,8 +76,8 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigGridRequest,
     ) -> None:
-        config = AiAgent.get_ai_config(gs, request.faction)
-        if isinstance(config, AiConfigComponent.WaypointsConfig):
+        config = AiAgent.get_state_config(gs, request.faction)
+        if isinstance(config, AiConfigComponent.WaypointsStateConfig):
             config.path_tolerance = request.spacing
             config.waypoint_coordinates = AiService.get_grid_coordinates(
                 gs, spacing=request.spacing, offset=request.spacing / 2
