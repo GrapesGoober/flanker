@@ -28,8 +28,15 @@ class AiConfigComponent:
         type: Literal["ExpectimaxPolicyConfig"]
         ...
 
+    @dataclass
+    class MinimaxPolicyConfig:
+        type: Literal["MinimaxPolicyConfig"]
+        ...
+
     StateConfigTypes = WaypointsStateConfig | UnabstractedStateConfig
-    PolicyConfigTypes = RandomHeuristicPolicyConfig | ExpectimaxPolicyConfig
+    PolicyConfigTypes = (
+        RandomHeuristicPolicyConfig | ExpectimaxPolicyConfig | MinimaxPolicyConfig
+    )
 
     faction: InitiativeState.Faction
     state_config: StateConfigTypes

@@ -15,6 +15,7 @@ from flanker_ai.components import AiConfigComponent
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
+from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints_actions import WaypointAction
@@ -145,6 +146,8 @@ class AiAgent:
                     match policy_config:
                         case AiConfigComponent.ExpectimaxPolicyConfig():
                             policy = ExpectimaxPolicy[Action](depth=4)
+                        case AiConfigComponent.MinimaxPolicyConfig():
+                            policy = MinimaxPolicy[Action](depth=4)
                         case AiConfigComponent.RandomHeuristicPolicyConfig():
                             policy = RandomHeuristicPolicy[Action](gs)
                     agent = AiAgent(
@@ -161,6 +164,8 @@ class AiAgent:
                     match policy_config:
                         case AiConfigComponent.ExpectimaxPolicyConfig():
                             policy = ExpectimaxPolicy[WaypointAction](depth=4)
+                        case AiConfigComponent.MinimaxPolicyConfig():
+                            policy = MinimaxPolicy[WaypointAction](depth=4)
                         case AiConfigComponent.RandomHeuristicPolicyConfig():
                             policy = RandomHeuristicPolicy[WaypointAction](gs)
                     agent = AiAgent(
