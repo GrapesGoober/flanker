@@ -1,7 +1,9 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Literal
 
+from flanker_ai.components import (
+    AiConfigComponent,
+)
 from flanker_ai.i_ai_policy import IAiPolicy
 from flanker_ai.i_game_state import IGameState
 from flanker_ai.models import (
@@ -22,7 +24,6 @@ from flanker_ai.waypoints.waypoints_game_state import WaypointsGameState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
-from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -30,31 +31,6 @@ from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
-
-
-@dataclass
-class AiWaypointConfig:
-    type: Literal["AiWaypointConfig"]
-    waypoint_coordinates: list[Vec2]
-    path_tolerance: float
-
-
-@dataclass
-class AiRandomHeuristicConfig:  # No config for this one
-    type: Literal["AiRandomHeuristicConfig"]
-    ...
-
-
-@dataclass
-class AiUnabstractedConfig:  # No config for this one
-    type: Literal["AiUnabstractedConfig"]
-    ...
-
-
-@dataclass
-class AiConfigComponent:
-    faction: InitiativeState.Faction
-    config: AiWaypointConfig | AiRandomHeuristicConfig | AiUnabstractedConfig
 
 
 @dataclass
@@ -126,7 +102,7 @@ class AiAgent:
     def get_ai_config(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> AiWaypointConfig | AiRandomHeuristicConfig | AiUnabstractedConfig:
+    ) -> AiConfigComponent.AiConfigTypes:
         # Get the config. If not exist, create a new empty one
         for _, config_component in gs.query(AiConfigComponent):
             if config_component.faction != faction:
@@ -152,7 +128,7 @@ class AiAgent:
         if agent is None:
             config = AiAgent.get_ai_config(gs, faction)
             match config:
-                case AiWaypointConfig():
+                case AiConfigComponent.WaypointsConfig():
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
@@ -162,14 +138,14 @@ class AiAgent:
                         ),
                         policy=ExpectimaxPolicy[WaypointAction](depth=4),
                     )
-                case AiRandomHeuristicConfig():
+                case AiConfigComponent.RandomHeuristicConfig():
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
                         representation=UnabstractedGameState(gs),
                         policy=RandomHeuristicPolicy(gs),
                     )
-                case AiUnabstractedConfig():
+                case AiConfigComponent.UnabstractedConfig():
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,

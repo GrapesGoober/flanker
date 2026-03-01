@@ -1,4 +1,5 @@
-from flanker_ai.ai_agent import AiAgent, AiWaypointConfig
+from flanker_ai.ai_agent import AiAgent
+from flanker_ai.components import AiConfigComponent
 from flanker_ai.models import (
     ActionResult,
     AssaultActionResult,
@@ -67,7 +68,7 @@ class AiService:
         request: AiWaypointConfigRequest,
     ) -> None:
         config = AiAgent.get_ai_config(gs, request.faction)
-        if isinstance(config, AiWaypointConfig):
+        if isinstance(config, AiConfigComponent.WaypointsConfig):
             config.waypoint_coordinates = request.points
 
     @staticmethod
@@ -76,7 +77,7 @@ class AiService:
         request: AiWaypointConfigGridRequest,
     ) -> None:
         config = AiAgent.get_ai_config(gs, request.faction)
-        if isinstance(config, AiWaypointConfig):
+        if isinstance(config, AiConfigComponent.WaypointsConfig):
             config.path_tolerance = request.spacing
             config.waypoint_coordinates = AiService.get_grid_coordinates(
                 gs, spacing=request.spacing, offset=request.spacing / 2
