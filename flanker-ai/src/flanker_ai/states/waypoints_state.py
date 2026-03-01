@@ -2,9 +2,9 @@ import random
 from dataclasses import dataclass, replace
 from typing import Literal, override
 
-from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
-from flanker_ai.waypoints.models import (
+from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.waypoints_actions import (
     WaypointAction,
     WaypointAssaultAction,
     WaypointFireAction,

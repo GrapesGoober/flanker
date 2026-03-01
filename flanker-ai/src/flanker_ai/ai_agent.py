@@ -1,11 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
-from flanker_ai.components import (
-    AiConfigComponent,
-)
-from flanker_ai.i_ai_policy import IAiPolicy
-from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import (
     Action,
     ActionResult,
@@ -16,11 +11,14 @@ from flanker_ai.actions import (
     MoveAction,
     MoveActionResult,
 )
+from flanker_ai.components import AiConfigComponent
+from flanker_ai.i_ai_policy import IAiPolicy
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.unabstracted.unabstracted_state import UnabstractedState
-from flanker_ai.waypoints.models import WaypointAction
-from flanker_ai.waypoints.waypoints_state import WaypointsState
+from flanker_ai.states.unabstracted_state import UnabstractedState
+from flanker_ai.states.waypoints_actions import WaypointAction
+from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction

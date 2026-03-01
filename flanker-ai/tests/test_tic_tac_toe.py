@@ -1,13 +1,13 @@
 import pytest
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
-from flanker_ai.tic_tac_toe.actions import TicTacToeAction
-from flanker_ai.tic_tac_toe.state import TicTacToeGameState
+from flanker_ai.states.tic_tac_toe_actions import TicTacToeAction
+from flanker_ai.states.tic_tac_toe_state import TicTacToeState
 from flanker_core.models.components import InitiativeState
 
 
 @pytest.fixture
-def fixture() -> TicTacToeGameState:
-    return TicTacToeGameState(
+def fixture() -> TicTacToeState:
+    return TicTacToeState(
         board=[
             ["X", None, "O"],
             [None, "X", None],
@@ -17,7 +17,7 @@ def fixture() -> TicTacToeGameState:
     )
 
 
-def test_str_simple_board(fixture: TicTacToeGameState) -> None:
+def test_str_simple_board(fixture: TicTacToeState) -> None:
 
     expected = "\n".join(
         [
@@ -30,7 +30,7 @@ def test_str_simple_board(fixture: TicTacToeGameState) -> None:
     assert str(fixture) == expected
 
 
-def test_minimax_move(fixture: TicTacToeGameState) -> None:
+def test_minimax_move(fixture: TicTacToeState) -> None:
     expected = "\n".join(
         [
             "X . O",

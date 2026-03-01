@@ -1,9 +1,9 @@
 from copy import deepcopy
 from typing import Literal, Optional, Sequence
 
-from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import Action
-from flanker_ai.tic_tac_toe.actions import TicTacToeAction
+from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.tic_tac_toe_actions import TicTacToeAction
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -20,7 +20,7 @@ FACTION_TO_MARK: dict[InitiativeState.Faction, MARK] = {
 }
 
 
-class TicTacToeGameState(IRepresentationState[TicTacToeAction]):
+class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
     def __init__(
         self,
@@ -34,8 +34,8 @@ class TicTacToeGameState(IRepresentationState[TicTacToeAction]):
 
     # ---------- Core Protocol Methods ----------
 
-    def copy(self) -> "TicTacToeGameState":
-        return TicTacToeGameState(
+    def copy(self) -> "TicTacToeState":
+        return TicTacToeState(
             current_player=MARK_TO_FACTION[self.current_player],
             board=deepcopy(self.board),
         )
@@ -69,7 +69,7 @@ class TicTacToeGameState(IRepresentationState[TicTacToeAction]):
     def get_deterministic_branch(
         self,
         action: TicTacToeAction,
-    ) -> "TicTacToeGameState | None":
+    ) -> "TicTacToeState | None":
         if self.get_winner() is not None:
             return None
 
@@ -81,7 +81,7 @@ class TicTacToeGameState(IRepresentationState[TicTacToeAction]):
 
     def get_branches(
         self, action: TicTacToeAction
-    ) -> list[tuple[float, "TicTacToeGameState"]]:
+    ) -> list[tuple[float, "TicTacToeState"]]:
         raise NotImplementedError()
 
     def get_actions(self) -> Sequence[TicTacToeAction]:
