@@ -1,7 +1,7 @@
 from math import inf
 from typing import Sequence
 
-from flanker_ai.i_ai_policy import IAiPolicy
+from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
@@ -9,12 +9,14 @@ count = 0
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
-class MinimaxPolicy[TAction](IAiPolicy[TAction]):
+class MinimaxPolicy[TAction](IPolicy[TAction]):
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
 
-    def get_action_sequence(self, rs: IRepresentationState[TAction]) -> Sequence[TAction]:
+    def get_action_sequence(
+        self, rs: IRepresentationState[TAction]
+    ) -> Sequence[TAction]:
         _, action = self._search(rs, self._depth, -inf, inf)
         if action is None:
             return []

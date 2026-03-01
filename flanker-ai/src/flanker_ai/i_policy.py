@@ -4,7 +4,9 @@ from flanker_ai.i_representation_state import IRepresentationState
 
 
 @runtime_checkable
-class IAiPolicy[TAction](Protocol):
+class IPolicy[TAction](Protocol):
     """Interface for defining a decision policy for AI."""
 
-    def get_action_sequence(self, rs: IRepresentationState[TAction]) -> Sequence[TAction]: ...
+    def get_action_sequence(
+        self, rs: IRepresentationState[TAction]
+    ) -> Sequence[TAction]: ...

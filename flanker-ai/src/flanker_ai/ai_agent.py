@@ -12,7 +12,7 @@ from flanker_ai.actions import (
     MoveActionResult,
 )
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.i_ai_policy import IAiPolicy
+from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
@@ -43,7 +43,7 @@ class AiAgent:
         gs: GameState,
         faction: InitiativeState.Faction,
         rs: IRepresentationState[TAction],
-        policy: IAiPolicy[TAction],
+        policy: IPolicy[TAction],
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
