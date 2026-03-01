@@ -47,49 +47,49 @@ class AiAgent:
         rs: IRepresentationState[TAction],
         policy: IAiPolicy[TAction],
     ) -> None:
-        self._raw_gs = gs
+        self._gs = gs
         self._faction: InitiativeState.Faction = faction
-        self.policy = policy
-        self.representation = rs
-        self.representation.initialize_state(gs)
+        self._policy = policy
+        self._rs = rs
+        self._rs.initialize_state(gs)
 
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
 
-        if InitiativeSystem.get_initiative(self._raw_gs) != self._faction:
+        if InitiativeSystem.get_initiative(self._gs) != self._faction:
             return []
 
         halt_counter = 0
         action_results: list[ActionResult] = []
-        while InitiativeSystem.get_initiative(self._raw_gs) == self._faction:
-            if ObjectiveSystem.get_winning_faction(self._raw_gs) != None:
+        while InitiativeSystem.get_initiative(self._gs) == self._faction:
+            if ObjectiveSystem.get_winning_faction(self._gs) != None:
                 break
             # Prepare the template into state usable for AI
-            gs = self.representation.copy()
-            gs.update_state(self._raw_gs)
+            gs = self._rs.copy()
+            gs.update_state(self._gs)
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
                 print(f"{self._faction.value} AI made useless actions, breaking")
-                InitiativeSystem.flip_initiative(self._raw_gs)
+                InitiativeSystem.flip_initiative(self._gs)
                 break
             # Runs the abstracted graph search
-            actions = self.policy.get_action_sequence(gs)
+            actions = self._policy.get_action_sequence(gs)
             print(f"{self._faction.value} AI made action: {actions}")
 
             if actions == []:
                 print(f"No valid action for {self._faction.value} AI, breaking")
-                InitiativeSystem.flip_initiative(self._raw_gs)
+                InitiativeSystem.flip_initiative(self._gs)
                 break
 
-            action = self.representation.deabstract_action(
+            action = self._rs.deabstract_action(
                 action=actions[0],
-                gs=self._raw_gs,
+                gs=self._gs,
             )
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
                 print(f"{self._faction.value} AI made invalid action, breaking")
-                InitiativeSystem.flip_initiative(self._raw_gs)
+                InitiativeSystem.flip_initiative(self._gs)
                 break
             # These result objects would be used for logging
             # Thus, prevent mutation by creating a copy
@@ -164,38 +164,38 @@ class AiAgent:
         match action:
             case MoveAction():
                 result = MoveSystem.move(
-                    self._raw_gs,
+                    self._gs,
                     action.unit_id,
                     action.to,
                 )
                 if not isinstance(result, InvalidAction):
                     return MoveActionResult(
                         action=action,
-                        result_gs=self._raw_gs,
+                        result_gs=self._gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
                 result = FireSystem.fire(
-                    self._raw_gs,
+                    self._gs,
                     action.unit_id,
                     action.target_id,
                 )
                 if not isinstance(result, InvalidAction):
                     return FireActionResult(
                         action=action,
-                        result_gs=self._raw_gs,
+                        result_gs=self._gs,
                         outcome=result.outcome,
                     )
             case AssaultAction():
                 result = AssaultSystem.assault(
-                    self._raw_gs,
+                    self._gs,
                     action.unit_id,
                     action.target_id,
                 )
                 if not isinstance(result, InvalidAction):
                     return AssaultActionResult(
                         action=action,
-                        result_gs=self._raw_gs,
+                        result_gs=self._gs,
                         outcome=result.outcome,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )

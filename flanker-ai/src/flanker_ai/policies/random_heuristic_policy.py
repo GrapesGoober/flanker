@@ -22,7 +22,7 @@ class RandomHeuristicPolicy[TAction](IAiPolicy[TAction]):
         self,
         gs: GameState,  # Needed for deabstraction
     ) -> None:
-        self._raw_gs = gs
+        self._gs = gs
 
     def get_action_sequence(self, rs: IRepresentationState[TAction]) -> Sequence[TAction]:
 
@@ -42,8 +42,8 @@ class RandomHeuristicPolicy[TAction](IAiPolicy[TAction]):
             if result == None:  # Ignore invalid actions
                 continue
 
-            real_action = rs.deabstract_action(action, self._raw_gs)
-
+            # Group into candidate categories
+            real_action = rs.deabstract_action(action, self._gs)
             match real_action:
                 case FireAction():
                     fire_actions.append(action)
