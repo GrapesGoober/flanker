@@ -1,6 +1,6 @@
 from typing import Protocol, Sequence, runtime_checkable
 
-from flanker_ai.models import Action
+from flanker_ai.actions import Action
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 

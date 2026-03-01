@@ -3,7 +3,7 @@ from dataclasses import dataclass, replace
 from typing import Literal, override
 
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.models import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import (
     WaypointAction,
     WaypointAssaultAction,

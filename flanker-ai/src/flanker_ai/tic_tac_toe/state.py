@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import Literal, Optional, Sequence
 
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.models import Action
+from flanker_ai.actions import Action
 from flanker_ai.tic_tac_toe.actions import TicTacToeAction
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState

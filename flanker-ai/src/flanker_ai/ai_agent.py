@@ -6,7 +6,7 @@ from flanker_ai.components import (
 )
 from flanker_ai.i_ai_policy import IAiPolicy
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.models import (
+from flanker_ai.actions import (
     Action,
     ActionResult,
     AssaultAction,

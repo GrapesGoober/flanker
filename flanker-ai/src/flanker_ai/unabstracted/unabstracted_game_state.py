@@ -2,7 +2,7 @@ import random
 from typing import Sequence
 
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.models import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.waypoints.models import EliminationObjective
 from flanker_ai.waypoints.waypoints_game_state import CombatUnit
 from flanker_core.gamestate import GameState

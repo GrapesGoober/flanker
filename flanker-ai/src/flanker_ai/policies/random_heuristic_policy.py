@@ -3,7 +3,7 @@ from typing import Sequence
 
 from flanker_ai.i_ai_policy import IAiPolicy
 from flanker_ai.i_game_state import IGameState
-from flanker_ai.models import AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import AssaultAction, FireAction, MoveAction
 from flanker_core.gamestate import GameState
 
 

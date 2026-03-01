@@ -1,6 +1,6 @@
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.models import (
+from flanker_ai.actions import (
     ActionResult,
     AssaultActionResult,
     FireActionResult,
