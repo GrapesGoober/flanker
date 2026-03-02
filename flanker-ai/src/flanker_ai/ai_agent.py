@@ -11,7 +11,7 @@ from flanker_ai.actions import (
     MoveAction,
     MoveActionResult,
 )
-from flanker_ai.components import AiConfigComponent
+from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
@@ -30,6 +30,7 @@ from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
+_MAX_STALL_LIMIT = 5
 
 
 @dataclass
@@ -61,19 +62,26 @@ class AiAgent:
         halt_counter = 0
         action_results: list[ActionResult] = []
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
+            # If win/lose condition is already met, pass
             if ObjectiveSystem.get_winning_faction(self._gs) != None:
                 break
-            # Prepare the template into state usable for AI
-            gs = self._rs.copy()
-            gs.update_state(self._gs)
+            if result := self._gs.query(AiStallCountComponent):
+                _, stall_comp = result[0]
+            else:
+                self._gs.add_entity(stall_comp := AiStallCountComponent())
+            if stall_comp.stall_counter[self._faction] > _MAX_STALL_LIMIT:
+                break
+
             # Check redundant moves (stop search)
-            # TODO: this doesn't favor Expectimax since
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
                 print(f"{self._faction.value} AI made useless actions, breaking")
                 InitiativeSystem.flip_initiative(self._gs)
                 break
-            # Runs the abstracted graph search
-            actions = self._policy.get_action_sequence(gs)
+
+            # Prepare the representation and run the policy on it
+            _rs = self._rs.copy()
+            _rs.update_state(self._gs)
+            actions = self._policy.get_action_sequence(_rs)
             print(f"{self._faction.value} AI made action: {actions}")
 
             if actions == []:
@@ -192,12 +200,21 @@ class AiAgent:
                     action.to,
                 )
                 if not isinstance(result, InvalidAction):
+                    stall_counter_ent = self._gs.query(AiStallCountComponent)
+                    _, counter = stall_counter_ent[0]
+                    if result.reactive_fire_outcome == None:
+                        counter.stall_counter[self._faction] += 1
+                    else:
+                        counter.stall_counter[self._faction]
                     return MoveActionResult(
                         action=action,
                         result_gs=self._gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
+                stall_counter_ent = self._gs.query(AiStallCountComponent)
+                _, counter = stall_counter_ent[0]
+                counter.stall_counter[self._faction] = 0
                 result = FireSystem.fire(
                     self._gs,
                     action.unit_id,
@@ -210,6 +227,9 @@ class AiAgent:
                         outcome=result.outcome,
                     )
             case AssaultAction():
+                stall_counter_ent = self._gs.query(AiStallCountComponent)
+                _, counter = stall_counter_ent[0]
+                counter.stall_counter[self._faction] = 0
                 result = AssaultSystem.assault(
                     self._gs,
                     action.unit_id,

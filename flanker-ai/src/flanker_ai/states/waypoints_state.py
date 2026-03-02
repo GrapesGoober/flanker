@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from typing import Literal, override
 
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.waypoints_actions import (
     WaypointAction,
@@ -35,6 +36,8 @@ _FIRE_REACTION_PROBABILITIES = {
     FireOutcomes.SUPPRESS: 0.4,
 }
 
+_MAX_STALL_LIMIT = 5
+
 
 @dataclass
 class AbstractedCombatUnit:
@@ -65,6 +68,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self._initiative: InitiativeState.Faction = InitiativeState.Faction.BLUE
         self._objectives: list[EliminationObjective] = []
         self._path_tolerance = path_tolerance
+        self._stall_counter: dict[InitiativeState.Faction, int] = {
+            InitiativeState.Faction.BLUE: 0,
+            InitiativeState.Faction.RED: 0,
+        }
 
     @property
     def waypoints(self) -> dict[int, WaypointNode]:
@@ -83,6 +90,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         new_gs._combat_units = copied_units
         new_gs._initiative = self._initiative
         new_gs._objectives = copied_objectives
+        new_gs._stall_counter = deepcopy(self._stall_counter)
         return new_gs
 
     @override
@@ -283,10 +291,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
                         outcomes.append((probability, gs))
                     return outcomes
-                else:
+                else:  # No move interrupt found
                     gs = self.copy()
                     current_unit = gs._combat_units[action.unit_id]
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
+                    # Count up no-risk moves as stalling
+                    # TODO: this value has to carry over to next initiative
+                    gs._stall_counter = self._stall_counter
+                    gs._stall_counter[gs._initiative] += 1
                     return [(1, gs)]
 
             case WaypointFireAction():
@@ -333,6 +345,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
+        for faction, counter in self._stall_counter.items():
+            if counter > _MAX_STALL_LIMIT:
+                # mark faction as losing
+                if faction == InitiativeState.Faction.BLUE:
+                    return InitiativeState.Faction.RED
+                elif faction == InitiativeState.Faction.RED:
+                    return InitiativeState.Faction.BLUE
         for objective in self._objectives:
             if objective.units_to_destroy == objective.units_destroyed_counter:
                 return objective.winning_faction
@@ -391,6 +410,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
 
         self._initiative = InitiativeSystem.get_initiative(gs)
+
+        if entities := gs.query(AiStallCountComponent):
+            _, stall_component = entities[0]
+        else:
+            gs.add_entity(stall_component := AiStallCountComponent())
+
+        self._stall_counter = deepcopy(stall_component.stall_counter)
 
         # Add combat units as waypoints and as abstracted units
         new_waypoint_ids: list[int] = []

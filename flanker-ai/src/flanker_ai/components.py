@@ -1,7 +1,17 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from flanker_core.models.components import InitiativeState, Vec2
+
+
+@dataclass
+class AiStallCountComponent:
+    stall_counter: dict[InitiativeState.Faction, int] = field(
+        default_factory=lambda: {
+            InitiativeState.Faction.BLUE: 0,
+            InitiativeState.Faction.RED: 0,
+        }
+    )
 
 
 @dataclass
