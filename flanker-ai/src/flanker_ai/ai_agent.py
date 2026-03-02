@@ -67,6 +67,7 @@ class AiAgent:
             gs = self._rs.copy()
             gs.update_state(self._gs)
             # Check redundant moves (stop search)
+            # TODO: this doesn't favor Expectimax since
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
                 print(f"{self._faction.value} AI made useless actions, breaking")
                 InitiativeSystem.flip_initiative(self._gs)

@@ -5,11 +5,11 @@ from flanker_ai.actions import (
     MoveActionResult,
 )
 from flanker_ai.ai_agent import AiAgent
+from flanker_ai.ai_trial import AiTrial
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -43,24 +43,12 @@ class AiService:
     @staticmethod
     def play_trial(gs: GameState) -> None:
         """Runs a trial where AI plays against each other."""
-        blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
-        red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-        while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
-            blue_action_results = blue_agent.play_initiative()
-            if blue_action_results:
-                AiService._log_ai_action_results(gs, blue_action_results)
-
-            red_action_results = red_agent.play_initiative()
-            if red_action_results:
-                AiService._log_ai_action_results(gs, red_action_results)
-
-            if not red_action_results and not blue_action_results:
-                print(f"No Valid Actions; Draw")
-                break
-        if winner == None:
+        result = AiTrial.run_trial(gs)
+        AiService._log_ai_action_results(gs, result.action_results)
+        if result.winner == None:
             print(f"No winner; draw")
         else:
-            print(f"Winner is {winner}")
+            print(f"Winner is {result.winner}")
 
     @staticmethod
     def set_ai_waypoints_config(
