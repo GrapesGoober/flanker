@@ -4,6 +4,7 @@ from flanker_ai.unabstracted.models import (
     AssaultActionResult,
     FireActionResult,
     MoveActionResult,
+    OrientationActionResult,
 )
 from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
 from flanker_core.gamestate import GameState
@@ -111,6 +112,18 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.outcome,
+                        unit_state=CombatUnitService.get_units_view_state(
+                            result.result_gs
+                        ),
+                    )
+                case OrientationActionResult():
+                    from webapi.models import OrientationActionLog, OrientationActionRequest
+
+                    log = OrientationActionLog(
+                        body=OrientationActionRequest(
+                            unit_id=result.action.unit_id,
+                            degrees=result.action.degrees,
+                        ),
                         unit_state=CombatUnitService.get_units_view_state(
                             result.result_gs
                         ),

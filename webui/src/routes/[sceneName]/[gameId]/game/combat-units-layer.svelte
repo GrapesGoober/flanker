@@ -58,6 +58,16 @@
 		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
 			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
 		</g>
+		{#if unit.orientation !== undefined}
+			<Arrow
+				start={unit.position}
+				end={{
+					x: unit.position.x + Math.cos((unit.orientation * Math.PI) / 180) * 20,
+					y: unit.position.y + Math.sin((unit.orientation * Math.PI) / 180) * 20
+				}}
+				offset={6}
+			/>
+		{/if}
 	{/each}
 </svg>
 

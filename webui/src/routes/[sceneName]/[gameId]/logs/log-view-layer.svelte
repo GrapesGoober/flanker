@@ -50,6 +50,18 @@
 						<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
 					{/if}
 				{/if}
+				{#if currentAction.logType == 'OrientationActionLog'}
+					{@const deg = (currentAction as any).body.degrees}
+					<!-- show a short arrow indicating new facing -->
+					<Arrow
+						start={actorUnit.position}
+						end={{
+							x: actorUnit.position.x + Math.cos((deg * Math.PI) / 180) * 20,
+							y: actorUnit.position.y + Math.sin((deg * Math.PI) / 180) * 20
+						}}
+						offset={6}
+					/>
+				{/if}
 			{/if}
 		{/if}
 	</g>

@@ -52,6 +52,7 @@ class CombatUnitService:
                     status=unit.status,
                     is_friendly=(unit.faction == faction),
                     no_fire=not fire.can_reactive_fire,
+                    orientation=transform.degrees,
                 )
             )
 

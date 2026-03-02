@@ -4,6 +4,7 @@ import {
 	performAssaultActionAsync,
 	performFireActionAsync,
 	performMoveActionAsync,
+	performOrientationActionAsync,
 	type CombatUnitsViewState,
 	type RifleSquadData,
 	type TerrainModel,
@@ -14,7 +15,8 @@ type PlayerControllerState =
 	| { type: 'default' }
 	| { type: 'selected'; selectedUnit: RifleSquadData }
 	| { type: 'moveMarked'; selectedUnit: RifleSquadData; moveMarker: Vec2 }
-	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
+	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData }
+	| { type: 'orienting'; selectedUnit: RifleSquadData };
 
 /*
 PlayerController class
@@ -71,6 +73,17 @@ export class PlayerController {
 		};
 	}
 
+	/* Begin orientation mode for selected unit. */
+	startOrienting() {
+		if (!this.unitData.hasInitiative) return;
+		if (this.state.type !== 'selected') return;
+		if (!this.state.selectedUnit.isFriendly) return;
+		this.state = {
+			type: 'orienting',
+			selectedUnit: this.state.selectedUnit,
+		};
+	}
+
 	/* Sets aan marker for the selected unit then transition to 'attackMarked'. */
 	setAttackMarker(target: RifleSquadData) {
 		if (!this.unitData.hasInitiative) return;
@@ -88,6 +101,33 @@ export class PlayerController {
 		this.state = {
 			type: 'default'
 		};
+	}
+
+	/* Handles orientation action after a marker coordinate is chosen. */
+	async orientationActionAsync(mousePos: Vec2) {
+		if (this.isFetching) return;
+		if (this.state.type !== 'orienting') return;
+		let unitId = this.state.selectedUnit.unitId;
+		// compute heading from unit to clicked point
+		const sel = this.state.selectedUnit;
+		const dx = mousePos.x - sel.position.x;
+		const dy = mousePos.y - sel.position.y;
+		const deg = (Math.atan2(dy, dx) * 180) / Math.PI;
+		let heading = deg;
+		if (heading < 0) heading += 360;
+		this.isFetching = true;
+		this.unitData = await performOrientationActionAsync(unitId, heading);
+		this.isFetching = false;
+		// return to selected state
+		const current = this.unitData.squads.find((u) => u.unitId == unitId);
+		if (current) {
+			this.state = {
+				type: 'selected',
+				selectedUnit: current
+			};
+		} else {
+			this.state = { type: 'default' };
+		}
 	}
 
 	/* Returns true if move action is valid. */

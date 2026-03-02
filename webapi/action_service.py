@@ -14,6 +14,8 @@ from webapi.models import (
     FireActionRequest,
     MoveActionLog,
     MoveActionRequest,
+    OrientationActionLog,
+    OrientationActionRequest,
 )
 
 
@@ -62,6 +64,22 @@ class ActionService:
                 body=body,
                 outcome=result.outcome,
                 reactive_fire_outcome=result.reactive_fire_outcome,
+                unit_state=CombatUnitService.get_units_view_state(gs),
+            ),
+        )
+
+    @staticmethod
+    def orient(gs: GameState, body: OrientationActionRequest) -> None:
+        """Rotate a unit and trigger AI response."""
+        from flanker_core.systems.orientation_system import OrientationSystem
+
+        result = OrientationSystem.orient(gs, body.unit_id, body.degrees)
+        if isinstance(result, InvalidAction):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+        LoggingService.log(
+            gs,
+            OrientationActionLog(
+                body=body,
                 unit_state=CombatUnitService.get_units_view_state(gs),
             ),
         )

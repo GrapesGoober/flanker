@@ -132,6 +132,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/{sceneName}/{gameId}/orient": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Action Orient
+         * @description Rotate a unit and return updated rifle squads.
+         */
+        post: operations["action_orient_api__sceneName___gameId__orient_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/{sceneName}/{gameId}/logs": {
         parameters: {
             query?: never;
@@ -333,6 +353,8 @@ export interface components {
             isFriendly: boolean;
             /** Nofire */
             noFire: boolean;
+            /** Degrees facing */
+            orientation: number;
         };
         /**
          * Status
@@ -359,6 +381,23 @@ export interface components {
          * @enum {string}
          */
         Types: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
+        /** OrientationActionRequest */
+        OrientationActionRequest: {
+            /** Unitid */
+            unitId: number;
+            /** Degrees */
+            degrees: number;
+        };
+        /** OrientationActionLog */
+        OrientationActionLog: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "OrientationActionLog";
+            body: components["schemas"]["OrientationActionRequest"];
+            unitState: components["schemas"]["CombatUnitsViewState"];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */

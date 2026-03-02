@@ -1,4 +1,5 @@
 import random
+import math
 from copy import deepcopy
 
 from flanker_ai.unabstracted.models import (
@@ -7,6 +8,8 @@ from flanker_ai.unabstracted.models import (
     FireActionResult,
     MoveAction,
     MoveActionResult,
+    OrientationAction,
+    OrientationActionResult,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
@@ -80,6 +83,42 @@ class RandomHeuristicAgent:
                 or unit.status == CombatUnit.Status.SUPPRESSED
             ):
                 continue
+
+            # before firing, make sure we're facing the enemy; orient if needed
+            # find nearest enemy for this unit
+            my_pos = self._gs.get_component(unit_id, Transform).position
+            best_target: int | None = None
+            best_dist = float("inf")
+            for target_id, target in self._gs.query(CombatUnit):
+                if target.faction == self._faction:
+                    continue
+                target_pos = self._gs.get_component(target_id, Transform).position
+                dist = (target_pos - my_pos).length()
+                if dist < best_dist:
+                    best_dist = dist
+                    best_target = target_id
+            if best_target is not None:
+                # compute desired heading
+                target_pos = self._gs.get_component(best_target, Transform).position
+                dx = target_pos.x - my_pos.x
+                dy = target_pos.y - my_pos.y
+                desired_deg = (180 / 3.141592653589793) * (  # type: ignore
+                    0 if dx == 0 and dy == 0 else math.atan2(dy, dx)
+                )
+                # normalize
+                if desired_deg < 0:
+                    desired_deg += 360
+                current_deg = self._gs.get_component(unit_id, Transform).degrees
+                # orient if heading differs by more than 1 degree
+                if abs((desired_deg - current_deg + 180) % 360 - 180) > 1.0:
+                    from flanker_core.systems.orientation_system import OrientationSystem
+
+                    result = OrientationSystem.orient(self._gs, unit_id, desired_deg)
+                    if not isinstance(result, InvalidAction):
+                        return OrientationActionResult(
+                            action=OrientationAction(unit_id, desired_deg),
+                            result_gs=self._gs,
+                        )
 
             # Find targets
             for target_id, target in self._gs.query(CombatUnit):

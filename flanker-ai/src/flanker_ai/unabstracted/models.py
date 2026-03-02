@@ -24,6 +24,12 @@ class AssaultAction:
 
 
 @dataclass
+class OrientationAction:
+    unit_id: int
+    degrees: float
+
+
+@dataclass
 class MoveActionResult:
     action: MoveAction
     result_gs: GameState
@@ -45,5 +51,16 @@ class AssaultActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
-Action = MoveAction | FireAction | AssaultAction
-ActionResult = MoveActionResult | FireActionResult | AssaultActionResult
+@dataclass
+class OrientationActionResult:
+    action: OrientationAction
+    result_gs: GameState
+
+
+Action = MoveAction | FireAction | AssaultAction | OrientationAction
+ActionResult = (
+    MoveActionResult
+    | FireActionResult
+    | AssaultActionResult
+    | OrientationActionResult
+)

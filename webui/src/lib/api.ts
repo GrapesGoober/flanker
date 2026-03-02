@@ -14,7 +14,8 @@ export type RifleSquadData = components['schemas']['SquadModel'];
 export type MoveActionLog = components['schemas']['MoveActionLog'];
 export type FireActionLog = components['schemas']['FireActionLog'];
 export type AssaultActionLog = components['schemas']['AssaultActionLog'];
-export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog;
+export type OrientationActionLog = components['schemas']['OrientationActionLog'];
+export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog | OrientationActionLog;
 
 export type RouteParams = {
 	path: {
@@ -125,6 +126,24 @@ export async function performAssaultActionAsync(
 		body: {
 			unitId: unitId,
 			targetId: targetId
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
+/**
+ * Rotate a unit to the given heading.
+ */
+export async function performOrientationActionAsync(
+	unitId: number,
+	degrees: number
+): Promise<CombatUnitsViewState> {
+	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/orient', {
+		params: GetParams(),
+		body: {
+			unitId: unitId,
+			degrees: degrees
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));

@@ -14,7 +14,7 @@
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
-	/*Adds a move marker at the clicked position on the map. */
+	/*Adds a move/orientation marker at the clicked position on the map. */
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
 		if (controller.isFetching) return;
@@ -22,7 +22,12 @@
 		const rect = node.getBoundingClientRect();
 		const x = event.clientX - rect.x;
 		const y = event.clientY - rect.y;
-		controller.setMoveMarker(map.ToWorldCoords({ x, y }));
+		const world = map.ToWorldCoords({ x, y });
+		if (controller.state.type === 'orienting') {
+			controller.orientationActionAsync(world);
+			return;
+		}
+		controller.setMoveMarker(world);
 	}
 	/* Initializes the player controller and loads game data on mount. */
 	onMount(async () => {
