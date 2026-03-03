@@ -41,10 +41,10 @@
 		{#if controller.state.type == 'moveMarked'}
 			{@const moveMarker = controller.state.moveMarker}
 			<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankFriendlyUnit /></g>
-			<Arrow opacity={0.15} start={selectedUnit.position} end={controller.state.moveMarker} offset={6} />
+			<Arrow opacity={0.5} start={selectedUnit.position} end={controller.state.moveMarker} offset={6} />
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}
-			<Arrow opacity={0.15} start={selectedUnit.position} end={targetPos} offset={12} />
+			<Arrow opacity={0.5} start={selectedUnit.position} end={targetPos} offset={12} />
 			<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
 		{/if}
 	{/if}
