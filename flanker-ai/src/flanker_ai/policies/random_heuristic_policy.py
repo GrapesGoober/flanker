@@ -40,8 +40,14 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
         fire_actions: list[TAction] = []
         move_actions: list[TAction] = []
         for action in actions:
-            result = rs.get_deterministic_branch(action)
-            if result == None:  # Ignore invalid actions
+            branch = rs.get_deterministic_branch(action)
+
+            # Ignore invalid actions
+            if branch == None:
+                continue
+
+            # Ignore losing actions. This is to prevent stalling losing condition.
+            if branch.get_winner != rs.get_initiative():
                 continue
 
             # Group into candidate categories
