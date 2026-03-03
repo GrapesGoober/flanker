@@ -58,7 +58,7 @@
 		{#if unit.orientation !== undefined}
 			<!-- draw arrow first so it appears behind the icon -->
 			<Arrow
-				class="orientation-arrow"
+				opacity={0.15}
 				start={unit.position}
 				end={{
 					x: unit.position.x + Math.cos((unit.orientation * Math.PI) / 180) * 20,
@@ -80,8 +80,5 @@
 	}
 	.transparent-icons {
 		opacity: 0.5;
-	}
-	.orientation-arrow {
-		opacity: 0.15; /* more transparent as requested */
 	}
 </style>
