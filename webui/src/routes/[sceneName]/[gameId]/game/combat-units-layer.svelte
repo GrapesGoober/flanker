@@ -55,11 +55,10 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- Draw combat units -->
 	{#each controller.unitData.squads as unit, index}
-		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
-		</g>
 		{#if unit.orientation !== undefined}
+			<!-- draw arrow first so it appears behind the icon -->
 			<Arrow
+				class="orientation-arrow"
 				start={unit.position}
 				end={{
 					x: unit.position.x + Math.cos((unit.orientation * Math.PI) / 180) * 20,
@@ -68,6 +67,9 @@
 				offset={6}
 			/>
 		{/if}
+		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+		</g>
 	{/each}
 </svg>
 
@@ -78,5 +80,8 @@
 	}
 	.transparent-icons {
 		opacity: 0.5;
+	}
+	.orientation-arrow {
+		opacity: 0.3;
 	}
 </style>
