@@ -1,8 +1,9 @@
 import random
 from typing import Sequence
 
-from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.components import AiStallCountComponent
+from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -20,6 +21,8 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.linear_transform import LinearTransform
+
+_MAX_STALL_LIMIT = 5
 
 
 class UnabstractedState(IRepresentationState[Action]):
@@ -132,14 +135,24 @@ class UnabstractedState(IRepresentationState[Action]):
         new_gs = self.copy()._gs
         match action:
             case MoveAction():
+                initiative = InitiativeSystem.get_initiative(self._gs)
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 result = MoveSystem.move(new_gs, action.unit_id, action.to)
+                if not isinstance(result, InvalidAction):
+                    if result.reactive_fire_outcome == None:
+                        self._get_stall_counter()[initiative] += 1
+                    else:
+                        self._get_stall_counter()[initiative] = 0
             case FireAction():
+                initiative = InitiativeSystem.get_initiative(self._gs)
+                self._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.SUPPRESS
                 result = FireSystem.fire(new_gs, action.unit_id, action.target_id)
             case AssaultAction():
+                initiative = InitiativeSystem.get_initiative(self._gs)
+                self._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 result = AssaultSystem.assault(new_gs, action.unit_id, action.target_id)
@@ -151,7 +164,22 @@ class UnabstractedState(IRepresentationState[Action]):
         return UnabstractedState(new_gs)
 
     def get_winner(self) -> InitiativeState.Faction | None:
+        for faction, counter in self._get_stall_counter().items():
+            if counter > _MAX_STALL_LIMIT:
+                # mark faction as losing
+                if faction == InitiativeState.Faction.BLUE:
+                    return InitiativeState.Faction.RED
+                elif faction == InitiativeState.Faction.RED:
+                    return InitiativeState.Faction.BLUE
+
         return ObjectiveSystem.get_winning_faction(self._gs)
+
+    def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
+        if result := self._gs.query(AiStallCountComponent):
+            _, stall_comp = result[0]
+        else:
+            self._gs.add_entity(stall_comp := AiStallCountComponent())
+        return stall_comp.stall_counter
 
     def get_initiative(self) -> InitiativeState.Faction:
         return InitiativeSystem.get_initiative(self._gs)
