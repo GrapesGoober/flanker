@@ -82,6 +82,6 @@
 		opacity: 0.5;
 	}
 	.orientation-arrow {
-		opacity: 0.3;
+		opacity: 0.15; /* more transparent as requested */
 	}
 </style>
