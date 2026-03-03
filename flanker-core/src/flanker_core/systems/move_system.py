@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Literal
+from typing import Literal
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -62,19 +62,6 @@ class MoveSystem:
                 return InvalidAction.BAD_COORDS
 
         return True
-
-    @staticmethod
-    def _get_move_steps(start: Vec2, to: Vec2, step_size: int = 1) -> Iterable[Vec2]:
-        """Yields position from `start` to `to` in increments of `step_size`."""
-        current = start
-        direction = (to - start).normalized()
-        total_length = (to - start).length()
-        steps = int(total_length / step_size) + 1
-
-        for i in range(steps):
-            step = min(step_size, total_length - i * step_size)
-            current = current + direction * step
-            yield current
 
     @staticmethod
     def _get_interrupt_candidates(
