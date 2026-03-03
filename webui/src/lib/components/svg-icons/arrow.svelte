@@ -1,12 +1,16 @@
 <script lang="ts">
 	import type { Vec2 } from '$lib/api';
 
+	// opacity is part of the component props; SSR (runes) mode
+	// doesn't allow `export let`, so pull it from `$props()`.
 	type Props = {
 		start: Vec2;
 		end: Vec2;
 		offset: number;
+		opacity?: number;
 	};
 	let props: Props = $props();
+	const opacity: number = props.opacity ?? 1;
 
 	function GetShaftEnd(): Vec2 {
 		// Normalized directional vector of this arrow
@@ -38,11 +42,12 @@
 			markerHeight="2"
 			orient="auto"
 		>
-			<path d="M 0 0 L 6 4 L 0 8 z" />
+			<path d="M 0 0 L 6 4 L 0 8 z" opacity={opacity} />
 		</marker>
 	</defs>
 
 	<line
+		opacity={opacity}
 		x1={props.start.x}
 		y1={props.start.y}
 		x2={shaftEnd.x}
