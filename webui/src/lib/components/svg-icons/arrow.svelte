@@ -41,8 +41,9 @@
 			markerWidth="2"
 			markerHeight="2"
 			orient="auto"
+			opacity={opacity}
 		>
-			<path d="M 0 0 L 6 4 L 0 8 z" opacity={opacity} />
+			<path d="M 0 0 L 6 4 L 0 8 z" />
 		</marker>
 	</defs>
 
