@@ -46,7 +46,7 @@
 					)[0]}
 					{#if targetUnit}
 						{@const targetPos = targetUnit.position}
-						<Arrow start={actorUnit.position} end={targetPos} offset={12} />
+						<Arrow opacity={0.3} start={actorUnit.position} end={targetPos} offset={12} />
 						<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
 					{/if}
 				{/if}
