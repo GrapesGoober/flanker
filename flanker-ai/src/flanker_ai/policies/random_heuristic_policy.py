@@ -46,8 +46,8 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
             if branch == None:
                 continue
 
-            # Ignore losing actions. This is to prevent stalling losing condition.
-            if branch.get_winner != rs.get_initiative():
+            # # Ignore losing actions. This is to prevents stalling moves.
+            if branch.get_winner() not in [None, rs.get_initiative()]:
                 continue
 
             # Group into candidate categories
