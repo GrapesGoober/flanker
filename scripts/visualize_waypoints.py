@@ -2,7 +2,8 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.ai_agent import AiAgent, AiConfigComponent
+from flanker_ai.ai_agent import AiAgent
+from flanker_ai.components import AiConfigComponent
 from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
