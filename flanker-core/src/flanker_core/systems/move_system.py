@@ -109,9 +109,6 @@ class MoveSystem:
                 else:  # Otherwise add a new candidate entry
                     interrupt_candidates.append((interrupt_pos, [spotter_id]))
 
-                # One spotter gets 1 chance to reactive fire
-                break
-
         # Sort the intersection candidates based on distance from starting pos
         interrupt_candidates = sorted(
             interrupt_candidates,
