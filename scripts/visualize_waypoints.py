@@ -2,12 +2,9 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.ai_config_manager import (
-    AiConfigComponent,
-    AiConfigManager,
-    AiWaypointConfig,
-)
-from flanker_ai.waypoints.waypoints_scheme import WaypointScheme
+from flanker_ai.ai_agent import AiAgent
+from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -35,7 +32,7 @@ if __name__ == "__main__":
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    path = "./scenes/experiment-w1-wg-2v2.json"
+    path = "./scenes/experiment-w1-w1.json"
 
     with open(path, "r") as f:
         entities, id_counter = Serializer.deserialize(
@@ -56,16 +53,16 @@ if __name__ == "__main__":
 
     # Plot the waypoints in blue
     print("Creating waypoints...")
-    config = AiConfigManager.get_ai_config(gs, InitiativeState.Faction.RED)
+    config = AiAgent.get_state_config(gs, InitiativeState.Faction.RED)
     assert isinstance(
-        config, AiWaypointConfig
+        config, AiConfigComponent.WaypointsStateConfig
     ), "Can't visualize non-waypoints AI config"
-    waypoints_gs = WaypointScheme.create_template_waypoints(
-        gs=gs,
+    waypoints_gs = WaypointsState(
         points=config.waypoint_coordinates,
         path_tolerance=10,
     )
-    WaypointScheme.add_combat_units(waypoints_gs, gs, path_tolerance=10)
+    waypoints_gs.initialize_state(gs)
+    waypoints_gs.update_state(gs)
     print("Creating waypoints done, drawing waypoints")
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []

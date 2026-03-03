@@ -542,8 +542,11 @@
     "32": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "config": {
-          "type": "AiWaypointConfig",
+        "policy_config": {
+          "type": "ExpectimaxPolicyConfig"
+        },
+        "state_config": {
+          "type": "WaypointsStateConfig",
           "waypoint_coordinates": [
             {
               "x": 31.563632318416335,
@@ -685,8 +688,11 @@
     "33": {
       "AiConfigComponent": {
         "faction": "RED",
-        "config": {
-          "type": "AiWaypointConfig",
+        "policy_config": {
+          "type": "ExpectimaxPolicyConfig"
+        },
+        "state_config": {
+          "type": "WaypointsStateConfig",
           "waypoint_coordinates": [
             {
               "x": 31.563632318416335,
