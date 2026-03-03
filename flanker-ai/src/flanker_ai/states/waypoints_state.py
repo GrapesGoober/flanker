@@ -217,15 +217,18 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 current_unit = gs._combat_units[action.unit_id]
                 # Check for move interrupts
                 if action.interrupt_at_id is not None:
+                    gs._stall_counter[gs._initiative] = 0
                     # Assumes determinic for now
                     current_unit.status = CombatUnit.Status.PINNED
                     current_unit.current_waypoint_id = action.interrupt_at_id
                 else:
+                    gs._stall_counter[gs._initiative] += 1
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
                 return gs
 
             case WaypointFireAction():
                 gs = self.copy()
+                gs._stall_counter[gs._initiative] = 0
                 # Assumes determinic for now
                 target_unit = gs._combat_units[action.target_id]
                 target_unit.status = CombatUnit.Status.SUPPRESSED
@@ -233,6 +236,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
             case WaypointAssaultAction():
                 gs = self.copy()
+                gs._stall_counter[gs._initiative] = 0
                 # Check for move interrupts
                 current_unit = gs._combat_units[action.unit_id]
                 target_unit = gs._combat_units[action.target_id]
@@ -271,6 +275,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     outcomes: list[tuple[float, "WaypointsState"]] = []
                     for outcome, probability in _FIRE_REACTION_PROBABILITIES.items():
                         gs = self.copy()
+                        gs._stall_counter[gs._initiative] = 0
                         current_unit = gs._combat_units[action.unit_id]
                         match outcome:
                             case FireOutcomes.MISS:
@@ -293,18 +298,16 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     return outcomes
                 else:  # No move interrupt found
                     gs = self.copy()
+                    gs._stall_counter[gs._initiative] += 1
                     current_unit = gs._combat_units[action.unit_id]
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
-                    # Count up no-risk moves as stalling
-                    # TODO: this value has to carry over to next initiative
-                    gs._stall_counter = self._stall_counter
-                    gs._stall_counter[gs._initiative] += 1
                     return [(1, gs)]
 
             case WaypointFireAction():
                 outcomes: list[tuple[float, "WaypointsState"]] = []
                 for outcome, probability in _FIRE_ACTION_PROBABILITIES.items():
                     gs = self.copy()
+                    gs._stall_counter[gs._initiative] = 0
                     target_unit = gs._combat_units[action.target_id]
                     match outcome:
                         case FireOutcomes.MISS:
@@ -323,6 +326,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
             case WaypointAssaultAction():  # Assumes determinic for now
                 gs = self.copy()
+                gs._stall_counter[gs._initiative] = 0
                 # Check for move interrupts
                 current_unit = gs._combat_units[action.unit_id]
                 target_unit = gs._combat_units[action.target_id]
