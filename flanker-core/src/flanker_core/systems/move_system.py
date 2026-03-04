@@ -132,6 +132,15 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
 
+        # pivot unit to face direction of travel before moving
+        direction = (to - transform.position).normalized()
+        # compute heading in degrees, similar to player controller
+        import math
+        heading = (180 / math.pi) * (0 if direction.x == 0 and direction.y == 0 else math.atan2(direction.y, direction.x))
+        if heading < 0:
+            heading += 360
+        transform.degrees = heading
+
         interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
 
         # Tiny offset to prevent entity from sitting precisely on LOS polygon edge

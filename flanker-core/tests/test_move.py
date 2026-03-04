@@ -69,9 +69,18 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
+    # starting orientation 0, moving down-right should pivot to ~296 degrees
     MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
+    # check pivoted heading
+    # compute expected heading manually
+    import math
+    dx, dy = 5 - 0, -15 - (-10)
+    expected = (180 / math.pi) * math.atan2(dy, dx)
+    if expected < 0:
+        expected += 360
+    assert abs(transform.degrees - expected) < 1e-6, "Unit should pivot toward movement"
 
 
 def test_move_invalid(fixture: Fixture) -> None:
@@ -81,6 +90,7 @@ def test_move_invalid(fixture: Fixture) -> None:
 
 
 def test_group_move(fixture: Fixture) -> None:
+    # group move should also pivot each unit
     MoveSystem.group_move(
         fixture.gs,
         moves=[
