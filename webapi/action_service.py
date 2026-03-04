@@ -4,6 +4,7 @@ from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.pivot_system import PivotSystem
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
@@ -71,7 +72,6 @@ class ActionService:
     @staticmethod
     def pivot(gs: GameState, body: PivotActionRequest) -> None:
         """Rotate a unit and log the change."""
-        from flanker_core.systems.pivot_system import PivotSystem
 
         result = PivotSystem.pivot(gs, body.unit_id, body.degrees)
         if isinstance(result, InvalidAction):

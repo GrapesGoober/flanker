@@ -84,8 +84,8 @@ def fixture() -> Fixture:
 def test_move(fixture: Fixture) -> None:
     """Movement causes position update and heading pivot."""
     # starting orientation 0, moving down-right should pivot to ~296 degrees
-    MoveSystem.move(fx.gs, fx.unit_id_1, Vec2(5, -15))
-    transform = fx.gs.get_component(fx.unit_id_1, Transform)
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
     # check pivoted heading
     # compute expected heading manually
@@ -100,8 +100,8 @@ def test_move(fixture: Fixture) -> None:
 
 def test_move_invalid(fixture: Fixture) -> None:
     """Invalid move should leave position unchanged."""
-    MoveSystem.move(fx.gs, fx.unit_id_1, Vec2(6, 6))
-    transform = fx.gs.get_component(fx.unit_id_1, Transform)
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
+    transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
 
 
@@ -110,15 +110,15 @@ def test_move_invalid(fixture: Fixture) -> None:
 def test_move_fov_reactive(fixture: Fixture) -> None:
     """A rear spotter outside FOV does not interrupt movement."""
     # spotter behind facing away should not interrupt
-    _spotter_id = fx.gs.add_entity(
+    _spotter_id = fixture.gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
         Transform(position=Vec2(1, 0), degrees=180),
     )
     # ensure blue has initiative
-    InitiativeSystem.set_initiative(fx.gs, InitiativeState.Faction.BLUE)
-    MoveSystem.move(fx.gs, fx.unit_id_1, Vec2(5, -15))
-    transform = fx.gs.get_component(fx.unit_id_1, Transform)
+    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.BLUE)
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "movement should complete despite spotter"
 
 
@@ -128,13 +128,13 @@ def test_group_move(fixture: Fixture) -> None:
     """Group move applies both movement and pivot to each unit."""
     # group move should also pivot each unit
     MoveSystem.group_move(
-        fx.gs,
+        fixture.gs,
         moves=[
-            (fx.unit_id_1, Vec2(5, -15)),
-            (fx.unit_id_2, Vec2(15, -5)),
+            (fixture.unit_id_1, Vec2(5, -15)),
+            (fixture.unit_id_2, Vec2(15, -5)),
         ],
     )
-    transform_1 = fx.gs.get_component(fx.unit_id_1, Transform)
+    transform_1 = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform_1.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
 
     transform_2 = fixture.gs.get_component(fixture.unit_id_2, Transform)

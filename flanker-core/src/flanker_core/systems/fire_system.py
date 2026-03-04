@@ -57,6 +57,14 @@ class FireSystem:
             gs, attacker_transform.position, target_transform.position
         ):
             return InvalidAction.BAD_COORDS
+        # also ensure target lies within attacker's forward cone (45° each side)
+        if not LosSystem.is_in_fov(
+            attacker_transform.position,
+            attacker_transform.degrees,
+            target_transform.position,
+            45.0,
+        ):
+            return InvalidAction.BAD_COORDS
 
     @staticmethod
     def get_fire_outcome(
