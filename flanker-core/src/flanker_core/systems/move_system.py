@@ -92,7 +92,6 @@ class MoveSystem:
 
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
-            spotter_transform = gs.get_component(spotter_id, Transform)
             if not spotter_fire_controls.los_polygon:
                 LosSystem.update_los_polygon(gs, spotter_id)
                 # LOS polygon should be generated
