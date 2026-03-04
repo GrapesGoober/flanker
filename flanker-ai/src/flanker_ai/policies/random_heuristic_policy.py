@@ -40,33 +40,45 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
         fire_actions: list[TAction] = []
         move_actions: list[TAction] = []
         for action in actions:
-            branch = rs.get_deterministic_branch(action)
-
-            # Ignore invalid actions
-            if branch == None:
-                continue
-
-            # # Ignore losing actions. This is to prevents stalling moves.
-            if branch.get_winner() not in [None, rs.get_initiative()]:
-                continue
-
-            # Group into candidate categories
             real_action = rs.deabstract_action(action, self._gs)
             match real_action:
                 case FireAction():
                     fire_actions.append(action)
-                case MoveAction():
-                    move_actions.append(action)
-                case AssaultAction():
+                case MoveAction() | AssaultAction():
                     move_actions.append(action)
 
-        # If any fire actions are valid, perform it
-        if fire_actions:
-            return [random.choice(fire_actions)]
+        # If any fire actions are valid, perform it first
+        action = self._pick_valid_action(rs, fire_actions)
+        if action is not None:
+            return [action]
 
-        # Fallback: if any move actions are valid, perform it
-        if move_actions:
-            return [random.choice(move_actions)]
+        # If any move actions are valid, perform it last
+        action = self._pick_valid_action(rs, move_actions)
+        if action is not None:
+            return [action]
 
         # No valid action
         return []
+
+    def _pick_valid_action(
+        self,
+        rs: IRepresentationState[TAction],
+        candidates: list[TAction],
+    ) -> TAction | None:
+        """Randomly pick and validate actions lazily."""
+        remaining = candidates.copy()
+        while remaining:
+            action = random.choice(remaining)
+            remaining.remove(action)
+
+            branch = rs.get_deterministic_branch(action)
+            if branch is None:
+                continue
+
+            # Reject losing actions (prevents stalling)
+            if branch.get_winner() not in [None, rs.get_initiative()]:
+                continue
+
+            return action
+
+        return None
