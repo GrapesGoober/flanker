@@ -1,5 +1,5 @@
 {
-  "id_counter": 58,
+  "id_counter": 60,
   "entities": {
     "0": {
       "InitiativeState": {
@@ -10,6 +10,35 @@
         "winning_faction": "BLUE",
         "units_to_destroy": 1,
         "units_destroyed_counter": 0
+      },
+      "Transform": {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "degrees": 0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 500,
+            "y": 0
+          },
+          {
+            "x": 500,
+            "y": 500
+          },
+          {
+            "x": 0,
+            "y": 500
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
       }
     },
     "1": {
@@ -3412,6 +3441,28 @@
       },
       "TerrainTypeTag": {
         "type": "FOREST"
+      }
+    },
+    "58": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
+      }
+    },
+    "59": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
       }
     }
   }

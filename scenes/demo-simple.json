@@ -933,6 +933,28 @@
       "TerrainTypeTag": {
         "type": "FOREST"
       }
+    },
+    "42": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
+      }
+    },
+    "43": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
+      }
     }
   }
 }
