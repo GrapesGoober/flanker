@@ -24,7 +24,9 @@ def fixture() -> Fixture:
     return Fixture()
 
 
-def test_pivot_changes_degrees(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_pivot_changes_degrees(fixture: Fixture) -> None:
     # ensure pivot occurs when unit has initiative and is active
     result = PivotSystem.pivot(fx.gs, fx.unit_id, 123.4)
     assert not isinstance(result, InvalidAction)
@@ -38,14 +40,18 @@ def test_pivot_changes_degrees(fx: Fixture) -> None:
     assert InitiativeSystem.has_initiative(fx.gs, fx.unit_id)
 
 
-def test_pivot_no_initiative(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_pivot_no_initiative(fixture: Fixture) -> None:
     # set initiative to opposing faction
     InitiativeSystem.set_initiative(fx.gs, InitiativeState.Faction.RED)
     reason = PivotSystem.pivot(fx.gs, fx.unit_id, 50)
     assert reason == InvalidAction.NO_INITIATIVE
 
 
-def test_pivot_inactive_status(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_pivot_inactive_status(fixture: Fixture) -> None:
     # suppressed units cannot pivot
     unit = fx.gs.get_component(fx.unit_id, CombatUnit)
     unit.status = CombatUnit.Status.SUPPRESSED
@@ -58,7 +64,9 @@ def test_pivot_inactive_status(fx: Fixture) -> None:
     assert not isinstance(result, InvalidAction)
 
 
-def test_pivot_reactive_fire(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_pivot_reactive_fire(fixture: Fixture) -> None:
     # add a spotter that can reactively fire on the pivoting unit
     _spotter_id = fx.gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),

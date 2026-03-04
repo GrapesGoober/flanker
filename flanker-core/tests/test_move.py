@@ -79,7 +79,9 @@ def fixture() -> Fixture:
     return Fixture(gs, unit_id_1, unit_id_2)
 
 
-def test_move(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_move(fixture: Fixture) -> None:
     """Movement causes position update and heading pivot."""
     # starting orientation 0, moving down-right should pivot to ~296 degrees
     MoveSystem.move(fx.gs, fx.unit_id_1, Vec2(5, -15))
@@ -94,14 +96,18 @@ def test_move(fx: Fixture) -> None:
     assert abs(transform.degrees - expected) < 1e-6, "Unit should pivot toward movement"
 
 
-def test_move_invalid(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_move_invalid(fixture: Fixture) -> None:
     """Invalid move should leave position unchanged."""
     MoveSystem.move(fx.gs, fx.unit_id_1, Vec2(6, 6))
     transform = fx.gs.get_component(fx.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
 
 
-def test_move_fov_reactive(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_move_fov_reactive(fixture: Fixture) -> None:
     """A rear spotter outside FOV does not interrupt movement."""
     # spotter behind facing away should not interrupt
     _spotter_id = fx.gs.add_entity(
@@ -116,7 +122,9 @@ def test_move_fov_reactive(fx: Fixture) -> None:
     assert transform.position == Vec2(5, -15), "movement should complete despite spotter"
 
 
-def test_group_move(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_group_move(fixture: Fixture) -> None:
     """Group move applies both movement and pivot to each unit."""
     # group move should also pivot each unit
     MoveSystem.group_move(

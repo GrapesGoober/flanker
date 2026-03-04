@@ -65,7 +65,9 @@ def fixture() -> Fixture:
     )
 
 
-def test_no_los(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_no_los(fixture: Fixture) -> None:
     # Set attacker to position that is obstructed
     attacker_transform = fx.gs.get_component(
         fx.attacker_id,
@@ -81,7 +83,9 @@ def test_no_los(fx: Fixture) -> None:
     assert fire_result == InvalidAction.BAD_COORDS, "Fire action mustn't occur"
 
 
-def test_fov_block(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_fov_block(fixture: Fixture) -> None:
     # Attack target is behind attacker; LOS clear but FOV blocks
     att = fx.gs.get_component(fx.attacker_id, Transform)
     tar = fx.gs.get_component(fx.target_id, Transform)
@@ -103,7 +107,9 @@ def test_fov_block(fx: Fixture) -> None:
     ), "Expects shooter to retain initiative"
 
 
-def test_no_fire(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_no_fire(fixture: Fixture) -> None:
     fx.fire_controls.override = FireOutcomes.MISS
     fire_result = FireSystem.fire(
         fx.gs,
@@ -120,7 +126,9 @@ def test_no_fire(fx: Fixture) -> None:
     ), "Expects attacker to lose initiative"
 
 
-def test_pin_fire(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_pin_fire(fixture: Fixture) -> None:
     fx.fire_controls.override = FireOutcomes.PIN
     fire_result = FireSystem.fire(
         fx.gs,
@@ -137,7 +145,9 @@ def test_pin_fire(fx: Fixture) -> None:
     ), "Expects attacker to lose initiative"
 
 
-def test_suppress_fire(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_suppress_fire(fixture: Fixture) -> None:
     fx.fire_controls.override = FireOutcomes.SUPPRESS
     fire_result = FireSystem.fire(
         fx.gs,
@@ -168,7 +178,9 @@ def test_suppress_fire(fx: Fixture) -> None:
     ), "Expects attacker to lose initiative"
 
 
-def test_kill_fire(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_kill_fire(fixture: Fixture) -> None:
     fx.fire_controls.override = FireOutcomes.KILL
     fire_result = FireSystem.fire(
         fx.gs,
@@ -183,7 +195,9 @@ def test_kill_fire(fx: Fixture) -> None:
     ), "Expects attacker to retain initiative"
 
 
-def test_status_pinned(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_status_pinned(fixture: Fixture) -> None:
     fx.attacker_unit.status = CombatUnit.Status.PINNED
     fx.fire_controls.override = FireOutcomes.KILL
     fire_result = FireSystem.fire(
@@ -194,7 +208,9 @@ def test_status_pinned(fx: Fixture) -> None:
     assert fire_result != None, "PINNED unit can do fire action"
 
 
-def test_status_supppressed(fx: Fixture) -> None:
+# pylint: disable=redefined-outer-name
+
+def test_status_supppressed(fixture: Fixture) -> None:
     fx.attacker_unit.status = CombatUnit.Status.SUPPRESSED
     fx.fire_controls.override = FireOutcomes.KILL
     fire_result = FireSystem.fire(
