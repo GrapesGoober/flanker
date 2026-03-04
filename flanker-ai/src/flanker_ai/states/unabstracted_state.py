@@ -1,3 +1,9 @@
+"""Concrete AI state that mirrors an unabstracted GameState.
+
+Used by the AI clients to explore move/fire/assault possibilities by
+selectively copying a subset of entities and scoring outcomes.
+"""
+
 import random
 from copy import deepcopy
 from typing import Sequence
@@ -27,7 +33,10 @@ _MAX_STALL_LIMIT = 5
 
 
 class UnabstractedState(IRepresentationState[Action]):
+    """A representation of GameState for unabstracted AI search."""
+
     def __init__(self, gs: GameState) -> None:
+        """Initialize with the given game state and compute terrain bounds."""
         self._gs = gs
         boundary_vertices: list[Vec2] = []
         mask = TerrainFeature.Flag.BOUNDARY
@@ -45,19 +54,21 @@ class UnabstractedState(IRepresentationState[Action]):
         self.max_y = int(max(v.y for v in boundary_vertices))
 
     def copy(self) -> "UnabstractedState":
+        """Return a state copy containing only entities that may change."""
         mutable_entities: set[int] = set()
-        for id, _ in self._gs.query(InitiativeState):
-            mutable_entities.add(id)
-        for id, _ in self._gs.query(EliminationObjective):
-            mutable_entities.add(id)
-        for id, _ in self._gs.query(CombatUnit):
-            mutable_entities.add(id)
-        for id, _ in self._gs.query(AiStallCountComponent):
-            mutable_entities.add(id)
+        for entity_id, _ in self._gs.query(InitiativeState):
+            mutable_entities.add(entity_id)
+        for entity_id, _ in self._gs.query(EliminationObjective):
+            mutable_entities.add(entity_id)
+        for entity_id, _ in self._gs.query(CombatUnit):
+            mutable_entities.add(entity_id)
+        for entity_id, _ in self._gs.query(AiStallCountComponent):
+            mutable_entities.add(entity_id)
         new_gs = self._gs.selective_copy(list(mutable_entities))
         return UnabstractedState(new_gs)
 
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
+        """Compute evaluation score from perspective of `maximizing_faction`."""
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -83,6 +94,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return score
 
     def get_actions(self) -> Sequence[Action]:
+        """Enumerate all legal actions for the side with initiative."""
         # Generate an action for each combat unit
         actions: list[Action] = []
         for unit_id, unit in self._gs.query(CombatUnit):
@@ -127,13 +139,16 @@ class UnabstractedState(IRepresentationState[Action]):
         self,
         action: Action,
     ) -> Sequence[tuple[float, "UnabstractedState"]]:
+        """Return probability-weighted branches for the given action."""
         branch = self.get_deterministic_branch(action)
-        if branch == None:
+        if branch is None:
             return []
         return [(1, branch)]
 
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
-        new_gs = self.copy()._gs
+        """Apply `action` to a copied state and return the successor or None."""
+        new_state = self.copy()
+        new_gs = new_state._gs  # pylint: disable=protected-access
         match action:
             case MoveAction():
                 initiative = InitiativeSystem.get_initiative(new_gs)
@@ -141,7 +156,7 @@ class UnabstractedState(IRepresentationState[Action]):
                     fire_controls.override = FireOutcomes.PIN
                 result = MoveSystem.move(new_gs, action.unit_id, action.to)
                 if not isinstance(result, InvalidAction):
-                    if result.reactive_fire_outcome == None:
+                    if result.reactive_fire_outcome is None:
                         self._get_stall_counter()[initiative] += 1
                     else:
                         self._get_stall_counter()[initiative] = 0
@@ -165,6 +180,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return UnabstractedState(new_gs)
 
     def get_winner(self) -> InitiativeState.Faction | None:
+        """Determine winner faction, considering stall limits and objectives."""
         for faction, counter in self._get_stall_counter().items():
             if counter > _MAX_STALL_LIMIT:
                 # mark faction as losing
@@ -176,6 +192,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return ObjectiveSystem.get_winning_faction(self._gs)
 
     def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
+        """Return mutable stall counters stored in the game state."""
         if result := self._gs.query(AiStallCountComponent):
             _, stall_comp = result[0]
             return stall_comp.stall_counter
@@ -183,17 +200,21 @@ class UnabstractedState(IRepresentationState[Action]):
             raise ValueError(f"{AiStallCountComponent} missing for {self._gs}")
 
     def get_initiative(self) -> InitiativeState.Faction:
+        """Shortcut to query which faction currently has initiative."""
         return InitiativeSystem.get_initiative(self._gs)
 
     def initialize_state(self, gs: GameState) -> None:
+        """Reset internal state to a fresh copy of the supplied GameState."""
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
 
     def update_state(self, gs: GameState) -> None:
+        """Overwrite current internal state with a copy of `gs`."""
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
 
     def deabstract_action(self, action: Action, gs: GameState) -> Action:
+        """Identity de-abstraction; actions are already concrete."""
         return action
