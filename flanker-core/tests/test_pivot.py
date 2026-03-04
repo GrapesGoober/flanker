@@ -1,7 +1,7 @@
 import pytest
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import CombatUnit, InitiativeState, Transform
-from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.components import CombatUnit, InitiativeState, Transform, FireControls
+from flanker_core.models.outcomes import InvalidAction, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.pivot_system import PivotSystem
@@ -56,3 +56,20 @@ def test_pivot_inactive_status(fixture: Fixture) -> None:
     unit.status = CombatUnit.Status.PINNED
     result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 75)
     assert not isinstance(result, InvalidAction)
+
+
+def test_pivot_reactive_fire(fixture: Fixture) -> None:
+    # add a spotter that can reactively fire on the pivoting unit
+    spotter_id = fixture.gs.add_entity(
+        CombatUnit(faction=InitiativeState.Faction.RED),
+        FireControls(override=FireOutcomes.PIN),
+        Transform(position=Vec2(1, 0)),
+    )
+    # ensure blue unit has initiative and is in LOS of spotter (no terrain)
+    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.BLUE)
+    # perform pivot; reactive fire should pin the unit
+    result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 180)
+    assert not isinstance(result, InvalidAction)
+    unit = fixture.gs.get_component(fixture.unit_id, CombatUnit)
+    assert unit.status == CombatUnit.Status.PINNED, "Pivot should trigger pin from reactive fire"
+

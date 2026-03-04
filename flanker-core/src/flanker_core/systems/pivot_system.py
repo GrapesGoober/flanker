@@ -53,7 +53,38 @@ class PivotSystem:
         if not InitiativeSystem.has_initiative(gs, unit_id):
             return InvalidAction.NO_INITIATIVE
 
+        # perform reactive fire check at current position (identical to move
+        # but with zero travel vector)
+        from flanker_core.systems.move_system import MoveSystem
+        from flanker_core.systems.fire_system import FireSystem
+        from flanker_core.models.components import FireControls
+        from flanker_core.models.outcomes import FireOutcomes
+        from flanker_core.systems.command_system import CommandSystem
+
+        unit = gs.get_component(unit_id, CombatUnit)
         transform = gs.get_component(unit_id, Transform)
-        # normalize degrees into [0, 360)
+
+        interrupt_candidates = MoveSystem._get_interrupt_candidates(
+            gs, unit_id, transform.position
+        )
+
+        # loop through interrupt candidates exactly as move does
+        for interrupt_pos, spotter_id in interrupt_candidates:
+            outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+            match outcome:
+                case FireOutcomes.MISS:
+                    fire_controls = gs.get_component(spotter_id, FireControls)
+                    fire_controls.can_reactive_fire = False
+                    continue
+                case FireOutcomes.PIN:
+                    unit.status = CombatUnit.Status.PINNED
+                case FireOutcomes.SUPPRESS:
+                    unit.status = CombatUnit.Status.SUPPRESSED
+                case FireOutcomes.KILL:
+                    CommandSystem.kill_unit(gs, unit_id)
+            # reactive fire interrupt stops further processing
+            return _PivotActionResult(degrees=transform.degrees)
+
+        # apply pivot now that reactive fire (if any) has been resolved
         transform.degrees = degrees % 360
         return _PivotActionResult(degrees=transform.degrees)
