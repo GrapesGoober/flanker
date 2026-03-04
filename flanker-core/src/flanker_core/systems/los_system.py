@@ -159,7 +159,12 @@ class LosSystem:
                     continue
                 visible_points.append(new_point)
 
-        visible_points.append(visible_points[0])
+        if visible_points:
+            visible_points.append(visible_points[0])
+        else:
+            # no terrain verts, return trivial polygon at spotter
+            visible_points.append(spotter_pos)
+            visible_points.append(spotter_pos)
         return visible_points
 
     @staticmethod

@@ -12,6 +12,7 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
+import math
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
@@ -69,16 +70,16 @@ def fixture() -> Fixture:
 
 def test_no_los(fixture: Fixture) -> None:
     # Set attacker to position that is obstructed
-    attacker_transform = fx.gs.get_component(
-        fx.attacker_id,
+    attacker_transform = fixture.gs.get_component(
+        fixture.attacker_id,
         Transform,
     )
     attacker_transform.position = Vec2(0, -10)
     # Fire action won't occur
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result == InvalidAction.BAD_COORDS, "Fire action mustn't occur"
 
@@ -87,123 +88,143 @@ def test_no_los(fixture: Fixture) -> None:
 
 def test_fov_block(fixture: Fixture) -> None:
     # Attack target is behind attacker; LOS clear but FOV blocks
-    att = fx.gs.get_component(fx.attacker_id, Transform)
-    tar = fx.gs.get_component(fx.target_id, Transform)
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
     att.position = Vec2(0, 0)
     att.degrees = 0  # facing +x
     tar.position = Vec2(-10, 0)  # behind on -x
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result == InvalidAction.BAD_COORDS, "Fire should be blocked by FOV"
-    target = fx.gs.get_component(fx.target_id, CombatUnit)
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as it is obstructed"
     assert (
-        InitiativeSystem.has_initiative(fx.gs, fx.attacker_id) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects shooter to retain initiative"
 
 
 # pylint: disable=redefined-outer-name
 
 def test_no_fire(fixture: Fixture) -> None:
-    fx.fire_controls.override = FireOutcomes.MISS
+    fixture.fire_controls.override = FireOutcomes.MISS
+    # orient attacker toward target so FOV permits firing
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.degrees = math.degrees(math.atan2(tar.position.y - att.position.y, tar.position.x - att.position.x))
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result != None, "Fire action must occur"
-    target = fx.gs.get_component(fx.target_id, CombatUnit)
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as fire action MISS"
     assert (
-        InitiativeSystem.has_initiative(fx.gs, fx.attacker_id) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
 # pylint: disable=redefined-outer-name
 
 def test_pin_fire(fixture: Fixture) -> None:
-    fx.fire_controls.override = FireOutcomes.PIN
+    fixture.fire_controls.override = FireOutcomes.PIN
+    # ensure attacker facing target
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.degrees = math.degrees(math.atan2(tar.position.y - att.position.y, tar.position.x - att.position.x))
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result != None, "Fire action must occur"
-    target = fx.gs.get_component(fx.target_id, CombatUnit)
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.PINNED
     ), "Target expects to be PINNED as it is shot"
     assert (
-        InitiativeSystem.has_initiative(fx.gs, fx.attacker_id) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
 # pylint: disable=redefined-outer-name
 
 def test_suppress_fire(fixture: Fixture) -> None:
-    fx.fire_controls.override = FireOutcomes.SUPPRESS
+    fixture.fire_controls.override = FireOutcomes.SUPPRESS
+    # orient attacker toward target
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.degrees = math.degrees(math.atan2(tar.position.y - att.position.y, tar.position.x - att.position.x))
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result != None, "Fire action must occur"
-    target = fx.gs.get_component(fx.target_id, CombatUnit)
+    target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be SUPPRESSED as it is shot"
     assert (
-        InitiativeSystem.has_initiative(fx.gs, fx.attacker_id) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
-    fx.fire_controls.override = FireOutcomes.PIN
+    fixture.fire_controls.override = FireOutcomes.PIN
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result != None, "Fire action must occur"
     assert (
         target.status == CombatUnit.Status.SUPPRESSED
     ), "Expects PIN outcome to not overwrite SUPPRESSED status."
     assert (
-        InitiativeSystem.has_initiative(fx.gs, fx.attacker_id) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
 # pylint: disable=redefined-outer-name
 
 def test_kill_fire(fixture: Fixture) -> None:
-    fx.fire_controls.override = FireOutcomes.KILL
+    fixture.fire_controls.override = FireOutcomes.KILL
+    # orient attacker toward target
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.degrees = math.degrees(math.atan2(tar.position.y - att.position.y, tar.position.x - att.position.x))
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result != None, "Fire action must occur"
-    target = fx.gs.try_component(fx.target_id, CombatUnit)
+    target = fixture.gs.try_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
-        InitiativeSystem.has_initiative(fx.gs, fx.attacker_id) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
 
 # pylint: disable=redefined-outer-name
 
 def test_status_pinned(fixture: Fixture) -> None:
-    fx.attacker_unit.status = CombatUnit.Status.PINNED
-    fx.fire_controls.override = FireOutcomes.KILL
+    # orient attacker toward target (not used but for consistency)
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.degrees = math.degrees(math.atan2(tar.position.y - att.position.y, tar.position.x - att.position.x))
+    fixture.attacker_unit.status = CombatUnit.Status.PINNED
+    fixture.fire_controls.override = FireOutcomes.KILL
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert fire_result != None, "PINNED unit can do fire action"
 
@@ -211,12 +232,16 @@ def test_status_pinned(fixture: Fixture) -> None:
 # pylint: disable=redefined-outer-name
 
 def test_status_supppressed(fixture: Fixture) -> None:
-    fx.attacker_unit.status = CombatUnit.Status.SUPPRESSED
-    fx.fire_controls.override = FireOutcomes.KILL
+    # orient attacker toward target
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.degrees = math.degrees(math.atan2(tar.position.y - att.position.y, tar.position.x - att.position.x))
+    fixture.attacker_unit.status = CombatUnit.Status.SUPPRESSED
+    fixture.fire_controls.override = FireOutcomes.KILL
     fire_result = FireSystem.fire(
-        fx.gs,
-        fx.attacker_id,
-        fx.target_id,
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
     )
     assert (
         fire_result == InvalidAction.INACTIVE_UNIT
