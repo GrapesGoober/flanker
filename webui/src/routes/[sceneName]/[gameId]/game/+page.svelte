@@ -14,7 +14,7 @@
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
-	/*Adds a move/orientation marker at the clicked position on the map. */
+	/*Adds a move/pivot marker at the clicked position on the map. */
 	function AddMarker(event: MouseEvent) {
 		if (map == null) return;
 		if (controller.isFetching) return;
@@ -23,8 +23,8 @@
 		const x = event.clientX - rect.x;
 		const y = event.clientY - rect.y;
 		const world = map.ToWorldCoords({ x, y });
-		if (controller.state.type === 'orienting') {
-			controller.orientationActionAsync(world);
+		if (controller.state.type === 'pivoting') {
+			controller.pivotActionAsync(world);
 			return;
 		}
 		controller.setMoveMarker(world);

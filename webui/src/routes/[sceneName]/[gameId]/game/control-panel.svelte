@@ -24,7 +24,7 @@
 		else if (key === 'm') await controller.moveActionAsync();
 		else if (key === 'f') await controller.fireActionAsync();
 		else if (key === 'a') await controller.assaultActionAsync();
-		else if (key === 'o') controller.startOrienting();
+		else if (key === 'p') controller.startPivoting();
 	}
 </script>
 
@@ -78,15 +78,15 @@
 		<button
 			class="action-button"
 			onclick={() => {
-				controller.startOrienting();
+				controller.startPivoting();
 			}}
 			disabled={
 				!controller.unitData.hasInitiative ||
 				controller.state.type !== 'selected' ||
 				!controller.state.selectedUnit.isFriendly
 			}
-		>
-			Orient (o)
+		>\
+			Pivot (p)\
 		</button>
 		{#if controller.isFetching}
 			<!-- Loading spinner shown while actions are processing -->

@@ -55,14 +55,14 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- Draw combat units -->
 	{#each controller.unitData.squads as unit, index}
-		{#if unit.orientation !== undefined}
+		{#if unit.pivot !== undefined}
 			<!-- draw arrow first so it appears behind the icon -->
 			<Arrow
 				opacity={0.15}
 				start={unit.position}
 				end={{
-					x: unit.position.x + Math.cos((unit.orientation * Math.PI) / 180) * 20,
-					y: unit.position.y + Math.sin((unit.orientation * Math.PI) / 180) * 20
+					x: unit.position.x + Math.cos((unit.pivot * Math.PI) / 180) * 20,
+					y: unit.position.y + Math.sin((unit.pivot * Math.PI) / 180) * 20
 				}}
 				offset={6}
 			/>

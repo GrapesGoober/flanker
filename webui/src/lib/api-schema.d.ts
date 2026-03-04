@@ -132,7 +132,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/{sceneName}/{gameId}/orient": {
+    "/api/{sceneName}/{gameId}/pivot": {
         parameters: {
             query?: never;
             header?: never;
@@ -142,10 +142,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Action Orient
-         * @description Rotate a unit and return updated rifle squads.
+         * Action Pivot
+         * @description Pivot a unit and return updated rifle squads.
          */
-        post: operations["action_orient_api__sceneName___gameId__orient_post"];
+        post: operations["action_pivot_api__sceneName___gameId__pivot_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -354,7 +354,7 @@ export interface components {
             /** Nofire */
             noFire: boolean;
             /** Degrees facing */
-            orientation: number;
+            pivot: number;
         };
         /**
          * Status
@@ -381,21 +381,21 @@ export interface components {
          * @enum {string}
          */
         Types: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
-        /** OrientationActionRequest */
-        OrientationActionRequest: {
+        /** PivotActionRequest */
+        PivotActionRequest: {
             /** Unitid */
             unitId: number;
             /** Degrees */
             degrees: number;
         };
-        /** OrientationActionLog */
-        OrientationActionLog: {
+        /** PivotActionLog */
+        PivotActionLog: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            logType: "OrientationActionLog";
-            body: components["schemas"]["OrientationActionRequest"];
+            logType: "PivotActionLog";
+            body: components["schemas"]["PivotActionRequest"];
             unitState: components["schemas"]["CombatUnitsViewState"];
         };
         /** ValidationError */

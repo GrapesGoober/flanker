@@ -15,7 +15,7 @@ from webapi.models import (
     CombatUnitsViewState,
     FireActionRequest,
     MoveActionRequest,
-    OrientationActionRequest,
+    PivotActionRequest,
     TerrainModel,
 )
 from webapi.scene_service import SceneService
@@ -100,15 +100,15 @@ async def action_assault(
     return CombatUnitService.get_units_view_state(gs)
 
 
-@app.post("/api/{sceneName}/{gameId}/orient")
-async def action_orient(
+@app.post("/api/{sceneName}/{gameId}/pivot")
+async def action_pivot(
     scene_name: str = Path(..., alias="sceneName"),
     game_id: int = Path(..., alias="gameId"),
-    body: OrientationActionRequest = Body(...),
+    body: PivotActionRequest = Body(...),
 ) -> CombatUnitsViewState:
-    """Rotate a unit and return updated rifle squads."""
+    """Pivot a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
-    ActionService.orient(gs, body)
+    ActionService.pivot(gs, body)
     AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 

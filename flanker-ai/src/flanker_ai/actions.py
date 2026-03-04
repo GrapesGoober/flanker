@@ -24,7 +24,7 @@ class AssaultAction:
 
 
 @dataclass
-class OrientationAction:
+class PivotAction:
     unit_id: int
     degrees: float
 
@@ -51,5 +51,5 @@ class AssaultActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
-Action = MoveAction | FireAction | AssaultAction
-ActionResult = MoveActionResult | FireActionResult | AssaultActionResult
+Action = MoveAction | FireAction | AssaultAction | PivotAction
+ActionResult = MoveActionResult | FireActionResult | AssaultActionResult  # pivot results added elsewhere if needed

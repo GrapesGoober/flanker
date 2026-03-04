@@ -4,7 +4,7 @@ import {
 	performAssaultActionAsync,
 	performFireActionAsync,
 	performMoveActionAsync,
-	performOrientationActionAsync,
+	performPivotActionAsync,
 	type CombatUnitsViewState,
 	type RifleSquadData,
 	type TerrainModel,
@@ -16,7 +16,7 @@ type PlayerControllerState =
 	| { type: 'selected'; selectedUnit: RifleSquadData }
 	| { type: 'moveMarked'; selectedUnit: RifleSquadData; moveMarker: Vec2 }
 	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData }
-	| { type: 'orienting'; selectedUnit: RifleSquadData };
+	| { type: 'pivoting'; selectedUnit: RifleSquadData };
 
 /*
 PlayerController class
@@ -73,13 +73,13 @@ export class PlayerController {
 		};
 	}
 
-	/* Begin orientation mode for selected unit. */
-	startOrienting() {
+	/* Begin pivot mode for selected unit. */
+	startPivoting() {
 		if (!this.unitData.hasInitiative) return;
 		if (this.state.type !== 'selected') return;
 		if (!this.state.selectedUnit.isFriendly) return;
 		this.state = {
-			type: 'orienting',
+			type: 'pivoting',
 			selectedUnit: this.state.selectedUnit,
 		};
 	}
@@ -103,10 +103,10 @@ export class PlayerController {
 		};
 	}
 
-	/* Handles orientation action after a marker coordinate is chosen. */
-	async orientationActionAsync(mousePos: Vec2) {
+	/* Handles pivot action after a marker coordinate is chosen. */
+	async pivotActionAsync(mousePos: Vec2) {
 		if (this.isFetching) return;
-		if (this.state.type !== 'orienting') return;
+		if (this.state.type !== 'pivoting') return;
 		let unitId = this.state.selectedUnit.unitId;
 		// compute heading from unit to clicked point
 		const sel = this.state.selectedUnit;
@@ -116,7 +116,7 @@ export class PlayerController {
 		let heading = deg;
 		if (heading < 0) heading += 360;
 		this.isFetching = true;
-		this.unitData = await performOrientationActionAsync(unitId, heading);
+		this.unitData = await performPivotActionAsync(unitId, heading);
 		this.isFetching = false;
 		// return to selected state
 		const current = this.unitData.squads.find((u) => u.unitId == unitId);

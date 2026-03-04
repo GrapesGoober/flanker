@@ -4,7 +4,7 @@ from flanker_core.models.components import CombatUnit, InitiativeState, Transfor
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.orientation_system import OrientationSystem
+from flanker_core.systems.pivot_system import PivotSystem
 
 
 class Fixture:
@@ -24,35 +24,35 @@ def fixture() -> Fixture:
     return Fixture()
 
 
-def test_orientation_changes_degrees(fixture: Fixture) -> None:
-    # ensure orientation occurs when unit has initiative and is active
-    result = OrientationSystem.orient(fixture.gs, fixture.unit_id, 123.4)
+def test_pivot_changes_degrees(fixture: Fixture) -> None:
+    # ensure pivot occurs when unit has initiative and is active
+    result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 123.4)
     assert not isinstance(result, InvalidAction)
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     assert transform.degrees == 123.4
-    # orientation should be normalized
-    result2 = OrientationSystem.orient(fixture.gs, fixture.unit_id, 400)
+    # pivot should be normalized
+    result2 = PivotSystem.pivot(fixture.gs, fixture.unit_id, 400)
     assert not isinstance(result2, InvalidAction)
     assert fixture.gs.get_component(fixture.unit_id, Transform).degrees == 40.0
     # initiative is not flipped
     assert InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id)
 
 
-def test_orientation_no_initiative(fixture: Fixture) -> None:
+def test_pivot_no_initiative(fixture: Fixture) -> None:
     # set initiative to opposing faction
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
-    reason = OrientationSystem.orient(fixture.gs, fixture.unit_id, 50)
+    reason = PivotSystem.pivot(fixture.gs, fixture.unit_id, 50)
     assert reason == InvalidAction.NO_INITIATIVE
 
 
-def test_orientation_inactive_status(fixture: Fixture) -> None:
-    # suppressed units cannot orient
+def test_pivot_inactive_status(fixture: Fixture) -> None:
+    # suppressed units cannot pivot
     unit = fixture.gs.get_component(fixture.unit_id, CombatUnit)
     unit.status = CombatUnit.Status.SUPPRESSED
-    reason = OrientationSystem.orient(fixture.gs, fixture.unit_id, 75)
+    reason = PivotSystem.pivot(fixture.gs, fixture.unit_id, 75)
     assert reason == InvalidAction.INACTIVE_UNIT
 
     # pinned units are allowed
     unit.status = CombatUnit.Status.PINNED
-    result = OrientationSystem.orient(fixture.gs, fixture.unit_id, 75)
+    result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 75)
     assert not isinstance(result, InvalidAction)

@@ -50,7 +50,7 @@
 						<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
 					{/if}
 				{/if}
-				{#if currentAction.logType == 'OrientationActionLog'}
+				{#if currentAction.logType == 'PivotActionLog'}
 					{@const deg = (currentAction as any).body.degrees}
 					<!-- show a short arrow indicating new facing -->
 					<Arrow

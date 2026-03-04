@@ -24,7 +24,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
     status: CombatUnit.Status
     is_friendly: bool
     no_fire: bool
-    orientation: float  # degrees the unit is currently facing
+    pivot: float  # degrees the unit is currently facing
 
 
 class CombatUnitsViewState(BaseModel, CamelCaseConfig):
@@ -87,16 +87,16 @@ class MoveActionLog(BaseModel, CamelCaseConfig):
     unit_state: CombatUnitsViewState
 
 
-class OrientationActionRequest(BaseModel, CamelCaseConfig):
-    """Request model for setting a unit's facing orientation."""
+class PivotActionRequest(BaseModel, CamelCaseConfig):
+    """Request model for setting a unit's facing pivot (heading)."""
 
     unit_id: int
     degrees: float
 
 
-class OrientationActionLog(BaseModel, CamelCaseConfig):
-    log_type: Literal["OrientationActionLog"] = "OrientationActionLog"
-    body: OrientationActionRequest
+class PivotActionLog(BaseModel, CamelCaseConfig):
+    log_type: Literal["PivotActionLog"] = "PivotActionLog"
+    body: PivotActionRequest
     unit_state: CombatUnitsViewState
 
 
@@ -126,6 +126,6 @@ class AiWaypointConfigGridRequest(BaseModel, CamelCaseConfig):
 
 
 ActionLog = Annotated[
-    Union[MoveActionLog, FireActionLog, AssaultActionLog, OrientationActionLog],
+    Union[MoveActionLog, FireActionLog, AssaultActionLog, PivotActionLog],
     Field(discriminator="log_type"),
 ]
