@@ -8,9 +8,12 @@ from flanker_core.models.components import (
     MoveControls,
     TerrainFeature,
     Transform,
+    FireControls,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.models.outcomes import FireOutcomes
 
 
 @dataclass
@@ -87,6 +90,20 @@ def test_move_invalid(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
+
+
+def test_move_fov_reactive(fixture: Fixture) -> None:
+    # spotter behind facing away should not interrupt
+    spotter_id = fixture.gs.add_entity(
+        CombatUnit(faction=InitiativeState.Faction.RED),
+        FireControls(override=FireOutcomes.PIN),
+        Transform(position=Vec2(1, 0), degrees=180),
+    )
+    # ensure blue has initiative
+    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.BLUE)
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
+    assert transform.position == Vec2(5, -15), "movement should complete despite spotter"
 
 
 def test_group_move(fixture: Fixture) -> None:

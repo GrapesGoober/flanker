@@ -79,6 +79,21 @@ def test_no_los(fixture: Fixture) -> None:
         fixture.target_id,
     )
     assert fire_result == InvalidAction.BAD_COORDS, "Fire action mustn't occur"
+
+
+def test_fov_block(fixture: Fixture) -> None:
+    # Attack target is behind attacker; LOS clear but FOV blocks
+    att = fixture.gs.get_component(fixture.attacker_id, Transform)
+    tar = fixture.gs.get_component(fixture.target_id, Transform)
+    att.position = Vec2(0, 0)
+    att.degrees = 0  # facing +x
+    tar.position = Vec2(-10, 0)  # behind on -x
+    fire_result = FireSystem.fire(
+        fixture.gs,
+        fixture.attacker_id,
+        fixture.target_id,
+    )
+    assert fire_result == InvalidAction.BAD_COORDS, "Fire should be blocked by FOV"
     target = fixture.gs.get_component(fixture.target_id, CombatUnit)
     assert (
         target.status == CombatUnit.Status.ACTIVE
