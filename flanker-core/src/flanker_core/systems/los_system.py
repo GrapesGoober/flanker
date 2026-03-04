@@ -33,7 +33,11 @@ class LosSystem:
 
     @staticmethod
     def check(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
-        """Returns `True` if entity `spotter_id` can see position `target_pos`."""
+        """Returns `True` if entity `spotter_id` can see position `target_pos`.
+
+        This only considers terrain occlusion; FOV restrictions must be handled
+        separately by callers.
+        """
 
         intersects = IntersectSystem.get(
             gs=gs,
@@ -64,10 +68,32 @@ class LosSystem:
         return True
 
     @staticmethod
+    def is_in_fov(
+        spotter_pos: Vec2,
+        spotter_heading: float,
+        target_pos: Vec2,
+        half_angle: float = 45.0,
+    ) -> bool:
+        """Return True if target_pos falls within the forward cone (half_angle)
+        centred on spotter_heading from spotter_pos."""
+        rel = target_pos - spotter_pos
+        if rel.length() == 0:
+            return True
+        theta = math.degrees(math.atan2(rel.y, rel.x))
+        if theta < 0:
+            theta += 360
+        diff = abs((theta - spotter_heading + 180) % 360 - 180)
+        return diff <= half_angle
+
+    @staticmethod
     def update_los_polygon(
         gs: GameState,
         unit_id: int,
     ) -> None:
+        """Recompute and store the LOS polygon for a given unit.
+
+        The polygon is cached on the unit's FireControls component.
+        """
         transform = gs.get_component(unit_id, Transform)
         fire_controls = gs.get_component(unit_id, FireControls)
         fire_controls.los_polygon = LosSystem.get_los_polygon(
@@ -208,7 +234,7 @@ class LosSystem:
         mask: int = -1,
     ) -> Iterable[_Terrain]:
         """Yields only relevant terrains and its transformed vertices."""
-        for id, terrain, transform in gs.query(TerrainFeature, Transform):
+        for terrain_id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = LinearTransform.apply(terrain.vertices, transform)
                 if terrain.is_closed_loop:
@@ -221,4 +247,4 @@ class LosSystem:
                         and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
                     ):
                         continue
-                yield _Terrain(id, terrain, vertices)
+                yield _Terrain(terrain_id, terrain, vertices)
