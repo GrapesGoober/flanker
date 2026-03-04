@@ -1,10 +1,4 @@
 import math
-"""Movement system actions and reactive-fire mechanics.
-
-Provides validation, step generation, interrupt candidate detection and move
-execution for combat units.
-"""
-
 from dataclasses import dataclass
 from typing import Iterable, Literal
 
@@ -99,14 +93,6 @@ class MoveSystem:
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             spotter_transform = gs.get_component(spotter_id, Transform)
-            # skip spotter if the moving unit lies outside its FOV
-            if not LosSystem.is_in_fov(
-                spotter_transform.position,
-                spotter_transform.degrees,
-                transform.position,
-                45.0,
-            ):
-                continue
             if not spotter_fire_controls.los_polygon:
                 LosSystem.update_los_polygon(gs, spotter_id)
                 # LOS polygon should be generated
