@@ -1,4 +1,10 @@
 import math
+"""Movement system actions and reactive-fire mechanics.
+
+Provides validation, step generation, interrupt candidate detection and move
+execution for combat units.
+"""
+
 from dataclasses import dataclass
 from typing import Iterable, Literal
 
@@ -59,7 +65,7 @@ class MoveSystem:
             case MoveControls.MoveType.FOOT:
                 terrain_type = TerrainFeature.Flag.WALKABLE
         for intersect in IntersectSystem.get(gs, transform.position, to):
-            if not (intersect.terrain.flag & terrain_type):
+            if not intersect.terrain.flag & terrain_type:
                 return InvalidAction.BAD_COORDS
 
         return True
@@ -136,7 +142,8 @@ class MoveSystem:
     ) -> _MoveActionResult | InvalidAction:
         """Mutator method moves a single unit with reactive fire. Doesn't flip initiative."""
 
-        if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
+        reason = MoveSystem._validate_move(gs, unit_id, to)
+        if reason is not True:
             return reason
 
         transform = gs.get_component(unit_id, Transform)
@@ -145,7 +152,11 @@ class MoveSystem:
         # pivot unit to face direction of travel before moving
         direction = (to - transform.position).normalized()
         # compute heading in degrees, similar to player controller
-        heading = (180 / math.pi) * (0 if direction.x == 0 and direction.y == 0 else math.atan2(direction.y, direction.x))
+        # compute heading, avoid division by zero
+        if direction.x == 0 and direction.y == 0:
+            heading = 0
+        else:
+            heading = (180 / math.pi) * math.atan2(direction.y, direction.x)
         if heading < 0:
             heading += 360
         transform.degrees = heading
@@ -207,7 +218,7 @@ class MoveSystem:
 
         results: list[_MoveActionResult] = []
         interrupt_count = 0
-        # TODO: group move validation
+        # NOTE: group move validation remains TODO
         for unit_id, to in moves:
             result = MoveSystem._singular_move(gs, unit_id, to)
             if not isinstance(result, _MoveActionResult):
