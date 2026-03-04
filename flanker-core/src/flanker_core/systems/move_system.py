@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import Iterable, Literal
 
@@ -91,6 +92,15 @@ class MoveSystem:
 
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
+            spotter_transform = gs.get_component(spotter_id, Transform)
+            # skip spotter if the moving unit lies outside its FOV
+            if not LosSystem.is_in_fov(
+                spotter_transform.position,
+                spotter_transform.degrees,
+                transform.position,
+                45.0,
+            ):
+                continue
             if not spotter_fire_controls.los_polygon:
                 LosSystem.update_los_polygon(gs, spotter_id)
                 # LOS polygon should be generated
@@ -135,7 +145,6 @@ class MoveSystem:
         # pivot unit to face direction of travel before moving
         direction = (to - transform.position).normalized()
         # compute heading in degrees, similar to player controller
-        import math
         heading = (180 / math.pi) * (0 if direction.x == 0 and direction.y == 0 else math.atan2(direction.y, direction.x))
         if heading < 0:
             heading += 360

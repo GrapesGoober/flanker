@@ -2,9 +2,12 @@ from dataclasses import dataclass
 from typing import Literal
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import CombatUnit, Transform
-from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.components import CombatUnit, FireControls, Transform
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
+from flanker_core.systems.command_system import CommandSystem
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.move_system import MoveSystem
 
 
 @dataclass
@@ -55,11 +58,6 @@ class PivotSystem:
 
         # perform reactive fire check at current position (identical to move
         # but with zero travel vector)
-        from flanker_core.systems.move_system import MoveSystem
-        from flanker_core.systems.fire_system import FireSystem
-        from flanker_core.models.components import FireControls
-        from flanker_core.models.outcomes import FireOutcomes
-        from flanker_core.systems.command_system import CommandSystem
 
         unit = gs.get_component(unit_id, CombatUnit)
         transform = gs.get_component(unit_id, Transform)
