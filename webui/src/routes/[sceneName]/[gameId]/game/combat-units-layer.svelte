@@ -48,6 +48,15 @@
 			<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
 		{/if}
 	{/if}
+
+	{#each controller.unitData.squads as unit}
+		{#if unit.pivot !== undefined}
+			<Arrow start={unit.position} end={{
+				x: unit.position.x + Math.cos((unit.pivot * Math.PI) / 180) * 20,
+				y: unit.position.y + Math.sin((unit.pivot * Math.PI) / 180) * 20
+			}} offset={6} />
+		{/if}
+	{/each}
 </svg>
 
 <svg overflow="visible">
@@ -55,18 +64,6 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- Draw combat units -->
 	{#each controller.unitData.squads as unit, index}
-		{#if unit.pivot !== undefined}
-			<!-- draw arrow first so it appears behind the icon -->
-			<Arrow
-				opacity={0.15}
-				start={unit.position}
-				end={{
-					x: unit.position.x + Math.cos((unit.pivot * Math.PI) / 180) * 20,
-					y: unit.position.y + Math.sin((unit.pivot * Math.PI) / 180) * 20
-				}}
-				offset={6}
-			/>
-		{/if}
 		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
 			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
 		</g>
