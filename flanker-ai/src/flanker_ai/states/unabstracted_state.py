@@ -101,27 +101,25 @@ class UnabstractedState(IRepresentationState[Action]):
                     actions.append(
                         MoveAction(
                             unit_id=unit_id,
-                            to=pos + vec,
+                            to=vec,
                         )
                     )
 
                 # Fire and Assault actions for all permutations
                 for target_id, target in self._gs.query(CombatUnit):
                     if target.faction != self.get_initiative():
-                        if target.status == CombatUnit.Status.SUPPRESSED:
-                            actions.append(
-                                AssaultAction(
-                                    unit_id=unit_id,
-                                    target_id=target_id,
-                                )
+                        actions.append(
+                            AssaultAction(
+                                unit_id=unit_id,
+                                target_id=target_id,
                             )
-                        else:
-                            actions.append(
-                                FireAction(
-                                    unit_id=unit_id,
-                                    target_id=target_id,
-                                )
+                        )
+                        actions.append(
+                            FireAction(
+                                unit_id=unit_id,
+                                target_id=target_id,
                             )
+                        )
 
         return actions
 
