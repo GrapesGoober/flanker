@@ -62,12 +62,13 @@ class PivotSystem:
         unit = gs.get_component(unit_id, CombatUnit)
         transform = gs.get_component(unit_id, Transform)
 
+        # pylint: disable=protected-access
         interrupt_candidates = MoveSystem._get_interrupt_candidates(
             gs, unit_id, transform.position
         )
 
         # loop through interrupt candidates exactly as move does
-        for interrupt_pos, spotter_id in interrupt_candidates:
+        for _interrupt_pos, spotter_id in interrupt_candidates:
             outcome = FireSystem.get_fire_outcome(gs, spotter_id)
             match outcome:
                 case FireOutcomes.MISS:
