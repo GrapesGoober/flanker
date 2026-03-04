@@ -24,52 +24,52 @@ def fixture() -> Fixture:
     return Fixture()
 
 
-def test_pivot_changes_degrees(fixture: Fixture) -> None:
+def test_pivot_changes_degrees(fx: Fixture) -> None:
     # ensure pivot occurs when unit has initiative and is active
-    result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 123.4)
+    result = PivotSystem.pivot(fx.gs, fx.unit_id, 123.4)
     assert not isinstance(result, InvalidAction)
-    transform = fixture.gs.get_component(fixture.unit_id, Transform)
+    transform = fx.gs.get_component(fx.unit_id, Transform)
     assert transform.degrees == 123.4
     # pivot should be normalized
-    result2 = PivotSystem.pivot(fixture.gs, fixture.unit_id, 400)
+    result2 = PivotSystem.pivot(fx.gs, fx.unit_id, 400)
     assert not isinstance(result2, InvalidAction)
-    assert fixture.gs.get_component(fixture.unit_id, Transform).degrees == 40.0
+    assert fx.gs.get_component(fx.unit_id, Transform).degrees == 40.0
     # initiative is not flipped
-    assert InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id)
+    assert InitiativeSystem.has_initiative(fx.gs, fx.unit_id)
 
 
-def test_pivot_no_initiative(fixture: Fixture) -> None:
+def test_pivot_no_initiative(fx: Fixture) -> None:
     # set initiative to opposing faction
-    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
-    reason = PivotSystem.pivot(fixture.gs, fixture.unit_id, 50)
+    InitiativeSystem.set_initiative(fx.gs, InitiativeState.Faction.RED)
+    reason = PivotSystem.pivot(fx.gs, fx.unit_id, 50)
     assert reason == InvalidAction.NO_INITIATIVE
 
 
-def test_pivot_inactive_status(fixture: Fixture) -> None:
+def test_pivot_inactive_status(fx: Fixture) -> None:
     # suppressed units cannot pivot
-    unit = fixture.gs.get_component(fixture.unit_id, CombatUnit)
+    unit = fx.gs.get_component(fx.unit_id, CombatUnit)
     unit.status = CombatUnit.Status.SUPPRESSED
-    reason = PivotSystem.pivot(fixture.gs, fixture.unit_id, 75)
+    reason = PivotSystem.pivot(fx.gs, fx.unit_id, 75)
     assert reason == InvalidAction.INACTIVE_UNIT
 
     # pinned units are allowed
     unit.status = CombatUnit.Status.PINNED
-    result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 75)
+    result = PivotSystem.pivot(fx.gs, fx.unit_id, 75)
     assert not isinstance(result, InvalidAction)
 
 
-def test_pivot_reactive_fire(fixture: Fixture) -> None:
+def test_pivot_reactive_fire(fx: Fixture) -> None:
     # add a spotter that can reactively fire on the pivoting unit
-    spotter_id = fixture.gs.add_entity(
+    _spotter_id = fx.gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
         Transform(position=Vec2(1, 0)),
     )
     # ensure blue unit has initiative and is in LOS of spotter (no terrain)
-    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.BLUE)
+    InitiativeSystem.set_initiative(fx.gs, InitiativeState.Faction.BLUE)
     # perform pivot; reactive fire should pin the unit
-    result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 180)
+    result = PivotSystem.pivot(fx.gs, fx.unit_id, 180)
     assert not isinstance(result, InvalidAction)
-    unit = fixture.gs.get_component(fixture.unit_id, CombatUnit)
+    unit = fx.gs.get_component(fx.unit_id, CombatUnit)
     assert unit.status == CombatUnit.Status.PINNED, "Pivot should trigger pin from reactive fire"
 
