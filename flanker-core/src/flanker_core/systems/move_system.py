@@ -99,17 +99,25 @@ class MoveSystem:
                 assert spotter_fire_controls.los_polygon
 
             # Check if target is in line of sight
-            if IntersectGetter.is_inside(
-                point=transform.position,
-                polygon=spotter_fire_controls.los_polygon,
-            ):
+            # determine LOS intersection: if polygon is too small to form a
+            # proper shape we assume there are no occluders and the spotter
+            # sees the unit immediately.
+            if spotter_fire_controls.los_polygon and len(spotter_fire_controls.los_polygon) > 2:
+                if IntersectGetter.is_inside(
+                    point=transform.position,
+                    polygon=spotter_fire_controls.los_polygon,
+                ):
+                    interrupt_candidates.append((transform.position, spotter_id))
+                    continue
+                if intersects := IntersectGetter.get_intersects(
+                    line=(transform.position, to),
+                    polyline=spotter_fire_controls.los_polygon,
+                ):
+                    interrupt_candidates.append((intersects[0], spotter_id))
+                    continue
+            else:
+                # no meaningful polygon -> treat as visible immediately
                 interrupt_candidates.append((transform.position, spotter_id))
-                continue
-            if intersects := IntersectGetter.get_intersects(
-                line=(transform.position, to),
-                polyline=spotter_fire_controls.los_polygon,
-            ):
-                interrupt_candidates.append((intersects[0], spotter_id))
                 continue
 
         # Sort the intersection candidates based distance from moving unit
