@@ -43,7 +43,7 @@ export class PlayerController {
 
 	/* Selects a combat unit and transitions to state 'selected'. */
 	selectUnit(unitId: number) {
-		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
+		const unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
 		if (unit.isFriendly === true) {
 			this.state = {
@@ -107,7 +107,7 @@ export class PlayerController {
 	async pivotActionAsync(mousePos: Vec2) {
 		if (this.isFetching) return;
 		if (this.state.type !== 'pivoting') return;
-		let unitId = this.state.selectedUnit.unitId;
+		const unitId = this.state.selectedUnit.unitId;
 		// compute heading from unit to clicked point
 		const sel = this.state.selectedUnit;
 		const dx = mousePos.x - sel.position.x;
@@ -164,7 +164,7 @@ export class PlayerController {
 	async moveActionAsync() {
 		if (!this.isMoveActionValid()) return;
 		if (this.state.type !== 'moveMarked') return false;
-		let unitId = this.state.selectedUnit.unitId;
+		const unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
 		this.isFetching = false;
@@ -175,7 +175,7 @@ export class PlayerController {
 	async fireActionAsync() {
 		if (!this.isFireActionValid()) return;
 		if (this.state.type !== 'attackMarked') return;
-		let unitId = this.state.selectedUnit.unitId;
+		const unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
 		this.isFetching = false;
@@ -186,7 +186,7 @@ export class PlayerController {
 	async assaultActionAsync() {
 		if (!this.isAssaultActionValid()) return;
 		if (this.state.type !== 'attackMarked') return;
-		let unitId = this.state.selectedUnit.unitId;
+		const unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		this.unitData = await performAssaultActionAsync(unitId, this.state.target.unitId);
 		this.isFetching = false;
@@ -195,7 +195,7 @@ export class PlayerController {
 
 	/* Reselects the unit after an action, or resets state if not found. */
 	private reselectUnit(unitId: number) {
-		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
+		const currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
 		if (currentUnit)
 			this.state = {
 				type: 'selected',
