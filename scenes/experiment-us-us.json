@@ -543,7 +543,7 @@
       "AiConfigComponent": {
         "faction": "BLUE",
         "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
+          "type": "ExpectimaxPolicyConfig"
         },
         "state_config": {
           "type": "UnabstractedStateConfig"
@@ -554,7 +554,7 @@
       "AiConfigComponent": {
         "faction": "RED",
         "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
+          "type": "ExpectimaxPolicyConfig"
         },
         "state_config": {
           "type": "UnabstractedStateConfig"

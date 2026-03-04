@@ -51,16 +51,5 @@ class AssaultActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
-@dataclass
-class OrientationActionResult:
-    action: OrientationAction
-    result_gs: GameState
-
-
-Action = MoveAction | FireAction | AssaultAction | OrientationAction
-ActionResult = (
-    MoveActionResult
-    | FireActionResult
-    | AssaultActionResult
-    | OrientationActionResult
-)
+Action = MoveAction | FireAction | AssaultAction
+ActionResult = MoveActionResult | FireActionResult | AssaultActionResult

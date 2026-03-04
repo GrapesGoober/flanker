@@ -1,12 +1,8 @@
 import pytest
-
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import (
-    CombatUnit,
-    InitiativeState,
-    Transform,
-)
+from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.orientation_system import OrientationSystem
 
@@ -19,7 +15,7 @@ class Fixture:
         # create a single friendly squad at origin
         self.unit_id = self.gs.add_entity(
             CombatUnit(faction=InitiativeState.Faction.BLUE),
-            Transform(position=(0, 0)),
+            Transform(position=Vec2(0, 0), degrees=0),
         )
 
 
@@ -44,9 +40,7 @@ def test_orientation_changes_degrees(fixture: Fixture) -> None:
 
 def test_orientation_no_initiative(fixture: Fixture) -> None:
     # set initiative to opposing faction
-    InitiativeSystem.set_initiative(
-        fixture.gs, InitiativeState.Faction.RED
-    )
+    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     reason = OrientationSystem.orient(fixture.gs, fixture.unit_id, 50)
     assert reason == InvalidAction.NO_INITIATIVE
 
