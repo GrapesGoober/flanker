@@ -83,7 +83,7 @@ class UnabstractedState(IRepresentationState[Action]):
         # Generate an action for each combat unit
         actions: list[Action] = []
         for unit_id, unit in self._gs.query(CombatUnit):
-            if unit.faction == InitiativeState.Faction.BLUE:
+            if unit.faction == self.get_initiative():
                 pos = self._gs.get_component(unit_id, Transform).position
                 actions.append(
                     MoveAction(
@@ -104,7 +104,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
                 # Fire and Assault actions for all permutations
                 for target_id, target in self._gs.query(CombatUnit):
-                    if target.faction == InitiativeState.Faction.RED:
+                    if target.faction != self.get_initiative():
                         if target.status == CombatUnit.Status.SUPPRESSED:
                             actions.append(
                                 AssaultAction(
