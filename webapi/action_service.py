@@ -24,7 +24,7 @@ class ActionService:
 
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> None:
-        """Move a unit and trigger AI response for the opponent."""
+        """Move a unit and log the result."""
         result = MoveSystem.move(gs, body.unit_id, body.to)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
@@ -39,7 +39,7 @@ class ActionService:
 
     @staticmethod
     def fire(gs: GameState, body: FireActionRequest) -> None:
-        """Perform fire action and trigger AI response for the opponent."""
+        """Perform a fire action and log the outcome."""
         result = FireSystem.fire(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
@@ -54,7 +54,7 @@ class ActionService:
 
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
-        """Perform fire action and trigger AI response for the opponent."""
+        """Perform an assault action and log the results."""
         result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
@@ -70,7 +70,7 @@ class ActionService:
 
     @staticmethod
     def pivot(gs: GameState, body: PivotActionRequest) -> None:
-        """Rotate a unit and trigger AI response."""
+        """Rotate a unit and log the change."""
         from flanker_core.systems.pivot_system import PivotSystem
 
         result = PivotSystem.pivot(gs, body.unit_id, body.degrees)
