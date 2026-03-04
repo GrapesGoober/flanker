@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 from typing import Sequence
 
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
@@ -50,6 +51,8 @@ class UnabstractedState(IRepresentationState[Action]):
         for id, _ in self._gs.query(EliminationObjective):
             mutable_entities.add(id)
         for id, _ in self._gs.query(CombatUnit):
+            mutable_entities.add(id)
+        for id, _ in self._gs.query(AiStallCountComponent):
             mutable_entities.add(id)
         new_gs = self._gs.selective_copy(list(mutable_entities))
         return UnabstractedState(new_gs)
@@ -135,7 +138,7 @@ class UnabstractedState(IRepresentationState[Action]):
         new_gs = self.copy()._gs
         match action:
             case MoveAction():
-                initiative = InitiativeSystem.get_initiative(self._gs)
+                initiative = InitiativeSystem.get_initiative(new_gs)
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 result = MoveSystem.move(new_gs, action.unit_id, action.to)
@@ -145,13 +148,13 @@ class UnabstractedState(IRepresentationState[Action]):
                     else:
                         self._get_stall_counter()[initiative] = 0
             case FireAction():
-                initiative = InitiativeSystem.get_initiative(self._gs)
+                initiative = InitiativeSystem.get_initiative(new_gs)
                 self._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.SUPPRESS
                 result = FireSystem.fire(new_gs, action.unit_id, action.target_id)
             case AssaultAction():
-                initiative = InitiativeSystem.get_initiative(self._gs)
+                initiative = InitiativeSystem.get_initiative(new_gs)
                 self._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
@@ -177,18 +180,22 @@ class UnabstractedState(IRepresentationState[Action]):
     def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
         if result := self._gs.query(AiStallCountComponent):
             _, stall_comp = result[0]
+            return stall_comp.stall_counter
         else:
-            self._gs.add_entity(stall_comp := AiStallCountComponent())
-        return stall_comp.stall_counter
+            raise ValueError(f"{AiStallCountComponent} missing for {self._gs}")
 
     def get_initiative(self) -> InitiativeState.Faction:
         return InitiativeSystem.get_initiative(self._gs)
 
     def initialize_state(self, gs: GameState) -> None:
-        self._gs = gs
+        self._gs = deepcopy(gs)
+        if self._gs.query(AiStallCountComponent) == []:
+            self._gs.add_entity(AiStallCountComponent())
 
     def update_state(self, gs: GameState) -> None:
-        self._gs = gs
+        self._gs = deepcopy(gs)
+        if self._gs.query(AiStallCountComponent) == []:
+            self._gs.add_entity(AiStallCountComponent())
 
     def deabstract_action(self, action: Action, gs: GameState) -> Action:
         return action
