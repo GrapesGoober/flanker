@@ -190,20 +190,32 @@ def test_permutations(fixture: Fixture) -> None:
                 assert (
                     unit.status == CombatUnit.Status.PINNED
                 ), "Expects PIN fire event to result in PINNED status"
+                assert (
+                    branch.get_initiative() == InitiativeState.Faction.BLUE
+                ), "Expects PIN fire event to not flip initiative."
             case {2: FireOutcomes.PIN, 3: FireOutcomes.SUPPRESS}:
                 unit = branch.combat_units[fixture.unit_move]
                 assert (
                     unit.status == CombatUnit.Status.SUPPRESSED
-                ), "Expects SUPPRESSED fire event to result in SUPPRESSED status"
+                ), "Expects SUPPRESS fire event to result in SUPPRESSED status"
+                assert (
+                    branch.get_initiative() == InitiativeState.Faction.RED
+                ), "Expects SUPPRESS fire event to flip initiative."
             case {2: FireOutcomes.SUPPRESS, 3: FireOutcomes.PIN}:
                 unit = branch.combat_units[fixture.unit_move]
                 assert (
                     unit.status == CombatUnit.Status.SUPPRESSED
-                ), "Expects SUPPRESSED fire event to result in SUPPRESSED status"
+                ), "Expects SUPPRESS fire event to result in SUPPRESSED status"
+                assert (
+                    branch.get_initiative() == InitiativeState.Faction.RED
+                ), "Expects SUPPRESS fire event to flip initiative."
             case {2: FireOutcomes.SUPPRESS, 3: FireOutcomes.SUPPRESS}:
                 assert (
                     fixture.unit_move not in branch.combat_units
-                ), "Expects double SUPPRESSED fire event to kill unit"
+                ), "Expects double SUPPRESS fire event to kill unit"
+                assert (
+                    branch.get_initiative() == InitiativeState.Faction.RED
+                ), "Expects double SUPPRESS fire event to flip initiative."
             case _:
                 ...
     assert total_prob == 1, "Total probability must sum to 1"
