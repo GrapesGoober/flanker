@@ -3,6 +3,10 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Literal, override
 
+# many methods need to access internal caches; the AI representation state
+# deliberately exposes protected attributes for performance and convenience.
+# pylint: disable=protected-access
+
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState

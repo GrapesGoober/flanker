@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 import math
 
+# pytest fixture named 'fixture' is intentional; suppress pylint warning
+# about redefined outer name in test functions.
+# pylint: disable=redefined-outer-name
+
 import pytest
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
