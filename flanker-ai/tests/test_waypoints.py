@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import isclose
 
 import pytest
 from flanker_ai.states.waypoints_actions import WaypointMoveAction
@@ -175,7 +176,7 @@ def test_permutations(fixture: Fixture) -> None:
     total_prob = 0
     for prob, _ in fire_permutations:
         total_prob += prob
-    assert total_prob == 1, "Total probability must sum to 1"
+    assert isclose(total_prob, 1), "Total probability must sum to 1"
 
     total_prob = 0
     branches = fixture.state.get_branches(action)
@@ -218,4 +219,4 @@ def test_permutations(fixture: Fixture) -> None:
                 ), "Expects double SUPPRESS fire event to flip initiative."
             case _:
                 ...
-    assert total_prob == 1, "Total probability must sum to 1"
+    assert isclose(total_prob, 1), "Total probability must sum to 1"
