@@ -19,6 +19,9 @@ from flanker_core.systems.initiative_system import InitiativeState
 class Fixture:
     state: WaypointsState
     unit_move: int
+    enemy_1: int
+    enemy_2: int
+    enemy_3: int
 
 
 @pytest.fixture
@@ -34,17 +37,24 @@ def fixture() -> Fixture:
     )
     # Have the shooters stand on top of each other,
     # so the reactive fire position is the same
-    gs.add_entity(
+    enemy_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(),
         Transform(position=Vec2(15, 20)),
     )
-    gs.add_entity(
+    enemy_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(),
         Transform(position=Vec2(15, 20)),
+    )
+    # Have another enemy unit for a second reactive fire
+    enemy_3 = gs.add_entity(
+        MoveControls(),
+        CombatUnit(faction=InitiativeState.Faction.RED),
+        FireControls(),
+        Transform(position=Vec2(10, 20)),
     )
 
     # 10x10 opaque box
@@ -78,10 +88,11 @@ def fixture() -> Fixture:
 
     state = WaypointsState(
         points=[
-            Vec2(6, -10),
-            Vec2(7, -10),
-            Vec2(8, -10),
-            Vec2(10, -10),
+            Vec2(6, -10),  # 0
+            Vec2(7, -10),  # 1
+            Vec2(8, -10),  # 2
+            Vec2(20, -10),  # 3
+            # The unit positions would be separate IDs
         ],
         path_tolerance=20,
     )
@@ -89,38 +100,69 @@ def fixture() -> Fixture:
     state.initialize_state(gs)
     state.update_state(gs)
 
-    return Fixture(state=state, unit_move=unit_move)
+    return Fixture(
+        state=state,
+        unit_move=unit_move,
+        enemy_1=enemy_1,
+        enemy_2=enemy_2,
+        enemy_3=enemy_3,
+    )
 
 
-def test_interrupt_waypoint(fixture: Fixture) -> None:
-    """Test that if there's move interrupt coodinates, they're are correct"""
+def test_no_interrupt(fixture: Fixture) -> None:
 
-    actions = fixture.state.get_actions()
-    one_interrupt_found = False
-    for action in actions:
-        if not isinstance(action, WaypointMoveAction):
-            continue
-        interrupts = fixture.state.get_move_interrupts(
-            action.unit_id,
-            action.move_to_waypoint_id,
-        )
-        if interrupts == []:
-            continue
-        one_interrupt_found = True
-        waypoint = fixture.state.waypoints[interrupts[0][0]]
-        assert waypoint.position == Vec2(
-            8, -10
-        ), "Move action expects to be interrupted at (8, -10)"
-    if not one_interrupt_found:
-        assert False, "An interrupt must be found for this fixture"
+    action = WaypointMoveAction(
+        unit_id=fixture.unit_move,
+        move_to_waypoint_id=1,
+    )
+
+    interrupts = fixture.state.get_move_interrupts(
+        action.unit_id,
+        action.move_to_waypoint_id,
+    )
+
+    assert interrupts == [], "Expects no interrupt found at (7, -10)"
+
+
+def test_one_interrupt(fixture: Fixture) -> None:
+
+    action = WaypointMoveAction(
+        unit_id=fixture.unit_move,
+        move_to_waypoint_id=2,
+    )
+
+    interrupts = fixture.state.get_move_interrupts(
+        action.unit_id,
+        action.move_to_waypoint_id,
+    )
+
+    assert interrupts == [
+        (2, [fixture.enemy_1, fixture.enemy_2])
+    ], "Expects one interrupt at (7.5, -10) with two enemies"
+
+
+def test_two_interrupts(fixture: Fixture) -> None:
+
+    action = WaypointMoveAction(
+        unit_id=fixture.unit_move,
+        move_to_waypoint_id=3,
+    )
+
+    interrupts = fixture.state.get_move_interrupts(
+        action.unit_id,
+        action.move_to_waypoint_id,
+    )
+
+    assert interrupts == [
+        (2, [fixture.enemy_1, fixture.enemy_2]),
+        (3, [fixture.enemy_3]),
+    ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 
 def test_permutations(fixture: Fixture) -> None:
-    """Test that the permutations from an interrupt are correct"""
 
     # Use any move action with an interrupt to run this test
     intended_move_action: WaypointMoveAction | None = None
-    actions = fixture.state.get_actions()
     actions = fixture.state.get_actions()
     for action in actions:
         if not isinstance(action, WaypointMoveAction):

@@ -540,10 +540,15 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         current_unit = self._combat_units[unit_id]
         current_waypoint = self._waypoints[current_unit.current_waypoint_id]
         interrupt_points: list[tuple[int, list[int]]] = []
+        # Same enemy can't reactive fire twice, so need to track
+        # Enemies that's already added.
+        included_enemy_ids: list[int] = []
         for path_id in current_waypoint.movable_paths[move_to_id]:
             enemy_ids: list[int] = []
             for enemy_id, enemy_unit in self._combat_units.items():
                 # Add interrupt if the enemy can reactive fire it
+                if enemy_id in included_enemy_ids:
+                    continue
                 if enemy_unit.faction == current_unit.faction:
                     continue
                 if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
@@ -555,6 +560,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
                     enemy_ids.append(enemy_id)
+                    included_enemy_ids.append(enemy_id)
             if enemy_ids != []:
                 interrupt_points.append((path_id, enemy_ids))
         return interrupt_points
