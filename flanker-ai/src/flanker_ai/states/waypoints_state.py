@@ -1,6 +1,8 @@
 import random
 from copy import deepcopy
 from dataclasses import dataclass, replace
+from itertools import product
+from math import prod
 from typing import Literal, override
 
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
@@ -271,31 +273,68 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         match action:
             case WaypointMoveAction():
                 # Check for move interrupts
+                # TODO there's MULTIPLE INTERRUPTS at differnt points ALONG THE PATH
                 if action.interrupt_at_id is not None:
-                    outcomes: list[tuple[float, "WaypointsState"]] = []
-                    for outcome, probability in _FIRE_REACTION_PROBABILITIES.items():
+                    # Build a list of all permutations of reactive fires
+                    permutations: list[
+                        tuple[
+                            float,  # total probability of this event permutation
+                            list[  # event (enemy, outcome) of this permutation
+                                tuple[AbstractedCombatUnit, FireOutcomes]
+                            ],
+                        ]
+                    ] = []
+
+                    current_faction = self._initiative
+                    enemies: list[AbstractedCombatUnit] = []
+
+                    for enemy_unit in self._combat_units.values():
+                        if enemy_unit.faction == current_faction:
+                            continue
+                        enemy_waypoint = self._waypoints[enemy_unit.current_waypoint_id]
+                        if action.interrupt_at_id not in enemy_waypoint.visible_nodes:
+                            continue
+                        enemies.append(enemy_unit)
+
+                    for outcome_combo in product(
+                        _FIRE_REACTION_PROBABILITIES.keys(), repeat=len(enemies)
+                    ):
+                        # Append the joint probability and event pair
+                        probability = prod(
+                            _FIRE_REACTION_PROBABILITIES[outcome]
+                            for outcome in outcome_combo
+                        )
+                        event = [
+                            (enemy, outcome)
+                            for enemy, outcome in zip(enemies, outcome_combo)
+                        ]
+                        permutations.append((probability, event))
+
+                    # Get all outcomes for each reactive fire permutations
+                    all_outcomes: list[tuple[float, "WaypointsState"]] = []
+                    for prob, permutation in permutations:
                         gs = self.copy()
                         gs._stall_counter[gs._initiative] = 0
                         current_unit = gs._combat_units[action.unit_id]
-                        match outcome:
-                            case FireOutcomes.MISS:
-                                current_unit.current_waypoint_id = (
-                                    action.move_to_waypoint_id
-                                )
-                            case FireOutcomes.PIN:
-                                current_unit.status = CombatUnit.Status.PINNED
-                                current_unit.current_waypoint_id = (
-                                    action.interrupt_at_id
-                                )
-                            case FireOutcomes.SUPPRESS:
-                                current_unit.status = CombatUnit.Status.SUPPRESSED
-                                gs._flip_initiative()
-                            case FireOutcomes.KILL:
-                                gs._kill_unit(action.unit_id)
-                                gs._flip_initiative()
+                        for enemy_unit, fire_outcome in permutation:
+                            match fire_outcome:
+                                case FireOutcomes.MISS:
+                                    enemy_unit.no_fire = True
+                                case FireOutcomes.PIN:
+                                    if current_unit.status == CombatUnit.Status.ACTIVE:
+                                        current_unit.status = CombatUnit.Status.PINNED
+                                    current_unit.current_waypoint_id = (
+                                        action.interrupt_at_id
+                                    )
+                                case FireOutcomes.SUPPRESS:
+                                    current_unit.status = CombatUnit.Status.SUPPRESSED
+                                    gs._flip_initiative()
+                                case FireOutcomes.KILL:
+                                    gs._kill_unit(action.unit_id)
+                                    gs._flip_initiative()
+                        all_outcomes.append((prob, gs))
 
-                        outcomes.append((probability, gs))
-                    return outcomes
+                    return all_outcomes
                 else:  # No move interrupt found
                     gs = self.copy()
                     gs._stall_counter[gs._initiative] += 1
@@ -304,12 +343,12 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     return [(1, gs)]
 
             case WaypointFireAction():
-                outcomes: list[tuple[float, "WaypointsState"]] = []
-                for outcome, probability in _FIRE_ACTION_PROBABILITIES.items():
+                all_outcomes: list[tuple[float, "WaypointsState"]] = []
+                for fire_outcome, probability in _FIRE_ACTION_PROBABILITIES.items():
                     gs = self.copy()
                     gs._stall_counter[gs._initiative] = 0
                     target_unit = gs._combat_units[action.target_id]
-                    match outcome:
+                    match fire_outcome:
                         case FireOutcomes.MISS:
                             gs._flip_initiative()
                         case FireOutcomes.PIN:
@@ -320,9 +359,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                             target_unit.status = CombatUnit.Status.SUPPRESSED
                         case FireOutcomes.KILL:
                             gs._kill_unit(action.target_id)
-                    outcomes.append((probability, gs))
+                    all_outcomes.append((probability, gs))
 
-                return outcomes
+                return all_outcomes
 
             case WaypointAssaultAction():  # Assumes determinic for now
                 gs = self.copy()

@@ -205,7 +205,7 @@ class AiAgent:
                     if result.reactive_fire_outcome == None:
                         counter.stall_counter[self._faction] += 1
                     else:
-                        counter.stall_counter[self._faction]
+                        counter.stall_counter[self._faction] = 0
                     return MoveActionResult(
                         action=action,
                         result_gs=self._gs,
