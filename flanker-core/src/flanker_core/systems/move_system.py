@@ -37,6 +37,11 @@ class _GroupMoveActionResult:
 class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
+    # half-angle of forward field-of-view cone used by both firing and
+    # reactive-fire rules. 45° each side is the established game rule that
+    # also appears in :class:`FireSystem`.
+    FOV_HALF_ANGLE: float = 45.0
+
     @staticmethod
     def _validate_move(
         gs: GameState, unit_id: int, to: Vec2
@@ -91,11 +96,22 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
 
         for spotter_id in spotter_candidates:
+            spotter_transform = gs.get_component(spotter_id, Transform)
+
+            # Rough FOV check: a spotter will only consider a target if the
+            # point where the target would be seen falls inside its forward
+            # cone.  We perform this check *after* LOS evaluation so that we
+            # can test the intersection point itself rather than blindly using
+            # the moving unit's original position.  This allows reactive fire
+            # to trigger when a unit moves *into* a shooter's FOV.
+
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             if not spotter_fire_controls.los_polygon:
                 LosSystem.update_los_polygon(gs, spotter_id)
                 # LOS polygon should be generated
                 assert spotter_fire_controls.los_polygon
+
+            candidate_point: Vec2 | None = None
 
             # Check if target is in line of sight
             # determine LOS intersection: if polygon is too small to form a
@@ -106,18 +122,30 @@ class MoveSystem:
                     point=transform.position,
                     polygon=spotter_fire_controls.los_polygon,
                 ):
-                    interrupt_candidates.append((transform.position, spotter_id))
-                    continue
-                if intersects := IntersectGetter.get_intersects(
+                    candidate_point = transform.position
+                elif intersects := IntersectGetter.get_intersects(
                     line=(transform.position, to),
                     polyline=spotter_fire_controls.los_polygon,
                 ):
-                    interrupt_candidates.append((intersects[0], spotter_id))
-                    continue
+                    candidate_point = intersects[0]
             else:
                 # no meaningful polygon -> treat as visible immediately
-                interrupt_candidates.append((transform.position, spotter_id))
+                candidate_point = transform.position
+
+            if candidate_point is None:
                 continue
+
+            # final FOV check against the intersection/target point
+            if not LosSystem.is_in_fov(
+                spotter_transform.position,
+                spotter_transform.degrees,
+                candidate_point,
+                MoveSystem.FOV_HALF_ANGLE,
+            ):
+                continue
+
+            interrupt_candidates.append((candidate_point, spotter_id))
+            continue
 
         # Sort the intersection candidates based distance from moving unit
         interrupt_candidates = sorted(

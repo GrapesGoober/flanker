@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 
 import pytest
 from flanker_core.gamestate import GameState
@@ -46,6 +47,14 @@ def fixture() -> Fixture:
         fire_controls := FireControls(),
         Transform(position=Vec2(15, 20)),
     )
+    # orient shooter toward the first mover so FOV allows reactive fire
+    shooter_transform = gs.get_component(unit_shoot, Transform)
+    mover_transform = gs.get_component(unit_move_1, Transform)
+    rel = mover_transform.position - shooter_transform.position
+    theta = math.degrees(math.atan2(rel.y, rel.x))
+    if theta < 0:
+        theta += 360
+    shooter_transform.degrees = theta
 
     # 10x10 opaque box
     gs.add_entity(

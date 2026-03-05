@@ -108,12 +108,19 @@ def test_move_invalid(fixture: Fixture) -> None:
 # pylint: disable=redefined-outer-name
 
 def test_move_fov_reactive(fixture: Fixture) -> None:
-    """A rear spotter outside FOV does not interrupt movement."""
-    # spotter behind facing away should not interrupt
+    """A clear-line spotter behind and facing away should not interrupt.
+
+    The original fixture includes terrain which sometimes blocks LOS; to make
+    this assertion meaningful we place the spotter on the same horizontal band
+    as the moving unit so that LOS is unobstructed.  The spotter's heading is
+    deliberately set to point *away* from the mover, so FOV filtering should
+    prevent any reactive fire from occurring even though an interruption would
+    otherwise be possible.
+    """
     _spotter_id = fixture.gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
-        Transform(position=Vec2(1, 0), degrees=180),
+        Transform(position=Vec2(1, -10), degrees=0),  # spotter east of mover, facing east
     )
     # ensure blue has initiative
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.BLUE)

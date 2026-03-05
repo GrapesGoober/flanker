@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 
 import pytest
 from flanker_core.gamestate import GameState
@@ -46,6 +47,15 @@ def fixture() -> Fixture:
         fire_controls := FireControls(),
         Transform(position=Vec2(15, 20)),
     )
+    # orient shooter so that its forward cone contains the moving unit's
+    # starting position.  this keeps the various interrupt tests deterministic
+    shooter_transform = gs.get_component(unit_shoot, Transform)
+    mover_transform = gs.get_component(unit_move, Transform)
+    rel = mover_transform.position - shooter_transform.position
+    theta = math.degrees(math.atan2(rel.y, rel.x))
+    if theta < 0:
+        theta += 360
+    shooter_transform.degrees = theta
 
     # 10x10 opaque box
     gs.add_entity(
@@ -86,6 +96,16 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
+    """Basic movement with shooter facing away should see no reactive fire.
+
+    The fixture's setup orients the shooter toward the mover by default, so we
+    reset its heading here to an 'away' direction to guarantee no interrupts
+    occur in this simple check.  Other tests below restore the 'toward' heading
+    via the fixture.
+    """
+    shooter_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
+    shooter_transform.degrees = 0  # point east, away from mover
+
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
@@ -96,7 +116,39 @@ def test_move(fixture: Fixture) -> None:
     ), "NO reactive fire mustn't flip initiative."
 
 
+
+
+def test_reactive_fire_fov_blocks(fixture: Fixture) -> None:
+    """A shooter with clear LOS but pointed away should *not* interrupt.
+
+    This exercise reuses the existing geometry used by the other interrupt
+    tests but forces the attacker to look in the opposite direction.  Without
+    the new FOV logic in :class:`MoveSystem`, the movement would be interrupted
+    and the unit pinned (since we override to PIN).
+    """
+    fixture.fire_controls.override = FireOutcomes.PIN
+    # point the shooter roughly to the east, which is away from the mover
+    shooter_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
+    shooter_transform.degrees = 0
+
+    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    assert transform.position == Vec2(
+        20, -10
+    ), "Move should complete because reactive fire is outside FOV"
+    assert (
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
+    ), "FOV block should prevent any initiative flip"
+
 def test_interrupt_miss(fixture: Fixture) -> None:
+    # make sure shooter is oriented toward the mover for these interrupt tests
+    shooter_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
+    mover_transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    rel = mover_transform.position - shooter_transform.position
+    theta = math.degrees(math.atan2(rel.y, rel.x))
+    if theta < 0:
+        theta += 360
+    shooter_transform.degrees = theta
     fixture.fire_controls.override = FireOutcomes.MISS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
@@ -117,6 +169,13 @@ def test_interrupt_miss(fixture: Fixture) -> None:
 
 
 def test_interrupt_pin(fixture: Fixture) -> None:
+    shooter_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
+    mover_transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    rel = mover_transform.position - shooter_transform.position
+    theta = math.degrees(math.atan2(rel.y, rel.x))
+    if theta < 0:
+        theta += 360
+    shooter_transform.degrees = theta
     fixture.fire_controls.override = FireOutcomes.PIN
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
@@ -134,6 +193,13 @@ def test_interrupt_pin(fixture: Fixture) -> None:
 
 
 def test_interrupt_suppress(fixture: Fixture) -> None:
+    shooter_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
+    mover_transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    rel = mover_transform.position - shooter_transform.position
+    theta = math.degrees(math.atan2(rel.y, rel.x))
+    if theta < 0:
+        theta += 360
+    shooter_transform.degrees = theta
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
@@ -150,6 +216,13 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
 
 
 def test_interrupt_kill(fixture: Fixture) -> None:
+    shooter_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
+    mover_transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    rel = mover_transform.position - shooter_transform.position
+    theta = math.degrees(math.atan2(rel.y, rel.x))
+    if theta < 0:
+        theta += 360
+    shooter_transform.degrees = theta
     fixture.fire_controls.override = FireOutcomes.KILL
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.try_component(fixture.unit_move, Transform)

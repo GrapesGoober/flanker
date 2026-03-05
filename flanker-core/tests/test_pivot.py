@@ -71,7 +71,8 @@ def test_pivot_reactive_fire(fixture: Fixture) -> None:
     _spotter_id = fixture.gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
-        Transform(position=Vec2(1, 0)),
+        # spotter sits to the right of pivoting unit but must face west
+        Transform(position=Vec2(1, 0), degrees=180),
     )
     # ensure blue unit has initiative and is in LOS of spotter (no terrain)
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.BLUE)
