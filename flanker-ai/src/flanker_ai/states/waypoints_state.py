@@ -65,8 +65,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         path_tolerance: float,
     ) -> None:
         self._points = points
-        self._waypoints: dict[int, WaypointNode] = {}
-        self._combat_units: dict[int, AbstractedCombatUnit] = {}
+        self.waypoints: dict[int, WaypointNode] = {}
+        self.combat_units: dict[int, AbstractedCombatUnit] = {}
         self._initiative: InitiativeState.Faction = InitiativeState.Faction.BLUE
         self._objectives: list[EliminationObjective] = []
         self._path_tolerance = path_tolerance
@@ -75,21 +75,16 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             InitiativeState.Faction.RED: 0,
         }
 
-    @property
-    def waypoints(self) -> dict[int, WaypointNode]:
-        """Read only deepcopy of the waypoints graph."""
-        return deepcopy(self._waypoints)
-
     @override
     def copy(self) -> "WaypointsState":
-        copied_units = {id: replace(unit) for id, unit in self._combat_units.items()}
+        copied_units = {id: replace(unit) for id, unit in self.combat_units.items()}
         copied_objectives = [replace(obj) for obj in self._objectives]
         new_gs = WaypointsState(
             points=self._points,
             path_tolerance=self._path_tolerance,
         )
-        new_gs._waypoints = self._waypoints
-        new_gs._combat_units = copied_units
+        new_gs.waypoints = self.waypoints
+        new_gs.combat_units = copied_units
         new_gs._initiative = self._initiative
         new_gs._objectives = copied_objectives
         new_gs._stall_counter = deepcopy(self._stall_counter)
@@ -109,7 +104,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 return -10000
 
         score = 0.0
-        for unit in self._combat_units.values():
+        for unit in self.combat_units.values():
             value = 0
             match unit.status:
                 case CombatUnit.Status.ACTIVE:
@@ -131,14 +126,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         actions: list[WaypointAction] = []
         friendly_units: list[tuple[int, AbstractedCombatUnit]] = []
         enemy_units: list[tuple[int, AbstractedCombatUnit]] = []
-        for combat_unit_id, combat_unit in self._combat_units.items():
+        for combat_unit_id, combat_unit in self.combat_units.items():
             if combat_unit.faction == self._initiative:
                 friendly_units.append((combat_unit_id, combat_unit))
             if combat_unit.faction != self._initiative:
                 enemy_units.append((combat_unit_id, combat_unit))
 
         for combat_unit_id, combat_unit in friendly_units:
-            current_waypoint = self._waypoints[combat_unit.current_waypoint_id]
+            current_waypoint = self.waypoints[combat_unit.current_waypoint_id]
             if combat_unit.faction != self._initiative:
                 continue
 
@@ -207,7 +202,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         match action:
             case WaypointMoveAction():
                 gs = self.copy()
-                current_unit = gs._combat_units[action.unit_id]
+                current_unit = gs.combat_units[action.unit_id]
                 # Check for move interrupts
                 interrupts = self.get_move_interrupts(
                     unit_id=action.unit_id,
@@ -227,7 +222,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 gs = self.copy()
                 gs._stall_counter[gs._initiative] = 0
                 # Assumes determinic for now
-                target_unit = gs._combat_units[action.target_id]
+                target_unit = gs.combat_units[action.target_id]
                 target_unit.status = CombatUnit.Status.SUPPRESSED
                 return gs
 
@@ -235,8 +230,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 gs = self.copy()
                 gs._stall_counter[gs._initiative] = 0
                 # Check for move interrupts
-                current_unit = gs._combat_units[action.unit_id]
-                target_unit = gs._combat_units[action.target_id]
+                current_unit = gs.combat_units[action.unit_id]
+                target_unit = gs.combat_units[action.target_id]
                 target_waypoint = target_unit.current_waypoint_id
                 interrupts = self.get_move_interrupts(
                     unit_id=action.unit_id,
@@ -253,11 +248,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 # Runs the assault dice roll. Assumes determinic for now
                 killed_unit: AbstractedCombatUnit
                 if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                    gs._combat_units.pop(action.target_id)
+                    gs.combat_units.pop(action.target_id)
                     killed_unit = target_unit
                 else:
                     killed_unit = current_unit
-                    gs._combat_units.pop(action.unit_id)
+                    gs.combat_units.pop(action.unit_id)
                     # Assault failed
                     gs._flip_initiative()
 
@@ -326,14 +321,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                             for enemy_id in enemy_ids:
                                 # Some previous fire outcomes might have killed unit,
                                 # so break early to prevent a non-existant entity being used.
-                                if action.unit_id not in gs._combat_units:
+                                if action.unit_id not in gs.combat_units:
                                     break
-                                current_unit = gs._combat_units[action.unit_id]
+                                current_unit = gs.combat_units[action.unit_id]
 
                                 fire_outcome = enemy_fire_outcomes[enemy_id]
                                 match fire_outcome:
                                     case FireOutcomes.MISS:
-                                        enemy_unit = self._combat_units[enemy_id]
+                                        enemy_unit = self.combat_units[enemy_id]
                                         enemy_unit.no_fire = True
                                     case FireOutcomes.PIN:
                                         if (
@@ -372,7 +367,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 else:  # No move interrupt found
                     gs = self.copy()
                     gs._stall_counter[gs._initiative] += 1
-                    current_unit = gs._combat_units[action.unit_id]
+                    current_unit = gs.combat_units[action.unit_id]
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
                     return [(1, gs)]
 
@@ -381,7 +376,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 for fire_outcome, probability in _FIRE_ACTION_PROBABILITIES.items():
                     gs = self.copy()
                     gs._stall_counter[gs._initiative] = 0
-                    target_unit = gs._combat_units[action.target_id]
+                    target_unit = gs.combat_units[action.target_id]
                     match fire_outcome:
                         case FireOutcomes.MISS:
                             gs._flip_initiative()
@@ -401,8 +396,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 gs = self.copy()
                 gs._stall_counter[gs._initiative] = 0
                 # Check for move interrupts
-                current_unit = gs._combat_units[action.unit_id]
-                target_unit = gs._combat_units[action.target_id]
+                current_unit = gs.combat_units[action.unit_id]
+                target_unit = gs.combat_units[action.target_id]
                 interrupts = self.get_move_interrupts(
                     unit_id=action.unit_id,
                     move_to_id=target_unit.current_waypoint_id,
@@ -448,7 +443,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             case WaypointMoveAction():
                 return MoveAction(
                     unit_id=action.unit_id,
-                    to=self._waypoints[action.move_to_waypoint_id].position,
+                    to=self.waypoints[action.move_to_waypoint_id].position,
                 )
             case WaypointFireAction():
                 return FireAction(
@@ -475,7 +470,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         # Add grid points as a waypoint
         for point_id, point in enumerate(self._points):
-            self._waypoints[point_id] = WaypointNode(
+            self.waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=set(),
                 movable_paths={},
@@ -504,14 +499,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
-            waypoint_id = len(self._waypoints.keys())
+            waypoint_id = len(self.waypoints.keys())
             new_waypoint_ids.append(waypoint_id)
-            self._waypoints[waypoint_id] = WaypointNode(
+            self.waypoints[waypoint_id] = WaypointNode(
                 position=transform.position,
                 visible_nodes=set(),
                 movable_paths={},
             )
-            self._combat_units[unit_id] = AbstractedCombatUnit(
+            self.combat_units[unit_id] = AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
                 status=combat_unit.status,
@@ -537,15 +532,15 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         move_to_id: int,
     ) -> list[tuple[int, list[int]]]:
         """Returns a list of (waypoint_id, [enemy_ids]) pair."""
-        current_unit = self._combat_units[unit_id]
-        current_waypoint = self._waypoints[current_unit.current_waypoint_id]
+        current_unit = self.combat_units[unit_id]
+        current_waypoint = self.waypoints[current_unit.current_waypoint_id]
         interrupt_points: list[tuple[int, list[int]]] = []
         # Same enemy can't reactive fire twice, so need to track
         # Enemies that's already added.
         included_enemy_ids: list[int] = []
         for path_id in current_waypoint.movable_paths[move_to_id]:
             enemy_ids: list[int] = []
-            for enemy_id, enemy_unit in self._combat_units.items():
+            for enemy_id, enemy_unit in self.combat_units.items():
                 # Add interrupt if the enemy can reactive fire it
                 if enemy_id in included_enemy_ids:
                     continue
@@ -555,7 +550,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     continue
                 if enemy_unit.no_fire:
                     continue
-                enemy_visible_nodes = self._waypoints[
+                enemy_visible_nodes = self.waypoints[
                     enemy_unit.current_waypoint_id
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
@@ -573,8 +568,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 self._initiative = InitiativeState.Faction.BLUE
 
     def _kill_unit(self, unit_id: int) -> None:
-        killed_unit = self._combat_units[unit_id]
-        self._combat_units.pop(unit_id)
+        killed_unit = self.combat_units[unit_id]
+        self.combat_units.pop(unit_id)
         for objective in self._objectives:
             if killed_unit.faction == objective.target_faction:
                 objective.units_destroyed_counter += 1
@@ -585,14 +580,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
         waypoints_to_update: list[tuple[int, WaypointNode]] = []
         if waypoint_ids_to_update == "all":
-            waypoints_to_update = list(self._waypoints.items())
+            waypoints_to_update = list(self.waypoints.items())
         else:
             waypoints_to_update = list(
-                [(id, self._waypoints[id]) for id in waypoint_ids_to_update]
+                [(id, self.waypoints[id]) for id in waypoint_ids_to_update]
             )
 
         for waypoint_id, waypoint in waypoints_to_update:
-            for move_id, move_waypoint in self._waypoints.items():
+            for move_id, move_waypoint in self.waypoints.items():
                 move_from = waypoint.position
                 move_to = move_waypoint.position
                 move_distance = (move_to - move_from).length()
@@ -600,7 +595,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
                 # Define a set of nodes that forms the best path for this move
                 path: list[tuple[int, float]] = []
-                for path_id, path_waypoint in self._waypoints.items():
+                for path_id, path_waypoint in self.waypoints.items():
                     t = (path_waypoint.position - move_from).dot(direction)
                     if path_id in [waypoint_id, move_id]:
                         path.append((path_id, t))
@@ -631,10 +626,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
         waypoints_to_update: list[tuple[int, WaypointNode]] = []
         if waypoint_ids_to_update == "all":
-            waypoints_to_update = list(self._waypoints.items())
+            waypoints_to_update = list(self.waypoints.items())
         else:
             waypoints_to_update = list(
-                [(id, self._waypoints[id]) for id in waypoint_ids_to_update]
+                [(id, self.waypoints[id]) for id in waypoint_ids_to_update]
             )
 
         # Compute LOS polygon for all these waypoints.
@@ -648,7 +643,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         # Add visibility relationships between nodes
         for waypoint_id, waypoint in waypoints_to_update:
-            for other_id, other_waypoint in self._waypoints.items():
+            for other_id, other_waypoint in self.waypoints.items():
                 # Add visibility relationship
                 if IntersectGetter.is_inside(
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]

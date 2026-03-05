@@ -7,6 +7,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
+    FireOutcomes,
     MoveControls,
     TerrainFeature,
     Transform,
@@ -174,4 +175,35 @@ def test_permutations(fixture: Fixture) -> None:
     total_prob = 0
     for prob, _ in fire_permutations:
         total_prob += prob
+    assert total_prob == 1, "Total probability must sum to 1"
+
+    total_prob = 0
+    branches = fixture.state.get_branches(action)
+    for id, (prob, branch) in enumerate(branches):
+        total_prob += prob
+        # Unit could be pinned, suppressed, or killed
+        # Need to cross reference this with the permutation
+        _, fire_event = fire_permutations[id]
+        match fire_event:
+            case {2: FireOutcomes.PIN, 3: FireOutcomes.PIN}:
+                unit = branch.combat_units[fixture.unit_move]
+                assert (
+                    unit.status == CombatUnit.Status.PINNED
+                ), "Expects PIN fire event to result in PINNED status"
+            case {2: FireOutcomes.PIN, 3: FireOutcomes.SUPPRESS}:
+                unit = branch.combat_units[fixture.unit_move]
+                assert (
+                    unit.status == CombatUnit.Status.SUPPRESSED
+                ), "Expects SUPPRESSED fire event to result in SUPPRESSED status"
+            case {2: FireOutcomes.SUPPRESS, 3: FireOutcomes.PIN}:
+                unit = branch.combat_units[fixture.unit_move]
+                assert (
+                    unit.status == CombatUnit.Status.SUPPRESSED
+                ), "Expects SUPPRESSED fire event to result in SUPPRESSED status"
+            case {2: FireOutcomes.SUPPRESS, 3: FireOutcomes.SUPPRESS}:
+                assert (
+                    fixture.unit_move not in branch.combat_units
+                ), "Expects double SUPPRESSED fire event to kill unit"
+            case _:
+                ...
     assert total_prob == 1, "Total probability must sum to 1"
