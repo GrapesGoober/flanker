@@ -186,7 +186,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 # Filter some move actions to reduce branching factor
                 movable_nodes = random.sample(
                     population=list(current_waypoint.movable_paths.keys()),
-                    k=9,
+                    k=min(9, len(current_waypoint.movable_paths)),
                 )
 
                 for move_to_id in movable_nodes:
@@ -266,51 +266,54 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         objective.units_destroyed_counter += 1
                 return gs
 
+    def _get_reactive_fire_permutations(
+        self, action: WaypointMoveAction
+    ) -> list[tuple[float, list[tuple[AbstractedCombatUnit, FireOutcomes]]]]:
+        """Returns all permutations of a move action."""
+
+        # Check for move interrupts
+        # Build a list of all permutations of reactive fires
+        permutations: list[
+            tuple[
+                float,  # total probability of this event permutation
+                list[  # event (enemy, outcome) of this permutation
+                    tuple[AbstractedCombatUnit, FireOutcomes]
+                ],
+            ]
+        ] = []
+
+        current_faction = self._initiative
+        enemies: list[AbstractedCombatUnit] = []
+
+        for enemy_unit in self._combat_units.values():
+            if enemy_unit.faction == current_faction:
+                continue
+            enemy_waypoint = self._waypoints[enemy_unit.current_waypoint_id]
+            if action.interrupt_at_id not in enemy_waypoint.visible_nodes:
+                continue
+            enemies.append(enemy_unit)
+
+        for outcome_combo in product(
+            _FIRE_REACTION_PROBABILITIES.keys(), repeat=len(enemies)
+        ):
+            # Append the joint probability and event pair
+            probability = prod(
+                _FIRE_REACTION_PROBABILITIES[outcome] for outcome in outcome_combo
+            )
+            event = [(enemy, outcome) for enemy, outcome in zip(enemies, outcome_combo)]
+            permutations.append((probability, event))
+        return permutations
+
     @override
     def get_branches(
         self, action: WaypointAction
     ) -> list[tuple[float, "WaypointsState"]]:
         match action:
             case WaypointMoveAction():
-                # Check for move interrupts
                 # TODO there's MULTIPLE INTERRUPTS at differnt points ALONG THE PATH
                 if action.interrupt_at_id is not None:
-                    # Build a list of all permutations of reactive fires
-                    permutations: list[
-                        tuple[
-                            float,  # total probability of this event permutation
-                            list[  # event (enemy, outcome) of this permutation
-                                tuple[AbstractedCombatUnit, FireOutcomes]
-                            ],
-                        ]
-                    ] = []
-
-                    current_faction = self._initiative
-                    enemies: list[AbstractedCombatUnit] = []
-
-                    for enemy_unit in self._combat_units.values():
-                        if enemy_unit.faction == current_faction:
-                            continue
-                        enemy_waypoint = self._waypoints[enemy_unit.current_waypoint_id]
-                        if action.interrupt_at_id not in enemy_waypoint.visible_nodes:
-                            continue
-                        enemies.append(enemy_unit)
-
-                    for outcome_combo in product(
-                        _FIRE_REACTION_PROBABILITIES.keys(), repeat=len(enemies)
-                    ):
-                        # Append the joint probability and event pair
-                        probability = prod(
-                            _FIRE_REACTION_PROBABILITIES[outcome]
-                            for outcome in outcome_combo
-                        )
-                        event = [
-                            (enemy, outcome)
-                            for enemy, outcome in zip(enemies, outcome_combo)
-                        ]
-                        permutations.append((probability, event))
-
                     # Get all outcomes for each reactive fire permutations
+                    permutations = self._get_reactive_fire_permutations(action)
                     all_outcomes: list[tuple[float, "WaypointsState"]] = []
                     for prob, permutation in permutations:
                         gs = self.copy()
