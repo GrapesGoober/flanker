@@ -266,7 +266,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         objective.units_destroyed_counter += 1
                 return gs
 
-    def _get_all_fire_permutations(
+    def get_all_fire_permutations(
         self, enemy_ids: list[int]
     ) -> list[tuple[float, dict[int, FireOutcomes]]]:
         """Returns all permutations of (unit, outcome) and their probabilities."""
@@ -304,7 +304,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     candidate_enemy_ids: list[int] = []
                     for _, interrupt_enemies in interrupts:
                         candidate_enemy_ids += interrupt_enemies
-                    permutations = self._get_all_fire_permutations(candidate_enemy_ids)
+                    permutations = self.get_all_fire_permutations(candidate_enemy_ids)
 
                     # For each permutation, build a new gs outcome
                     all_outcomes: list[tuple[float, "WaypointsState"]] = []

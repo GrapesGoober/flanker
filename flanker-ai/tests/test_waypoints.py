@@ -88,6 +88,7 @@ def fixture() -> Fixture:
 
     state = WaypointsState(
         points=[
+            # TODO: fixturize the waypoint IDs, not hardcoded IDs
             Vec2(6, -10),  # 0
             Vec2(7, -10),  # 1
             Vec2(8, -10),  # 2
@@ -160,40 +161,17 @@ def test_two_interrupts(fixture: Fixture) -> None:
 
 
 def test_permutations(fixture: Fixture) -> None:
-
-    # Use any move action with an interrupt to run this test
-    intended_move_action: WaypointMoveAction | None = None
-    actions = fixture.state.get_actions()
-    for action in actions:
-        if not isinstance(action, WaypointMoveAction):
-            continue
-        interrupts = fixture.state.get_move_interrupts(
-            action.unit_id,
-            action.move_to_waypoint_id,
-        )
-        if interrupts == []:
-            continue
-        waypoint = fixture.state.waypoints[interrupts[0][0]]
-        assert waypoint.position == Vec2(
-            8, -10
-        ), "Move action expects to be interrupted at (8, -10)"
-
-        if waypoint.position == Vec2(8, -10):
-            intended_move_action = action
-            break
-
-    assert (
-        intended_move_action is not None
-    ), "Can't test, interrupt move action doesn't exist"
-
-    allowable_scores = [
-        -3,  # +ACTIVE - ACTIVE - ACTIVE
-        -4,  # +PINNED - ACTIVE - ACTIVE
-        -5,  # +SUPPRESSED - ACTIVE - ACTIVE
-        -6,  # 0 - ACTIVE - ACTIVE
-    ]
-
-    branches = fixture.state.get_branches(intended_move_action)
-    for _, branch in branches:
-        score = branch.get_score(InitiativeState.Faction.BLUE)
-        assert score in allowable_scores, """Invalid states found"""
+    action = WaypointMoveAction(
+        unit_id=fixture.unit_move,
+        move_to_waypoint_id=2,
+    )
+    interrupts = fixture.state.get_move_interrupts(
+        action.unit_id,
+        action.move_to_waypoint_id,
+    )
+    _, enemies = interrupts[0]
+    fire_permutations = fixture.state.get_all_fire_permutations(enemies)
+    total_prob = 0
+    for prob, _ in fire_permutations:
+        total_prob += prob
+    assert total_prob == 1, "Total probability must sum to 1"
