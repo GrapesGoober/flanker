@@ -266,46 +266,26 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         objective.units_destroyed_counter += 1
                 return gs
 
-    def _get_reactive_fire_permutations(
-        self, action: WaypointMoveAction
-    ) -> list[tuple[float, list[tuple[AbstractedCombatUnit, FireOutcomes]]]]:
-        """Returns all permutations of a move action."""
-
-        # Check for move interrupts
-        # Build a list of all permutations of reactive fires
+    def _get_all_fire_permutations(
+        self, enemy_ids: list[int]
+    ) -> list[tuple[float, dict[int, FireOutcomes]]]:
+        """Returns all permutations of (unit, outcome) and their probabilities."""
         permutations: list[
             tuple[
-                float,  # total probability of this event permutation
-                list[  # event (enemy, outcome) of this permutation
-                    tuple[AbstractedCombatUnit, FireOutcomes]
-                ],
+                float,  # total probability of this permutation event
+                dict[int, FireOutcomes],  # event (key=enemy, value=outcome)
             ]
         ] = []
 
-        current_faction = self._initiative
-        enemies: list[AbstractedCombatUnit] = []
-        interrupts = self.get_move_interrupts(
-            action.unit_id, action.move_to_waypoint_id
-        )
-        # TODO: Assumes first interrupt point as a placeholder
-        interrupt_point: int = interrupts[0][0]
-
-        for enemy_unit in self._combat_units.values():
-            if enemy_unit.faction == current_faction:
-                continue
-            enemy_waypoint = self._waypoints[enemy_unit.current_waypoint_id]
-            if interrupt_point not in enemy_waypoint.visible_nodes:
-                continue
-            enemies.append(enemy_unit)
-
-        for outcome_combo in product(
-            _FIRE_REACTION_PROBABILITIES.keys(), repeat=len(enemies)
-        ):
-            # Append the joint probability and event pair
+        # Assemble the probability and fire outcomes
+        outcomes = list(_FIRE_REACTION_PROBABILITIES.keys())
+        for outcome_combo in product(outcomes, repeat=len(enemy_ids)):
             probability = prod(
                 _FIRE_REACTION_PROBABILITIES[outcome] for outcome in outcome_combo
             )
-            event = [(enemy, outcome) for enemy, outcome in zip(enemies, outcome_combo)]
+            event = {
+                enemy_id: outcome for enemy_id, outcome in zip(enemy_ids, outcome_combo)
+            }
             permutations.append((probability, event))
         return permutations
 
@@ -320,27 +300,72 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     move_to_id=action.move_to_waypoint_id,
                 )
                 if interrupts != []:
-                    # Get all outcomes for each reactive fire permutations
-                    permutations = self._get_reactive_fire_permutations(action)
+                    # Get fire permutations for all enemies
+                    candidate_enemy_ids: list[int] = []
+                    for _, interrupt_enemies in interrupts:
+                        candidate_enemy_ids += interrupt_enemies
+                    permutations = self._get_all_fire_permutations(candidate_enemy_ids)
+
+                    # For each permutation, build a new gs outcome
                     all_outcomes: list[tuple[float, "WaypointsState"]] = []
-                    for prob, permutation in permutations:
+                    for prob, enemy_fire_outcomes in permutations:
+                        # Create a new copy; play out the reactive fire and
+                        # record the gs as a new outcome
                         gs = self.copy()
                         gs._stall_counter[gs._initiative] = 0
-                        current_unit = gs._combat_units[action.unit_id]
-                        for enemy_unit, fire_outcome in permutation:
-                            match fire_outcome:
-                                case FireOutcomes.MISS:
-                                    enemy_unit.no_fire = True
-                                case FireOutcomes.PIN:
-                                    if current_unit.status == CombatUnit.Status.ACTIVE:
-                                        current_unit.status = CombatUnit.Status.PINNED
-                                    current_unit.current_waypoint_id = interrupts[0][0]
-                                case FireOutcomes.SUPPRESS:
-                                    current_unit.status = CombatUnit.Status.SUPPRESSED
-                                    gs._flip_initiative()
-                                case FireOutcomes.KILL:
-                                    gs._kill_unit(action.unit_id)
-                                    gs._flip_initiative()
+
+                        # Track the most-severe fire outcome.
+                        # More severe outcomes will override this variables.
+                        reactive_fire_outcome: FireOutcomes | None = None
+                        for waypoint_id, enemy_ids in interrupts:
+                            # If the unit got interrupted and stopped moving,
+                            # subsequent spotters don't get to fire.
+                            if reactive_fire_outcome is not None:
+                                break
+
+                            for enemy_id in enemy_ids:
+                                # Some previous fire outcomes might have killed unit,
+                                # so break early to prevent a non-existant entity being used.
+                                if action.unit_id not in gs._combat_units:
+                                    break
+                                current_unit = gs._combat_units[action.unit_id]
+
+                                fire_outcome = enemy_fire_outcomes[enemy_id]
+                                match fire_outcome:
+                                    case FireOutcomes.MISS:
+                                        enemy_unit = self._combat_units[enemy_id]
+                                        enemy_unit.no_fire = True
+                                    case FireOutcomes.PIN:
+                                        if (
+                                            current_unit.status
+                                            == CombatUnit.Status.ACTIVE
+                                        ):
+                                            current_unit.status = (
+                                                CombatUnit.Status.PINNED
+                                            )
+                                            current_unit.current_waypoint_id = (
+                                                waypoint_id
+                                            )
+                                            reactive_fire_outcome = fire_outcome
+                                    case FireOutcomes.SUPPRESS:
+                                        if (
+                                            current_unit.status
+                                            != CombatUnit.Status.SUPPRESSED
+                                        ):
+                                            current_unit.status = (
+                                                CombatUnit.Status.SUPPRESSED
+                                            )
+                                            current_unit.current_waypoint_id = (
+                                                waypoint_id
+                                            )
+                                            reactive_fire_outcome = fire_outcome
+                                        else:
+                                            gs._kill_unit(action.unit_id)
+                                            reactive_fire_outcome = fire_outcome
+                                    case FireOutcomes.KILL:
+                                        gs._kill_unit(action.unit_id)
+                                        reactive_fire_outcome = FireOutcomes.KILL
+
                         all_outcomes.append((prob, gs))
 
                     return all_outcomes
@@ -510,25 +535,28 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self,
         unit_id: int,
         move_to_id: int,
-    ) -> list[tuple[int, list[AbstractedCombatUnit]]]:
+    ) -> list[tuple[int, list[int]]]:
+        """Returns a list of (waypoint_id, [enemy_ids]) pair."""
         current_unit = self._combat_units[unit_id]
         current_waypoint = self._waypoints[current_unit.current_waypoint_id]
-        interrupt_points: list[tuple[int, list[AbstractedCombatUnit]]] = []
+        interrupt_points: list[tuple[int, list[int]]] = []
         for path_id in current_waypoint.movable_paths[move_to_id]:
-            enemies: list[AbstractedCombatUnit] = []
-            for enemy_unit in self._combat_units.values():
+            enemy_ids: list[int] = []
+            for enemy_id, enemy_unit in self._combat_units.items():
                 # Add interrupt if the enemy can reactive fire it
                 if enemy_unit.faction == current_unit.faction:
                     continue
                 if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
                     continue
+                if enemy_unit.no_fire:
+                    continue
                 enemy_visible_nodes = self._waypoints[
                     enemy_unit.current_waypoint_id
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
-                    enemies.append(enemy_unit)
-            if enemies != []:
-                interrupt_points.append((path_id, enemies))
+                    enemy_ids.append(enemy_id)
+            if enemy_ids != []:
+                interrupt_points.append((path_id, enemy_ids))
         return interrupt_points
 
     def _flip_initiative(self) -> None:

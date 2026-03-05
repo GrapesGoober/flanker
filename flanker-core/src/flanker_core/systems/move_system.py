@@ -156,7 +156,7 @@ class MoveSystem:
             for spotter_id in spotter_ids:
                 outcome = FireSystem.get_fire_outcome(gs, spotter_id)
 
-                # Some previos fire outcomes might have killed unit,
+                # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
                 if not gs.try_component(unit_id, CombatUnit):
                     break
