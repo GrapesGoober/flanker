@@ -93,29 +93,49 @@ def fixture() -> Fixture:
 
 
 def test_interrupt_waypoint(fixture: Fixture) -> None:
+    """Test that if there's move interrupt coodinates, they're are correct"""
+
+    actions = fixture.state.get_actions()
+    one_interrupt_found = False
+    for action in actions:
+        if not isinstance(action, WaypointMoveAction):
+            continue
+        interrupts = fixture.state.get_move_interrupts(
+            action.unit_id,
+            action.move_to_waypoint_id,
+        )
+        if interrupts == []:
+            continue
+        one_interrupt_found = True
+        waypoint = fixture.state.waypoints[interrupts[0][0]]
+        assert waypoint.position == Vec2(
+            8, -10
+        ), "Move action expects to be interrupted at (8, -10)"
+    if not one_interrupt_found:
+        assert False, "An interrupt must be found for this fixture"
+
+
+def test_permutations(fixture: Fixture) -> None:
+    """Test that the permutations from an interrupt are correct"""
+
+    # Use any move action with an interrupt to run this test
+    intended_move_action: WaypointMoveAction | None = None
+    actions = fixture.state.get_actions()
     actions = fixture.state.get_actions()
     for action in actions:
         if not isinstance(action, WaypointMoveAction):
             continue
-        if action.interrupt_at_id == None:
+        interrupts = fixture.state.get_move_interrupts(
+            action.unit_id,
+            action.move_to_waypoint_id,
+        )
+        if interrupts == []:
             continue
-        waypoint = fixture.state.waypoints[action.interrupt_at_id]
+        waypoint = fixture.state.waypoints[interrupts[0][0]]
         assert waypoint.position == Vec2(
             8, -10
         ), "Move action expects to be interrupted at (8, -10)"
 
-
-# Test that some permutations are better than others
-def test_permutations(fixture: Fixture) -> None:
-    actions = fixture.state.get_actions()
-    # Use any move action with an interrupt to run this test
-    intended_move_action: WaypointMoveAction | None = None
-    for action in actions:
-        if not isinstance(action, WaypointMoveAction):
-            continue
-        if action.interrupt_at_id == None:
-            continue
-        waypoint = fixture.state.waypoints[action.interrupt_at_id]
         if waypoint.position == Vec2(8, -10):
             intended_move_action = action
             break

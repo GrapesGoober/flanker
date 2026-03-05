@@ -168,14 +168,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         not in current_waypoint.movable_paths.keys()
                     ):
                         continue
-                    interrupt = self._get_move_interrupt(
-                        combat_unit, enemy_unit.current_waypoint_id
-                    )
                     actions.append(
                         WaypointAssaultAction(
                             unit_id=combat_unit_id,
                             target_id=enemy_id,
-                            interrupt_at_id=interrupt,
                         )
                     )
 
@@ -190,15 +186,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 )
 
                 for move_to_id in movable_nodes:
-                    interrupt = self._get_move_interrupt(
-                        combat_unit,
-                        move_to_id,
-                    )
                     actions.append(
                         WaypointMoveAction(
                             unit_id=combat_unit_id,
                             move_to_waypoint_id=move_to_id,
-                            interrupt_at_id=interrupt,
                         )
                     )
 
@@ -218,11 +209,15 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 gs = self.copy()
                 current_unit = gs._combat_units[action.unit_id]
                 # Check for move interrupts
-                if action.interrupt_at_id is not None:
+                interrupts = self.get_move_interrupts(
+                    unit_id=action.unit_id,
+                    move_to_id=action.move_to_waypoint_id,
+                )
+                if interrupts != []:
                     gs._stall_counter[gs._initiative] = 0
                     # Assumes determinic for now
                     current_unit.status = CombatUnit.Status.PINNED
-                    current_unit.current_waypoint_id = action.interrupt_at_id
+                    current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     gs._stall_counter[gs._initiative] += 1
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
@@ -242,11 +237,16 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 # Check for move interrupts
                 current_unit = gs._combat_units[action.unit_id]
                 target_unit = gs._combat_units[action.target_id]
-                if action.interrupt_at_id is not None:
+                target_waypoint = target_unit.current_waypoint_id
+                interrupts = self.get_move_interrupts(
+                    unit_id=action.unit_id,
+                    move_to_id=target_waypoint,
+                )
+                if interrupts != []:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
                     gs._flip_initiative()
-                    current_unit.current_waypoint_id = action.interrupt_at_id
+                    current_unit.current_waypoint_id = target_waypoint
                 else:
                     current_unit.current_waypoint_id = target_unit.current_waypoint_id
 
@@ -284,12 +284,17 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         current_faction = self._initiative
         enemies: list[AbstractedCombatUnit] = []
+        interrupts = self.get_move_interrupts(
+            action.unit_id, action.move_to_waypoint_id
+        )
+        # TODO: Assumes first interrupt point as a placeholder
+        interrupt_point: int = interrupts[0][0]
 
         for enemy_unit in self._combat_units.values():
             if enemy_unit.faction == current_faction:
                 continue
             enemy_waypoint = self._waypoints[enemy_unit.current_waypoint_id]
-            if action.interrupt_at_id not in enemy_waypoint.visible_nodes:
+            if interrupt_point not in enemy_waypoint.visible_nodes:
                 continue
             enemies.append(enemy_unit)
 
@@ -310,8 +315,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> list[tuple[float, "WaypointsState"]]:
         match action:
             case WaypointMoveAction():
-                # TODO there's MULTIPLE INTERRUPTS at differnt points ALONG THE PATH
-                if action.interrupt_at_id is not None:
+                interrupts = self.get_move_interrupts(
+                    unit_id=action.unit_id,
+                    move_to_id=action.move_to_waypoint_id,
+                )
+                if interrupts != []:
                     # Get all outcomes for each reactive fire permutations
                     permutations = self._get_reactive_fire_permutations(action)
                     all_outcomes: list[tuple[float, "WaypointsState"]] = []
@@ -326,9 +334,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                                 case FireOutcomes.PIN:
                                     if current_unit.status == CombatUnit.Status.ACTIVE:
                                         current_unit.status = CombatUnit.Status.PINNED
-                                    current_unit.current_waypoint_id = (
-                                        action.interrupt_at_id
-                                    )
+                                    current_unit.current_waypoint_id = interrupts[0][0]
                                 case FireOutcomes.SUPPRESS:
                                     current_unit.status = CombatUnit.Status.SUPPRESSED
                                     gs._flip_initiative()
@@ -372,11 +378,15 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 # Check for move interrupts
                 current_unit = gs._combat_units[action.unit_id]
                 target_unit = gs._combat_units[action.target_id]
-                if action.interrupt_at_id is not None:
+                interrupts = self.get_move_interrupts(
+                    unit_id=action.unit_id,
+                    move_to_id=target_unit.current_waypoint_id,
+                )
+                if interrupts != []:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
                     gs._flip_initiative()
-                    current_unit.current_waypoint_id = action.interrupt_at_id
+                    current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     current_unit.current_waypoint_id = target_unit.current_waypoint_id
 
@@ -496,13 +506,16 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
 
-    def _get_move_interrupt(
+    def get_move_interrupts(
         self,
-        current_unit: AbstractedCombatUnit,
+        unit_id: int,
         move_to_id: int,
-    ) -> int | None:
+    ) -> list[tuple[int, list[AbstractedCombatUnit]]]:
+        current_unit = self._combat_units[unit_id]
         current_waypoint = self._waypoints[current_unit.current_waypoint_id]
+        interrupt_points: list[tuple[int, list[AbstractedCombatUnit]]] = []
         for path_id in current_waypoint.movable_paths[move_to_id]:
+            enemies: list[AbstractedCombatUnit] = []
             for enemy_unit in self._combat_units.values():
                 # Add interrupt if the enemy can reactive fire it
                 if enemy_unit.faction == current_unit.faction:
@@ -513,8 +526,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     enemy_unit.current_waypoint_id
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
-                    return path_id
-        return None
+                    enemies.append(enemy_unit)
+            if enemies != []:
+                interrupt_points.append((path_id, enemies))
+        return interrupt_points
 
     def _flip_initiative(self) -> None:
         match self._initiative:
