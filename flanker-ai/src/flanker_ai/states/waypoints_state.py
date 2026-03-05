@@ -47,6 +47,8 @@ class AbstractedCombatUnit:
     status: CombatUnit.Status
     faction: InitiativeState.Faction
     no_fire: bool
+    # orientation in degrees (0‑360); used by AI when computing FOV
+    pivot: float
 
 
 @dataclass
@@ -57,6 +59,9 @@ class WaypointNode:
 
 
 class WaypointsState(IRepresentationState[WaypointAction]):
+    # half-angle used by both fire and reactive-fire FOV tests
+    FOV_HALF_ANGLE: float = 45.0
+
     def __init__(
         self,
         points: list[Vec2],
@@ -151,6 +156,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     CombatUnit.Status.PINNED,
                 ]:
                     if enemy_unit.current_waypoint_id in current_waypoint.visible_nodes:
+                        # enforce FOV: attacker must be facing the enemy node
+                        if not LosSystem.is_in_fov(
+                            current_waypoint.position,
+                            combat_unit.pivot,
+                            self._waypoints[enemy_unit.current_waypoint_id].position,
+                            WaypointsState.FOV_HALF_ANGLE,
+                        ):
+                            continue
                         actions.append(
                             WaypointFireAction(
                                 unit_id=combat_unit_id,
@@ -440,6 +453,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 status=combat_unit.status,
                 faction=combat_unit.faction,
                 no_fire=not fire_controls.can_reactive_fire,
+                pivot=transform.degrees,
             )
 
         # Update their relationships
@@ -471,6 +485,15 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     enemy_unit.current_waypoint_id
                 ].visible_nodes
                 if path_id in enemy_visible_nodes:
+                    # also require that the path node lies in the enemy's forward
+                    # cone according to its stored pivot (orientation)
+                    if not LosSystem.is_in_fov(
+                        self._waypoints[enemy_unit.current_waypoint_id].position,
+                        enemy_unit.pivot,
+                        self._waypoints[path_id].position,
+                        WaypointsState.FOV_HALF_ANGLE,
+                    ):
+                        continue
                     return path_id
         return None
 
