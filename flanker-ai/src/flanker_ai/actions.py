@@ -30,6 +30,12 @@ class PivotAction:
 
 
 @dataclass
+class PivotActionResult:
+    action: PivotAction
+    result_gs: GameState
+
+
+@dataclass
 class MoveActionResult:
     action: MoveAction
     result_gs: GameState
@@ -52,4 +58,6 @@ class AssaultActionResult:
 
 
 Action = MoveAction | FireAction | AssaultAction | PivotAction
-ActionResult = MoveActionResult | FireActionResult | AssaultActionResult  # pivot results added elsewhere if needed
+ActionResult = (
+    MoveActionResult | FireActionResult | AssaultActionResult | PivotActionResult
+)

@@ -1,13 +1,9 @@
+import math
 import random
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Literal, override
-
-# many methods need to access internal caches; the AI representation state
-# deliberately exposes protected attributes for performance and convenience.
-# pylint: disable=protected-access
-
-from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction, PivotAction
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.waypoints_actions import (
@@ -15,6 +11,7 @@ from flanker_ai.states.waypoints_actions import (
     WaypointAssaultAction,
     WaypointFireAction,
     WaypointMoveAction,
+    WaypointPivotAction,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -149,6 +146,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             if combat_unit.faction != self._initiative:
                 continue
 
+            pivot_headings: set[float] = set()
+
             # Adds assault & fire actions
             for enemy_id, enemy_unit in enemy_units:
 
@@ -160,13 +159,31 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     CombatUnit.Status.PINNED,
                 ]:
                     if enemy_unit.current_waypoint_id in current_waypoint.visible_nodes:
+                        enemy_position = self._waypoints[
+                            enemy_unit.current_waypoint_id
+                        ].position
+                        heading_to_enemy = WaypointsState._get_heading(
+                            current_waypoint.position,
+                            enemy_position,
+                        )
+
                         # enforce FOV: attacker must be facing the enemy node
                         if not LosSystem.is_in_fov(
                             current_waypoint.position,
                             combat_unit.pivot,
-                            self._waypoints[enemy_unit.current_waypoint_id].position,
+                            enemy_position,
                             WaypointsState.FOV_HALF_ANGLE,
                         ):
+                            # if target is visible but outside FOV, allow pivoting
+                            # toward it as an explicit action.
+                            if heading_to_enemy not in pivot_headings:
+                                actions.append(
+                                    WaypointPivotAction(
+                                        unit_id=combat_unit_id,
+                                        degrees=heading_to_enemy,
+                                    )
+                                )
+                                pivot_headings.add(heading_to_enemy)
                             continue
                         actions.append(
                             WaypointFireAction(
@@ -281,6 +298,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         objective.units_destroyed_counter += 1
                 return gs
 
+            case WaypointPivotAction():
+                gs = self.copy()
+                gs._stall_counter[gs._initiative] += 1
+                current_unit = gs._combat_units[action.unit_id]
+                current_unit.pivot = action.degrees % 360
+                return gs
+
     @override
     def get_branches(
         self, action: WaypointAction
@@ -364,6 +388,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
                 return [(1, gs)]
 
+            case WaypointPivotAction():
+                gs = self.copy()
+                gs._stall_counter[gs._initiative] += 1
+                current_unit = gs._combat_units[action.unit_id]
+                current_unit.pivot = action.degrees % 360
+                return [(1, gs)]
+
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
         for faction, counter in self._stall_counter.items():
@@ -400,6 +431,21 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
+            case WaypointPivotAction():
+                return PivotAction(
+                    unit_id=action.unit_id,
+                    degrees=action.degrees,
+                )
+
+    @staticmethod
+    def _get_heading(start: Vec2, end: Vec2) -> float:
+        rel = end - start
+        if rel.length() == 0:
+            return 0.0
+        theta = math.degrees(math.atan2(rel.y, rel.x))
+        if theta < 0:
+            theta += 360
+        return theta
 
     @override
     def initialize_state(

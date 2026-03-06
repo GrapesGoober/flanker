@@ -1,7 +1,7 @@
 import random
 from typing import Sequence
 
-from flanker_ai.actions import AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import AssaultAction, FireAction, MoveAction, PivotAction
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.gamestate import GameState
@@ -44,7 +44,7 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
             match real_action:
                 case FireAction():
                     fire_actions.append(action)
-                case MoveAction() | AssaultAction():
+                case MoveAction() | AssaultAction() | PivotAction():
                     move_actions.append(action)
 
         # If any fire actions are valid, perform it first

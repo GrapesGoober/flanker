@@ -21,4 +21,12 @@ class WaypointAssaultAction:
     interrupt_at_id: int | None
 
 
-WaypointAction = WaypointMoveAction | WaypointFireAction | WaypointAssaultAction
+@dataclass
+class WaypointPivotAction:
+    unit_id: int
+    degrees: float
+
+
+WaypointAction = (
+    WaypointMoveAction | WaypointFireAction | WaypointAssaultAction | WaypointPivotAction
+)

@@ -10,6 +10,8 @@ from flanker_ai.actions import (
     FireActionResult,
     MoveAction,
     MoveActionResult,
+    PivotAction,
+    PivotActionResult,
 )
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.i_policy import IPolicy
@@ -28,6 +30,7 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.systems.pivot_system import PivotSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
 _MAX_STALL_LIMIT = 5
@@ -241,5 +244,19 @@ class AiAgent:
                         result_gs=self._gs,
                         outcome=result.outcome,
                         reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+            case PivotAction():
+                stall_counter_ent = self._gs.query(AiStallCountComponent)
+                _, counter = stall_counter_ent[0]
+                counter.stall_counter[self._faction] += 1
+                result = PivotSystem.pivot(
+                    self._gs,
+                    action.unit_id,
+                    action.degrees,
+                )
+                if not isinstance(result, InvalidAction):
+                    return PivotActionResult(
+                        action=action,
+                        result_gs=self._gs,
                     )
         return result
