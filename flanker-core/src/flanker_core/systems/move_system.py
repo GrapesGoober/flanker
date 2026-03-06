@@ -83,7 +83,130 @@ class MoveSystem:
             yield current
 
     @staticmethod
-    def _get_interrupt_candidates(
+    def _get_segment_param(
+        start: Vec2,
+        end: Vec2,
+        point: Vec2,
+    ) -> float:
+        """Return normalized segment parameter t in [0,1] for `point` on `start->end`."""
+        segment = end - start
+        segment_len_sq = segment.dot(segment)
+        if segment_len_sq == 0:
+            return 0.0
+        return max(0.0, min(1.0, (point - start).dot(segment) / segment_len_sq))
+
+    @staticmethod
+    def _get_first_visible_in_fov_point(
+        start: Vec2,
+        to: Vec2,
+        spotter_pos: Vec2,
+        spotter_heading: float,
+        los_polygon: list[Vec2] | None,
+    ) -> Vec2 | None:
+        """Find the earliest point on move segment where both LOS and FOV are valid.
+
+        This solves edge cases where checking only one LOS intersection point misses
+        paths that enter the spotter's FOV cone later while already inside LOS.
+        """
+
+        move = to - start
+        move_len_sq = move.dot(move)
+
+        has_polygon = los_polygon is not None and len(los_polygon) > 2
+
+        # Collect transition parameters where LOS/FOV truth value may change.
+        t_values = [0.0, 1.0]
+
+        if has_polygon and los_polygon:
+            for point in IntersectGetter.get_intersects(
+                line=(start, to),
+                polyline=los_polygon,
+            ):
+                t_values.append(MoveSystem._get_segment_param(start, to, point))
+
+        # Intersections with left/right FOV boundary rays.
+        # These are where the movement crosses into/out of the cone.
+        heading_rad = math.radians(spotter_heading)
+        base_dir = Vec2(math.cos(heading_rad), math.sin(heading_rad))
+        half_rad = math.radians(MoveSystem.FOV_HALF_ANGLE)
+        ray_scale = max((to - start).length(), 1000.0) * 4.0
+        for boundary_dir in (base_dir.rotated(half_rad), base_dir.rotated(-half_rad)):
+            ray_end = spotter_pos + boundary_dir * ray_scale
+            for point in IntersectGetter.get_intersects(
+                line=(start, to),
+                polyline=[spotter_pos, ray_end],
+            ):
+                t_values.append(MoveSystem._get_segment_param(start, to, point))
+
+        # De-duplicate sorted transition points.
+        t_values = sorted(t_values)
+        unique_t: list[float] = []
+        for t in t_values:
+            if not unique_t or abs(t - unique_t[-1]) > 1e-9:
+                unique_t.append(t)
+
+        if move_len_sq == 0:
+            point = start
+            in_los = (
+                IntersectGetter.is_inside(point=point, polygon=los_polygon)
+                if has_polygon and los_polygon
+                else True
+            )
+            in_fov = LosSystem.is_in_fov(
+                spotter_pos,
+                spotter_heading,
+                point,
+                MoveSystem.FOV_HALF_ANGLE,
+            )
+            if in_los and in_fov:
+                return point
+            return None
+
+        # Evaluate each interval; if valid there, earliest valid point is at
+        # interval start (a transition t value).
+        for idx, t_start in enumerate(unique_t[:-1]):
+            t_end = unique_t[idx + 1]
+            t_mid = (t_start + t_end) * 0.5
+            point_mid = start + move * t_mid
+
+            in_los_mid = (
+                IntersectGetter.is_inside(point=point_mid, polygon=los_polygon)
+                if has_polygon and los_polygon
+                else True
+            )
+            in_fov_mid = LosSystem.is_in_fov(
+                spotter_pos,
+                spotter_heading,
+                point_mid,
+                MoveSystem.FOV_HALF_ANGLE,
+            )
+
+            if not (in_los_mid and in_fov_mid):
+                continue
+
+            candidate = start + move * t_start
+            return candidate
+
+        # Also check exact endpoint.
+        endpoint = to
+        in_los_end = (
+            IntersectGetter.is_inside(point=endpoint, polygon=los_polygon)
+            if has_polygon and los_polygon
+            else True
+        )
+        in_fov_end = LosSystem.is_in_fov(
+            spotter_pos,
+            spotter_heading,
+            endpoint,
+            MoveSystem.FOV_HALF_ANGLE,
+        )
+        if in_los_end and in_fov_end:
+            return endpoint
+
+        return None
+
+    @staticmethod
+    def get_interrupt_candidates(
         gs: GameState,
         unit_id: int,
         to: Vec2,
@@ -98,50 +221,21 @@ class MoveSystem:
         for spotter_id in spotter_candidates:
             spotter_transform = gs.get_component(spotter_id, Transform)
 
-            # Rough FOV check: a spotter will only consider a target if the
-            # point where the target would be seen falls inside its forward
-            # cone.  We perform this check *after* LOS evaluation so that we
-            # can test the intersection point itself rather than blindly using
-            # the moving unit's original position.  This allows reactive fire
-            # to trigger when a unit moves *into* a shooter's FOV.
-
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             if not spotter_fire_controls.los_polygon:
                 LosSystem.update_los_polygon(gs, spotter_id)
                 # LOS polygon should be generated
                 assert spotter_fire_controls.los_polygon
 
-            candidate_point: Vec2 | None = None
-
-            # Check if target is in line of sight
-            # determine LOS intersection: if polygon is too small to form a
-            # proper shape we assume there are no occluders and the spotter
-            # sees the unit immediately.
-            if spotter_fire_controls.los_polygon and len(spotter_fire_controls.los_polygon) > 2:
-                if IntersectGetter.is_inside(
-                    point=transform.position,
-                    polygon=spotter_fire_controls.los_polygon,
-                ):
-                    candidate_point = transform.position
-                elif intersects := IntersectGetter.get_intersects(
-                    line=(transform.position, to),
-                    polyline=spotter_fire_controls.los_polygon,
-                ):
-                    candidate_point = intersects[0]
-            else:
-                # no meaningful polygon -> treat as visible immediately
-                candidate_point = transform.position
+            candidate_point = MoveSystem._get_first_visible_in_fov_point(
+                start=transform.position,
+                to=to,
+                spotter_pos=spotter_transform.position,
+                spotter_heading=spotter_transform.degrees,
+                los_polygon=spotter_fire_controls.los_polygon,
+            )
 
             if candidate_point is None:
-                continue
-
-            # final FOV check against the intersection/target point
-            if not LosSystem.is_in_fov(
-                spotter_transform.position,
-                spotter_transform.degrees,
-                candidate_point,
-                MoveSystem.FOV_HALF_ANGLE,
-            ):
                 continue
 
             interrupt_candidates.append((candidate_point, spotter_id))
@@ -154,6 +248,15 @@ class MoveSystem:
         )
 
         return interrupt_candidates
+
+    @staticmethod
+    def _get_interrupt_candidates(
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
+    ) -> list[tuple[Vec2, int]]:
+        """Backward-compatible wrapper. Prefer `get_interrupt_candidates`."""
+        return MoveSystem.get_interrupt_candidates(gs, unit_id, to)
 
     @staticmethod
     def _singular_move(
@@ -182,7 +285,7 @@ class MoveSystem:
             heading += 360
         transform.degrees = heading
 
-        interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
+        interrupt_candidates = MoveSystem.get_interrupt_candidates(gs, unit_id, to)
 
         # Tiny offset to prevent entity from sitting precisely on LOS polygon edge
         # This reduces floating point sensitivity

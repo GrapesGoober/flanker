@@ -62,8 +62,7 @@ class PivotSystem:
         unit = gs.get_component(unit_id, CombatUnit)
         transform = gs.get_component(unit_id, Transform)
 
-        # pylint: disable=protected-access
-        interrupt_candidates = MoveSystem._get_interrupt_candidates(
+        interrupt_candidates = MoveSystem.get_interrupt_candidates(
             gs, unit_id, transform.position
         )
 
