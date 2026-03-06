@@ -241,24 +241,18 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
                     gs._flip_initiative()
-                    current_unit.current_waypoint_id = target_waypoint
+                    current_unit.current_waypoint_id = interrupts[0][0]
                 else:
-                    current_unit.current_waypoint_id = target_unit.current_waypoint_id
+                    current_unit.current_waypoint_id = target_waypoint
 
                 # Runs the assault dice roll. Assumes determinic for now
-                killed_unit: AbstractedCombatUnit
                 if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                    gs.combat_units.pop(action.target_id)
-                    killed_unit = target_unit
+                    self._kill_unit(target_unit.unit_id)
                 else:
-                    killed_unit = current_unit
-                    gs.combat_units.pop(action.unit_id)
+                    self._kill_unit(current_unit.unit_id)
                     # Assault failed
                     gs._flip_initiative()
 
-                for objective in gs._objectives:
-                    if killed_unit.faction == objective.target_faction:
-                        objective.units_destroyed_counter += 1
                 return gs
 
     def get_all_fire_permutations(
