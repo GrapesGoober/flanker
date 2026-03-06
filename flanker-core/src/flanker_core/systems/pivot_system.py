@@ -21,9 +21,7 @@ class PivotSystem:
     """Static system class for handling unit pivot actions."""
 
     @staticmethod
-    def _validate_pivot(
-        gs: GameState, unit_id: int
-    ) -> Literal[True] | InvalidAction:
+    def _validate_pivot(gs: GameState, unit_id: int) -> Literal[True] | InvalidAction:
         """Return `True` if the unit may perform a pivot action."""
 
         unit = gs.get_component(unit_id, CombatUnit)
@@ -68,21 +66,22 @@ class PivotSystem:
         )
 
         # loop through interrupt candidates exactly as move does
-        for _interrupt_pos, spotter_id in interrupt_candidates:
-            outcome = FireSystem.get_fire_outcome(gs, spotter_id)
-            match outcome:
-                case FireOutcomes.MISS:
-                    fire_controls = gs.get_component(spotter_id, FireControls)
-                    fire_controls.can_reactive_fire = False
-                    continue
-                case FireOutcomes.PIN:
-                    unit.status = CombatUnit.Status.PINNED
-                case FireOutcomes.SUPPRESS:
-                    unit.status = CombatUnit.Status.SUPPRESSED
-                case FireOutcomes.KILL:
-                    CommandSystem.kill_unit(gs, unit_id)
-            # reactive fire interrupt stops further processing
-            return _PivotActionResult(degrees=transform.degrees)
+        for _, spotter_ids in interrupt_candidates:
+            for spotter_id in spotter_ids:
+                outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+                match outcome:
+                    case FireOutcomes.MISS:
+                        fire_controls = gs.get_component(spotter_id, FireControls)
+                        fire_controls.can_reactive_fire = False
+                        continue
+                    case FireOutcomes.PIN:
+                        unit.status = CombatUnit.Status.PINNED
+                    case FireOutcomes.SUPPRESS:
+                        unit.status = CombatUnit.Status.SUPPRESSED
+                    case FireOutcomes.KILL:
+                        CommandSystem.kill_unit(gs, unit_id)
+                # reactive fire interrupt stops further processing
+                return _PivotActionResult(degrees=transform.degrees)
 
         # apply pivot now that reactive fire (if any) has been resolved
         transform.degrees = degrees % 360

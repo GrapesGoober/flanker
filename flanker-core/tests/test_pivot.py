@@ -1,7 +1,13 @@
 import pytest
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import CombatUnit, InitiativeState, Transform, FireControls
-from flanker_core.models.outcomes import InvalidAction, FireOutcomes
+from flanker_core.models.components import (
+    CombatUnit,
+    FireControls,
+    InitiativeState,
+    TerrainFeature,
+    Transform,
+)
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.pivot_system import PivotSystem
@@ -17,6 +23,20 @@ class Fixture:
             CombatUnit(faction=InitiativeState.Faction.BLUE),
             Transform(position=Vec2(0, 0), degrees=0),
         )
+        # 2000x2000 boundary
+        self.gs.add_entity(
+            Transform(position=Vec2(0, 0), degrees=0),
+            TerrainFeature(
+                vertices=[
+                    Vec2(-1000, -1000),
+                    Vec2(1000, -1000),
+                    Vec2(1000, 1000),
+                    Vec2(-1000, 1000),
+                    Vec2(-1000, -1000),
+                ],
+                flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
+            ),
+        )
 
 
 @pytest.fixture
@@ -25,6 +45,7 @@ def fixture() -> Fixture:
 
 
 # pylint: disable=redefined-outer-name
+
 
 def test_pivot_changes_degrees(fixture: Fixture) -> None:
     # ensure pivot occurs when unit has initiative and is active
@@ -42,6 +63,7 @@ def test_pivot_changes_degrees(fixture: Fixture) -> None:
 
 # pylint: disable=redefined-outer-name
 
+
 def test_pivot_no_initiative(fixture: Fixture) -> None:
     # set initiative to opposing faction
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
@@ -50,6 +72,7 @@ def test_pivot_no_initiative(fixture: Fixture) -> None:
 
 
 # pylint: disable=redefined-outer-name
+
 
 def test_pivot_inactive_status(fixture: Fixture) -> None:
     # suppressed units cannot pivot
@@ -66,6 +89,7 @@ def test_pivot_inactive_status(fixture: Fixture) -> None:
 
 # pylint: disable=redefined-outer-name
 
+
 def test_pivot_reactive_fire(fixture: Fixture) -> None:
     # add a spotter that can reactively fire on the pivoting unit
     _spotter_id = fixture.gs.add_entity(
@@ -80,5 +104,6 @@ def test_pivot_reactive_fire(fixture: Fixture) -> None:
     result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 180)
     assert not isinstance(result, InvalidAction)
     unit = fixture.gs.get_component(fixture.unit_id, CombatUnit)
-    assert unit.status == CombatUnit.Status.PINNED, "Pivot should trigger pin from reactive fire"
-
+    assert (
+        unit.status == CombatUnit.Status.PINNED
+    ), "Pivot should trigger pin from reactive fire"

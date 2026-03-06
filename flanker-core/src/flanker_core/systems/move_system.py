@@ -85,14 +85,6 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
 
         for spotter_id in spotter_candidates:
-
-            # Rough FOV check: a spotter will only consider a target if the
-            # point where the target would be seen falls inside its forward
-            # cone.  We perform this check *after* LOS evaluation so that we
-            # can test the intersection point itself rather than blindly using
-            # the moving unit's original position.  This allows reactive fire
-            # to trigger when a unit moves *into* a shooter's FOV.
-
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             if not spotter_fire_controls.los_polygon:
                 # LOS polygon should be generated
@@ -101,6 +93,7 @@ class MoveSystem:
 
             # Find the interrupt position if spotted,
             # either already inside LOS or move-line crosses LOS polygon
+            # TODO: interrupt position should consider FOV
             interrupt_pos: Vec2 | None = None
             if IntersectGetter.is_inside(
                 point=transform.position,
