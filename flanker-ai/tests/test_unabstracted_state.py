@@ -68,7 +68,7 @@ def test_pivot_branch_applies() -> None:
     action = pivot_actions[0]
     new_state = state.get_deterministic_branch(action)
     assert new_state is not None
-    # verify orientation updated
-    eid = next(unit_id for unit_id, _ in gs.query(CombatUnit))
-    deg = new_state._gs.get_component(eid, Transform).degrees
+    # verify orientation updated without poking at protected state
+    unit_id = next(uid for uid, _ in gs.query(CombatUnit))
+    deg = new_state.get_transform(unit_id).degrees
     assert deg == action.degrees % 360
