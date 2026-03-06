@@ -2,7 +2,13 @@ import random
 from copy import deepcopy
 from typing import Sequence
 
-from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.gamestate import GameState
@@ -20,6 +26,7 @@ from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.pivot_system import PivotSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -94,6 +101,7 @@ class UnabstractedState(IRepresentationState[Action]):
                         to=pos,
                     )
                 )
+                # sample a few random wander moves
                 for _ in range(10):
                     rand_x = random.randrange(self.min_x, self.max_x)
                     rand_y = random.randrange(self.min_y, self.max_y)
@@ -102,6 +110,15 @@ class UnabstractedState(IRepresentationState[Action]):
                         MoveAction(
                             unit_id=unit_id,
                             to=vec,
+                        )
+                    )
+
+                # allow a handful of arbitrary pivots so the AI can change facing
+                for _ in range(3):
+                    actions.append(
+                        PivotAction(
+                            unit_id=unit_id,
+                            degrees=random.random() * 360,
                         )
                     )
 
@@ -133,7 +150,11 @@ class UnabstractedState(IRepresentationState[Action]):
         return [(1, branch)]
 
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
-        new_gs = self.copy()._gs
+        """Apply `action` to a copied state and return the successor or None."""
+        new_state = self.copy()
+        new_gs = new_state._gs  # pylint: disable=protected-access
+        # define a default so the variable is always bound for mypy/pylance
+        result: object = InvalidAction
         match action:
             case MoveAction():
                 initiative = InitiativeSystem.get_initiative(new_gs)
@@ -157,6 +178,17 @@ class UnabstractedState(IRepresentationState[Action]):
                 for _, fire_controls in new_gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 result = AssaultSystem.assault(new_gs, action.unit_id, action.target_id)
+            case PivotAction():
+                initiative = InitiativeSystem.get_initiative(new_gs)
+                for _, fire_controls in new_gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.PIN
+                result = PivotSystem.pivot(new_gs, action.unit_id, action.degrees)
+                if not isinstance(result, InvalidAction):
+                    # pivot is treated as a free move for stall counting
+                    self._get_stall_counter()[initiative] += 1
+            case _:
+                # any other action type is illegal in this state
+                result = InvalidAction
         for _, fire_controls in new_gs.query(FireControls):
             fire_controls.override = None
 
