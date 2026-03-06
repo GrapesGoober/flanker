@@ -217,6 +217,14 @@ class UnabstractedState(IRepresentationState[Action]):
     def get_initiative(self) -> InitiativeState.Faction:
         return InitiativeSystem.get_initiative(self._gs)
 
+    def get_transform(self, unit_id: int) -> Transform:
+        """Convenience accessor for a unit's Transform component.
+
+        This avoids external code reaching into the protected `_gs` attribute
+        while still exposing required information for testing and scoring.
+        """
+        return self._gs.get_component(unit_id, Transform)
+
     def initialize_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
