@@ -25,7 +25,6 @@ from flanker_core.systems.move_system import MoveSystem
 class Fixture:
     gs: GameState
     unit_move: int
-    unit_friendly: int
     unit_shoot: int
     fire_controls: FireControls
 
@@ -39,11 +38,6 @@ def fixture() -> Fixture:
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(0, -10)),
-    )
-    unit_friendly = gs.add_entity(
-        MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
-        Transform(position=Vec2(0, -11)),
     )
     unit_shoot = gs.add_entity(
         MoveControls(),
@@ -93,7 +87,6 @@ def fixture() -> Fixture:
     return Fixture(
         gs=gs,
         unit_move=unit_move,
-        unit_friendly=unit_friendly,
         unit_shoot=unit_shoot,
         fire_controls=fire_controls,
     )

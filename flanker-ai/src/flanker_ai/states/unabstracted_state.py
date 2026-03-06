@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 from typing import Sequence
+from warnings import warn
 
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.components import AiStallCountComponent
@@ -127,6 +128,10 @@ class UnabstractedState(IRepresentationState[Action]):
         self,
         action: Action,
     ) -> Sequence[tuple[float, "UnabstractedState"]]:
+        warn(
+            "Unabstracted state is deterministic and does not support generating"
+            " stochastic branches. Using deterministic branch for now."
+        )
         branch = self.get_deterministic_branch(action)
         if branch == None:
             return []
