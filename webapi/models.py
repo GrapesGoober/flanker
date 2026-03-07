@@ -61,6 +61,13 @@ class AssaultActionRequest(BaseModel, CamelCaseConfig):
     target_id: int
 
 
+class PivotActionRequest(BaseModel, CamelCaseConfig):
+    """Request model for a unit's pivot action."""
+
+    unit_id: int
+    to: Vec2
+
+
 class TerrainModel(BaseModel, CamelCaseConfig):
     """Represents a view of terrain feature in the game."""
 
@@ -83,6 +90,13 @@ class TerrainModel(BaseModel, CamelCaseConfig):
 class MoveActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLog"] = "MoveActionLog"
     body: MoveActionRequest
+    reactive_fire_outcome: FireOutcomes | None = None
+    unit_state: CombatUnitsViewState
+
+
+class PivotActionLog(BaseModel, CamelCaseConfig):
+    log_type: Literal["PivotActionLog"] = "PivotActionLog"
+    body: PivotActionRequest
     reactive_fire_outcome: FireOutcomes | None = None
     unit_state: CombatUnitsViewState
 
@@ -113,6 +127,6 @@ class AiWaypointConfigGridRequest(BaseModel, CamelCaseConfig):
 
 
 ActionLog = Annotated[
-    Union[MoveActionLog, FireActionLog, AssaultActionLog],
+    Union[MoveActionLog, PivotActionLog, FireActionLog, AssaultActionLog],
     Field(discriminator="log_type"),
 ]

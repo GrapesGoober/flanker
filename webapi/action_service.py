@@ -14,6 +14,8 @@ from webapi.models import (
     FireActionRequest,
     MoveActionLog,
     MoveActionRequest,
+    PivotActionLog,
+    PivotActionRequest,
 )
 
 
@@ -22,7 +24,7 @@ class ActionService:
 
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> None:
-        """Move a unit and trigger AI response for the opponent."""
+        """Perform a move action."""
         result = MoveSystem.move(gs, body.unit_id, body.to)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
@@ -36,8 +38,23 @@ class ActionService:
         )
 
     @staticmethod
+    def pivot(gs: GameState, body: PivotActionRequest) -> None:
+        """Perform a pivot action."""
+        result = MoveSystem.pivot(gs, body.unit_id, body.to)
+        if isinstance(result, InvalidAction):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+        LoggingService.log(
+            gs,
+            PivotActionLog(
+                body=body,
+                reactive_fire_outcome=result.reactive_fire_outcome,
+                unit_state=CombatUnitService.get_units_view_state(gs),
+            ),
+        )
+
+    @staticmethod
     def fire(gs: GameState, body: FireActionRequest) -> None:
-        """Perform fire action and trigger AI response for the opponent."""
+        """Perform a fire action."""
         result = FireSystem.fire(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
@@ -52,7 +69,7 @@ class ActionService:
 
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
-        """Perform fire action and trigger AI response for the opponent."""
+        """Perform an assault action."""
         result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)

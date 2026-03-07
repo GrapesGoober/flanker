@@ -4,6 +4,7 @@ import {
 	performAssaultActionAsync,
 	performFireActionAsync,
 	performMoveActionAsync,
+	performPivotActionAsync,
 	type CombatUnitsViewState,
 	type RifleSquadData,
 	type TerrainModel,
@@ -100,6 +101,16 @@ export class PlayerController {
 		return true;
 	}
 
+	/* Returns true if pivot action is valid. */
+	isPivotActionValid(): boolean {
+		if (this.isFetching) return false;
+		if (this.state.type !== 'moveMarked') return false;
+		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
+		if (!this.unitData.hasInitiative) return false;
+		return true;
+	}
+
 	/* Returns true if fire action is valid. */
 	isFireActionValid(): boolean {
 		if (this.isFetching) return false;
@@ -127,6 +138,17 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
+		this.isFetching = false;
+		this.reselectUnit(unitId);
+	}
+
+	/* Performs pivot action for the selected unit. */
+	async pivotActionAsync() {
+		if (!this.isPivotActionValid()) return;
+		if (this.state.type !== 'moveMarked') return;
+		let unitId = this.state.selectedUnit.unitId;
+		this.isFetching = true;
+		this.unitData = await performPivotActionAsync(unitId, this.state.moveMarker);
 		this.isFetching = false;
 		this.reselectUnit(unitId);
 	}

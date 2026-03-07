@@ -92,6 +92,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/{sceneName}/{gameId}/pivot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Action Pivot
+         * @description Pivot a unit and return updated rifle squads.
+         */
+        post: operations["action_pivot_api__sceneName___gameId__pivot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/{sceneName}/{gameId}/fire": {
         parameters: {
             query?: never;
@@ -320,6 +340,26 @@ export interface components {
          * @enum {string}
          */
         ObjectiveState: "INCOMPLETE" | "COMPLETED" | "FAILED";
+        /** PivotActionLog */
+        PivotActionLog: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "PivotActionLog";
+            body: components["schemas"]["PivotActionRequest"];
+            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
+            unitState: components["schemas"]["CombatUnitsViewState"];
+        };
+        /**
+         * PivotActionRequest
+         * @description Request model for a unit's pivot action.
+         */
+        PivotActionRequest: {
+            /** Unitid */
+            unitId: number;
+            to: components["schemas"]["Vec2"];
+        };
         /**
          * SquadModel
          * @description Represents a view of a single squad in the game.
@@ -591,6 +631,42 @@ export interface operations {
             };
         };
     };
+    action_pivot_api__sceneName___gameId__pivot_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PivotActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CombatUnitsViewState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     action_fire_api__sceneName___gameId__fire_post: {
         parameters: {
             query?: never;
@@ -681,7 +757,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": (components["schemas"]["MoveActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"])[];
+                    "application/json": (components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"])[];
                 };
             };
             /** @description Validation Error */
