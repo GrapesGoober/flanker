@@ -23,9 +23,6 @@ class Fixture:
 def fixture() -> Fixture:
     return Fixture()
 
-
-# pylint: disable=redefined-outer-name
-
 def test_pivot_changes_degrees(fixture: Fixture) -> None:
     # ensure pivot occurs when unit has initiative and is active
     result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 123.4)
@@ -39,17 +36,11 @@ def test_pivot_changes_degrees(fixture: Fixture) -> None:
     # initiative is not flipped
     assert InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id)
 
-
-# pylint: disable=redefined-outer-name
-
 def test_pivot_no_initiative(fixture: Fixture) -> None:
     # set initiative to opposing faction
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     reason = PivotSystem.pivot(fixture.gs, fixture.unit_id, 50)
     assert reason == InvalidAction.NO_INITIATIVE
-
-
-# pylint: disable=redefined-outer-name
 
 def test_pivot_inactive_status(fixture: Fixture) -> None:
     # suppressed units cannot pivot
@@ -62,9 +53,6 @@ def test_pivot_inactive_status(fixture: Fixture) -> None:
     unit.status = CombatUnit.Status.PINNED
     result = PivotSystem.pivot(fixture.gs, fixture.unit_id, 75)
     assert not isinstance(result, InvalidAction)
-
-
-# pylint: disable=redefined-outer-name
 
 def test_pivot_reactive_fire(fixture: Fixture) -> None:
     # add a spotter that can reactively fire on the pivoting unit

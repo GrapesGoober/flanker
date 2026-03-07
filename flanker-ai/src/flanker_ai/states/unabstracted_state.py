@@ -152,7 +152,7 @@ class UnabstractedState(IRepresentationState[Action]):
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
         """Apply `action` to a copied state and return the successor or None."""
         new_state = self.copy()
-        new_gs = new_state._gs  # pylint: disable=protected-access
+        new_gs = new_state._gs
         # define a default so the variable is always bound for mypy/pylance
         result: object = InvalidAction
         match action:

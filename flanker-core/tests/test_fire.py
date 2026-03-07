@@ -65,9 +65,6 @@ def fixture() -> Fixture:
         attacker_unit=attacker_unit,
     )
 
-
-# pylint: disable=redefined-outer-name
-
 def test_no_los(fixture: Fixture) -> None:
     # Set attacker to position that is obstructed
     attacker_transform = fixture.gs.get_component(
@@ -82,9 +79,6 @@ def test_no_los(fixture: Fixture) -> None:
         fixture.target_id,
     )
     assert fire_result == InvalidAction.BAD_COORDS, "Fire action mustn't occur"
-
-
-# pylint: disable=redefined-outer-name
 
 def test_fov_block(fixture: Fixture) -> None:
     # Attack target is behind attacker; LOS clear but FOV blocks
@@ -107,9 +101,6 @@ def test_fov_block(fixture: Fixture) -> None:
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects shooter to retain initiative"
 
-
-# pylint: disable=redefined-outer-name
-
 def test_no_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.MISS
     # orient attacker toward target so FOV permits firing
@@ -130,9 +121,6 @@ def test_no_fire(fixture: Fixture) -> None:
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
-
-# pylint: disable=redefined-outer-name
-
 def test_pin_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.PIN
     # ensure attacker facing target
@@ -152,9 +140,6 @@ def test_pin_fire(fixture: Fixture) -> None:
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
-
-
-# pylint: disable=redefined-outer-name
 
 def test_suppress_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
@@ -190,9 +175,6 @@ def test_suppress_fire(fixture: Fixture) -> None:
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
-
-# pylint: disable=redefined-outer-name
-
 def test_kill_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.KILL
     # orient attacker toward target
@@ -211,9 +193,6 @@ def test_kill_fire(fixture: Fixture) -> None:
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
-
-# pylint: disable=redefined-outer-name
-
 def test_status_pinned(fixture: Fixture) -> None:
     # orient attacker toward target (not used but for consistency)
     att = fixture.gs.get_component(fixture.attacker_id, Transform)
@@ -227,9 +206,6 @@ def test_status_pinned(fixture: Fixture) -> None:
         fixture.target_id,
     )
     assert fire_result != None, "PINNED unit can do fire action"
-
-
-# pylint: disable=redefined-outer-name
 
 def test_status_supppressed(fixture: Fixture) -> None:
     # orient attacker toward target
