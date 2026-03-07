@@ -262,7 +262,8 @@ class MoveSystem:
         # Cheeky implementation by having it move tiny step forward;
         # the singular move handles pivoting AND reactive fire
         move_vector = (to - transform.position).normalized() * 1e-12
-        result = MoveSystem._singular_move(gs, unit_id, move_vector)
+        move_to = initial_position + move_vector
+        result = MoveSystem._singular_move(gs, unit_id, move_to)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
