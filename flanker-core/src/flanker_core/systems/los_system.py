@@ -75,10 +75,11 @@ class LosSystem:
 
         # Create some rays that defines this FOV cone
         heading_rad = math.radians(heading_degree)
-        forward_ray: Vec2 = Vec2(1, 0).rotated(heading_rad)
+        forward_direction: Vec2 = Vec2(1, 0).rotated(heading_rad)
+        forward_ray = forward_direction * radius
         half_angle_rad = math.radians(fov_degree / 2)
-        left_ray: Vec2 = center_point + (forward_ray * radius).rotated(-half_angle_rad)
-        right_ray: Vec2 = center_point + (forward_ray * radius).rotated(half_angle_rad)
+        left_ray: Vec2 = center_point + forward_ray.rotated(half_angle_rad)
+        right_ray: Vec2 = center_point + forward_ray.rotated(-half_angle_rad)
         left_point: Vec2 = IntersectGetter.get_intersects(
             line=(center_point, left_ray), polyline=polyline
         )[0]
@@ -98,7 +99,7 @@ class LosSystem:
                 continue
 
             # Using dot formula to filter the angle
-            a: Vec2 = forward_ray
+            a: Vec2 = forward_direction
             b: Vec2 = direction.normalized()
             if a.dot(b) >= threshold_rad:
                 new_los.append(vertex)
@@ -107,7 +108,7 @@ class LosSystem:
         # to represent the cut FOV edges.
         new_los.append(left_point)
         new_los.append(right_point)
-        new_los.append(center_point - forward_ray * 1e-9)
+        new_los.append(center_point - forward_direction * 1e-9)
         new_los = LosSystem._sort_verts_by_angle(center_point, new_los)
         new_los.append(new_los[0])  # Loop back to a closed polyline
         return new_los
