@@ -31,6 +31,7 @@
 			stroke-width="1"
 			stroke-dasharray="4 4"
 			stroke-opacity="0.5"
+			pointer-events="none"
 		/>
 		<line
 			x1="0"
@@ -41,6 +42,7 @@
 			stroke-width="1"
 			stroke-dasharray="4 4"
 			stroke-opacity="0.5"
+			pointer-events="none"
 		/>
 
 		{#if rifleSquadData.isFriendly}
