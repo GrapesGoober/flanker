@@ -49,6 +49,7 @@ class CombatUnitService:
                 SquadModel(
                     unit_id=ent,
                     position=transform.position,
+                    degree=transform.degrees,
                     status=unit.status,
                     is_friendly=(unit.faction == faction),
                     no_fire=not fire.can_reactive_fire,

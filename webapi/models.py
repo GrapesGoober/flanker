@@ -21,6 +21,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
 
     unit_id: int
     position: Vec2
+    degree: float
     status: CombatUnit.Status
     is_friendly: bool
     no_fire: bool

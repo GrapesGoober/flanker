@@ -328,6 +328,8 @@ export interface components {
             /** Unitid */
             unitId: number;
             position: components["schemas"]["Vec2"];
+            /** Degree */
+            degree: number;
             status: components["schemas"]["Status"];
             /** Isfriendly */
             isFriendly: boolean;
