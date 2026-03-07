@@ -64,16 +64,72 @@ class LosSystem:
         return True
 
     @staticmethod
+    def _apply_fov_to_polygon(
+        polyline: list[Vec2],
+        center_point: Vec2,
+        heading_degree: float,
+        fov_degree: int = 90,  # Hardcoded FOV for now.
+        radius: float = 1000,
+    ) -> list[Vec2]:
+        """Applies FOV cone to LOS polygon to create a smaller LOS code."""
+
+        # Create some rays that defines this FOV cone
+        heading_rad = math.radians(heading_degree)
+        forward_ray: Vec2 = Vec2(1, 0).rotated(heading_rad)
+        half_angle_rad = math.radians(fov_degree / 2)
+        left_ray: Vec2 = center_point + (forward_ray * radius).rotated(-half_angle_rad)
+        right_ray: Vec2 = center_point + (forward_ray * radius).rotated(half_angle_rad)
+        left_point: Vec2 = IntersectGetter.get_intersects(
+            line=(center_point, left_ray), polyline=polyline
+        )[0]
+        right_point: Vec2 = IntersectGetter.get_intersects(
+            line=(center_point, right_ray), polyline=polyline
+        )[0]
+
+        # Filter LOS polygon of any points outside of FOV
+        threshold_rad: float = math.cos(half_angle_rad)
+        new_los: list[Vec2] = []
+        for vertex in polyline:
+            direction = vertex - center_point
+
+            if direction.length() < 1e-9:
+                # Keep the center point
+                new_los.append(vertex)
+                continue
+
+            # Using dot formula to filter the angle
+            a: Vec2 = forward_ray
+            b: Vec2 = direction.normalized()
+            if a.dot(b) >= threshold_rad:
+                new_los.append(vertex)
+
+        # Add left points and right points back to the list
+        # to represent the cut FOV edges.
+        new_los.append(left_point)
+        new_los.append(right_point)
+        new_los.append(center_point - forward_ray * 1e-9)
+        new_los = LosSystem._sort_verts_by_angle(center_point, new_los)
+        new_los.append(new_los[0])  # Loop back to a closed polyline
+        return new_los
+
+    @staticmethod
     def update_los_polygon(
         gs: GameState,
         unit_id: int,
     ) -> None:
+        """Updates a unit's fire controls with a new LOS polygon."""
         transform = gs.get_component(unit_id, Transform)
-        fire_controls = gs.get_component(unit_id, FireControls)
-        fire_controls.los_polygon = LosSystem.get_los_polygon(
-            gs,
-            transform.position,
+        full_polygon = LosSystem.get_los_polygon(
+            gs=gs,
+            spotter_pos=transform.position,
         )
+        fov_polygon = LosSystem._apply_fov_to_polygon(
+            polyline=full_polygon,
+            center_point=transform.position,
+            heading_degree=transform.degrees,
+        )
+        fire_controls = gs.get_component(unit_id, FireControls)
+        fire_controls.los_polygon = fov_polygon
 
     @staticmethod
     def get_los_polygon(
@@ -90,7 +146,8 @@ class LosSystem:
                 mask=TerrainFeature.Flag.OPAQUE,
             )
         )
-        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrains)
+        terrain_verts = [vert for t in terrains for vert in t.vertices]
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
         visible_points: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -139,10 +196,9 @@ class LosSystem:
     @staticmethod
     def _sort_verts_by_angle(
         spotter_pos: Vec2,
-        terrains: list[_Terrain],
+        verts: list[Vec2],
     ) -> list[Vec2]:
         """Get all terrain vertices sorted by angle."""
-        all_verts = [vert for t in terrains for vert in t.vertices]
 
         def angle_from_spotter(v: Vec2) -> float:
             # Vector from spotter_pos to vertex
@@ -154,7 +210,7 @@ class LosSystem:
                 theta += 2 * math.pi
             return theta
 
-        return sorted(all_verts, key=angle_from_spotter)
+        return sorted(verts, key=angle_from_spotter)
 
     @staticmethod
     def _is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
