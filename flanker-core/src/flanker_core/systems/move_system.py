@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import Literal
 
@@ -133,13 +134,17 @@ class MoveSystem:
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
+        move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
+
+        angle_rad = math.atan2(move_direction.y, move_direction.x)
+        transform.degrees = math.degrees(angle_rad)
 
         # In case of being interrupted, add a tiny offset to
         # prevent entity from sitting precisely on LOS polygon edge.
         # This reduces floating point sensitivity
-        offset = (to - transform.position).normalized() * 1e-12
+        offset = move_direction * 1e-12
 
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
