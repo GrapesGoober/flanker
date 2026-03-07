@@ -90,7 +90,7 @@
           "x": 190.0,
           "y": 212.0
         },
-        "degrees": 0.0
+        "degrees": -100
       },
       "CombatUnit": {
         "faction": "RED",
@@ -111,7 +111,7 @@
           "x": 169.0,
           "y": 232.0
         },
-        "degrees": 0.0
+        "degrees": -90
       },
       "CombatUnit": {
         "faction": "RED",
