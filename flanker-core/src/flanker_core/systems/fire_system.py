@@ -52,10 +52,12 @@ class FireSystem:
         if attacker_unit.faction == target_unit.faction:
             return InvalidAction.BAD_ENTITY
 
-        # Check if target is in line of sight
+        # Check if attacker has LOS to target and within FOV
         if not LosSystem.check(
             gs, attacker_transform.position, target_transform.position
         ):
+            return InvalidAction.BAD_COORDS
+        if not LosSystem.in_fov(attacker_transform, target_transform.position):
             return InvalidAction.BAD_COORDS
 
     @staticmethod

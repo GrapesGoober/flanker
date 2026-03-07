@@ -9,6 +9,8 @@ from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
+FOV_DEGREE = 90
+
 
 @dataclass
 class _TerrainIntersection:
@@ -32,8 +34,33 @@ class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
+    def in_fov(
+        spotter_transform: Transform,
+        target_pos: Vec2,
+        fov: float = FOV_DEGREE,
+    ) -> bool:
+        """Checks whether the target position is in FOV cone of spotter."""
+
+        # Direction the spotter is facing
+        heading_rad = math.radians(spotter_transform.degrees)
+        forward_dir: Vec2 = Vec2(1, 0).rotated(heading_rad)
+
+        # Direction to target
+        to_target = (target_pos - spotter_transform.position).normalized()
+
+        # Dot product -> angle check
+        dot = forward_dir.dot(to_target)
+
+        # cos(theta) comparison (avoid expensive acos)
+        half_fov_rad = math.radians(fov / 2)
+        return dot >= math.cos(half_fov_rad)
+
+    @staticmethod
     def check(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
-        """Returns `True` if entity `spotter_id` can see position `target_pos`."""
+        """
+        Returns `True` if entity `spotter_id` can see position `target_pos`.
+        Does not check for FOV.
+        """
 
         intersects = IntersectSystem.get(
             gs=gs,
@@ -68,7 +95,7 @@ class LosSystem:
         polyline: list[Vec2],
         center_point: Vec2,
         heading_degree: float,
-        fov_degree: int = 90,  # Hardcoded FOV for now.
+        fov_degree: int = FOV_DEGREE,
         radius: float = 1000,
     ) -> list[Vec2]:
         """Applies FOV cone to LOS polygon to create a smaller LOS code."""
