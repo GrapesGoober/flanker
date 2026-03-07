@@ -28,6 +28,13 @@ class _MoveActionResult:
 
 
 @dataclass
+class _PivotActionResult:
+    """Result of a pivot action as any reactive fire."""
+
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
 class _GroupMoveActionResult:
     """Result of a group move action as multiple singular move results."""
 
@@ -240,3 +247,26 @@ class MoveSystem:
             InitiativeSystem.flip_initiative(gs)
 
         return _GroupMoveActionResult(results)
+
+    @staticmethod
+    def pivot(
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
+    ) -> _PivotActionResult | InvalidAction:
+        """Mutator method performs pivot action with reactive fire."""
+
+        transform = gs.get_component(unit_id, Transform)
+        initial_position = transform.position
+
+        # Cheeky implementation by having it move tiny step forward;
+        # the singular move handles pivoting AND reactive fire
+        move_vector = (to - transform.position).normalized() * 1e-12
+        result = MoveSystem._singular_move(gs, unit_id, move_vector)
+
+        # Then put it back to where it were so it's not actually moved
+        transform.position = initial_position
+
+        if isinstance(result, _MoveActionResult):
+            return _PivotActionResult(result.reactive_fire_outcome)
+        return result
