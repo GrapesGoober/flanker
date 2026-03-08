@@ -145,6 +145,12 @@ class MoveSystem:
 
         interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
 
+        # Reset LOS polygon after move
+        mover_fire_controls = gs.try_component(unit_id, FireControls)
+        if mover_fire_controls:
+            mover_fire_controls.los_polygon = None
+
+        # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
         transform.degrees = math.degrees(angle_rad)
 
