@@ -43,20 +43,20 @@ def fixture() -> Fixture:
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(),
-        Transform(position=Vec2(15, 20)),
+        Transform(position=Vec2(15, 20), degrees=-90),
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(),
-        Transform(position=Vec2(15, 20)),
+        Transform(position=Vec2(15, 20), degrees=-90),
     )
     # Have another enemy unit for a second reactive fire
     enemy_3 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(),
-        Transform(position=Vec2(10, 20)),
+        Transform(position=Vec2(10, 20), degrees=-90),
     )
 
     # 10x10 opaque box
