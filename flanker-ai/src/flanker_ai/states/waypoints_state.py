@@ -42,7 +42,7 @@ _MAX_STALL_LIMIT = 5
 
 
 @dataclass
-class AbstractedCombatUnit:
+class _AbstractedCombatUnit:
     # Note: this should be kept flat to be serializable
     unit_id: int
     current_waypoint_id: int
@@ -52,7 +52,7 @@ class AbstractedCombatUnit:
 
 
 @dataclass
-class WaypointNode:
+class _WaypointNode:
     position: Vec2
     visible_nodes: set[int]
     movable_paths: dict[int, list[int]]
@@ -65,8 +65,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         path_tolerance: float,
     ) -> None:
         self._points = points
-        self.waypoints: dict[int, WaypointNode] = {}
-        self.combat_units: dict[int, AbstractedCombatUnit] = {}
+        self.waypoints: dict[int, _WaypointNode] = {}
+        self.combat_units: dict[int, _AbstractedCombatUnit] = {}
         self._initiative: InitiativeState.Faction = InitiativeState.Faction.BLUE
         self._objectives: list[EliminationObjective] = []
         self._path_tolerance = path_tolerance
@@ -124,8 +124,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     def get_actions(self) -> list[WaypointAction]:
 
         actions: list[WaypointAction] = []
-        friendly_units: list[tuple[int, AbstractedCombatUnit]] = []
-        enemy_units: list[tuple[int, AbstractedCombatUnit]] = []
+        friendly_units: list[tuple[int, _AbstractedCombatUnit]] = []
+        enemy_units: list[tuple[int, _AbstractedCombatUnit]] = []
         for combat_unit_id, combat_unit in self.combat_units.items():
             if combat_unit.faction == self._initiative:
                 friendly_units.append((combat_unit_id, combat_unit))
@@ -470,7 +470,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         # Add grid points as a waypoint
         for point_id, point in enumerate(self._points):
-            self.waypoints[point_id] = WaypointNode(
+            self.waypoints[point_id] = _WaypointNode(
                 position=point,
                 visible_nodes=set(),
                 movable_paths={},
@@ -501,12 +501,12 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         ):
             waypoint_id = len(self.waypoints.keys())
             new_waypoint_ids.append(waypoint_id)
-            self.waypoints[waypoint_id] = WaypointNode(
+            self.waypoints[waypoint_id] = _WaypointNode(
                 position=transform.position,
                 visible_nodes=set(),
                 movable_paths={},
             )
-            self.combat_units[unit_id] = AbstractedCombatUnit(
+            self.combat_units[unit_id] = _AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
                 status=combat_unit.status,
@@ -578,7 +578,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self,
         waypoint_ids_to_update: list[int] | Literal["all"] = "all",
     ) -> None:
-        waypoints_to_update: list[tuple[int, WaypointNode]] = []
+        waypoints_to_update: list[tuple[int, _WaypointNode]] = []
         if waypoint_ids_to_update == "all":
             waypoints_to_update = list(self.waypoints.items())
         else:
@@ -624,7 +624,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         gs: GameState,
         waypoint_ids_to_update: list[int] | Literal["all"] = "all",
     ) -> None:
-        waypoints_to_update: list[tuple[int, WaypointNode]] = []
+        waypoints_to_update: list[tuple[int, _WaypointNode]] = []
         if waypoint_ids_to_update == "all":
             waypoints_to_update = list(self.waypoints.items())
         else:
