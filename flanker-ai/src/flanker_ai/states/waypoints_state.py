@@ -1,3 +1,4 @@
+import math
 import random
 from copy import deepcopy
 from dataclasses import dataclass, replace
@@ -46,6 +47,7 @@ class _AbstractedCombatUnit:
     # Note: this should be kept flat to be serializable
     unit_id: int
     current_waypoint_id: int
+    degrees: float
     status: CombatUnit.Status
     faction: InitiativeState.Faction
     no_fire: bool
@@ -132,40 +134,52 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             if combat_unit.faction != self._initiative:
                 enemy_units.append((combat_unit_id, combat_unit))
 
-        for combat_unit_id, combat_unit in friendly_units:
-            current_waypoint = self.waypoints[combat_unit.current_waypoint_id]
-            if combat_unit.faction != self._initiative:
+        for friendly_id, friendly_unit in friendly_units:
+            friendly_waypoint = self.waypoints[friendly_unit.current_waypoint_id]
+            if friendly_unit.faction != self._initiative:
                 continue
 
             # Adds assault & fire actions
             for enemy_id, enemy_unit in enemy_units:
-
-                # Add fire action if the enemy is on a visible node
-                if enemy_unit.faction == combat_unit.faction:
+                if enemy_unit.faction == friendly_unit.faction:
                     continue
-                if combat_unit.status in [
+
+                # Fire action possible, check for criteria
+                if friendly_unit.status in [
                     CombatUnit.Status.ACTIVE,
                     CombatUnit.Status.PINNED,
                 ]:
-                    if enemy_unit.current_waypoint_id in current_waypoint.visible_nodes:
-                        actions.append(
-                            WaypointFireAction(
-                                unit_id=combat_unit_id,
-                                target_id=enemy_id,
-                            )
+                    if (  # Firable only for visible enemies
+                        enemy_unit.current_waypoint_id
+                        not in friendly_waypoint.visible_nodes
+                    ):
+                        continue
+
+                    enemy_waypoint = self.waypoints[enemy_unit.current_waypoint_id]
+                    if not LosSystem.in_fov(  # Firable only for within FOV
+                        Transform(friendly_waypoint.position, friendly_unit.degrees),
+                        enemy_waypoint.position,
+                    ):
+                        continue
+
+                    actions.append(
+                        WaypointFireAction(
+                            unit_id=friendly_id,
+                            target_id=enemy_id,
                         )
+                    )
 
                 # Add an assault action
-                if combat_unit.status == CombatUnit.Status.ACTIVE:
+                if friendly_unit.status == CombatUnit.Status.ACTIVE:
                     # Only assault there if it's movable
                     if (
                         enemy_unit.current_waypoint_id
-                        not in current_waypoint.movable_paths.keys()
+                        not in friendly_waypoint.movable_paths.keys()
                     ):
                         continue
                     actions.append(
                         WaypointAssaultAction(
-                            unit_id=combat_unit_id,
+                            unit_id=friendly_id,
                             target_id=enemy_id,
                         )
                     )
@@ -173,17 +187,17 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # Adds move actions later, for best alpha-beta pruning
             # TODO: is this causing the speed decrease for 3v3?
             # It creates new population list every branch
-            if combat_unit.status == CombatUnit.Status.ACTIVE:
+            if friendly_unit.status == CombatUnit.Status.ACTIVE:
                 # Filter some move actions to reduce branching factor
                 movable_nodes = random.sample(
-                    population=list(current_waypoint.movable_paths.keys()),
-                    k=min(9, len(current_waypoint.movable_paths)),
+                    population=list(friendly_waypoint.movable_paths.keys()),
+                    k=min(9, len(friendly_waypoint.movable_paths)),
                 )
 
                 for move_to_id in movable_nodes:
                     actions.append(
                         WaypointMoveAction(
-                            unit_id=combat_unit_id,
+                            unit_id=friendly_id,
                             move_to_waypoint_id=move_to_id,
                         )
                     )
@@ -303,6 +317,19 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         rs = self.copy()
                         rs._stall_counter[rs._initiative] = 0
 
+                        current_unit = rs.combat_units[action.unit_id]
+                        current_waypoint = rs.waypoints[
+                            current_unit.current_waypoint_id
+                        ]
+
+                        # Set unit's orientation towards move direction
+                        move_waypoint = rs.waypoints[action.move_to_waypoint_id]
+                        move_direction = (
+                            move_waypoint.position - current_waypoint.position
+                        ).normalized()
+                        angle_rad = math.atan2(move_direction.y, move_direction.x)
+                        current_unit.degrees = math.degrees(angle_rad)
+
                         # Track the most-severe fire outcome.
                         # More severe outcomes will override this variables.
                         reactive_fire_outcome: FireOutcomes | None = None
@@ -317,13 +344,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                                 # so break early to prevent a non-existant entity being used.
                                 if action.unit_id not in rs.combat_units:
                                     break
-                                current_unit = rs.combat_units[action.unit_id]
 
                                 fire_outcome = enemy_fire_outcomes[enemy_id]
                                 match fire_outcome:
                                     case FireOutcomes.MISS:
                                         enemy_unit = rs.combat_units[enemy_id]
                                         enemy_unit.no_fire = True
+                                        # TODO: fix bug where action.move_to_waypoint_id is not assigned
                                     case FireOutcomes.PIN:
                                         if (
                                             current_unit.status
@@ -368,6 +395,17 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     rs = self.copy()
                     rs._stall_counter[rs._initiative] += 1
                     current_unit = rs.combat_units[action.unit_id]
+
+                    # Set unit's orientation towards move direction
+                    current_waypoint = rs.waypoints[current_unit.current_waypoint_id]
+                    move_waypoint = rs.waypoints[action.move_to_waypoint_id]
+                    move_direction = (
+                        move_waypoint.position - current_waypoint.position
+                    ).normalized()
+                    angle_rad = math.atan2(move_direction.y, move_direction.x)
+                    current_unit.degrees = math.degrees(angle_rad)
+
+                    # Move there
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
                     return [(1, rs)]
 
@@ -509,6 +547,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             self.combat_units[unit_id] = _AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
+                degrees=transform.degrees,
                 status=combat_unit.status,
                 faction=combat_unit.faction,
                 no_fire=not fire_controls.can_reactive_fire,
@@ -538,7 +577,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         # Same enemy can't reactive fire twice, so need to track
         # Enemies that's already added.
         included_enemy_ids: list[int] = []
-        for path_id in current_waypoint.movable_paths[move_to_id]:
+        for path_waypoint_id in current_waypoint.movable_paths[move_to_id]:
             enemy_ids: list[int] = []
             for enemy_id, enemy_unit in self.combat_units.items():
                 # Add interrupt if the enemy can reactive fire it
@@ -550,14 +589,24 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     continue
                 if enemy_unit.no_fire:
                     continue
-                enemy_visible_nodes = self.waypoints[
-                    enemy_unit.current_waypoint_id
-                ].visible_nodes
-                if path_id in enemy_visible_nodes:
-                    enemy_ids.append(enemy_id)
-                    included_enemy_ids.append(enemy_id)
+
+                # Firable only if visible
+                enemy_waypoint = self.waypoints[enemy_unit.current_waypoint_id]
+                enemy_visible_nodes = enemy_waypoint.visible_nodes
+                if path_waypoint_id not in enemy_visible_nodes:
+                    continue
+
+                path_waypoint = self.waypoints[path_waypoint_id]
+                if not LosSystem.in_fov(  # Firable only for within FOV
+                    Transform(enemy_waypoint.position, enemy_unit.degrees),
+                    path_waypoint.position,
+                ):
+                    continue
+
+                enemy_ids.append(enemy_id)
+                included_enemy_ids.append(enemy_id)
             if enemy_ids != []:
-                interrupt_points.append((path_id, enemy_ids))
+                interrupt_points.append((path_waypoint_id, enemy_ids))
         return interrupt_points
 
     def _flip_initiative(self) -> None:

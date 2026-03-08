@@ -39,7 +39,7 @@ class LosSystem:
         target_pos: Vec2,
         fov: float = FOV_DEGREE,
     ) -> bool:
-        """Checks whether the target position is in FOV cone of spotter."""
+        """Util method checks whether the target position is in FOV cone of spotter."""
 
         # Direction the spotter is facing
         heading_rad = math.radians(spotter_transform.degrees)
