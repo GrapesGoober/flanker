@@ -245,59 +245,79 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         match action:
             case WaypointMoveAction():
-                gs = self.copy()
-                current_unit = gs.combat_units[action.unit_id]
+                rs = self.copy()
+                rs._pivot_towards(action.unit_id, action.move_to_waypoint_id)
+                current_unit = rs.combat_units[action.unit_id]
                 # Check for move interrupts
-                interrupts = self.get_move_interrupts(
+                interrupts = rs.get_move_interrupts(
                     unit_id=action.unit_id,
                     move_to_id=action.move_to_waypoint_id,
                 )
                 if interrupts != []:
-                    gs._stall_counter[gs._initiative] = 0
+                    rs._stall_counter[rs._initiative] = 0
                     # Assumes determinic for now
                     current_unit.status = CombatUnit.Status.PINNED
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
-                    gs._stall_counter[gs._initiative] += 1
+                    rs._stall_counter[rs._initiative] += 1
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
-                return gs
+                return rs
+
+            case WaypointPivotAction():
+                rs = self.copy()
+                rs._pivot_towards(action.unit_id, action.pivot_to_waypoint_id)
+                current_unit = rs.combat_units[action.unit_id]
+                # Check for move interrupts
+                interrupts = self.get_move_interrupts(
+                    unit_id=action.unit_id,
+                    move_to_id=None,
+                )
+                if interrupts != []:
+                    rs._stall_counter[rs._initiative] = 0
+                    # Assumes determinic for now
+                    current_unit.status = CombatUnit.Status.PINNED
+                    current_unit.current_waypoint_id = interrupts[0][0]
+                else:
+                    rs._stall_counter[rs._initiative] += 1
+                return rs
 
             case WaypointFireAction():
-                gs = self.copy()
-                gs._stall_counter[gs._initiative] = 0
+                rs = self.copy()
+                rs._stall_counter[rs._initiative] = 0
                 # Assumes determinic for now
-                target_unit = gs.combat_units[action.target_id]
+                target_unit = rs.combat_units[action.target_id]
                 target_unit.status = CombatUnit.Status.SUPPRESSED
-                return gs
+                return rs
 
             case WaypointAssaultAction():
-                gs = self.copy()
-                gs._stall_counter[gs._initiative] = 0
+                rs = self.copy()
+                rs._stall_counter[rs._initiative] = 0
                 # Check for move interrupts
-                current_unit = gs.combat_units[action.unit_id]
-                target_unit = gs.combat_units[action.target_id]
+                current_unit = rs.combat_units[action.unit_id]
+                target_unit = rs.combat_units[action.target_id]
                 target_waypoint = target_unit.current_waypoint_id
-                interrupts = self.get_move_interrupts(
+                rs._pivot_towards(action.unit_id, target_waypoint)
+                interrupts = rs.get_move_interrupts(
                     unit_id=action.unit_id,
                     move_to_id=target_waypoint,
                 )
                 if interrupts != []:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
-                    gs._flip_initiative()
+                    rs._flip_initiative()
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     current_unit.current_waypoint_id = target_waypoint
 
                 # Runs the assault dice roll. Assumes determinic for now
                 if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                    self._kill_unit(target_unit.unit_id)
+                    rs._kill_unit(target_unit.unit_id)
                 else:
-                    self._kill_unit(current_unit.unit_id)
+                    rs._kill_unit(current_unit.unit_id)
                     # Assault failed
-                    gs._flip_initiative()
+                    rs._flip_initiative()
 
-                return gs
+                return rs
 
     def get_all_fire_permutations(
         self, enemy_ids: list[int]
@@ -328,115 +348,41 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> list[tuple[float, "WaypointsState"]]:
         match action:
             case WaypointMoveAction():
-                interrupts = self.get_move_interrupts(
+                rs = self.copy()
+                rs._pivot_towards(action.unit_id, action.move_to_waypoint_id)
+
+                interrupts = rs.get_move_interrupts(
                     unit_id=action.unit_id,
                     move_to_id=action.move_to_waypoint_id,
                 )
                 if interrupts != []:
-                    # Get fire permutations for all enemies
-                    candidate_enemy_ids: list[int] = []
-                    for _, interrupt_enemies in interrupts:
-                        candidate_enemy_ids += interrupt_enemies
-                    permutations = self.get_all_fire_permutations(candidate_enemy_ids)
-
-                    # For each permutation, build a new gs outcome
-                    all_outcomes: list[tuple[float, "WaypointsState"]] = []
-                    for prob, enemy_fire_outcomes in permutations:
-                        # Create a new copy; play out the reactive fire and
-                        # record the gs as a new outcome
-                        rs = self.copy()
-                        rs._stall_counter[rs._initiative] = 0
-
-                        current_unit = rs.combat_units[action.unit_id]
-                        current_waypoint = rs.waypoints[
-                            current_unit.current_waypoint_id
-                        ]
-
-                        # Set unit's orientation towards move direction
-                        move_waypoint = rs.waypoints[action.move_to_waypoint_id]
-                        move_direction = (
-                            move_waypoint.position - current_waypoint.position
-                        ).normalized()
-                        angle_rad = math.atan2(move_direction.y, move_direction.x)
-                        current_unit.degrees = math.degrees(angle_rad)
-
-                        # Track the most-severe fire outcome.
-                        # More severe outcomes will override this variables.
-                        reactive_fire_outcome: FireOutcomes | None = None
-                        for waypoint_id, enemy_ids in interrupts:
-                            # If the unit got interrupted and stopped moving,
-                            # subsequent spotters don't get to fire.
-                            if reactive_fire_outcome is not None:
-                                break
-
-                            for enemy_id in enemy_ids:
-                                # Some previous fire outcomes might have killed unit,
-                                # so break early to prevent a non-existant entity being used.
-                                if action.unit_id not in rs.combat_units:
-                                    break
-
-                                fire_outcome = enemy_fire_outcomes[enemy_id]
-                                match fire_outcome:
-                                    case FireOutcomes.MISS:
-                                        enemy_unit = rs.combat_units[enemy_id]
-                                        enemy_unit.no_fire = True
-                                        # TODO: fix bug where action.move_to_waypoint_id is not assigned
-                                    case FireOutcomes.PIN:
-                                        if (
-                                            current_unit.status
-                                            == CombatUnit.Status.ACTIVE
-                                        ):
-                                            current_unit.status = (
-                                                CombatUnit.Status.PINNED
-                                            )
-                                            current_unit.current_waypoint_id = (
-                                                waypoint_id
-                                            )
-                                            reactive_fire_outcome = fire_outcome
-                                    case FireOutcomes.SUPPRESS:
-                                        if (
-                                            current_unit.status
-                                            != CombatUnit.Status.SUPPRESSED
-                                        ):
-                                            current_unit.status = (
-                                                CombatUnit.Status.SUPPRESSED
-                                            )
-                                            current_unit.current_waypoint_id = (
-                                                waypoint_id
-                                            )
-                                            reactive_fire_outcome = fire_outcome
-                                        else:
-                                            rs._kill_unit(action.unit_id)
-                                            reactive_fire_outcome = fire_outcome
-                                    case FireOutcomes.KILL:
-                                        rs._kill_unit(action.unit_id)
-                                        reactive_fire_outcome = FireOutcomes.KILL
-
-                        if reactive_fire_outcome in [
-                            FireOutcomes.SUPPRESS,
-                            FireOutcomes.KILL,
-                        ]:
-                            rs._flip_initiative()
-
-                        all_outcomes.append((prob, rs))
-
-                    return all_outcomes
+                    outcomes = rs._get_reactive_fire_outcomes(
+                        interrupts, action.unit_id, action.move_to_waypoint_id
+                    )
+                    return outcomes
                 else:  # No move interrupt found
-                    rs = self.copy()
                     rs._stall_counter[rs._initiative] += 1
+                    rs._pivot_towards(action.unit_id, action.move_to_waypoint_id)
                     current_unit = rs.combat_units[action.unit_id]
-
-                    # Set unit's orientation towards move direction
-                    current_waypoint = rs.waypoints[current_unit.current_waypoint_id]
-                    move_waypoint = rs.waypoints[action.move_to_waypoint_id]
-                    move_direction = (
-                        move_waypoint.position - current_waypoint.position
-                    ).normalized()
-                    angle_rad = math.atan2(move_direction.y, move_direction.x)
-                    current_unit.degrees = math.degrees(angle_rad)
-
-                    # Move there
                     current_unit.current_waypoint_id = action.move_to_waypoint_id
+                    return [(1, rs)]
+
+            case WaypointPivotAction():
+                rs = self.copy()
+                rs._pivot_towards(action.unit_id, action.pivot_to_waypoint_id)
+
+                interrupts = rs.get_move_interrupts(
+                    unit_id=action.unit_id,
+                    move_to_id=None,
+                )
+                if interrupts != []:
+                    outcomes = rs._get_reactive_fire_outcomes(
+                        interrupts, action.unit_id, move_to_id=None
+                    )
+                    return outcomes
+                else:  # No move interrupt found
+                    rs._stall_counter[rs._initiative] += 1
+                    rs._pivot_towards(action.unit_id, action.pivot_to_waypoint_id)
                     return [(1, rs)]
 
             case WaypointFireAction():
@@ -466,7 +412,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 # Check for move interrupts
                 current_unit = rs.combat_units[action.unit_id]
                 target_unit = rs.combat_units[action.target_id]
-                interrupts = self.get_move_interrupts(
+                rs._pivot_towards(action.unit_id, target_unit.current_waypoint_id)
+                interrupts = rs.get_move_interrupts(
                     unit_id=action.unit_id,
                     move_to_id=target_unit.current_waypoint_id,
                 )
@@ -615,7 +562,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     def get_move_interrupts(
         self,
         unit_id: int,
-        move_to_id: int,
+        move_to_id: int | None,
     ) -> list[tuple[int, list[int]]]:
         """Returns a list of (waypoint_id, [enemy_ids]) pair."""
         current_unit = self.combat_units[unit_id]
@@ -624,7 +571,12 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         # Same enemy can't reactive fire twice, so need to track
         # Enemies that's already added.
         included_enemy_ids: list[int] = []
-        for path_waypoint_id in current_waypoint.movable_paths[move_to_id]:
+        path_waypoint_ids: list[int] = []
+        if move_to_id is not None:
+            path_waypoint_ids = current_waypoint.movable_paths[move_to_id]
+        else:
+            path_waypoint_ids = [current_unit.current_waypoint_id]
+        for path_waypoint_id in path_waypoint_ids:
             enemy_ids: list[int] = []
             for enemy_id, enemy_unit in self.combat_units.items():
                 # Add interrupt if the enemy can reactive fire it
