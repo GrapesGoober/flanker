@@ -6,7 +6,13 @@ from itertools import product
 from math import prod
 from typing import Literal, override
 
-from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.waypoints_actions import (
@@ -14,6 +20,7 @@ from flanker_ai.states.waypoints_actions import (
     WaypointAssaultAction,
     WaypointFireAction,
     WaypointMoveAction,
+    WaypointPivotAction,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -181,6 +188,16 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         WaypointAssaultAction(
                             unit_id=friendly_id,
                             target_id=enemy_id,
+                        )
+                    )
+
+            # Add pivot actions; have it pivot towards enemies
+            if friendly_unit.status == CombatUnit.Status.ACTIVE:
+                for _, enemy_unit in enemy_units:
+                    actions.append(
+                        WaypointPivotAction(
+                            unit_id=friendly_id,
+                            pivot_to_waypoint_id=enemy_unit.current_waypoint_id,
                         )
                     )
 
@@ -482,6 +499,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 return MoveAction(
                     unit_id=action.unit_id,
                     to=self.waypoints[action.move_to_waypoint_id].position,
+                )
+            case WaypointPivotAction():
+                return PivotAction(
+                    unit_id=action.unit_id,
+                    to=self.waypoints[action.pivot_to_waypoint_id].position,
                 )
             case WaypointFireAction():
                 return FireAction(
