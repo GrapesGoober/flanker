@@ -3,7 +3,13 @@ from copy import deepcopy
 from typing import Sequence
 from warnings import warn
 
-from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.gamestate import GameState
@@ -138,36 +144,48 @@ class UnabstractedState(IRepresentationState[Action]):
         return [(1, branch)]
 
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
-        new_gs = self.copy()._gs
+        new_rs = self.copy()
         match action:
             case MoveAction():
-                initiative = InitiativeSystem.get_initiative(new_gs)
-                for _, fire_controls in new_gs.query(FireControls):
+                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                result = MoveSystem.move(new_gs, action.unit_id, action.to)
+                result = MoveSystem.move(new_rs._gs, action.unit_id, action.to)
                 if not isinstance(result, InvalidAction):
                     if result.reactive_fire_outcome == None:
-                        self._get_stall_counter()[initiative] += 1
+                        new_rs._get_stall_counter()[initiative] += 1
                     else:
-                        self._get_stall_counter()[initiative] = 0
-            case FireAction():
-                initiative = InitiativeSystem.get_initiative(new_gs)
-                self._get_stall_counter()[initiative] = 0
-                for _, fire_controls in new_gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.SUPPRESS
-                result = FireSystem.fire(new_gs, action.unit_id, action.target_id)
-            case AssaultAction():
-                initiative = InitiativeSystem.get_initiative(new_gs)
-                self._get_stall_counter()[initiative] = 0
-                for _, fire_controls in new_gs.query(FireControls):
+                        new_rs._get_stall_counter()[initiative] = 0
+            case PivotAction():
+                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                result = AssaultSystem.assault(new_gs, action.unit_id, action.target_id)
-        for _, fire_controls in new_gs.query(FireControls):
+                result = MoveSystem.pivot(new_rs._gs, action.unit_id, action.to)
+                if not isinstance(result, InvalidAction):
+                    if result.reactive_fire_outcome == None:
+                        new_rs._get_stall_counter()[initiative] += 1
+                    else:
+                        new_rs._get_stall_counter()[initiative] = 0
+            case FireAction():
+                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                new_rs._get_stall_counter()[initiative] = 0
+                for _, fire_controls in new_rs._gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.SUPPRESS
+                result = FireSystem.fire(new_rs._gs, action.unit_id, action.target_id)
+            case AssaultAction():
+                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                new_rs._get_stall_counter()[initiative] = 0
+                for _, fire_controls in new_rs._gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.PIN
+                result = AssaultSystem.assault(
+                    new_rs._gs, action.unit_id, action.target_id
+                )
+        for _, fire_controls in new_rs._gs.query(FireControls):
             fire_controls.override = None
 
         if isinstance(result, InvalidAction):
             return None
-        return UnabstractedState(new_gs)
+        return new_rs
 
     def get_winner(self) -> InitiativeState.Faction | None:
         for faction, counter in self._get_stall_counter().items():
