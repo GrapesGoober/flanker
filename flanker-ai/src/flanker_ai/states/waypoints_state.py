@@ -205,10 +205,23 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # TODO: is this causing the speed decrease for 3v3?
             # It creates new population list every branch
             if friendly_unit.status == CombatUnit.Status.ACTIVE:
-                # Filter some move actions to reduce branching factor
+                # Collect occupied waypoint IDs
+                occupied_waypoints: set[int] = {
+                    combat_unit.current_waypoint_id
+                    for combat_unit in self.combat_units.values()
+                }
+
+                # Filter move actions so we don't move to occupied waypoints
+                available_waypoints: list[int] = [
+                    wid
+                    for wid in friendly_waypoint.movable_paths.keys()
+                    if wid not in occupied_waypoints
+                ]
+
+                # Randomly sample to reduce branching factor
                 movable_nodes = random.sample(
-                    population=list(friendly_waypoint.movable_paths.keys()),
-                    k=min(9, len(friendly_waypoint.movable_paths)),
+                    population=available_waypoints,
+                    k=min(9, len(available_waypoints)),
                 )
 
                 for move_to_id in movable_nodes:
