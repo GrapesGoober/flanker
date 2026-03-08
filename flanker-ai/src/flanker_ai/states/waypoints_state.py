@@ -559,13 +559,25 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         for unit_id, transform, combat_unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
-            waypoint_id = len(self.waypoints.keys())
-            new_waypoint_ids.append(waypoint_id)
-            self.waypoints[waypoint_id] = _WaypointNode(
-                position=transform.position,
-                visible_nodes=set(),
-                movable_paths={},
-            )
+            # Try to find an existing waypoint at this position
+            waypoint_id: int | None = None
+            for id, waypoint in self.waypoints.items():
+                if waypoint.position == transform.position:
+                    waypoint_id = id
+                    break
+
+            # If none exists, create a new one
+            if waypoint_id is None:
+                waypoint_id = len(self.waypoints)
+                new_waypoint_ids.append(waypoint_id)
+
+                self.waypoints[waypoint_id] = _WaypointNode(
+                    position=transform.position,
+                    visible_nodes=set(),
+                    movable_paths={},
+                )
+
+            # Add the combat unit using the waypoint
             self.combat_units[unit_id] = _AbstractedCombatUnit(
                 unit_id=unit_id,
                 current_waypoint_id=waypoint_id,
