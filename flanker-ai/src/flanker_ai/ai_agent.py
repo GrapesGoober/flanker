@@ -91,7 +91,7 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
 
-            action = self._rs.deabstract_action(
+            action = rs.deabstract_action(
                 action=actions[0],
                 gs=self._gs,
             )
