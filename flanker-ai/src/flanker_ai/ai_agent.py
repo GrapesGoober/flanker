@@ -10,6 +10,8 @@ from flanker_ai.actions import (
     FireActionResult,
     MoveAction,
     MoveActionResult,
+    PivotAction,
+    PivotActionResult,
 )
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.i_policy import IPolicy
@@ -207,6 +209,24 @@ class AiAgent:
                     else:
                         counter.stall_counter[self._faction] = 0
                     return MoveActionResult(
+                        action=action,
+                        result_gs=self._gs,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+            case PivotAction():
+                result = MoveSystem.pivot(
+                    self._gs,
+                    action.unit_id,
+                    action.to,
+                )
+                if not isinstance(result, InvalidAction):
+                    stall_counter_ent = self._gs.query(AiStallCountComponent)
+                    _, counter = stall_counter_ent[0]
+                    if result.reactive_fire_outcome == None:
+                        counter.stall_counter[self._faction] += 1
+                    else:
+                        counter.stall_counter[self._faction] = 0
+                    return PivotActionResult(
                         action=action,
                         result_gs=self._gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
