@@ -81,9 +81,9 @@ class AiAgent:
                 break
 
             # Prepare the representation and run the policy on it
-            _rs = self._rs.copy()
-            _rs.update_state(self._gs)
-            actions = self._policy.get_action_sequence(_rs)
+            rs = deepcopy(self._rs)
+            rs.update_state(self._gs)
+            actions = self._policy.get_action_sequence(rs)
             print(f"{self._faction.value} AI made action: {actions}")
 
             if actions == []:
