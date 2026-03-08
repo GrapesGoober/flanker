@@ -194,6 +194,12 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # Add pivot actions; have it pivot towards enemies
             if friendly_unit.status == CombatUnit.Status.ACTIVE:
                 for _, enemy_unit in enemy_units:
+                    enemy_waypoint = self.waypoints[enemy_unit.current_waypoint_id]
+                    if LosSystem.in_fov(
+                        Transform(friendly_waypoint.position, friendly_unit.degrees),
+                        enemy_waypoint.position,
+                    ):
+                        continue
                     actions.append(
                         WaypointPivotAction(
                             unit_id=friendly_id,
