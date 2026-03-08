@@ -609,6 +609,89 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 interrupt_points.append((path_waypoint_id, enemy_ids))
         return interrupt_points
 
+    def _get_reactive_fire_outcomes(
+        self,
+        interrupts: list[tuple[int, list[int]]],
+        unit_id: int,
+        move_to_id: int | None,
+    ) -> list[tuple[float, "WaypointsState"]]:
+        # Get fire permutations for all enemies
+        candidate_enemy_ids: list[int] = []
+        for _, interrupt_enemies in interrupts:
+            candidate_enemy_ids += interrupt_enemies
+        permutations = self.get_all_fire_permutations(candidate_enemy_ids)
+
+        # For each permutation, build a new gs outcome
+        all_outcomes: list[tuple[float, "WaypointsState"]] = []
+        for prob, enemy_fire_outcomes in permutations:
+            # Create a new copy; play out the reactive fire and
+            # record the gs as a new outcome
+            rs = self.copy()
+            rs._stall_counter[rs._initiative] = 0
+            current_unit = rs.combat_units[unit_id]
+
+            # Track the most-severe fire outcome.
+            # More severe outcomes will override this variables.
+            reactive_fire_outcome: FireOutcomes | None = None
+            for waypoint_id, enemy_ids in interrupts:
+                # If the unit got interrupted and stopped moving,
+                # subsequent spotters don't get to fire.
+                if reactive_fire_outcome is not None:
+                    break
+
+                for enemy_id in enemy_ids:
+                    # Some previous fire outcomes might have killed unit,
+                    # so break early to prevent a non-existant entity being used.
+                    if unit_id not in rs.combat_units:
+                        break
+
+                    fire_outcome = enemy_fire_outcomes[enemy_id]
+                    match fire_outcome:
+                        case FireOutcomes.MISS:
+                            enemy_unit = rs.combat_units[enemy_id]
+                            enemy_unit.no_fire = True
+                        case FireOutcomes.PIN:
+                            if current_unit.status == CombatUnit.Status.ACTIVE:
+                                current_unit.status = CombatUnit.Status.PINNED
+                                current_unit.current_waypoint_id = waypoint_id
+                                reactive_fire_outcome = fire_outcome
+                        case FireOutcomes.SUPPRESS:
+                            if current_unit.status != CombatUnit.Status.SUPPRESSED:
+                                current_unit.status = CombatUnit.Status.SUPPRESSED
+                                current_unit.current_waypoint_id = waypoint_id
+                                reactive_fire_outcome = fire_outcome
+                            else:
+                                rs._kill_unit(unit_id)
+                                reactive_fire_outcome = fire_outcome
+                        case FireOutcomes.KILL:
+                            rs._kill_unit(unit_id)
+                            reactive_fire_outcome = FireOutcomes.KILL
+
+            if reactive_fire_outcome in [
+                FireOutcomes.SUPPRESS,
+                FireOutcomes.KILL,
+            ]:
+                rs._flip_initiative()
+
+            # Move to destination if no reactive fire
+            # Note: pivot action doesn't have move_to_id
+            if reactive_fire_outcome is None and move_to_id is not None:
+                current_unit.current_waypoint_id = move_to_id
+
+            all_outcomes.append((prob, rs))
+
+        return all_outcomes
+
+    def _pivot_towards(self, unit_id: int, waypoint_id: int) -> None:
+        current_unit = self.combat_units[unit_id]
+        current_waypoint = self.waypoints[current_unit.current_waypoint_id]
+        pivot_waypoint = self.waypoints[waypoint_id]
+        pivot_direction = (
+            pivot_waypoint.position - current_waypoint.position
+        ).normalized()
+        angle_rad = math.atan2(pivot_direction.y, pivot_direction.x)
+        current_unit.degrees = math.degrees(angle_rad)
+
     def _flip_initiative(self) -> None:
         match self._initiative:
             case InitiativeState.Faction.BLUE:
