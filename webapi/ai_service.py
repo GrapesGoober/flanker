@@ -3,6 +3,7 @@ from flanker_ai.actions import (
     AssaultActionResult,
     FireActionResult,
     MoveActionResult,
+    PivotActionResult,
 )
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_trial import AiTrial
@@ -24,6 +25,8 @@ from webapi.models import (
     FireActionRequest,
     MoveActionLog,
     MoveActionRequest,
+    PivotActionLog,
+    PivotActionRequest,
 )
 
 
@@ -132,6 +135,18 @@ class AiService:
                             result.result_gs
                         ),
                     )
+
+                case PivotActionResult():
+                    log = PivotActionLog(
+                        body=PivotActionRequest(
+                            unit_id=result.action.unit_id,
+                            to=result.action.to,
+                        ),
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                        unit_state=CombatUnitService.get_units_view_state(
+                            result.result_gs
+                        ),
+                    )
                 case FireActionResult():
                     log = FireActionLog(
                         body=FireActionRequest(
@@ -154,6 +169,7 @@ class AiService:
                             result.result_gs
                         ),
                     )
+
                 case _:
                     raise ValueError(f"Unknown type {result=}")
 
