@@ -205,7 +205,7 @@
           "path_tolerance": 30.0
         },
         "policy_config": {
-          "type": "ExpectimaxPolicyConfig"
+          "type": "MinimaxPolicyConfig"
         }
       }
     },
