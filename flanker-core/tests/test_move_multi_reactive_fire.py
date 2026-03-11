@@ -42,13 +42,19 @@ def fixture() -> Fixture:
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         fire_controls_1 := FireControls(),
-        Transform(position=Vec2(15, 20)),
+        Transform(
+            position=Vec2(15, 20),
+            degrees=-90,
+        ),
     )
     unit_shoot_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         fire_controls_2 := FireControls(),
-        Transform(position=Vec2(15, 20)),
+        Transform(
+            position=Vec2(15, 20),
+            degrees=-90,
+        ),
     )
 
     # 10x10 opaque box

@@ -10,6 +10,8 @@ from flanker_ai.actions import (
     FireActionResult,
     MoveAction,
     MoveActionResult,
+    PivotAction,
+    PivotActionResult,
 )
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.i_policy import IPolicy
@@ -79,9 +81,9 @@ class AiAgent:
                 break
 
             # Prepare the representation and run the policy on it
-            _rs = self._rs.copy()
-            _rs.update_state(self._gs)
-            actions = self._policy.get_action_sequence(_rs)
+            rs = deepcopy(self._rs)
+            rs.update_state(self._gs)
+            actions = self._policy.get_action_sequence(rs)
             print(f"{self._faction.value} AI made action: {actions}")
 
             if actions == []:
@@ -89,7 +91,7 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self._gs)
                 break
 
-            action = self._rs.deabstract_action(
+            action = rs.deabstract_action(
                 action=actions[0],
                 gs=self._gs,
             )
@@ -207,6 +209,24 @@ class AiAgent:
                     else:
                         counter.stall_counter[self._faction] = 0
                     return MoveActionResult(
+                        action=action,
+                        result_gs=self._gs,
+                        reactive_fire_outcome=result.reactive_fire_outcome,
+                    )
+            case PivotAction():
+                result = MoveSystem.pivot(
+                    self._gs,
+                    action.unit_id,
+                    action.to,
+                )
+                if not isinstance(result, InvalidAction):
+                    stall_counter_ent = self._gs.query(AiStallCountComponent)
+                    _, counter = stall_counter_ent[0]
+                    if result.reactive_fire_outcome == None:
+                        counter.stall_counter[self._faction] += 1
+                    else:
+                        counter.stall_counter[self._faction] = 0
+                    return PivotActionResult(
                         action=action,
                         result_gs=self._gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,

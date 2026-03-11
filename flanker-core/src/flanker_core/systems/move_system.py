@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from typing import Literal
 
@@ -22,6 +23,13 @@ from flanker_core.utils.intersect_getter import IntersectGetter
 @dataclass
 class _MoveActionResult:
     """Result of a move action as any reactive fire."""
+
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
+class _PivotActionResult:
+    """Result of a pivot action as any reactive fire."""
 
     reactive_fire_outcome: FireOutcomes | None = None
 
@@ -133,13 +141,23 @@ class MoveSystem:
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
+        move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
+
+        # Reset LOS polygon after move
+        mover_fire_controls = gs.try_component(unit_id, FireControls)
+        if mover_fire_controls:
+            mover_fire_controls.los_polygon = None
+
+        # Set orientation towards move direction
+        angle_rad = math.atan2(move_direction.y, move_direction.x)
+        transform.degrees = math.degrees(angle_rad)
 
         # In case of being interrupted, add a tiny offset to
         # prevent entity from sitting precisely on LOS polygon edge.
         # This reduces floating point sensitivity
-        offset = (to - transform.position).normalized() * 1e-12
+        offset = move_direction * 1e-12
 
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
@@ -235,3 +253,27 @@ class MoveSystem:
             InitiativeSystem.flip_initiative(gs)
 
         return _GroupMoveActionResult(results)
+
+    @staticmethod
+    def pivot(
+        gs: GameState,
+        unit_id: int,
+        to: Vec2,
+    ) -> _PivotActionResult | InvalidAction:
+        """Mutator method performs pivot action with reactive fire."""
+
+        transform = gs.get_component(unit_id, Transform)
+        initial_position = transform.position
+
+        # Cheeky implementation by having it move tiny step forward;
+        # the singular move handles pivoting AND reactive fire
+        move_vector = (to - transform.position).normalized() * 1e-12
+        move_to = initial_position + move_vector
+        result = MoveSystem._singular_move(gs, unit_id, move_to)
+
+        # Then put it back to where it were so it's not actually moved
+        transform.position = initial_position
+
+        if isinstance(result, _MoveActionResult):
+            return _PivotActionResult(result.reactive_fire_outcome)
+        return result

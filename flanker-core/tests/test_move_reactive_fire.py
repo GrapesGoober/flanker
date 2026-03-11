@@ -38,7 +38,10 @@ def fixture() -> Fixture:
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         fire_controls := FireControls(),
-        Transform(position=Vec2(15, 20)),
+        Transform(
+            position=Vec2(15, 20),
+            degrees=-90,
+        ),
     )
 
     # 10x10 opaque box

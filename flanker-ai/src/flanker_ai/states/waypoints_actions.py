@@ -8,6 +8,12 @@ class WaypointMoveAction:
 
 
 @dataclass
+class WaypointPivotAction:
+    unit_id: int
+    pivot_to_waypoint_id: int
+
+
+@dataclass
 class WaypointFireAction:
     unit_id: int
     target_id: int
@@ -19,4 +25,9 @@ class WaypointAssaultAction:
     target_id: int
 
 
-WaypointAction = WaypointMoveAction | WaypointFireAction | WaypointAssaultAction
+WaypointAction = (
+    WaypointMoveAction
+    | WaypointFireAction
+    | WaypointAssaultAction
+    | WaypointPivotAction
+)

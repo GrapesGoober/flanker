@@ -12,6 +12,12 @@ class MoveAction:
 
 
 @dataclass
+class PivotAction:
+    unit_id: int
+    to: Vec2
+
+
+@dataclass
 class FireAction:
     unit_id: int
     target_id: int
@@ -31,6 +37,13 @@ class MoveActionResult:
 
 
 @dataclass
+class PivotActionResult:
+    action: PivotAction
+    result_gs: GameState
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
 class FireActionResult:
     action: FireAction
     result_gs: GameState
@@ -45,5 +58,7 @@ class AssaultActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
-Action = MoveAction | FireAction | AssaultAction
-ActionResult = MoveActionResult | FireActionResult | AssaultActionResult
+Action = MoveAction | PivotAction | FireAction | AssaultAction
+ActionResult = (
+    MoveActionResult | PivotActionResult | FireActionResult | AssaultActionResult
+)
