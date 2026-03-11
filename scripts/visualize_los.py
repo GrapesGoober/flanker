@@ -26,11 +26,12 @@ def load_state(path: str) -> GameState:
     return gs
 
 
-def visualize_polygon(verts: list[Vec2], color: str = "C0") -> None:
+def visualize_polygon(verts: list[Vec2], color: str = "C0", alpha: float = 0) -> None:
     xs = [v.x for v in verts]
     ys = [-v.y for v in verts]
 
     plt.scatter(xs, ys, color=color)  # type: ignore
+    plt.fill(xs, ys, color=color, alpha=alpha)  # type: ignore
     plt.plot(xs, ys, linestyle="-", color=color)  # type: ignore
     plt.axis("equal")  # type: ignore
 
@@ -52,7 +53,7 @@ def draw_los(gs: GameState, unit_id: int) -> None:
     center = gs.get_component(unit_id, components.Transform).position
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
     assert poly
-    visualize_polygon(poly, color="C0")
+    visualize_polygon(poly, color="C0", alpha=0.2)
     plt.scatter(center.x, -center.y, color="C0")  # type: ignore
 
 
@@ -60,7 +61,6 @@ if __name__ == "__main__":
 
     gs = load_state(path="./scenes/experiment-template.json")
     draw_terrains(gs)
-
     draw_los(gs, unit_id=10)
     draw_los(gs, unit_id=11)
     plt.show()  # type: ignore
