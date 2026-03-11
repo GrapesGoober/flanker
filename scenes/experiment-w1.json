@@ -186,7 +186,7 @@
               "y": 146.66425913362946
             }
           ],
-          "path_tolerance": 50.0
+          "path_tolerance": 30.0
         },
         "policy_config": {
           "type": "RandomHeuristicPolicyConfig"
