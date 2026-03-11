@@ -117,7 +117,7 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-w1.json")
+    gs = load_state("./scenes/experiment-w2.json")
     draw_terrains(gs)
     draw_waypoints(gs, InitiativeState.Faction.BLUE)
     draw_los(gs, unit_id=10)
