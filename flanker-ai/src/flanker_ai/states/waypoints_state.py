@@ -247,9 +247,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         return actions
 
-    # TODO: this should be removed. It's only useful for normal MCTS.
-    # The deterministic policies could simple choose the most likely
-    # option from the probability distribution
+    # TODO: this should be removed. It's duplicate code.
+    # Currently the reactive fire uses deterministic outcome.
+    # I still want this to handle peeking.
     @override
     def get_deterministic_branch(
         self,
@@ -267,9 +267,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     move_to_id=action.move_to_waypoint_id,
                 )
                 if interrupts != []:
+                    num_shooters = len(interrupts[0])
                     rs._stall_counter[rs._initiative] = 0
                     # Assumes determinic for now
-                    current_unit.status = CombatUnit.Status.PINNED
+                    if num_shooters == 1:
+                        current_unit.status = CombatUnit.Status.PINNED
+                    elif num_shooters > 1:
+                        current_unit.status = CombatUnit.Status.SUPPRESSED
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     rs._stall_counter[rs._initiative] += 1
@@ -286,9 +290,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     move_to_id=None,
                 )
                 if interrupts != []:
+                    num_shooters = len(interrupts[0])
                     rs._stall_counter[rs._initiative] = 0
                     # Assumes determinic for now
-                    current_unit.status = CombatUnit.Status.PINNED
+                    if num_shooters == 1:
+                        current_unit.status = CombatUnit.Status.PINNED
+                    elif num_shooters > 1:
+                        current_unit.status = CombatUnit.Status.SUPPRESSED
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     rs._stall_counter[rs._initiative] += 1
