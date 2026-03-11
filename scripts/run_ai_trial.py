@@ -56,7 +56,7 @@ def run_trial(
 
 
 if __name__ == "__main__":
-    SCENE_NAME = "experiment-w1-wg"
+    SCENE_NAME = "experiment-w2"
     SCENE_FILE = f"./scenes/{SCENE_NAME}.json"
     RECORD_FILE = f"./scripts/experiment_results/{SCENE_NAME}.csv"
     gs = initialize_game_state(path=SCENE_FILE)
