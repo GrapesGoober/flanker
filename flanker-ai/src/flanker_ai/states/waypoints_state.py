@@ -200,6 +200,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         enemy_waypoint.position,
                     ):
                         continue
+                    # TODO: temporary fix to make running trials faster.
+                    # If the target isn't in LOS, don't need to pivot.
+                    if (
+                        enemy_unit.current_waypoint_id
+                        not in friendly_waypoint.visible_nodes
+                    ):
+                        continue
                     actions.append(
                         WaypointPivotAction(
                             unit_id=friendly_id,
