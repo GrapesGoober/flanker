@@ -10,21 +10,12 @@ from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.los_system import LinearTransform
+from flanker_core.systems.los_system import LinearTransform, LosSystem
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
 
-def visualize_polyline(verts: list[Vec2], color: str = "C0") -> None:
-    xs = [v.x for v in verts]
-    ys = [-v.y for v in verts]
-
-    plt.scatter(xs, ys, color=color)  # type: ignore
-    plt.plot(xs, ys, linestyle="-", color=color)  # type: ignore
-    plt.axis("equal")  # type: ignore
-
-
-if __name__ == "__main__":
+def load_state(path: str) -> GameState:
 
     component_types: list[type[Any]] = []
     component_types.append(AiConfigComponent)
@@ -32,16 +23,27 @@ if __name__ == "__main__":
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    path = "./scenes/experiment-w1-w1.json"
-
     with open(path, "r") as f:
         entities, id_counter = Serializer.deserialize(
             json_data=f.read(),
             component_types=component_types,
         )
         gs = GameState.load(entities, id_counter)
+    return gs
 
-    # Plot terrain in orange
+
+def visualize_polygon(verts: list[Vec2], color: str = "C0", alpha: float = 0) -> None:
+    xs = [v.x for v in verts]
+    ys = [-v.y for v in verts]
+
+    plt.scatter(xs, ys, color=color)  # type: ignore
+    plt.fill(xs, ys, color=color, alpha=alpha)  # type: ignore
+    plt.plot(xs, ys, linestyle="-", color=color)  # type: ignore
+    plt.axis("equal")  # type: ignore
+
+
+def draw_terrains(gs: GameState) -> None:
+
     for _, terrain, transform in gs.query(
         components.TerrainFeature,
         components.Transform,
@@ -49,33 +51,52 @@ if __name__ == "__main__":
         vertices = LinearTransform.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
-        visualize_polyline(vertices, color="C1")
+        visualize_polygon(vertices, color="C1")
 
-    # Plot the waypoints in blue
+
+def draw_los(gs: GameState, unit_id: int) -> None:
+    LosSystem.update_los_polygon(gs, unit_id)
+    center = gs.get_component(unit_id, components.Transform).position
+    poly = gs.get_component(unit_id, components.FireControls).los_polygon
+    assert poly
+    visualize_polygon(poly, color="C0", alpha=0.2)
+    plt.scatter(center.x, -center.y, color="C0")  # type: ignore
+
+
+def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
+
     print("Creating waypoints...")
-    config = AiAgent.get_state_config(gs, InitiativeState.Faction.RED)
+
+    config = AiAgent.get_state_config(gs, faction)
+
     assert isinstance(
         config, AiConfigComponent.WaypointsStateConfig
     ), "Can't visualize non-waypoints AI config"
+
     waypoints_gs = WaypointsState(
         points=config.waypoint_coordinates,
         path_tolerance=10,
     )
+
     waypoints_gs.initialize_state(gs)
     waypoints_gs.update_state(gs)
-    print("Creating waypoints done, drawing waypoints")
+
+    print("Drawing waypoints...")
+
     segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
     points_y: list[float] = []
     ids: list[int] = []
+
     for id, point in waypoints_gs.waypoints.items():
+
         points_x.append(point.position.x)
         points_y.append(-point.position.y)
         ids.append(id)
 
-        # Draw the interconnected visibility
         for visible_node_id in point.visible_nodes:
             visible_node = waypoints_gs.waypoints[visible_node_id]
+
             segments.append(
                 [
                     (point.position.x, -point.position.y),
@@ -83,13 +104,22 @@ if __name__ == "__main__":
                 ]
             )
 
-    # Draw all points at once
-    plt.scatter(points_x, points_y, color="C0", s=5)  # type: ignore
+    # draw nodes
+    plt.scatter(points_x, points_y, color="C2", s=5)  # type: ignore
+
     for x, y, id_ in zip(points_x, points_y, ids):
         plt.text(x, y, str(id_), fontsize=6, ha="left", va="bottom")  # type: ignore
 
-    # Draw all lines at once
-    lc = LineCollection(segments, colors="C0", linewidths=0.5, alpha=0.1)
+    # draw visibility graph
+    lc = LineCollection(segments, colors="C2", linewidths=0.5, alpha=0.15)
     plt.gca().add_collection(lc)
 
+
+if __name__ == "__main__":
+
+    gs = load_state("./scenes/experiment-w1.json")
+    draw_terrains(gs)
+    draw_waypoints(gs, InitiativeState.Faction.BLUE)
+    draw_los(gs, unit_id=10)
+    draw_los(gs, unit_id=11)
     plt.show()  # type: ignore
