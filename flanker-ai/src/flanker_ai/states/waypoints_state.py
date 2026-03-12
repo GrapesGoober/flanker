@@ -267,7 +267,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     move_to_id=action.move_to_waypoint_id,
                 )
                 if interrupts != []:
-                    num_shooters = len(interrupts[0])
+                    num_shooters = len(interrupts[0][1])
                     rs._stall_counter[rs._initiative] = 0
                     # Assumes determinic for now
                     if num_shooters == 1:
@@ -290,7 +290,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     move_to_id=None,
                 )
                 if interrupts != []:
-                    num_shooters = len(interrupts[0])
+                    num_shooters = len(interrupts[0][1])
                     rs._stall_counter[rs._initiative] = 0
                     # Assumes determinic for now
                     if num_shooters == 1:
