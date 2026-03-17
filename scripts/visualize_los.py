@@ -59,8 +59,6 @@ def draw_los(gs: GameState, unit_id: int) -> None:
 
 if __name__ == "__main__":
 
-    gs = load_state(path="./scenes/experiment-template.json")
-    draw_terrains(gs)
+    gs = load_state(path="./scenes/demo-simple.json")
     draw_los(gs, unit_id=10)
-    draw_los(gs, unit_id=11)
     plt.show()  # type: ignore
