@@ -53,12 +53,13 @@ def draw_los(gs: GameState, unit_id: int) -> None:
     center = gs.get_component(unit_id, components.Transform).position
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
     assert poly
-    visualize_polygon(poly, color="C0", alpha=0.2)
-    plt.scatter(center.x, -center.y, color="C0")  # type: ignore
+    visualize_polygon(poly, color="C1", alpha=0.2)
+    plt.scatter(center.x, -center.y, color="C1")  # type: ignore
 
 
 if __name__ == "__main__":
 
-    gs = load_state(path="./scenes/visualize-interrupt.json")
+    gs = load_state(path="./scenes/visualize-peeking.json")
     draw_los(gs, unit_id=10)
+    draw_los(gs, unit_id=11)
     plt.show()  # type: ignore

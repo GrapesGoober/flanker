@@ -2,6 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
+import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.states.waypoints_state import WaypointsState
@@ -63,6 +64,27 @@ def draw_los(gs: GameState, unit_id: int) -> None:
     plt.scatter(center.x, -center.y, color="C0")  # type: ignore
 
 
+def draw_graph(
+    points_x: list[float],
+    points_y: list[float],
+    segments: list[list[tuple[float, float]]],
+    color: str,
+    linewidth: float,
+    alpha: float,
+) -> None:
+
+    # draw nodes
+    plt.scatter(points_x, points_y, color=color, s=20)  # type: ignore
+
+    # Draw ID
+    # for x, y, id_ in zip(points_x, points_y, ids):
+    #     plt.text(x, y, str(id_), fontsize=6, ha="left", va="bottom")  # type: ignore
+
+    # draw visibility graph
+    lc = LineCollection(segments, colors=color, linewidths=linewidth, alpha=alpha)
+    plt.gca().add_collection(lc)
+
+
 def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
 
     print("Creating waypoints...")
@@ -88,8 +110,26 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
     points_y: list[float] = []
     ids: list[int] = []
 
+    accented_segments: list[list[tuple[float, float]]] = []
+    accented_points_x: list[float] = []
+    accented_points_y: list[float] = []
+
     for id, point in waypoints_gs.waypoints.items():
 
+        if id == 17:
+            accented_points_x.append(point.position.x)
+            accented_points_y.append(-point.position.y)
+
+            for visible_node_id in point.visible_nodes:
+                visible_node = waypoints_gs.waypoints[visible_node_id]
+
+                accented_segments.append(
+                    [
+                        (point.position.x, -point.position.y),
+                        (visible_node.position.x, -visible_node.position.y),
+                    ]
+                )
+            continue
         points_x.append(point.position.x)
         points_y.append(-point.position.y)
         ids.append(id)
@@ -104,22 +144,36 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
                 ]
             )
 
-    # draw nodes
-    plt.scatter(points_x, points_y, color="C2", s=5)  # type: ignore
-
-    for x, y, id_ in zip(points_x, points_y, ids):
-        plt.text(x, y, str(id_), fontsize=6, ha="left", va="bottom")  # type: ignore
-
-    # draw visibility graph
-    lc = LineCollection(segments, colors="C2", linewidths=0.5, alpha=0.15)
-    plt.gca().add_collection(lc)
+    draw_graph(
+        points_x,
+        points_y,
+        segments,
+        color="C0",
+        linewidth=0.5,
+        alpha=0.15,
+    )
+    draw_graph(
+        accented_points_x,
+        accented_points_y,
+        accented_segments,
+        color="C1",
+        linewidth=1.5,
+        alpha=0.15,
+    )
 
 
 if __name__ == "__main__":
 
     gs = load_state("./scenes/experiment-s2.json")
-    draw_terrains(gs)
+
+    # draw_terrains(gs)
     draw_waypoints(gs, InitiativeState.Faction.BLUE)
-    draw_los(gs, unit_id=10)
-    draw_los(gs, unit_id=11)
+    # draw_los(gs, unit_id=10)
+    # draw_los(gs, unit_id=11)
+    plt.axis("equal")  # type: ignore
+    img = mpimg.imread("./scripts/setup-scenario.png")  # type: ignore
+    plt.imshow(  # type: ignore
+        img,  # type: ignore
+        extent=[0, 300, -300, 0],  # type: ignore
+    )
     plt.show()  # type: ignore
