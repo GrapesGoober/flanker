@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
-	import * as d3 from 'd3';
 	import type { Vec2 } from '$lib/api';
+	import * as d3 from 'd3';
+	import { onMount, type Snippet } from 'svelte';
 
 	type Props = {
 		svgSnippet: Snippet;
@@ -60,7 +60,8 @@
 	<g bind:this={zoomLayer}>
 		{@render props.svgSnippet()}
 	</g>
-	<rect class="grid-layer" width="100%" height="100%" fill={`url(#${gridPatternId})`} />
+	<!-- Remove grid for visualization -->
+	<!-- <rect class="grid-layer" width="100%" height="100%" fill={`url(#${gridPatternId})`} /> -->
 </svg>
 
 <style lang="less">
