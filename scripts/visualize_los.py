@@ -59,6 +59,6 @@ def draw_los(gs: GameState, unit_id: int) -> None:
 
 if __name__ == "__main__":
 
-    gs = load_state(path="./scenes/demo-simple.json")
+    gs = load_state(path="./scenes/visualize-interrupt.json")
     draw_los(gs, unit_id=10)
     plt.show()  # type: ignore
