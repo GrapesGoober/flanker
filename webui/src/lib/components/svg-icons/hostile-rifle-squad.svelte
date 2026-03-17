@@ -8,11 +8,13 @@
 	@stroke-width: 0.7;
 	.diamond {
 		fill: white;
-		stroke: black;
+		// stroke: black;
+		stroke: red;
 		stroke-width: @stroke-width;
 	}
 	.cross {
-		stroke: black;
+		stroke: red;
+		// stroke: black;
 		stroke-width: @stroke-width;
 	}
 </style>
