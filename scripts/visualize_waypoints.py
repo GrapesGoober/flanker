@@ -33,13 +33,15 @@ def load_state(path: str) -> GameState:
     return gs
 
 
-def visualize_polygon(verts: list[Vec2], color: str = "C0", alpha: float = 0) -> None:
+def visualize_polygon(
+    verts: list[Vec2], color: str = "C0", fill_alpha: float = 0, plot_alpha: float = 0
+) -> None:
     xs = [v.x for v in verts]
     ys = [-v.y for v in verts]
 
-    plt.scatter(xs, ys, color=color)  # type: ignore
-    plt.fill(xs, ys, color=color, alpha=alpha)  # type: ignore
-    plt.plot(xs, ys, linestyle="-", color=color)  # type: ignore
+    # plt.scatter(xs, ys, color=color)  # type: ignore
+    plt.fill(xs, ys, color=color, alpha=fill_alpha)  # type: ignore
+    plt.plot(xs, ys, linestyle="-", color=color, alpha=plot_alpha)  # type: ignore
     plt.axis("equal")  # type: ignore
 
 
@@ -57,11 +59,9 @@ def draw_terrains(gs: GameState) -> None:
 
 def draw_los(gs: GameState, unit_id: int) -> None:
     LosSystem.update_los_polygon(gs, unit_id)
-    center = gs.get_component(unit_id, components.Transform).position
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
     assert poly
-    visualize_polygon(poly, color="C0", alpha=0.2)
-    plt.scatter(center.x, -center.y, color="C0")  # type: ignore
+    visualize_polygon(poly, color="C0", fill_alpha=0.3, plot_alpha=0.2)
 
 
 def draw_graph(
@@ -74,7 +74,7 @@ def draw_graph(
 ) -> None:
 
     # draw nodes
-    plt.scatter(points_x, points_y, color=color, s=20)  # type: ignore
+    plt.scatter(points_x, points_y, color=color, s=40)  # type: ignore
 
     # Draw ID
     # for x, y, id_ in zip(points_x, points_y, ids):
@@ -149,7 +149,7 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
         points_y,
         segments,
         color="C0",
-        linewidth=0.5,
+        linewidth=1,
         alpha=0.15,
     )
     draw_graph(
@@ -157,8 +157,8 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
         accented_points_y,
         accented_segments,
         color="C1",
-        linewidth=1.5,
-        alpha=0.15,
+        linewidth=2,
+        alpha=0.3,
     )
 
 
@@ -168,8 +168,8 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     draw_waypoints(gs, InitiativeState.Faction.BLUE)
-    # draw_los(gs, unit_id=10)
-    # draw_los(gs, unit_id=11)
+    draw_los(gs, unit_id=10)
+    draw_los(gs, unit_id=11)
     plt.axis("equal")  # type: ignore
     img = mpimg.imread("./scripts/setup-scenario.png")  # type: ignore
     plt.imshow(  # type: ignore
