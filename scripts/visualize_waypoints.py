@@ -164,9 +164,9 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/visualize-interrupt.json")
+    gs = load_state("./scenes/visualize-peeking.json")
 
-    img = mpimg.imread("./scripts/visualize-interrupt.png")  # type: ignore
+    img = mpimg.imread("./scripts/visualize-peeking.png")  # type: ignore
     plt.imshow(  # type: ignore
         img,  # type: ignore
         extent=[0, 300, -300, 0],  # type: ignore
@@ -175,6 +175,6 @@ if __name__ == "__main__":
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE)
     draw_los(gs, unit_id=10)
-    # draw_los(gs, unit_id=11)
+    draw_los(gs, unit_id=11)
     plt.axis("equal")  # type: ignore
     plt.show()  # type: ignore
