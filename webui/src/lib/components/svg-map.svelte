@@ -60,8 +60,7 @@
 	<g bind:this={zoomLayer}>
 		{@render props.svgSnippet()}
 	</g>
-	<!-- Remove grid for visualization -->
-	<!-- <rect class="grid-layer" width="100%" height="100%" fill={`url(#${gridPatternId})`} /> -->
+	<rect class="grid-layer" width="100%" height="100%" fill={`url(#${gridPatternId})`} />
 </svg>
 
 <style lang="less">
