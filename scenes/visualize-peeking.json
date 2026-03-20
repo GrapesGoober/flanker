@@ -1,0 +1,196 @@
+{
+  "id_counter": 68,
+  "entities": {
+    "0": {
+      "InitiativeState": {
+        "faction": "BLUE"
+      },
+      "EliminationObjective": {
+        "target_faction": "RED",
+        "winning_faction": "BLUE",
+        "units_to_destroy": 1,
+        "units_destroyed_counter": 0
+      }
+    },
+    "1": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 300.0
+          },
+          {
+            "x": 0.0,
+            "y": 300.0
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
+      }
+    },
+    "2": {
+      "Transform": {
+        "position": {
+          "x": 108.66666666666667,
+          "y": 144.66666666666666
+        },
+        "degrees": -59.03624346792648
+      },
+      "CombatUnit": {
+        "faction": "BLUE",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "SUPPRESS",
+        "can_reactive_fire": true
+      },
+      "AssaultControls": {}
+    },
+    "10": {
+      "Transform": {
+        "position": {
+          "x": 219.18019492037624,
+          "y": 76.541528075902846
+        },
+        "degrees": 128.33924890336343
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "PIN",
+        "can_reactive_fire": false
+      },
+      "AssaultControls": {}
+    },
+    "11": {
+      "Transform": {
+        "position": {
+          "x": 109.18019492037624,
+          "y": 26.541528075902846
+        },
+        "degrees": 78.33924890336343
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "PIN",
+        "can_reactive_fire": false
+      },
+      "AssaultControls": {}
+    },
+    "42": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        },
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        }
+      }
+    },
+    "43": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        },
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        }
+      }
+    },
+    "59": {},
+    "60": {},
+    "61": {},
+    "64": {
+      "Transform": {
+        "position": {
+          "x": 136.61487577279203,
+          "y": 100.44581951645571
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 38.70556538267155,
+            "y": 14.074751048244195
+          },
+          {
+            "x": 47.28236680269535,
+            "y": 24.410896349298525
+          },
+          {
+            "x": 47.942120758081785,
+            "y": 34.30720568009522
+          },
+          {
+            "x": 40.24499127857325,
+            "y": 43.76367904063429
+          },
+          {
+            "x": 7.697129479508561,
+            "y": 42.22425314473257
+          },
+          {
+            "x": -29.469010007261275,
+            "y": 29.029174037003642
+          },
+          {
+            "x": -34.74704165035284,
+            "y": 16.273930899532346
+          },
+          {
+            "x": -30.568599932905343,
+            "y": 4.3983597025763
+          },
+          {
+            "x": -18.693028735949312,
+            "y": -2.639015821545783
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": {
+        "type": "FOREST"
+      }
+    },
+    "65": {},
+    "66": {},
+    "67": {}
+  }
+}
