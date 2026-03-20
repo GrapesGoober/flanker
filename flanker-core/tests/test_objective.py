@@ -43,11 +43,11 @@ def fixture() -> Fixture:
     )
     target_id_1 = gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),
-        Transform(position=Vec2(1, 1)),
+        Transform(position=Vec2(2, 1)),
     )
     target_id_2 = gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.RED),
-        Transform(position=Vec2(2, 2)),
+        Transform(position=Vec2(3, 1)),
     )
 
     return Fixture(

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Annotated, Literal, Union
 
-from flanker_core.models.components import CombatUnit
+from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
@@ -21,6 +21,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
 
     unit_id: int
     position: Vec2
+    degree: float
     status: CombatUnit.Status
     is_friendly: bool
     no_fire: bool
@@ -60,6 +61,13 @@ class AssaultActionRequest(BaseModel, CamelCaseConfig):
     target_id: int
 
 
+class PivotActionRequest(BaseModel, CamelCaseConfig):
+    """Request model for a unit's pivot action."""
+
+    unit_id: int
+    to: Vec2
+
+
 class TerrainModel(BaseModel, CamelCaseConfig):
     """Represents a view of terrain feature in the game."""
 
@@ -86,6 +94,13 @@ class MoveActionLog(BaseModel, CamelCaseConfig):
     unit_state: CombatUnitsViewState
 
 
+class PivotActionLog(BaseModel, CamelCaseConfig):
+    log_type: Literal["PivotActionLog"] = "PivotActionLog"
+    body: PivotActionRequest
+    reactive_fire_outcome: FireOutcomes | None = None
+    unit_state: CombatUnitsViewState
+
+
 class FireActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["FireActionLog"] = "FireActionLog"
     body: FireActionRequest
@@ -101,7 +116,17 @@ class AssaultActionLog(BaseModel, CamelCaseConfig):
     unit_state: CombatUnitsViewState
 
 
+class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
+    faction: InitiativeState.Faction
+    points: list[Vec2]
+
+
+class AiWaypointConfigGridRequest(BaseModel, CamelCaseConfig):
+    faction: InitiativeState.Faction
+    spacing: float
+
+
 ActionLog = Annotated[
-    Union[MoveActionLog, FireActionLog, AssaultActionLog],
+    Union[MoveActionLog, PivotActionLog, FireActionLog, AssaultActionLog],
     Field(discriminator="log_type"),
 ]

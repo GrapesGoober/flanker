@@ -49,7 +49,7 @@
           "x": 100.0,
           "y": 45.0
         },
-        "degrees": 0.0
+        "degrees": 20
       },
       "CombatUnit": {
         "faction": "BLUE",
@@ -71,7 +71,7 @@
           "x": 100.0,
           "y": 60.0
         },
-        "degrees": 0.0
+        "degrees": 80
       },
       "CombatUnit": {
         "faction": "BLUE",
@@ -92,7 +92,7 @@
           "x": 190.0,
           "y": 212.0
         },
-        "degrees": 0.0
+        "degrees": -100
       },
       "CombatUnit": {
         "faction": "RED",
@@ -114,7 +114,7 @@
           "x": 169.0,
           "y": 232.0
         },
-        "degrees": 0.0
+        "degrees": -90
       },
       "CombatUnit": {
         "faction": "RED",
@@ -932,6 +932,28 @@
       },
       "TerrainTypeTag": {
         "type": "FOREST"
+      }
+    },
+    "42": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
+      }
+    },
+    "43": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "policy_config": {
+          "type": "RandomHeuristicPolicyConfig"
+        },
+        "state_config": {
+          "type": "UnabstractedStateConfig"
+        }
       }
     }
   }

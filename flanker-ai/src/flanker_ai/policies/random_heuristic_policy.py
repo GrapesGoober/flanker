@@ -1,0 +1,84 @@
+import random
+from typing import Sequence
+
+from flanker_ai.actions import AssaultAction, FireAction, MoveAction, PivotAction
+from flanker_ai.i_policy import IPolicy
+from flanker_ai.i_representation_state import IRepresentationState
+from flanker_core.gamestate import GameState
+
+
+class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
+    """
+    Random Heuristic baseline agent.
+    Logic:
+    1. If an enemy is in LOF, Fire.
+    2. Else, makes random move actions, assaults, or pivots.
+
+    It searches through the representation and finds the action that
+    best match the heuristic criteria.
+    """
+
+    def __init__(
+        self,
+        gs: GameState,  # Needed for deabstraction
+    ) -> None:
+        self._gs = gs
+
+    def get_action_sequence(
+        self, rs: IRepresentationState[TAction]
+    ) -> Sequence[TAction]:
+
+        winner = rs.get_winner()
+        if winner is not None:
+            return []
+
+        actions = list(rs.get_actions())
+        if not actions:
+            return []
+
+        # Categorizes actions into candidante fire actions or move actions
+        fire_actions: list[TAction] = []
+        move_actions: list[TAction] = []
+        for action in actions:
+            real_action = rs.deabstract_action(action, self._gs)
+            match real_action:
+                case FireAction():
+                    fire_actions.append(action)
+                case MoveAction() | AssaultAction() | PivotAction():
+                    move_actions.append(action)
+
+        # If any fire actions are valid, perform it first
+        action = self._pick_valid_action(rs, fire_actions)
+        if action is not None:
+            return [action]
+
+        # If any move actions are valid, perform it last
+        action = self._pick_valid_action(rs, move_actions)
+        if action is not None:
+            return [action]
+
+        # No valid action
+        return []
+
+    def _pick_valid_action(
+        self,
+        rs: IRepresentationState[TAction],
+        candidates: list[TAction],
+    ) -> TAction | None:
+        """Randomly pick a valid action."""
+        remaining = candidates.copy()
+        while remaining:
+            action = random.choice(remaining)
+            remaining.remove(action)
+
+            branch = rs.get_deterministic_branch(action)
+            if branch is None:
+                continue  # Invalid action has no branching
+
+            # Reject losing actions
+            if branch.get_winner() not in [None, rs.get_initiative()]:
+                continue
+
+            return action
+
+        return None

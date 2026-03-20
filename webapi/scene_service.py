@@ -2,6 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any, Iterable
 
+from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
@@ -20,6 +21,7 @@ class SceneService:
             if isclass(cls) and is_dataclass(cls):
                 yield cls
         yield TerrainTypeTag
+        yield AiConfigComponent
 
     def save_scene(
         self,

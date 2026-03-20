@@ -35,7 +35,7 @@ def fixture() -> Fixture:
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(5, -10)),
     )
-    # 10x10 opaque box
+    # 10x10 opaque box (not walkable)
     gs.add_entity(
         Transform(position=Vec2(0, 0), degrees=0),
         TerrainFeature(
@@ -50,7 +50,7 @@ def fixture() -> Fixture:
         ),
     )
 
-    # 10x10 opaque box
+    # 10x10 walkable box
     gs.add_entity(
         Transform(position=Vec2(0, 0), degrees=0),
         TerrainFeature(
@@ -72,6 +72,10 @@ def test_move(fixture: Fixture) -> None:
     MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
+    assert transform.degrees == -45, "Unit #1 expects to pivot towards direction."
+    MoveSystem.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
+    assert transform.position == Vec2(5, -15), "Pivot action shouldn't move unit"
+    assert transform.degrees == 90, "Unit #1 expects to pivot towards direction."
 
 
 def test_move_invalid(fixture: Fixture) -> None:

@@ -1,18 +1,21 @@
+import { page } from '$app/state';
 import createClient from 'openapi-fetch';
 import type { components, paths } from './api-schema';
-import { page } from '$app/state';
 const client = createClient<paths>();
 
 export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
+export type TerrainType = components['schemas']['Types'];
+export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type CombatUnitsViewState = components['schemas']['CombatUnitsViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 
 export type MoveActionLog = components['schemas']['MoveActionLog'];
 export type FireActionLog = components['schemas']['FireActionLog'];
 export type AssaultActionLog = components['schemas']['AssaultActionLog'];
-export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog;
+export type PivotActionLog = components['schemas']['PivotActionLog'];
+export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog | PivotActionLog;
 
 export type RouteParams = {
 	path: {
@@ -31,7 +34,7 @@ export function GetParams(): RouteParams {
 	};
 }
 
-/** Fetch terrain data for the current scene/game. */
+/** Fetch terrain data for the current game. */
 export async function GetTerrainData(): Promise<TerrainModel[]> {
 	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/terrain', {
 		params: GetParams()
@@ -41,7 +44,7 @@ export async function GetTerrainData(): Promise<TerrainModel[]> {
 	return data;
 }
 
-/** Update terrain data for the current scene/game. */
+/** Update terrain data for the current game. */
 export async function UpdateTerrainData(terrain: TerrainModel) {
 	const { data, error } = await client.PUT('/api/{sceneName}/{gameId}/terrain', {
 		params: GetParams(),
@@ -50,7 +53,29 @@ export async function UpdateTerrainData(terrain: TerrainModel) {
 	if (error) throw new Error(JSON.stringify(error));
 }
 
-/** Get current combat unit states for the scene/game. */
+/** Add terrain data for the current game. */
+export async function AddTerrainData(terrain: TerrainModel) {
+	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/terrain', {
+		params: GetParams(),
+		body: terrain
+	});
+	if (error) throw new Error(JSON.stringify(error));
+}
+
+/** Delete terrain data for the current game. */
+export async function DeleteTerrainData(terrainId: number) {
+	const { data, error } = await client.DELETE('/api/{sceneName}/{gameId}/terrain/{terrainId}', {
+		params: {
+			path: {
+				...GetParams().path,
+				terrainId: terrainId
+			}
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+}
+
+/** Get current combat unit states for the game. */
 export async function GetUnitStatesData(): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/units', {
 		params: GetParams()
@@ -65,6 +90,22 @@ export async function performMoveActionAsync(
 	to: Vec2
 ): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/move', {
+		params: GetParams(),
+		body: {
+			unitId: unitId,
+			to: to
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
+/** Pivots a unit towards a target position. */
+export async function performPivotActionAsync(
+	unitId: number,
+	to: Vec2
+): Promise<CombatUnitsViewState> {
+	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/pivot', {
 		params: GetParams(),
 		body: {
 			unitId: unitId,
@@ -107,11 +148,20 @@ export async function performAssaultActionAsync(
 	return data;
 }
 
-/** Get action logs for the current scene/game. */
+/** Get action logs for the current game. */
 export async function GetLogs(): Promise<ActionLog[]> {
 	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/logs', {
 		params: GetParams()
 	});
 	if (error) throw new Error(JSON.stringify(error));
 	return data;
+}
+
+/** Update waypoints data for the current game. */
+export async function UpdateWaypointsData(waypoints: AiWaypointsModel) {
+	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/ai-config-waypoints', {
+		params: GetParams(),
+		body: waypoints
+	});
+	if (error) throw new Error(JSON.stringify(error));
 }

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, create_model
 from typing import Any, Optional, cast
+
+from pydantic import BaseModel, create_model
 
 
 class Serializer:
@@ -20,6 +21,8 @@ class Serializer:
         component_fields: dict[str, Any] = {
             t.__name__: (Optional[t], None) for t in component_types
         }
+        # TODO: this create_model is security risk by executing arbitrary code
+        # see https://docs.pydantic.dev/latest/examples/dynamic_models/
         EntityComponent = create_model("EntityComponent", **component_fields)
         FileData = create_model(
             "FileData", id_counter=int, entities=dict[int, EntityComponent]

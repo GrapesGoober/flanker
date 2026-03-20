@@ -24,6 +24,7 @@
 		else if (key === 'm') await controller.moveActionAsync();
 		else if (key === 'f') await controller.fireActionAsync();
 		else if (key === 'a') await controller.assaultActionAsync();
+		else if (key === 'p') await controller.pivotActionAsync();
 	}
 </script>
 
@@ -55,6 +56,15 @@
 			disabled={!controller.isMoveActionValid()}
 		>
 			Move (m)
+		</button>
+		<button
+			class="action-button"
+			onclick={() => {
+				controller.moveActionAsync();
+			}}
+			disabled={!controller.isPivotActionValid()}
+		>
+			Pivot (p)
 		</button>
 		<button
 			class="action-button"

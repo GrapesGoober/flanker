@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -47,19 +48,28 @@ class TerrainService:
     @staticmethod
     def add_terrain(
         gs: GameState,
-        pivot: Vec2,
-        vertices: list[Vec2],
-        terrain_type: TerrainModel.Types,
+        terrain: TerrainModel,
     ) -> None:
         """Add a new terrain feature to the game state."""
         gs.add_entity(
-            Transform(position=pivot, degrees=0),
+            Transform(position=terrain.position, degrees=0),
             TerrainFeature(
-                vertices=vertices,
-                flag=TerrainService.get_terrain_flags(terrain_type),
+                vertices=terrain.vertices,
+                flag=TerrainService.get_terrain_flags(terrain.terrain_type),
             ),
-            TerrainTypeTag(terrain_type),
+            TerrainTypeTag(terrain.terrain_type),
         )
+
+    @staticmethod
+    def delete_terrain(gs: GameState, terrain_id: int) -> None:
+        # Make sure the terrain exists
+        if gs.try_component(terrain_id, TerrainFeature) is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Terrain {terrain_id=} does not exist",
+            )
+        # Then delete
+        gs.delete_entity(terrain_id)
 
     @staticmethod
     def add_building(gs: GameState, position: Vec2, degrees: float) -> None:

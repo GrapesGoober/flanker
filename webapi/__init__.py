@@ -9,10 +9,13 @@ from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
+    AiWaypointConfigGridRequest,
+    AiWaypointConfigRequest,
     AssaultActionRequest,
     CombatUnitsViewState,
     FireActionRequest,
     MoveActionRequest,
+    PivotActionRequest,
     TerrainModel,
 )
 from webapi.scene_service import SceneService
@@ -67,7 +70,20 @@ async def action_move(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.move(gs, body)
-    AiService.play(gs)
+    AiService.play_redfor(gs)
+    return CombatUnitService.get_units_view_state(gs)
+
+
+@app.post("/api/{sceneName}/{gameId}/pivot")
+async def action_pivot(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    body: PivotActionRequest = Body(...),
+) -> CombatUnitsViewState:
+    """Pivot a unit and return updated rifle squads."""
+    gs = scene_service.get_game_state(scene_name, game_id)
+    ActionService.pivot(gs, body)
+    AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 
 
@@ -80,7 +96,7 @@ async def action_fire(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.fire(gs, body)
-    AiService.play(gs)
+    AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 
 
@@ -93,7 +109,7 @@ async def action_assault(
     """Move a unit and return updated rifle squads."""
     gs = scene_service.get_game_state(scene_name, game_id)
     ActionService.assault(gs, body)
-    AiService.play(gs)
+    AiService.play_redfor(gs)
     return CombatUnitService.get_units_view_state(gs)
 
 
@@ -112,8 +128,22 @@ async def ai_play(
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    exec_time = timeit(lambda: AiService.play_minimax(gs, depth=4), number=1)
+    exec_time = timeit(lambda: AiService.play_trial(gs), number=1)
     print(f"Execution time: {exec_time:.6f} seconds")
+
+
+@app.post("/api/{sceneName}/{gameId}/ai-config-waypoints")
+async def ai_config_waypoints(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    body: AiWaypointConfigRequest | AiWaypointConfigGridRequest = Body(...),
+) -> None:
+    gs = scene_service.get_game_state(scene_name, game_id)
+    match body:
+        case AiWaypointConfigRequest():
+            AiService.set_ai_waypoints_config(gs, body)
+        case AiWaypointConfigGridRequest():
+            AiService.set_ai_waypoints_config_to_grid(gs, body)
 
 
 @app.put("/api/{sceneName}/{gameId}/terrain")
@@ -125,3 +155,25 @@ async def update_terrain(
     """Edit the terrain polygon."""
     gs = scene_service.get_game_state(scene_name, game_id)
     TerrainService.update_terrain(gs, body)
+
+
+@app.post("/api/{sceneName}/{gameId}/terrain")
+async def add_terrain(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    body: TerrainModel = Body(...),
+) -> None:
+    """Edit the terrain polygon."""
+    gs = scene_service.get_game_state(scene_name, game_id)
+    TerrainService.add_terrain(gs, body)
+
+
+@app.delete("/api/{sceneName}/{gameId}/terrain/{terrainId}")
+async def delete_terrain(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    terrain_id: int = Path(..., alias="terrainId"),
+) -> None:
+    """Edit the terrain polygon."""
+    gs = scene_service.get_game_state(scene_name, game_id)
+    TerrainService.delete_terrain(gs, terrain_id)

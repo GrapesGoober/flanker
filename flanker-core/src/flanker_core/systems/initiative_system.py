@@ -17,9 +17,6 @@ class InitiativeSystem:
         # Reset reactive fire
         for _, fire_controls in gs.query(FireControls):
             fire_controls.can_reactive_fire = True
-        # Reset LOS polygons
-        for _, fire_controls in gs.query(FireControls):
-            fire_controls.los_polygon = None
 
     @staticmethod
     def set_initiative(gs: GameState, faction: InitiativeState.Faction) -> None:

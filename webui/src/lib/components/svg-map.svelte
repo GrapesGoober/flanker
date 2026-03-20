@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
-	import * as d3 from 'd3';
 	import type { Vec2 } from '$lib/api';
+	import * as d3 from 'd3';
+	import { onMount, type Snippet } from 'svelte';
 
 	type Props = {
 		svgSnippet: Snippet;

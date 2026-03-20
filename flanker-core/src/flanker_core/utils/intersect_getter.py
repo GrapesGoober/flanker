@@ -25,7 +25,7 @@ class IntersectGetter:
         # Direction doesn't matter. All results are the same.
         line_cast_to = Vec2(max(v.x for v in polygon) + 1, point.y)
         # Prevent this line from casting directly at a vertex
-        line_cast_to = line_cast_to.rotated(1e-6)
+        line_cast_to = line_cast_to.rotated(1e-2) * 2  # Make the line longer
         # Cast and count
         intersect_points = IntersectGetter.get_intersects(
             line=(point, line_cast_to),
