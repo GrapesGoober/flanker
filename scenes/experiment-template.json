@@ -1,7 +1,6 @@
 {
-  "id_counter": 21,
   "entities": {
-    "0": {
+    "066d81b5-2e25-4175-8ea5-0b1f71f73c1d": {
       "InitiativeState": {
         "faction": "BLUE"
       },
@@ -12,7 +11,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "1": {
+    "1859782c-bf0d-417c-959f-445375719293": {
       "EliminationObjective": {
         "target_faction": "BLUE",
         "winning_faction": "RED",
@@ -20,7 +19,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "2": {
+    "b139e1d9-7df9-4148-a8db-137df1c0fa7c": {
       "Transform": {
         "position": {
           "x": 0.0,
@@ -51,7 +50,7 @@
         "flag": 33
       }
     },
-    "3": {
+    "843fadf4-9645-44ec-9d42-9ac658e964ca": {
       "Transform": {
         "position": {
           "x": 40.0,
@@ -71,7 +70,7 @@
       },
       "AssaultControls": {}
     },
-    "4": {
+    "301ab44d-d18b-47d7-8406-add359176995": {
       "Transform": {
         "position": {
           "x": 60.0,
@@ -91,7 +90,7 @@
       },
       "AssaultControls": {}
     },
-    "10": {
+    "c0be4c67-72fe-4164-9a44-bc153079948a": {
       "Transform": {
         "position": {
           "x": 40.0,
@@ -111,7 +110,7 @@
       },
       "AssaultControls": {}
     },
-    "11": {
+    "473a9efb-ff36-4e44-af13-327f60bbd79f": {
       "Transform": {
         "position": {
           "x": 100.0,
@@ -131,7 +130,7 @@
       },
       "AssaultControls": {}
     },
-    "15": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
       "AiConfigComponent": {
         "faction": "BLUE",
         "state_config": {
@@ -142,7 +141,7 @@
         }
       }
     },
-    "16": {
+    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
       "AiConfigComponent": {
         "faction": "RED",
         "state_config": {
@@ -153,7 +152,7 @@
         }
       }
     },
-    "18": {
+    "c08e1c9e-d67c-4bd7-bb00-38c423ecc7cf": {
       "Transform": {
         "position": {
           "x": 86.0,
@@ -207,7 +206,7 @@
         "type": "FOREST"
       }
     },
-    "20": {
+    "b55c0fc4-2537-41aa-b1b6-c9baab251197": {
       "Transform": {
         "position": {
           "x": -0.6081467669706202,
