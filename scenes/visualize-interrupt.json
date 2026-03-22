@@ -1,7 +1,6 @@
 {
-  "id_counter": 63,
   "entities": {
-    "0": {
+    "f7cc9377-794c-439f-86fb-f619c9908266": {
       "InitiativeState": {
         "faction": "BLUE"
       },
@@ -12,7 +11,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "1": {
+    "47f479d4-37e4-46d0-adcd-b762e2a8f622": {
       "Transform": {
         "position": {
           "x": 0.0,
@@ -43,7 +42,7 @@
         "flag": 33
       }
     },
-    "2": {
+    "1373168d-8ddc-4912-bdea-9f4b3fed829f": {
       "Transform": {
         "position": {
           "x": 67.4368763415628,
@@ -64,7 +63,7 @@
       },
       "AssaultControls": {}
     },
-    "10": {
+    "ae5f190c-cdd5-4af3-a597-32ed56f24bb2": {
       "Transform": {
         "position": {
           "x": 219.18019492037624,
@@ -85,7 +84,7 @@
       },
       "AssaultControls": {}
     },
-    "42": {
+    "3417bfb3-c72d-406a-b7c5-c7ff989ec70a": {
       "AiConfigComponent": {
         "faction": "BLUE",
         "state_config": {
@@ -96,7 +95,7 @@
         }
       }
     },
-    "43": {
+    "49a187dc-b48e-4d0a-b7a5-c628b5acc568": {
       "AiConfigComponent": {
         "faction": "RED",
         "state_config": {
@@ -107,7 +106,7 @@
         }
       }
     },
-    "58": {
+    "a0c62130-6e29-466f-8383-3eb6e3de0e04": {
       "Transform": {
         "position": {
           "x": 90.40475479820643,
@@ -165,8 +164,8 @@
         "type": "FOREST"
       }
     },
-    "59": {},
-    "60": {},
-    "61": {}
+    "a882b29e-98f9-49dc-8402-3deb45149b66": {},
+    "6875e4d9-ae63-4617-b56c-b3e39f6bf629": {},
+    "c80c3ccc-b7fb-4271-94d3-0980870de4cb": {}
   }
 }

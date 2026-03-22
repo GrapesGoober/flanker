@@ -1,7 +1,6 @@
 {
-  "id_counter": 68,
   "entities": {
-    "0": {
+    "e0eb9407-b6ee-4014-bb88-8d0ef8edeaf8": {
       "InitiativeState": {
         "faction": "BLUE"
       },
@@ -12,7 +11,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "1": {
+    "e7ca1ee2-0167-46c4-92e1-ebd2b014b339": {
       "Transform": {
         "position": {
           "x": 0.0,
@@ -43,7 +42,7 @@
         "flag": 33
       }
     },
-    "2": {
+    "92a815de-a125-4402-99d8-09135652b5e0": {
       "Transform": {
         "position": {
           "x": 108.66666666666667,
@@ -64,11 +63,11 @@
       },
       "AssaultControls": {}
     },
-    "10": {
+    "49d609a8-7cfb-431d-be37-31031c20559c": {
       "Transform": {
         "position": {
           "x": 219.18019492037624,
-          "y": 76.541528075902846
+          "y": 76.54152807590285
         },
         "degrees": 128.33924890336343
       },
@@ -85,7 +84,7 @@
       },
       "AssaultControls": {}
     },
-    "11": {
+    "dd57a556-f088-40ec-8d77-d51b04f2540c": {
       "Transform": {
         "position": {
           "x": 109.18019492037624,
@@ -106,7 +105,7 @@
       },
       "AssaultControls": {}
     },
-    "42": {
+    "f3824f52-4780-4b2f-9979-60be46cdb40b": {
       "AiConfigComponent": {
         "faction": "BLUE",
         "state_config": {
@@ -117,7 +116,7 @@
         }
       }
     },
-    "43": {
+    "7d4437e8-e5cb-4465-aa39-fb8143b29c49": {
       "AiConfigComponent": {
         "faction": "RED",
         "state_config": {
@@ -128,10 +127,10 @@
         }
       }
     },
-    "59": {},
-    "60": {},
-    "61": {},
-    "64": {
+    "9dac03fc-37a6-4c47-aacd-215a476a31ed": {},
+    "eef67b62-c4c7-487d-99ba-7507cfcff269": {},
+    "d4763773-9a2b-456f-86ec-1ae6d2aff90f": {},
+    "719e0c13-a53e-463c-a362-a9f340b7fd39": {
       "Transform": {
         "position": {
           "x": 136.61487577279203,
@@ -189,8 +188,8 @@
         "type": "FOREST"
       }
     },
-    "65": {},
-    "66": {},
-    "67": {}
+    "e309659d-0b2f-4c5f-9b54-0189783966b0": {},
+    "147ebdb8-e4b2-4e4f-aa40-715dcc2f0e6a": {},
+    "2c2aa9f5-a732-49b1-9c48-44425d8bfb49": {}
   }
 }

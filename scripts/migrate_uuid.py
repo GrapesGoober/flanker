@@ -29,6 +29,6 @@ def migrate_to_uuid(input_path: str, output_path: str) -> None:
 
 
 if __name__ == "__main__":
-    SCENE_NAME = "experiment-template"
+    SCENE_NAME = "visualize-peeking"
     path = f"./scenes/{SCENE_NAME}.json"
     migrate_to_uuid(path, path)
