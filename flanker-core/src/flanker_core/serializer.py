@@ -1,4 +1,5 @@
 from typing import Any, Optional, cast
+from uuid import UUID
 
 from pydantic import BaseModel, create_model
 
@@ -9,8 +10,7 @@ class Serializer:
     class FileDataType(BaseModel):
         """Defines the output file data structure for serialization"""
 
-        id_counter: int
-        entities: dict[int, BaseModel]
+        entities: dict[UUID, BaseModel]
 
     @staticmethod
     def _build_schema(
@@ -32,8 +32,7 @@ class Serializer:
 
     @staticmethod
     def serialize(
-        entities: dict[int, dict[type, Any]],
-        id_counter: int,
+        entities: dict[UUID, dict[type, Any]],
         component_types: list[type],
     ) -> str:
         """Serialises entity-component table & id counter to json string"""
@@ -43,7 +42,6 @@ class Serializer:
 
         # Convert entities to using EntityComponent models
         file_data = FileData(
-            id_counter=id_counter,
             entities={
                 entity_id: EntityComponent(
                     **{
@@ -63,7 +61,7 @@ class Serializer:
     @staticmethod
     def deserialize(
         json_data: str, component_types: list[type]
-    ) -> tuple[dict[int, dict[type, Any]], int]:
+    ) -> dict[UUID, dict[type, Any]]:
         """Deerialises entity-component table & id counter from json string"""
 
         # Serialize with nulls excluded
@@ -71,7 +69,7 @@ class Serializer:
         file_data = FileData.model_validate_json(json_data)
 
         # Convert EntityComponent models to dict[type, Any] components
-        entities: dict[int, dict[type, Any]] = {
+        entities: dict[UUID, dict[type, Any]] = {
             entity_id: {
                 type(comp_obj): comp_obj
                 for comp_name in EntityComponent.model_fields.keys()
@@ -79,4 +77,4 @@ class Serializer:
             }
             for entity_id, entity_components in file_data.entities.items()
         }
-        return entities, file_data.id_counter
+        return entities
