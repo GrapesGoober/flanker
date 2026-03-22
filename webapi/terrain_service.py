@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import UUID, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 
 from webapi.models import TerrainModel
@@ -61,7 +61,7 @@ class TerrainService:
         )
 
     @staticmethod
-    def delete_terrain(gs: GameState, terrain_id: int) -> None:
+    def delete_terrain(gs: GameState, terrain_id: UUID) -> None:
         # Make sure the terrain exists
         if gs.try_component(terrain_id, TerrainFeature) is None:
             raise HTTPException(

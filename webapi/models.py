@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Annotated, Literal, Union
+from uuid import UUID
 
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
@@ -19,7 +20,7 @@ class CamelCaseConfig:
 class SquadModel(BaseModel, CamelCaseConfig):
     """Represents a view of a single squad in the game."""
 
-    unit_id: int
+    unit_id: UUID
     position: Vec2
     degree: float
     status: CombatUnit.Status
@@ -43,35 +44,35 @@ class CombatUnitsViewState(BaseModel, CamelCaseConfig):
 class MoveActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's move action."""
 
-    unit_id: int
+    unit_id: UUID
     to: Vec2
 
 
 class FireActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's fire action."""
 
-    unit_id: int
-    target_id: int
+    unit_id: UUID
+    target_id: UUID
 
 
 class AssaultActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's assault action."""
 
-    unit_id: int
-    target_id: int
+    unit_id: UUID
+    target_id: UUID
 
 
 class PivotActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's pivot action."""
 
-    unit_id: int
+    unit_id: UUID
     to: Vec2
 
 
 class TerrainModel(BaseModel, CamelCaseConfig):
     """Represents a view of terrain feature in the game."""
 
-    terrain_id: int
+    terrain_id: UUID
     position: Vec2
     degrees: float
     vertices: list[Vec2]
