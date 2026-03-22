@@ -24,9 +24,7 @@ class Serializer:
         # TODO: this create_model is security risk by executing arbitrary code
         # see https://docs.pydantic.dev/latest/examples/dynamic_models/
         EntityComponent = create_model("EntityComponent", **component_fields)
-        FileData = create_model(
-            "FileData", id_counter=int, entities=dict[int, EntityComponent]
-        )
+        FileData = create_model("FileData", entities=dict[UUID, EntityComponent])
         # The dynamically built FileData type must conform to _FileDataType
         return EntityComponent, cast(type[Serializer.FileDataType], FileData)
 
