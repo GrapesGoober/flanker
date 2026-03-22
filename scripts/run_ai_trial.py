@@ -20,11 +20,11 @@ def initialize_game_state(path: str) -> GameState:
             component_types.append(cls)
 
     with open(path, "r") as f:
-        entities, id_counter = Serializer.deserialize(
+        entities = Serializer.deserialize(
             json_data=f.read(),
             component_types=component_types,
         )
-        gs = GameState.load(entities, id_counter)
+        gs = GameState.load(entities)
 
     print("Creating BLUE agent...")
     AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
