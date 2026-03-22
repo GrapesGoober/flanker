@@ -165,9 +165,9 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/visualize-peeking.json")
+    gs = load_state("./scenes/experiment-s2.json")
 
-    img = mpimg.imread("./scripts/visualize-peeking.png")  # type: ignore
+    img = mpimg.imread("./scripts/experiment-s2.png")  # type: ignore
     plt.imshow(  # type: ignore
         img,  # type: ignore
         extent=[0, 300, -300, 0],  # type: ignore

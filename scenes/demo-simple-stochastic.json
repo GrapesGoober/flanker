@@ -1,7 +1,6 @@
 {
-  "id_counter": 58,
   "entities": {
-    "0": {
+    "46a5af40-ae16-46ca-bb89-140ded717a57": {
       "InitiativeState": {
         "faction": "BLUE"
       },
@@ -12,7 +11,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "1": {
+    "cc1b3b14-d3df-42bc-9437-2edd234440b8": {
       "Transform": {
         "position": {
           "x": 0,
@@ -43,7 +42,7 @@
         "flag": 33
       }
     },
-    "2": {
+    "7b0e4a68-bcd7-4ae8-a47c-66593aa55664": {
       "Transform": {
         "position": {
           "x": 100.0,
@@ -64,7 +63,7 @@
       },
       "AssaultControls": {}
     },
-    "3": {
+    "7b962aa2-bea5-4e5c-82f9-b04567a7c670": {
       "Transform": {
         "position": {
           "x": 100.0,
@@ -84,7 +83,7 @@
       },
       "AssaultControls": {}
     },
-    "10": {
+    "eb9ae459-0e31-4e9d-a3bc-7f61bde77e3a": {
       "Transform": {
         "position": {
           "x": 190.0,
@@ -105,7 +104,7 @@
       },
       "AssaultControls": {}
     },
-    "11": {
+    "1eead481-df7a-49d5-a42c-30fc0ad62924": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -126,7 +125,7 @@
       },
       "AssaultControls": {}
     },
-    "13": {
+    "4b7a3e5c-37d1-4041-bef9-a702d9bb6762": {
       "Transform": {
         "position": {
           "x": 225.0,
@@ -160,7 +159,7 @@
         "type": "BUILDING"
       }
     },
-    "14": {
+    "ca8ee4e7-6e98-4660-bd25-be0872f79974": {
       "Transform": {
         "position": {
           "x": 190.0,
@@ -194,7 +193,7 @@
         "type": "BUILDING"
       }
     },
-    "15": {
+    "9fb7a5d9-b5c9-4ea3-9b25-f0f6cb376978": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -228,7 +227,7 @@
         "type": "BUILDING"
       }
     },
-    "23": {
+    "0bf1ff01-14ef-4e82-b732-79480a3307b0": {
       "Transform": {
         "position": {
           "x": 453.0,
@@ -314,7 +313,7 @@
         "type": "ROAD"
       }
     },
-    "27": {
+    "b5715772-4e5a-432b-b490-c9bff3cf0a2f": {
       "Transform": {
         "position": {
           "x": 65.0,
@@ -376,7 +375,7 @@
         "type": "FOREST"
       }
     },
-    "28": {
+    "16f08ecb-1413-48e9-a728-72fd574ac4a5": {
       "Transform": {
         "position": {
           "x": 141.0,
@@ -450,7 +449,7 @@
         "type": "FOREST"
       }
     },
-    "29": {
+    "48b20021-de80-4466-a26a-fd2377dced7e": {
       "Transform": {
         "position": {
           "x": 113.5,
@@ -548,7 +547,7 @@
         "type": "FOREST"
       }
     },
-    "31": {
+    "bbe3f2f3-4e3b-41aa-82e9-df64b3379221": {
       "Transform": {
         "position": {
           "x": 265.5,
@@ -634,7 +633,7 @@
         "type": "FOREST"
       }
     },
-    "38": {
+    "bd116b63-33f4-4468-837c-939041c851f5": {
       "Transform": {
         "position": {
           "x": 169.0,
@@ -696,7 +695,7 @@
         "type": "FIELD"
       }
     },
-    "39": {
+    "2565246a-ac08-4800-886f-37d4e8b9a0a4": {
       "Transform": {
         "position": {
           "x": 204.0,
@@ -766,7 +765,7 @@
         "type": "FIELD"
       }
     },
-    "40": {
+    "db5d20e7-a911-4235-9fa9-0d4f2cdef4b1": {
       "Transform": {
         "position": {
           "x": 179.0,
@@ -840,7 +839,7 @@
         "type": "FIELD"
       }
     },
-    "41": {
+    "27c764e4-8626-4ffe-80b8-86bd0b528e72": {
       "Transform": {
         "position": {
           "x": 192.5,
@@ -930,7 +929,7 @@
         "type": "FOREST"
       }
     },
-    "42": {
+    "f1cbba49-5092-46a2-bc6e-f9ef4a5dc6c6": {
       "AiConfigComponent": {
         "faction": "BLUE",
         "policy_config": {
@@ -941,7 +940,7 @@
         }
       }
     },
-    "43": {
+    "845e1a2e-90bc-4071-b524-d7f1f4d45b20": {
       "AiConfigComponent": {
         "faction": "RED",
         "policy_config": {
