@@ -1,6 +1,7 @@
 import random
 from dataclasses import dataclass
 from typing import Iterable
+from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, FireControls, Transform
@@ -31,8 +32,8 @@ class FireSystem:
     @staticmethod
     def validate_fire_actors(
         gs: GameState,
-        attacker_id: int,
-        target_id: int,
+        attacker_id: UUID,
+        target_id: UUID,
     ) -> InvalidAction | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
 
@@ -63,7 +64,7 @@ class FireSystem:
     @staticmethod
     def get_fire_outcome(
         gs: GameState,
-        attacker_id: int,
+        attacker_id: UUID,
     ) -> FireOutcomes:
         """Returns a new randomized fire outcome, or a fixed outcome if overridden."""
 
@@ -81,8 +82,8 @@ class FireSystem:
     @staticmethod
     def fire(
         gs: GameState,
-        attacker_id: int,
-        target_id: int,
+        attacker_id: UUID,
+        target_id: UUID,
     ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
 
@@ -115,7 +116,7 @@ class FireSystem:
                 return _FireActionResult(outcome=FireOutcomes.KILL)
 
     @staticmethod
-    def get_spotter_candidates(gs: GameState, target_id: int) -> Iterable[int]:
+    def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
         """Returns a list of valid spotters for reactive fire. Doesn't check LOS."""
 
         unit = gs.get_component(target_id, CombatUnit)

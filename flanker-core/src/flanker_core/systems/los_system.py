@@ -1,6 +1,7 @@
 import math
 from dataclasses import dataclass
 from typing import Iterable
+from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import FireControls, TerrainFeature, Transform
@@ -18,14 +19,14 @@ class _TerrainIntersection:
 
     point: Vec2
     terrain: TerrainFeature
-    terrain_id: int
+    terrain_id: UUID
 
 
 @dataclass
 class _Terrain:
     """Represents a prepared terrain ready for LOS."""
 
-    terrain_id: int
+    terrain_id: UUID
     terrain_feature: TerrainFeature
     vertices: list[Vec2]
 
@@ -143,7 +144,7 @@ class LosSystem:
     @staticmethod
     def update_los_polygon(
         gs: GameState,
-        unit_id: int,
+        unit_id: UUID,
     ) -> None:
         """Updates a unit's fire controls with a new LOS polygon."""
         transform = gs.get_component(unit_id, Transform)

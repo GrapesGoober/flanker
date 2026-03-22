@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
@@ -11,10 +12,10 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 class Fixture:
     gs: GameState
     initiative: InitiativeState
-    unit_root: int
-    unit_id_1: int
-    unit_id_2: int
-    unit_id_3: int
+    unit_root: UUID
+    unit_id_1: UUID
+    unit_id_2: UUID
+    unit_id_3: UUID
 
 
 @pytest.fixture

@@ -1,6 +1,7 @@
 import math
 from dataclasses import dataclass
 from typing import Literal
+from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -46,7 +47,7 @@ class MoveSystem:
 
     @staticmethod
     def _validate_move(
-        gs: GameState, unit_id: int, to: Vec2
+        gs: GameState, unit_id: UUID, to: Vec2
     ) -> Literal[True] | InvalidAction:
         """Returns `True` if move action can be performed."""
 
@@ -74,15 +75,15 @@ class MoveSystem:
     @staticmethod
     def _get_interrupt_candidates(
         gs: GameState,
-        unit_id: int,
+        unit_id: UUID,
         to: Vec2,
-    ) -> list[tuple[Vec2, list[int]]]:
+    ) -> list[tuple[Vec2, list[UUID]]]:
         """Returns move interrupt points and attacker IDs"""
 
         spotter_candidates = list(
             FireSystem.get_spotter_candidates(gs, unit_id),
         )
-        interrupt_candidates: list[tuple[Vec2, list[int]]] = []
+        interrupt_candidates: list[tuple[Vec2, list[UUID]]] = []
 
         transform = gs.get_component(unit_id, Transform)
 
@@ -128,7 +129,7 @@ class MoveSystem:
     @staticmethod
     def _singular_move(
         gs: GameState,
-        unit_id: int,
+        unit_id: UUID,
         to: Vec2,
     ) -> _MoveActionResult | InvalidAction:
         """
@@ -213,7 +214,7 @@ class MoveSystem:
     @staticmethod
     def move(
         gs: GameState,
-        unit_id: int,
+        unit_id: UUID,
         to: Vec2,
     ) -> _MoveActionResult | InvalidAction:
         """Mutator method performs move action with reactive fire."""
@@ -232,7 +233,7 @@ class MoveSystem:
     @staticmethod
     def group_move(
         gs: GameState,
-        moves: list[tuple[int, Vec2]],
+        moves: list[tuple[UUID, Vec2]],
     ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
 
@@ -257,7 +258,7 @@ class MoveSystem:
     @staticmethod
     def pivot(
         gs: GameState,
-        unit_id: int,
+        unit_id: UUID,
         to: Vec2,
     ) -> _PivotActionResult | InvalidAction:
         """Mutator method performs pivot action with reactive fire."""
