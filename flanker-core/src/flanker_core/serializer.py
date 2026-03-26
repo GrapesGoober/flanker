@@ -27,7 +27,6 @@ class Serializer:
         JsonSchemaType = create_model(
             "FileData", __base__=Serializer.JsonSchema[Entity]
         )
-        # The dynamically built FileData type must conform to _FileDataType
         return Entity, JsonSchemaType
 
     @staticmethod
