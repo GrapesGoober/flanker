@@ -1,4 +1,4 @@
-from typing import Any, Optional, cast
+from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, create_model
@@ -7,16 +7,16 @@ from pydantic import BaseModel, create_model
 class Serializer:
     """Static class for game state's entity-components serialization."""
 
-    class FileDataType(BaseModel):
-        """Defines the output file data structure for serialization"""
+    class JsonSchema[TEntity](BaseModel):
+        """Defines the output JSON data structure for serialization"""
 
-        entities: dict[UUID, BaseModel]
+        entities: dict[UUID, TEntity]
 
     @staticmethod
-    def _build_schema(
+    def _build_json_schema(
         component_types: list[type],
-    ) -> tuple[type[BaseModel], type[FileDataType]]:
-        """Build (EntityComponent, FileData) schemas using component types."""
+    ) -> tuple[type[BaseModel], type[JsonSchema[BaseModel]]]:
+        """Build Entity and JSON schema using component types."""
 
         component_fields: dict[str, Any] = {
             t.__name__: (Optional[t], None) for t in component_types
@@ -24,9 +24,11 @@ class Serializer:
         # TODO: this create_model is security risk by executing arbitrary code
         # see https://docs.pydantic.dev/latest/examples/dynamic_models/
         Entity = create_model("EntityComponent", **component_fields)
-        FileData = create_model("FileData", entities=dict[UUID, Entity])
+        JsonSchemaType = create_model(
+            "FileData", __base__=Serializer.JsonSchema[Entity]
+        )
         # The dynamically built FileData type must conform to _FileDataType
-        return Entity, cast(type[Serializer.FileDataType], FileData)
+        return Entity, JsonSchemaType
 
     @staticmethod
     def serialize(
@@ -36,11 +38,12 @@ class Serializer:
         """Serialises entity-component table & id counter to json string"""
 
         # Define file schema models using existing components
-        Entity, FileData = Serializer._build_schema(component_types)
+        Entity, JsonSchema = Serializer._build_json_schema(component_types)
 
         # Convert entities to using EntityComponent models
-        file_data = FileData(
+        file_data = JsonSchema(
             entities={
+                # Each entity is validated using built schema
                 entity_id: Entity(
                     **{
                         comp.__class__.__name__: comp
@@ -63,7 +66,7 @@ class Serializer:
         """Deerialises entity-component table & id counter from json string"""
 
         # Serialize with nulls excluded
-        Entity, FileData = Serializer._build_schema(component_types)
+        Entity, FileData = Serializer._build_json_schema(component_types)
         file_data = FileData.model_validate_json(json_data)
 
         # Convert EntityComponent models to dict[type, Any] components
