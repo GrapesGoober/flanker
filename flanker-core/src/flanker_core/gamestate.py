@@ -11,9 +11,11 @@ class GameState:
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
         self._cache: dict[tuple[type, ...], list[tuple[UUID, Any]]] = {}
 
-    def add_entity(self, *components: Any) -> UUID:
+    def add_entity(self, *components: Any, id: UUID | None = None) -> UUID:
         """Adds a new entity with the given components, returns ID."""
-        new_id = uuid4()
+        if id in self._entities:
+            raise ValueError(f"entity {id=} already exists")
+        new_id = uuid4() if id is None else id
         self._entities[new_id] = {type(c): c for c in components}
         self._cache = {}
         return new_id

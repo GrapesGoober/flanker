@@ -58,6 +58,7 @@ class TerrainService:
                 flag=TerrainService.get_terrain_flags(terrain.terrain_type),
             ),
             TerrainTypeTag(terrain.terrain_type),
+            id=terrain.terrain_id,
         )
 
     @staticmethod
