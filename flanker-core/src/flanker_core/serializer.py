@@ -23,10 +23,10 @@ class Serializer:
         }
         # TODO: this create_model is security risk by executing arbitrary code
         # see https://docs.pydantic.dev/latest/examples/dynamic_models/
-        EntityComponent = create_model("EntityComponent", **component_fields)
-        FileData = create_model("FileData", entities=dict[UUID, EntityComponent])
+        Entity = create_model("EntityComponent", **component_fields)
+        FileData = create_model("FileData", entities=dict[UUID, Entity])
         # The dynamically built FileData type must conform to _FileDataType
-        return EntityComponent, cast(type[Serializer.FileDataType], FileData)
+        return Entity, cast(type[Serializer.FileDataType], FileData)
 
     @staticmethod
     def serialize(
@@ -36,12 +36,12 @@ class Serializer:
         """Serialises entity-component table & id counter to json string"""
 
         # Define file schema models using existing components
-        EntityComponent, FileData = Serializer._build_schema(component_types)
+        Entity, FileData = Serializer._build_schema(component_types)
 
         # Convert entities to using EntityComponent models
         file_data = FileData(
             entities={
-                entity_id: EntityComponent(
+                entity_id: Entity(
                     **{
                         comp.__class__.__name__: comp
                         for comp in comps.values()
@@ -63,14 +63,14 @@ class Serializer:
         """Deerialises entity-component table & id counter from json string"""
 
         # Serialize with nulls excluded
-        EntityComponent, FileData = Serializer._build_schema(component_types)
+        Entity, FileData = Serializer._build_schema(component_types)
         file_data = FileData.model_validate_json(json_data)
 
         # Convert EntityComponent models to dict[type, Any] components
         entities: dict[UUID, dict[type, Any]] = {
             entity_id: {
                 type(comp_obj): comp_obj
-                for comp_name in EntityComponent.model_fields.keys()
+                for comp_name in Entity.model_fields.keys()
                 if (comp_obj := getattr(entity_components, comp_name)) is not None
             }
             for entity_id, entity_components in file_data.entities.items()
