@@ -5,6 +5,7 @@ from dataclasses import dataclass, replace
 from itertools import product
 from math import prod
 from typing import Literal, override
+from uuid import UUID
 
 from flanker_ai.actions import (
     Action,
@@ -52,7 +53,7 @@ _MAX_STALL_LIMIT = 5
 @dataclass
 class _AbstractedCombatUnit:
     # Note: this should be kept flat to be serializable
-    unit_id: int
+    unit_id: UUID
     current_waypoint_id: int
     degrees: float
     status: CombatUnit.Status
@@ -75,7 +76,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
         self._points = points
         self.waypoints: dict[int, _WaypointNode] = {}
-        self.combat_units: dict[int, _AbstractedCombatUnit] = {}
+        self.combat_units: dict[UUID, _AbstractedCombatUnit] = {}
         self._initiative: InitiativeState.Faction = InitiativeState.Faction.BLUE
         self._objectives: list[EliminationObjective] = []
         self._path_tolerance = path_tolerance
@@ -133,8 +134,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     def get_actions(self) -> list[WaypointAction]:
 
         actions: list[WaypointAction] = []
-        friendly_units: list[tuple[int, _AbstractedCombatUnit]] = []
-        enemy_units: list[tuple[int, _AbstractedCombatUnit]] = []
+        friendly_units: list[tuple[UUID, _AbstractedCombatUnit]] = []
+        enemy_units: list[tuple[UUID, _AbstractedCombatUnit]] = []
         for combat_unit_id, combat_unit in self.combat_units.items():
             if combat_unit.faction == self._initiative:
                 friendly_units.append((combat_unit_id, combat_unit))
@@ -341,13 +342,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 return rs
 
     def get_all_fire_permutations(
-        self, enemy_ids: list[int]
-    ) -> list[tuple[float, dict[int, FireOutcomes]]]:
+        self, enemy_ids: list[UUID]
+    ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
         """Returns all permutations of (unit, outcome) and their probabilities."""
         permutations: list[
             tuple[
                 float,  # total probability of this permutation event
-                dict[int, FireOutcomes],  # event (key=enemy, value=outcome)
+                dict[UUID, FireOutcomes],  # event (key=enemy, value=outcome)
             ]
         ] = []
 
@@ -582,23 +583,23 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
     def get_move_interrupts(
         self,
-        unit_id: int,
+        unit_id: UUID,
         move_to_id: int | None,
-    ) -> list[tuple[int, list[int]]]:
+    ) -> list[tuple[int, list[UUID]]]:
         """Returns a list of (waypoint_id, [enemy_ids]) pair."""
         current_unit = self.combat_units[unit_id]
         current_waypoint = self.waypoints[current_unit.current_waypoint_id]
-        interrupt_points: list[tuple[int, list[int]]] = []
+        interrupt_points: list[tuple[int, list[UUID]]] = []
         # Same enemy can't reactive fire twice, so need to track
         # Enemies that's already added.
-        included_enemy_ids: list[int] = []
+        included_enemy_ids: list[UUID] = []
         path_waypoint_ids: list[int] = []
         if move_to_id is not None:
             path_waypoint_ids = current_waypoint.movable_paths[move_to_id]
         else:
             path_waypoint_ids = [current_unit.current_waypoint_id]
         for path_waypoint_id in path_waypoint_ids:
-            enemy_ids: list[int] = []
+            enemy_ids: list[UUID] = []
             for enemy_id, enemy_unit in self.combat_units.items():
                 # Add interrupt if the enemy can reactive fire it
                 if enemy_id in included_enemy_ids:
@@ -631,12 +632,12 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
     def _get_reactive_fire_outcomes(
         self,
-        interrupts: list[tuple[int, list[int]]],
-        unit_id: int,
+        interrupts: list[tuple[int, list[UUID]]],
+        unit_id: UUID,
         move_to_id: int | None,
     ) -> list[tuple[float, "WaypointsState"]]:
         # Get fire permutations for all enemies
-        candidate_enemy_ids: list[int] = []
+        candidate_enemy_ids: list[UUID] = []
         for _, interrupt_enemies in interrupts:
             candidate_enemy_ids += interrupt_enemies
         permutations = self.get_all_fire_permutations(candidate_enemy_ids)
@@ -702,7 +703,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         return all_outcomes
 
-    def _pivot_towards(self, unit_id: int, waypoint_id: int) -> None:
+    def _pivot_towards(self, unit_id: UUID, waypoint_id: int) -> None:
         current_unit = self.combat_units[unit_id]
         current_waypoint = self.waypoints[current_unit.current_waypoint_id]
         pivot_waypoint = self.waypoints[waypoint_id]
@@ -719,7 +720,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             case InitiativeState.Faction.RED:
                 self._initiative = InitiativeState.Faction.BLUE
 
-    def _kill_unit(self, unit_id: int) -> None:
+    def _kill_unit(self, unit_id: UUID) -> None:
         killed_unit = self.combat_units[unit_id]
         self.combat_units.pop(unit_id)
         for objective in self._objectives:

@@ -1,5 +1,6 @@
 import random
 from dataclasses import dataclass
+from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import AssaultControls, CombatUnit, Transform
@@ -29,8 +30,8 @@ class AssaultSystem:
     @staticmethod
     def _validate_assault_action(
         gs: GameState,
-        attacker_id: int,
-        target_id: int,
+        attacker_id: UUID,
+        target_id: UUID,
     ) -> InvalidAction | None:
         """Check whether assault action valid."""
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
@@ -46,8 +47,8 @@ class AssaultSystem:
     @staticmethod
     def _get_assault_outcome(
         gs: GameState,
-        attacker_id: int,
-        target_id: int,
+        attacker_id: UUID,
+        target_id: UUID,
     ) -> AssaultOutcomes:
         """Rolls a randomized assault outcome, or overriden if provided."""
 
@@ -70,8 +71,8 @@ class AssaultSystem:
     @staticmethod
     def assault(
         gs: GameState,
-        attacker_id: int,
-        target_id: int,
+        attacker_id: UUID,
+        target_id: UUID,
     ) -> _AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
 

@@ -63,7 +63,7 @@ export async function AddTerrainData(terrain: TerrainModel) {
 }
 
 /** Delete terrain data for the current game. */
-export async function DeleteTerrainData(terrainId: number) {
+export async function DeleteTerrainData(terrainId: string) {
 	const { data, error } = await client.DELETE('/api/{sceneName}/{gameId}/terrain/{terrainId}', {
 		params: {
 			path: {
@@ -86,7 +86,7 @@ export async function GetUnitStatesData(): Promise<CombatUnitsViewState> {
 
 /** Move a unit to a target position. */
 export async function performMoveActionAsync(
-	unitId: number,
+	unitId: string,
 	to: Vec2
 ): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/move', {
@@ -102,7 +102,7 @@ export async function performMoveActionAsync(
 
 /** Pivots a unit towards a target position. */
 export async function performPivotActionAsync(
-	unitId: number,
+	unitId: string,
 	to: Vec2
 ): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/pivot', {
@@ -118,8 +118,8 @@ export async function performPivotActionAsync(
 
 /** Fire from one unit to a target unit. */
 export async function performFireActionAsync(
-	unitId: number,
-	targetId: number
+	unitId: string,
+	targetId: string
 ): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/fire', {
 		params: GetParams(),
@@ -134,8 +134,8 @@ export async function performFireActionAsync(
 
 /** Assault a target unit with a unit. */
 export async function performAssaultActionAsync(
-	unitId: number,
-	targetId: number
+	unitId: string,
+	targetId: string
 ): Promise<CombatUnitsViewState> {
 	const { data, error } = await client.POST('/api/{sceneName}/{gameId}/assault', {
 		params: GetParams(),

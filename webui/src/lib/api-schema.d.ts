@@ -256,10 +256,16 @@ export interface components {
          * @description Request model for a unit's assault action.
          */
         AssaultActionRequest: {
-            /** Unitid */
-            unitId: number;
-            /** Targetid */
-            targetId: number;
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+            /**
+             * Targetid
+             * Format: uuid
+             */
+            targetId: string;
         };
         /**
          * AssaultOutcomes
@@ -299,10 +305,16 @@ export interface components {
          * @description Request model for a unit's fire action.
          */
         FireActionRequest: {
-            /** Unitid */
-            unitId: number;
-            /** Targetid */
-            targetId: number;
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+            /**
+             * Targetid
+             * Format: uuid
+             */
+            targetId: string;
         };
         /**
          * FireOutcomes
@@ -331,8 +343,11 @@ export interface components {
          * @description Request model for a unit's move action.
          */
         MoveActionRequest: {
-            /** Unitid */
-            unitId: number;
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
             to: components["schemas"]["Vec2"];
         };
         /**
@@ -356,8 +371,11 @@ export interface components {
          * @description Request model for a unit's pivot action.
          */
         PivotActionRequest: {
-            /** Unitid */
-            unitId: number;
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
             to: components["schemas"]["Vec2"];
         };
         /**
@@ -365,8 +383,11 @@ export interface components {
          * @description Represents a view of a single squad in the game.
          */
         SquadModel: {
-            /** Unitid */
-            unitId: number;
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
             position: components["schemas"]["Vec2"];
             /** Degree */
             degree: number;
@@ -386,8 +407,11 @@ export interface components {
          * @description Represents a view of terrain feature in the game.
          */
         TerrainModel: {
-            /** Terrainid */
-            terrainId: number;
+            /**
+             * Terrainid
+             * Format: uuid
+             */
+            terrainId: string;
             position: components["schemas"]["Vec2"];
             /** Degrees */
             degrees: number;
@@ -846,7 +870,7 @@ export interface operations {
             path: {
                 sceneName: string;
                 gameId: number;
-                terrainId: number;
+                terrainId: string;
             };
             cookie?: never;
         };

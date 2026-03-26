@@ -5,11 +5,11 @@
 	Handles unit selection and icon display based on game state.
 	*/
 	import {
-		RifleSquad,
 		Arrow,
 		BlankFriendlyUnit,
 		BorderFriendlyUnit,
-		BorderHostileUnit
+		BorderHostileUnit,
+		RifleSquad
 	} from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
 
@@ -20,7 +20,7 @@
 	let { controller = $bindable() }: Props = $props();
 
 	/* Selects a unit and updates the controller state. */
-	function SelectUnit(unitId: number, event: MouseEvent) {
+	function SelectUnit(unitId: string, event: MouseEvent) {
 		if (controller.isFetching) return;
 		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);

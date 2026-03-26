@@ -262,4 +262,6 @@ class AiAgent:
                         outcome=result.outcome,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
+            case _:
+                raise Exception(f"Unknown action {action}")
         return result

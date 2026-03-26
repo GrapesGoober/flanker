@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Iterable
+from uuid import UUID
 
 import numpy as np
 from flanker_core.gamestate import GameState
@@ -17,6 +18,7 @@ class _TerrainData:
     np_verts: NDArray[np.float64]
     np_vectors: NDArray[np.float64]
     np_vert_ids: NDArray[np.int64]
+    terrain_id_by_vert_id: dict[int, UUID]
 
 
 @dataclass
@@ -31,7 +33,7 @@ class Intersection:
     """Represents intersection between line and terrain feature."""
 
     terrain: TerrainFeature
-    terrain_id: int
+    terrain_id: UUID
 
 
 class IntersectSystem:
@@ -51,7 +53,7 @@ class IntersectSystem:
 
         if mask not in terrain_datas:
             terrain_datas[mask] = IntersectSystem._compile_terrain(gs, mask)
-        terrain_data = terrain_datas[mask]
+        terrain_data: _TerrainData = terrain_datas[mask]
 
         intersects = IntersectSystem._njit_get_intersect(
             start_pos=(start.x, start.y),
@@ -61,10 +63,11 @@ class IntersectSystem:
             vert_ids=terrain_data.np_vert_ids,
         )
 
-        for terrain_id in intersects:
+        for vert_id in intersects:
+            terrain_id: UUID = terrain_data.terrain_id_by_vert_id[int(vert_id)]
             yield Intersection(
                 gs.get_component(terrain_id, TerrainFeature),
-                int(terrain_id),
+                terrain_id,
             )
 
     @staticmethod
@@ -101,7 +104,11 @@ class IntersectSystem:
         np_verts: list[tuple[float, float, float]] = []
         np_verts_shift: list[tuple[float, float, float]] = []
         vert_ids: list[int] = []
-        for id, terrain, transform in gs.query(TerrainFeature, Transform):
+        id_map: dict[int, UUID] = {}
+
+        for int_id, (terrain_id, terrain, transform) in enumerate(
+            gs.query(TerrainFeature, Transform)
+        ):
             if (terrain.flag & mask) == 0:
                 continue
             vertices = LinearTransform.apply(terrain.vertices, transform)
@@ -109,7 +116,8 @@ class IntersectSystem:
             verts3d = [(v.x, v.y, 0) for v in vertices]
             np_verts.extend(verts3d)
             np_verts_shift.extend([verts3d[-1]] + verts3d[:-1])  # rolled list
-            vert_ids.extend([id] * len(vertices))
+            vert_ids.extend([int_id] * len(vertices))
+            id_map[int_id] = terrain_id
 
         if not np_verts:
             np_verts = [(0, 0, 0)]
@@ -122,4 +130,5 @@ class IntersectSystem:
             np_verts=edge_start,
             np_vectors=edge_vectors,
             np_vert_ids=np.array(vert_ids, dtype=np.int64),
+            terrain_id_by_vert_id=id_map,
         )

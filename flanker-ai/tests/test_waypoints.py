@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from math import isclose
+from uuid import UUID
 
 import pytest
 from flanker_ai.states.waypoints_actions import WaypointMoveAction
@@ -20,10 +21,10 @@ from flanker_core.systems.initiative_system import InitiativeState
 @dataclass
 class Fixture:
     state: WaypointsState
-    unit_move: int
-    enemy_1: int
-    enemy_2: int
-    enemy_3: int
+    unit_move: UUID
+    enemy_1: UUID
+    enemy_2: UUID
+    enemy_3: UUID
 
 
 @pytest.fixture
@@ -186,7 +187,8 @@ def test_permutations(fixture: Fixture) -> None:
         # Need to cross reference this with the permutation
         _, fire_event = fire_permutations[id]
         match fire_event:
-            case {2: FireOutcomes.PIN, 3: FireOutcomes.PIN}:
+            # I hate this test case
+            case {fixture.enemy_1: FireOutcomes.PIN, fixture.enemy_2: FireOutcomes.PIN}:
                 unit = branch.combat_units[fixture.unit_move]
                 assert (
                     unit.status == CombatUnit.Status.PINNED
@@ -194,7 +196,10 @@ def test_permutations(fixture: Fixture) -> None:
                 assert (
                     branch.get_initiative() == InitiativeState.Faction.BLUE
                 ), "Expects PIN fire event to not flip initiative."
-            case {2: FireOutcomes.PIN, 3: FireOutcomes.SUPPRESS}:
+            case {
+                fixture.enemy_1: FireOutcomes.PIN,
+                fixture.enemy_2: FireOutcomes.SUPPRESS,
+            }:
                 unit = branch.combat_units[fixture.unit_move]
                 assert (
                     unit.status == CombatUnit.Status.SUPPRESSED
@@ -202,7 +207,10 @@ def test_permutations(fixture: Fixture) -> None:
                 assert (
                     branch.get_initiative() == InitiativeState.Faction.RED
                 ), "Expects SUPPRESS fire event to flip initiative."
-            case {2: FireOutcomes.SUPPRESS, 3: FireOutcomes.PIN}:
+            case {
+                fixture.enemy_1: FireOutcomes.SUPPRESS,
+                fixture.enemy_2: FireOutcomes.PIN,
+            }:
                 unit = branch.combat_units[fixture.unit_move]
                 assert (
                     unit.status == CombatUnit.Status.SUPPRESSED
@@ -210,7 +218,10 @@ def test_permutations(fixture: Fixture) -> None:
                 assert (
                     branch.get_initiative() == InitiativeState.Faction.RED
                 ), "Expects SUPPRESS fire event to flip initiative."
-            case {2: FireOutcomes.SUPPRESS, 3: FireOutcomes.SUPPRESS}:
+            case {
+                fixture.enemy_1: FireOutcomes.SUPPRESS,
+                fixture.enemy_2: FireOutcomes.SUPPRESS,
+            }:
                 assert (
                     fixture.unit_move not in branch.combat_units
                 ), "Expects double SUPPRESS fire event to kill unit"

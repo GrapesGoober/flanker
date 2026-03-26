@@ -39,7 +39,7 @@
 			<button class="info-header-close-button" onclick={closeSelection}>Close (c)</button>
 		</div>
 		<span class="info-detail">
-			Squad {controller.state.selectedUnit.unitId},
+			UnitId={controller.state.selectedUnit.unitId},
 			{controller.state.selectedUnit.isFriendly ? 'Friendly' : 'Hostile'},
 			{controller.state.selectedUnit.status}
 			{controller.state.selectedUnit.noFire ? ', No Fire' : ''}

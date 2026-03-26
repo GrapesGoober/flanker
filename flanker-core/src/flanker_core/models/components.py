@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
+from uuid import UUID
 
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
@@ -43,7 +44,7 @@ class CombatUnit:
         SUPPRESSED = "SUPPRESSED"
 
     faction: InitiativeState.Faction
-    command_id: int | None = None
+    command_id: UUID | None = None
     status: Status = Status.ACTIVE
 
 

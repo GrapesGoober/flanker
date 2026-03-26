@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
@@ -18,8 +19,8 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 @dataclass
 class Fixture:
     gs: GameState
-    attacker_id: int
-    target_id: int
+    attacker_id: UUID
+    target_id: UUID
     fire_controls: FireControls
     attacker_unit: CombatUnit
 

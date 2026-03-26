@@ -10,6 +10,7 @@ import {
 	type Vec2
 } from '$lib/api';
 import { transform } from '$lib/map-utils';
+import { v4 as uuidv4 } from 'uuid';
 
 type EditorControllerState =
 	| { type: 'default' }
@@ -59,8 +60,7 @@ export class EditorController {
 		const vertices = transform(polygon, { x: -position.x, y: -position.y }, 0);
 		const terrain: TerrainModel = {
 			// The ID is ignored as it will create a new one
-			// The pain of not using UUID is haunting me
-			terrainId: 0,
+			terrainId: uuidv4(),
 			position: position,
 			degrees: 0,
 			vertices: vertices,

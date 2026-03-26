@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
@@ -17,8 +18,8 @@ from flanker_core.systems.move_system import MoveSystem
 @dataclass
 class Fixture:
     gs: GameState
-    spotter_id: int
-    target_id: int
+    spotter_id: UUID
+    target_id: UUID
     spotter_transform: Transform
     target_transform: Transform
 

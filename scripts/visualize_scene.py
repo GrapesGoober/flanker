@@ -1,6 +1,7 @@
 from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
+from uuid import UUID
 
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
@@ -8,7 +9,7 @@ from flanker_ai.components import AiConfigComponent
 from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
-from flanker_core.models.components import InitiativeState
+from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LinearTransform, LosSystem
@@ -25,11 +26,11 @@ def load_state(path: str) -> GameState:
             component_types.append(cls)
 
     with open(path, "r") as f:
-        entities, id_counter = Serializer.deserialize(
+        entities = Serializer.deserialize(
             json_data=f.read(),
             component_types=component_types,
         )
-        gs = GameState.load(entities, id_counter)
+        gs = GameState.load(entities)
     return gs
 
 
@@ -57,7 +58,7 @@ def draw_terrains(gs: GameState) -> None:
         visualize_polygon(vertices, color="C1")
 
 
-def draw_los(gs: GameState, unit_id: int) -> None:
+def draw_los(gs: GameState, unit_id: UUID) -> None:
     LosSystem.update_los_polygon(gs, unit_id)
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
     assert poly
@@ -164,9 +165,9 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/visualize-peeking.json")
+    gs = load_state("./scenes/experiment-s2.json")
 
-    img = mpimg.imread("./scripts/visualize-peeking.png")  # type: ignore
+    img = mpimg.imread("./scripts/experiment-s2.png")  # type: ignore
     plt.imshow(  # type: ignore
         img,  # type: ignore
         extent=[0, 300, -300, 0],  # type: ignore
@@ -174,7 +175,9 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE)
-    draw_los(gs, unit_id=10)
-    draw_los(gs, unit_id=11)
+    for id, unit in gs.query(CombatUnit):
+        if unit.faction == InitiativeState.Faction.BLUE:
+            continue
+        draw_los(gs, unit_id=id)
     plt.axis("equal")  # type: ignore
     plt.show()  # type: ignore

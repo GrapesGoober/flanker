@@ -1,5 +1,6 @@
 from timeit import timeit
 from typing import NoReturn
+from uuid import UUID
 
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
 
@@ -172,7 +173,7 @@ async def add_terrain(
 async def delete_terrain(
     scene_name: str = Path(..., alias="sceneName"),
     game_id: int = Path(..., alias="gameId"),
-    terrain_id: int = Path(..., alias="terrainId"),
+    terrain_id: UUID = Path(..., alias="terrainId"),
 ) -> None:
     """Edit the terrain polygon."""
     gs = scene_service.get_game_state(scene_name, game_id)

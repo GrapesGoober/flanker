@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -20,9 +22,9 @@ class CombatUnitService:
     def add_squad(
         gs: GameState,
         pos: Vec2,
-        command_id: int,
+        command_id: UUID,
         faction: InitiativeState.Faction,
-    ) -> int:
+    ) -> UUID:
         """Add a new squad to the game state for a given faction."""
         return gs.add_entity(
             Transform(position=pos),

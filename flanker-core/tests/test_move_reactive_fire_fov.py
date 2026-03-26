@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 import pytest
 from flanker_ai.ai_agent import MoveSystem
@@ -18,8 +19,8 @@ from flanker_core.models.vec2 import Vec2
 @dataclass
 class Fixture:
     gs: GameState
-    unit_move: int
-    unit_shoot: int
+    unit_move: UUID
+    unit_shoot: UUID
 
 
 @pytest.fixture

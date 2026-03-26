@@ -41,7 +41,7 @@ export class PlayerController {
 	}
 
 	/* Selects a combat unit and transitions to state 'selected'. */
-	selectUnit(unitId: number) {
+	selectUnit(unitId: string) {
 		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
 		if (unit.isFriendly === true) {
@@ -176,7 +176,7 @@ export class PlayerController {
 	}
 
 	/* Reselects the unit after an action, or resets state if not found. */
-	private reselectUnit(unitId: number) {
+	private reselectUnit(unitId: string) {
 		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
 		if (currentUnit)
 			this.state = {

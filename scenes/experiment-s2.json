@@ -1,7 +1,6 @@
 {
-  "id_counter": 21,
   "entities": {
-    "0": {
+    "bbf83581-7981-4495-aab3-2ec9d043b52a": {
       "InitiativeState": {
         "faction": "BLUE"
       },
@@ -12,7 +11,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "1": {
+    "1ead7276-e26a-44e8-b305-7b2a3e7cb7e5": {
       "EliminationObjective": {
         "target_faction": "BLUE",
         "winning_faction": "RED",
@@ -20,7 +19,7 @@
         "units_destroyed_counter": 0
       }
     },
-    "2": {
+    "b1a8b588-27a4-4082-b5dd-d38e04ce762f": {
       "Transform": {
         "position": {
           "x": 0.0,
@@ -51,7 +50,7 @@
         "flag": 33
       }
     },
-    "3": {
+    "04002fdd-10fe-4856-9984-c3677b3d5970": {
       "Transform": {
         "position": {
           "x": 40.0,
@@ -71,7 +70,7 @@
       },
       "AssaultControls": {}
     },
-    "4": {
+    "dcb65301-2e87-4b20-877e-0871a33f3622": {
       "Transform": {
         "position": {
           "x": 60.0,
@@ -91,7 +90,7 @@
       },
       "AssaultControls": {}
     },
-    "10": {
+    "a08040bc-c37b-46fd-9cc2-89835f9dfeb1": {
       "Transform": {
         "position": {
           "x": 40.0,
@@ -111,7 +110,7 @@
       },
       "AssaultControls": {}
     },
-    "11": {
+    "df96d32b-647d-4cf6-a930-f00f277c107e": {
       "Transform": {
         "position": {
           "x": 100.0,
@@ -131,7 +130,7 @@
       },
       "AssaultControls": {}
     },
-    "15": {
+    "0edad3a9-5c04-41a5-9339-b91471b1049d": {
       "AiConfigComponent": {
         "faction": "BLUE",
         "state_config": {
@@ -217,7 +216,7 @@
         }
       }
     },
-    "16": {
+    "d10a755a-fcc5-4b18-aa52-5215ad8bcc78": {
       "AiConfigComponent": {
         "faction": "RED",
         "state_config": {
@@ -228,7 +227,7 @@
         }
       }
     },
-    "18": {
+    "02544f2f-c10f-44e9-8c41-c732ea95b7a0": {
       "Transform": {
         "position": {
           "x": 86.0,
@@ -282,7 +281,7 @@
         "type": "FOREST"
       }
     },
-    "20": {
+    "32cb4971-8028-4a5a-80a5-08d12794bb33": {
       "Transform": {
         "position": {
           "x": -0.6081467669706202,

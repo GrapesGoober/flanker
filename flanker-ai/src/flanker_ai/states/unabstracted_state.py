@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 from typing import Sequence
+from uuid import UUID
 from warnings import warn
 
 from flanker_ai.actions import (
@@ -52,7 +53,7 @@ class UnabstractedState(IRepresentationState[Action]):
         self.max_y = int(max(v.y for v in boundary_vertices))
 
     def copy(self) -> "UnabstractedState":
-        mutable_entities: set[int] = set()
+        mutable_entities: set[UUID] = set()
         for id, _ in self._gs.query(InitiativeState):
             mutable_entities.add(id)
         for id, _ in self._gs.query(EliminationObjective):

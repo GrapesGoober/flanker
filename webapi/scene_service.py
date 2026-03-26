@@ -32,11 +32,10 @@ class SceneService:
         gs = self.get_game_state(scene_name, game_id)
         component_types = list(SceneService._get_component_types())
         with open(path, "w") as f:
-            entities, id_counter = gs.dump()
+            entities = gs.dump()
             f.write(
                 Serializer.serialize(
                     entities,
-                    id_counter,
                     component_types,
                 )
             )
@@ -53,10 +52,10 @@ class SceneService:
         if game_id not in games:
             component_types = list(SceneService._get_component_types())
             with open(f"./scenes/{scene_name}.json", "r") as f:
-                entities, id_counter = Serializer.deserialize(
+                entities = Serializer.deserialize(
                     json_data=f.read(),
                     component_types=component_types,
                 )
-                gs = GameState.load(entities, id_counter)
+                gs = GameState.load(entities)
             self.games[scene_name].setdefault(game_id, gs)
         return self.games[scene_name][game_id]
