@@ -6,11 +6,15 @@ from flanker_core.serializer import Any
 
 class ContextProvider:
     def __init__(self) -> None:
+        # Systems are objects, which is statically enforced (somewhat)
+        # But this isn't ideal for how I treat systems.
         self._systems: dict[type, Any] = {}
 
-    def register[T](self, interface: type[T], cls: T) -> None:
-        self._systems[interface] = cls
+    # This accepts an instance of system, but i want it static
+    def register[T](self, base_cls: type[T], obj: T) -> None:
+        self._systems[base_cls] = obj
 
+    # This returns an instance of system. It's not color coded
     def get_system[T](self, interface: type[T]) -> T:
         return self._systems[interface]
 
