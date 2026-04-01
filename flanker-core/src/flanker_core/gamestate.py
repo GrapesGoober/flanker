@@ -10,6 +10,13 @@ class GameState:
         """Initializes the game state with empty entities."""
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
         self._cache: dict[tuple[type, ...], list[tuple[UUID, Any]]] = {}
+        self._systems: dict[type, Any] = {}
+
+    def register_system[T](self, base_cls: type[T], sys: T) -> None:
+        self._systems[base_cls] = sys
+
+    def get_system[T](self, base_cls: type[T]) -> T:
+        return self._systems[base_cls]
 
     def add_entity(self, *components: Any, id: UUID | None = None) -> UUID:
         """Adds a new entity with the given components, returns ID."""
@@ -81,6 +88,7 @@ class GameState:
         # Shallow copy everything by default
         new_gs._entities = dict(self._entities)
         new_gs._cache = dict(self._cache)
+        new_gs._systems = dict(self._systems)
         # Deep copy the selected entities.
         for id in entity_ids:
             if id not in new_gs._entities:

@@ -14,6 +14,7 @@ from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -28,6 +29,7 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     attacker_id = gs.add_entity(
