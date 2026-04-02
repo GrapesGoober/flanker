@@ -197,7 +197,8 @@ class UnabstractedState(IRepresentationState[Action]):
                 elif faction == InitiativeState.Faction.RED:
                     return InitiativeState.Faction.BLUE
 
-        return ObjectiveSystem.get_winning_faction(self._gs)
+        objective_system = self._gs.get(ObjectiveSystem)
+        return objective_system.get_winning_faction(self._gs)
 
     def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
         if result := self._gs.query(AiStallCountComponent):

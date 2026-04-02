@@ -65,7 +65,8 @@ class AiAgent:
         action_results: list[ActionResult] = []
         while InitiativeSystem.get_initiative(self._gs) == self._faction:
             # If win/lose condition is already met, pass
-            if ObjectiveSystem.get_winning_faction(self._gs) != None:
+            objective_system = self._gs.get(ObjectiveSystem)
+            if objective_system.get_winning_faction(self._gs) != None:
                 break
             if result := self._gs.query(AiStallCountComponent):
                 _, stall_comp = result[0]
