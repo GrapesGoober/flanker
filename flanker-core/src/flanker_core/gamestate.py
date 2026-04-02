@@ -10,13 +10,27 @@ class GameState:
         """Initializes the game state with empty entities."""
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
         self._cache: dict[tuple[type, ...], list[tuple[UUID, Any]]] = {}
-        self._systems: dict[type, Any] = {}
+        self._systems: dict[type, type] = {}
 
-    def register_system[T](self, base_cls: type[T], sys: T) -> None:
-        self._systems[base_cls] = sys
+    def register(self, cls: type[Any]) -> None:
+        """Register a new system to game state."""
+        if cls in self._systems:
+            raise KeyError(f"System {cls} already exists.")
+        self._systems[cls] = cls
 
-    def get_system[T](self, base_cls: type[T]) -> T:
-        return self._systems[base_cls]
+    def replace(self, existing: type[Any], cls: type[Any]) -> None:
+        """Replace an existing registered system with a subclass variant."""
+        if existing not in self._systems:
+            raise KeyError(f"System {existing} does not exists")
+        if not issubclass(cls, existing):
+            raise ValueError(f"Replacement {cls} is not subclass of {existing}.")
+        self._systems[existing] = cls
+
+    def get[T](self, cls: type[T]) -> type[T]:
+        """Get a registered system."""
+        if cls not in self._systems:
+            raise KeyError(f"System {cls} does not exist.")
+        return self._systems[cls]
 
     def add_entity(self, *components: Any, id: UUID | None = None) -> UUID:
         """Adds a new entity with the given components, returns ID."""
@@ -35,9 +49,9 @@ class GameState:
     def get_component[T](self, entity_id: UUID, component_type: type[T]) -> T:
         """Get an entity's component. None if entity or component not found."""
         if entity_id not in self._entities:
-            raise KeyError(f"{entity_id=} doesn't exist")
+            raise KeyError(f"{entity_id=} doesn't exist.")
         if component_type not in self._entities[entity_id]:
-            raise KeyError(f"{component_type=} missing for {entity_id=}")
+            raise KeyError(f"{component_type=} missing for {entity_id=}.")
         return self._entities[entity_id][component_type]
 
     def try_component[T](self, entity_id: UUID, component_type: type[T]) -> T | None:

@@ -1,12 +1,11 @@
 import math
 from dataclasses import dataclass
-from typing import Iterable, override
+from typing import Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import FireControls, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.i_los_system import ILosSystem
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
@@ -32,7 +31,7 @@ class _Terrain:
     vertices: list[Vec2]
 
 
-class LosSystem(ILosSystem):
+class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
@@ -58,7 +57,6 @@ class LosSystem(ILosSystem):
         return dot >= math.cos(half_fov_rad)
 
     @staticmethod
-    @override
     def has_los(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
         """
         Returns `True` if entity `spotter_id` can see position `target_pos`.

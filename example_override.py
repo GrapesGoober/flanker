@@ -3,7 +3,7 @@ from typing import Any, override
 
 class ContextProvider:
     def __init__(self) -> None:
-        self._systems: dict[type, Any] = {}
+        self._systems: dict[type, type] = {}
 
     def register(self, cls: type[Any]) -> None:
         self._systems[cls] = cls

@@ -7,7 +7,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, FireControls, Transform
 from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
-from flanker_core.systems.i_los_system import ILosSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 
@@ -42,7 +41,6 @@ class FireSystem:
         attacker_transform = gs.get_component(attacker_id, Transform)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
-        los_system = gs.get_system(ILosSystem)
 
         # Check if attacker can attack
         if attacker_unit.status not in (
@@ -56,11 +54,17 @@ class FireSystem:
             return InvalidAction.BAD_ENTITY
 
         # Check if attacker has LOS to target and within FOV
+        los_system = gs.get(LosSystem)
         if not los_system.has_los(
-            gs, attacker_transform.position, target_transform.position
+            gs,
+            attacker_transform.position,
+            target_transform.position,
         ):
             return InvalidAction.BAD_COORDS
-        if not LosSystem.in_fov(attacker_transform, target_transform.position):
+        if not los_system.in_fov(
+            attacker_transform,
+            target_transform.position,
+        ):
             return InvalidAction.BAD_COORDS
 
     @staticmethod
