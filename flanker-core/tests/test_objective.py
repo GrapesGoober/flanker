@@ -8,11 +8,11 @@ from flanker_core.models.components import (
     EliminationObjective,
     FireControls,
     InitiativeState,
+    Transform,
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
-from flanker_core.systems.los_system import Transform
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.systems.register_systems import register_systems
 

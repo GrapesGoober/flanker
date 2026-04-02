@@ -63,7 +63,8 @@ class LosSystem:
         Does not check for FOV.
         """
 
-        intersects = IntersectSystem.get(
+        intersect_system = gs.get(IntersectSystem)
+        intersects = intersect_system.get(
             gs=gs,
             start=spotter_pos,
             end=target_pos,

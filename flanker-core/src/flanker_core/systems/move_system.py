@@ -54,6 +54,7 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
         move_controls = gs.get_component(unit_id, MoveControls)
+        intersect_system = gs.get(IntersectSystem)
 
         # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
@@ -66,7 +67,7 @@ class MoveSystem:
         match move_controls.move_type:
             case MoveControls.MoveType.FOOT:
                 terrain_type = TerrainFeature.Flag.WALKABLE
-        for intersect in IntersectSystem.get(gs, transform.position, to):
+        for intersect in intersect_system.get(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
                 return InvalidAction.BAD_COORDS
 

@@ -12,8 +12,9 @@ from flanker_core.models import components
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.los_system import LinearTransform, LosSystem
+from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.register_systems import register_systems
+from flanker_core.utils.linear_transform import LinearTransform
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
