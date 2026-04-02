@@ -55,11 +55,12 @@ class MoveSystem:
         unit = gs.get_component(unit_id, CombatUnit)
         move_controls = gs.get_component(unit_id, MoveControls)
         intersect_system = gs.get(IntersectSystem)
+        initiative_system = gs.get(InitiativeSystem)
 
         # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
             return InvalidAction.INACTIVE_UNIT
-        if not InitiativeSystem.has_initiative(gs, unit_id):
+        if not initiative_system.has_initiative(gs, unit_id):
             return InvalidAction.NO_INITIATIVE
 
         # Check move action though correct terrain type
@@ -222,6 +223,7 @@ class MoveSystem:
     ) -> _MoveActionResult | InvalidAction:
         """Mutator method performs move action with reactive fire."""
 
+        initiative_system = gs.get(InitiativeSystem)
         result = MoveSystem._singular_move(gs, unit_id, to)
         if not isinstance(result, _MoveActionResult):
             return result
@@ -229,7 +231,7 @@ class MoveSystem:
             FireOutcomes.SUPPRESS,
             FireOutcomes.KILL,
         ):
-            InitiativeSystem.flip_initiative(gs)
+            initiative_system.flip_initiative(gs)
 
         return result
 
@@ -239,7 +241,7 @@ class MoveSystem:
         moves: list[tuple[UUID, Vec2]],
     ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
-
+        initiative_system = gs.get(InitiativeSystem)
         results: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
@@ -254,7 +256,7 @@ class MoveSystem:
                 interrupt_count += 1
 
         if interrupt_count >= len(moves):
-            InitiativeSystem.flip_initiative(gs)
+            initiative_system.flip_initiative(gs)
 
         return _GroupMoveActionResult(results)
 

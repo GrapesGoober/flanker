@@ -505,7 +505,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
 
         # Assemble waypoint-graph game state
-        self._initiative = InitiativeSystem.get_initiative(gs)
+        self._initiative = gs.get(InitiativeSystem).get_initiative(gs)
         self._objectives: list[EliminationObjective] = list(
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
@@ -527,7 +527,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         gs: GameState,
     ) -> None:
 
-        self._initiative = InitiativeSystem.get_initiative(gs)
+        self._initiative = gs.get(InitiativeSystem).get_initiative(gs)
 
         if entities := gs.query(AiStallCountComponent):
             _, stall_component = entities[0]

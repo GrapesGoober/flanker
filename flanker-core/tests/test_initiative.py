@@ -36,7 +36,8 @@ def fixture() -> Fixture:
 
 def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
-    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
+    initiative_system = fixture.gs.get(InitiativeSystem)
+    initiative_system.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     # Try to move the unit
     MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
