@@ -13,6 +13,7 @@ from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LinearTransform, LosSystem
+from flanker_core.systems.register_systems import register_systems
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
@@ -31,6 +32,8 @@ def load_state(path: str) -> GameState:
             component_types=component_types,
         )
         gs = GameState.load(entities)
+
+    register_systems(gs)
     return gs
 
 
@@ -59,7 +62,8 @@ def draw_terrains(gs: GameState) -> None:
 
 
 def draw_los(gs: GameState, unit_id: UUID) -> None:
-    LosSystem.update_los_polygon(gs, unit_id)
+    los_system = gs.get(LosSystem)
+    los_system.update_los_polygon(gs, unit_id)
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
     assert poly
     visualize_polygon(poly, color="C0", fill_alpha=0.3, plot_alpha=0.2)

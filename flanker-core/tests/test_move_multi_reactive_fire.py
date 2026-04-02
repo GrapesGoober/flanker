@@ -15,6 +15,7 @@ from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -30,6 +31,7 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
