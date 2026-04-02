@@ -80,7 +80,8 @@ def fixture() -> Fixture:
 
 
 def test_no_los(fixture: Fixture) -> None:
-    has_los = LosSystem.has_los(
+    los_system = fixture.gs.get(LosSystem)
+    has_los = los_system.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
         fixture.target_transform.position,
@@ -89,8 +90,9 @@ def test_no_los(fixture: Fixture) -> None:
 
 
 def test_los(fixture: Fixture) -> None:
+    los_system = fixture.gs.get(LosSystem)
     MoveSystem.move(fixture.gs, fixture.target_id, Vec2(6, -10))
-    has_los = LosSystem.has_los(
+    has_los = los_system.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
         fixture.target_transform.position,
@@ -99,8 +101,9 @@ def test_los(fixture: Fixture) -> None:
 
 
 def test_los_target_inside_terrain(fixture: Fixture) -> None:
+    los_system = fixture.gs.get(LosSystem)
     MoveSystem.move(fixture.gs, fixture.target_id, Vec2(5, 1))
-    has_los = LosSystem.has_los(
+    has_los = los_system.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
         fixture.target_transform.position,
@@ -109,8 +112,9 @@ def test_los_target_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_source_inside_terrain(fixture: Fixture) -> None:
+    los_system = fixture.gs.get(LosSystem)
     MoveSystem.move(fixture.gs, fixture.spotter_id, Vec2(9, 9))
-    has_los = LosSystem.has_los(
+    has_los = los_system.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
         fixture.target_transform.position,
@@ -119,9 +123,10 @@ def test_los_source_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_both_inside_terrain(fixture: Fixture) -> None:
+    los_system = fixture.gs.get(LosSystem)
     MoveSystem.move(fixture.gs, fixture.spotter_id, Vec2(9, 9))
     MoveSystem.move(fixture.gs, fixture.target_id, Vec2(-6, 4))
-    has_los = LosSystem.has_los(
+    has_los = los_system.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
         fixture.target_transform.position,

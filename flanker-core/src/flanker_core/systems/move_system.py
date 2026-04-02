@@ -87,12 +87,13 @@ class MoveSystem:
         interrupt_candidates: list[tuple[Vec2, list[UUID]]] = []
 
         transform = gs.get_component(unit_id, Transform)
+        los_system = gs.get(LosSystem)
 
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             if not spotter_fire_controls.los_polygon:
                 # LOS polygon should be generated
-                LosSystem.update_los_polygon(gs, spotter_id)
+                los_system.update_los_polygon(gs, spotter_id)
                 assert spotter_fire_controls.los_polygon
 
             # Find the interrupt position if spotted,
