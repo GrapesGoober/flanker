@@ -101,6 +101,7 @@ class FireSystem:
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
+        command_system = gs.get(CommandSystem)
         match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
@@ -115,10 +116,10 @@ class FireSystem:
                     target_unit.status = CombatUnit.Status.SUPPRESSED
                     return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
                 else:  # Kills the unit if it is already suppressed
-                    CommandSystem.kill_unit(gs, target_id)
+                    command_system.kill_unit(gs, target_id)
                     return _FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
-                CommandSystem.kill_unit(gs, target_id)
+                command_system.kill_unit(gs, target_id)
                 return _FireActionResult(outcome=FireOutcomes.KILL)
 
     @staticmethod

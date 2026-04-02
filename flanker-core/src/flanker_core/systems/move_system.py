@@ -182,6 +182,7 @@ class MoveSystem:
                     break
 
                 # Apply each outcome
+                command_system = gs.get(CommandSystem)
                 match outcome:
                     case FireOutcomes.MISS:
                         # Marks the firer as NO FIRE
@@ -199,11 +200,11 @@ class MoveSystem:
                         if unit.status != CombatUnit.Status.SUPPRESSED:
                             unit.status = CombatUnit.Status.SUPPRESSED
                         else:  # Kill if already suppressed
-                            CommandSystem.kill_unit(gs, unit_id)
+                            command_system.kill_unit(gs, unit_id)
                         reactive_fire_outcome = outcome
                     case FireOutcomes.KILL:
                         reactive_fire_outcome = outcome
-                        CommandSystem.kill_unit(gs, unit_id)
+                        command_system.kill_unit(gs, unit_id)
 
         if reactive_fire_outcome is None:
             transform.position = to
