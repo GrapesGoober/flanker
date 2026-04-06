@@ -44,7 +44,7 @@ export class PlayerController {
 			this.terrainData = terrainData;
 			this.unitData = unitData;
 		} catch (error) {
-			this.errorMessage = `Unable to load game state. ${error instanceof Error ? error.message : 'Unknown error'}`;
+			this.reportError('Unable to load game state', error);
 		} finally {
 			this.isFetching = false;
 		}
@@ -149,12 +149,10 @@ export class PlayerController {
 	/* Performs move action for the selected unit. */
 	async moveActionAsync() {
 		if (!this.isMoveActionValid()) return;
-		if (this.state.type !== 'moveMarked') return false;
+		if (this.state.type !== 'moveMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
-		this.isFetching = true;
-		this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
-		this.isFetching = false;
-		this.reselectUnit(unitId);
+		const moveMarker = this.state.moveMarker;
+		await this.runActionAsync(unitId, () => performMoveActionAsync(unitId, moveMarker));
 	}
 
 	/* Performs pivot action for the selected unit. */
@@ -162,10 +160,8 @@ export class PlayerController {
 		if (!this.isPivotActionValid()) return;
 		if (this.state.type !== 'moveMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
-		this.isFetching = true;
-		this.unitData = await performPivotActionAsync(unitId, this.state.moveMarker);
-		this.isFetching = false;
-		this.reselectUnit(unitId);
+		const moveMarker = this.state.moveMarker;
+		await this.runActionAsync(unitId, () => performPivotActionAsync(unitId, moveMarker));
 	}
 
 	/* Performs fire action for the selected unit. */
@@ -173,10 +169,8 @@ export class PlayerController {
 		if (!this.isFireActionValid()) return;
 		if (this.state.type !== 'attackMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
-		this.isFetching = true;
-		this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
-		this.isFetching = false;
-		this.reselectUnit(unitId);
+		const targetId = this.state.target.unitId;
+		await this.runActionAsync(unitId, () => performFireActionAsync(unitId, targetId));
 	}
 
 	/* Performs assault action for the selected unit. */
@@ -184,10 +178,35 @@ export class PlayerController {
 		if (!this.isAssaultActionValid()) return;
 		if (this.state.type !== 'attackMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
+		const targetId = this.state.target.unitId;
+		await this.runActionAsync(unitId, () => performAssaultActionAsync(unitId, targetId));
+	}
+
+	/* Executes an async unit action while keeping controller state recoverable on failure. */
+	private async runActionAsync(
+		unitId: string,
+		action: () => Promise<CombatUnitsViewState>
+	): Promise<void> {
+		if (this.isFetching) return;
 		this.isFetching = true;
-		this.unitData = await performAssaultActionAsync(unitId, this.state.target.unitId);
-		this.isFetching = false;
-		this.reselectUnit(unitId);
+		this.clearError();
+		try {
+			this.unitData = await action();
+			this.reselectUnit(unitId);
+		} catch (error) {
+			this.reportError('Action failed', error);
+		} finally {
+			this.isFetching = false;
+		}
+	}
+
+	/* Records error details for UI display while keeping the newest at the top. */
+	private reportError(context: string, error: unknown) {
+		const details =
+			error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error';
+		const message = `${context}. ${details}`;
+		this.errorMessage = message;
+		this.errorLog = [`${new Date().toLocaleTimeString()} ${message}`, ...this.errorLog].slice(0, 6);
 	}
 
 	/* Reselects the unit after an action, or resets state if not found. */
