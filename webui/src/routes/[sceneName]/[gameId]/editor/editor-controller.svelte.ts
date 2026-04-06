@@ -137,7 +137,10 @@ export class EditorController {
 	}
 
 	/** Runs an async request with UI-safe state transitions and error recording. */
-	private async executeRequestAsync(context: string, request: () => Promise<void>): Promise<boolean> {
+	private async executeRequestAsync(
+		context: string,
+		request: () => Promise<void>
+	): Promise<boolean> {
 		if (this.isFetching) return false;
 		this.isFetching = true;
 		this.clearError();
