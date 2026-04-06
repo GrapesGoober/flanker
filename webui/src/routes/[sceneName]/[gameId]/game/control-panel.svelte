@@ -105,6 +105,13 @@
 			<button class="error-dismiss-button" onclick={clearError}>Dismiss</button>
 		</div>
 		<div class="error-message">{controller.errorMessage}</div>
+		{#if controller.errorLog.length > 1}
+			<div class="error-log">
+				{#each controller.errorLog.slice(1) as entry}
+					<div class="error-log-entry">{entry}</div>
+				{/each}
+			</div>
+		{/if}
 	</div>
 {/if}
 
@@ -201,5 +208,15 @@
 	.error-message {
 		font-size: 0.9rem;
 		line-height: 1.2;
+	}
+	.error-log {
+		margin-top: 8px;
+		max-height: 6.5rem;
+		overflow: auto;
+		font-size: 0.8rem;
+		opacity: 0.9;
+	}
+	.error-log-entry {
+		margin-top: 4px;
 	}
 </style>
