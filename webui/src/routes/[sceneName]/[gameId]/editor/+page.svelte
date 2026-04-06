@@ -16,12 +16,13 @@
 
 	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
-		controller.refreshTerrain();
+		void controller.refreshTerrain();
 	});
 
 	/** Handles click as adding a vertex or waypoint, depending on state. */
 	function handleClick(event: MouseEvent) {
 		if (map == null) return;
+		if (controller.isFetching) return;
 		const node = clickTarget as HTMLElement;
 		const rect = node.getBoundingClientRect();
 		const x = event.clientX - rect.x;
@@ -33,7 +34,7 @@
 
 	/** Resets the editor mode and refreshes terrain. */
 	function resetMode() {
-		controller.refreshTerrain();
+		void controller.refreshTerrain();
 		controller.reset();
 	}
 
@@ -45,7 +46,6 @@
 	/** Finishes the current draw and saves as terrain. */
 	async function deleteTerrain() {
 		await controller.deleteTerrain();
-		resetMode();
 	}
 
 	/** Switches the editor to waypoints mode. */
@@ -54,8 +54,8 @@
 	}
 
 	/** Updates the waypoints to the webapi. */
-	function confirmsWaypoints() {
-		controller.updateWaypoint();
+	async function confirmsWaypoints() {
+		await controller.updateWaypoint();
 	}
 	/** Finishes the current draw and saves as terrain. */
 	async function finishDraw() {
