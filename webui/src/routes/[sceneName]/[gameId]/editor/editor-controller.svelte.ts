@@ -29,9 +29,9 @@ export class EditorController {
 	errorLog: string[] = $state([]);
 
 	/** Refreshes terrain data from the API. */
-	refreshTerrain() {
-		GetTerrainData().then((data) => {
-			this.terrainData = data;
+	async refreshTerrain() {
+		await this.executeRequestAsync('Failed to load terrain data', async () => {
+			this.terrainData = await GetTerrainData();
 		});
 	}
 
@@ -73,9 +73,13 @@ export class EditorController {
 			vertices: vertices,
 			terrainType: this.state.terrainType
 		};
-		await AddTerrainData(terrain);
-		this.refreshTerrain();
-		this.reset();
+		const saved = await this.executeRequestAsync('Failed to create terrain', async () => {
+			await AddTerrainData(terrain);
+			this.terrainData = await GetTerrainData();
+		});
+		if (saved) {
+			this.reset();
+		}
 	}
 
 	/** Selects a terrain object and updates its data if already selected. */
