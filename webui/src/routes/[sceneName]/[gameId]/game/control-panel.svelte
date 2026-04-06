@@ -17,6 +17,11 @@
 		controller.closeSelection();
 	}
 
+	/* Dismisses currently displayed error text. */
+	function clearError() {
+		controller.clearError();
+	}
+
 	/* Handles keyboard shortcuts for unit actions. */
 	async function onKeyDown(event: KeyboardEvent) {
 		const key = event.key.toLowerCase();
@@ -93,6 +98,16 @@
 	</div>
 {/if}
 
+{#if controller.errorMessage}
+	<div class="error-box">
+		<div class="error-header">
+			<span>Action Error</span>
+			<button class="error-dismiss-button" onclick={clearError}>Dismiss</button>
+		</div>
+		<div class="error-message">{controller.errorMessage}</div>
+	</div>
+{/if}
+
 <style lang="less">
 	@spacing: 15px;
 	@opacity: 0.5;
@@ -155,5 +170,36 @@
 		opacity: 0.5;
 		transition: opacity 0.3s ease;
 		transform: translate(100%, -150%);
+	}
+
+	// Error Section
+	.error-box {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		margin: @spacing;
+		padding: @spacing;
+		max-width: 38rem;
+		background-color: rgba(96, 15, 15, 0.9);
+		color: #fff;
+		border: 1px solid rgba(255, 255, 255, 0.4);
+	}
+	.error-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: @spacing;
+		font-weight: bold;
+		margin-bottom: 6px;
+	}
+	.error-dismiss-button {
+		background: transparent;
+		color: #fff;
+		border: 1px solid rgba(255, 255, 255, 0.6);
+		cursor: pointer;
+	}
+	.error-message {
+		font-size: 0.9rem;
+		line-height: 1.2;
 	}
 </style>
