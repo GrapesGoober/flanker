@@ -10,7 +10,6 @@ import {
 	type Vec2
 } from '$lib/api';
 import { transform } from '$lib/map-utils';
-import { v4 as uuidv4 } from 'uuid';
 
 type EditorControllerState =
 	| { type: 'default' }
@@ -25,6 +24,9 @@ type EditorControllerState =
 export class EditorController {
 	terrainData: TerrainModel[] = $state([]);
 	state: EditorControllerState = $state({ type: 'default' });
+	isFetching: boolean = $state(false);
+	errorMessage: string | null = $state(null);
+	errorLog: string[] = $state([]);
 
 	/** Refreshes terrain data from the API. */
 	refreshTerrain() {
@@ -36,6 +38,11 @@ export class EditorController {
 	/** Resets the editor state to default. */
 	reset() {
 		this.state = { type: 'default' };
+	}
+
+	/** Clears currently shown error text. */
+	clearError() {
+		this.errorMessage = null;
 	}
 	/** Switches the editor to draw mode and initializes a new polygon. */
 	drawMode() {
@@ -60,7 +67,7 @@ export class EditorController {
 		const vertices = transform(polygon, { x: -position.x, y: -position.y }, 0);
 		const terrain: TerrainModel = {
 			// The ID is ignored as it will create a new one
-			terrainId: uuidv4(),
+			terrainId: crypto.randomUUID(),
 			position: position,
 			degrees: 0,
 			vertices: vertices,
@@ -101,5 +108,30 @@ export class EditorController {
 	async updateWaypoint() {
 		if (this.state.type != 'draw-waypoints') return;
 		await UpdateWaypointsData(this.state.waypoints);
+	}
+
+	/** Runs an async request with UI-safe state transitions and error recording. */
+	private async executeRequestAsync(context: string, request: () => Promise<void>): Promise<boolean> {
+		if (this.isFetching) return false;
+		this.isFetching = true;
+		this.clearError();
+		try {
+			await request();
+			return true;
+		} catch (error) {
+			this.reportError(context, error);
+			return false;
+		} finally {
+			this.isFetching = false;
+		}
+	}
+
+	/** Stores a readable error for the editor and keeps a short history. */
+	private reportError(context: string, error: unknown) {
+		const details =
+			error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error';
+		const message = `${context}. ${details}`;
+		this.errorMessage = message;
+		this.errorLog = [`${new Date().toLocaleTimeString()} ${message}`, ...this.errorLog].slice(0, 6);
 	}
 }
