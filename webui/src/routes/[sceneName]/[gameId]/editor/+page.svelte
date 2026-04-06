@@ -88,6 +88,23 @@ mode = {controller.state.type}
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
 <button onclick={waypointsMode} style="margin-bottom: 1em;">Waypoints Mode</button>
 
+{#if controller.errorMessage}
+	<div class="error-console">
+		<div class="error-console-header">
+			<span>Editor Error</span>
+			<button onclick={() => controller.clearError()}>Dismiss</button>
+		</div>
+		<div class="error-console-current">{controller.errorMessage}</div>
+		{#if controller.errorLog.length > 1}
+			<div class="error-console-log">
+				{#each controller.errorLog.slice(1) as entry}
+					<div>{entry}</div>
+				{/each}
+			</div>
+		{/if}
+	</div>
+{/if}
+
 {#if controller.state.type == 'selected'}
 	id = {controller.state.terrain.terrainId}
 	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />
@@ -123,5 +140,29 @@ mode = {controller.state.type}
 		fill: #d2aed588;
 		stroke: #c2a0cc;
 		stroke-width: @stroke-width;
+	}
+	.error-console {
+		margin: 0.75rem 0;
+		padding: 0.75rem;
+		max-width: 42rem;
+		border: 1px solid #8f2b2b;
+		background-color: #fff0f0;
+		color: #5a1111;
+		font-family: monospace;
+	}
+	.error-console-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		font-weight: 700;
+	}
+	.error-console-current {
+		margin-top: 0.5rem;
+	}
+	.error-console-log {
+		margin-top: 0.5rem;
+		max-height: 7rem;
+		overflow: auto;
+		font-size: 0.85rem;
 	}
 </style>
