@@ -31,13 +31,23 @@ export class PlayerController {
 	});
 	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
+	errorMessage: string | null = $state(null);
+	errorLog: string[] = $state([]);
 
 	/* Initializes controller and loads terrain & unit states data. */
 	async initializeAsync() {
+		if (this.isFetching) return;
 		this.isFetching = true;
-		this.terrainData = await GetTerrainData();
-		this.unitData = await GetUnitStatesData();
-		this.isFetching = false;
+		this.clearError();
+		try {
+			const [terrainData, unitData] = await Promise.all([GetTerrainData(), GetUnitStatesData()]);
+			this.terrainData = terrainData;
+			this.unitData = unitData;
+		} catch (error) {
+			this.errorMessage = `Unable to load game state. ${error instanceof Error ? error.message : 'Unknown error'}`;
+		} finally {
+			this.isFetching = false;
+		}
 	}
 
 	/* Selects a combat unit and transitions to state 'selected'. */
@@ -89,6 +99,11 @@ export class PlayerController {
 		this.state = {
 			type: 'default'
 		};
+	}
+
+	/* Clears currently shown error text. */
+	clearError() {
+		this.errorMessage = null;
 	}
 
 	/* Returns true if move action is valid. */
