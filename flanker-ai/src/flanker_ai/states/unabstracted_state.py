@@ -146,9 +146,10 @@ class UnabstractedState(IRepresentationState[Action]):
 
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
         new_rs = self.copy()
+        initiative_system = new_rs._gs.get(InitiativeSystem)
         match action:
             case MoveAction():
-                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                initiative = initiative_system.get_initiative(new_rs._gs)
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 result = MoveSystem.move(new_rs._gs, action.unit_id, action.to)
@@ -158,7 +159,7 @@ class UnabstractedState(IRepresentationState[Action]):
                     else:
                         new_rs._get_stall_counter()[initiative] = 0
             case PivotAction():
-                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                initiative = initiative_system.get_initiative(new_rs._gs)
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 result = MoveSystem.pivot(new_rs._gs, action.unit_id, action.to)
@@ -168,13 +169,13 @@ class UnabstractedState(IRepresentationState[Action]):
                     else:
                         new_rs._get_stall_counter()[initiative] = 0
             case FireAction():
-                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                initiative = initiative_system.get_initiative(new_rs._gs)
                 new_rs._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.SUPPRESS
                 result = FireSystem.fire(new_rs._gs, action.unit_id, action.target_id)
             case AssaultAction():
-                initiative = InitiativeSystem.get_initiative(new_rs._gs)
+                initiative = initiative_system.get_initiative(new_rs._gs)
                 new_rs._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
@@ -197,7 +198,8 @@ class UnabstractedState(IRepresentationState[Action]):
                 elif faction == InitiativeState.Faction.RED:
                     return InitiativeState.Faction.BLUE
 
-        return ObjectiveSystem.get_winning_faction(self._gs)
+        objective_system = self._gs.get(ObjectiveSystem)
+        return objective_system.get_winning_faction(self._gs)
 
     def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
         if result := self._gs.query(AiStallCountComponent):
@@ -207,7 +209,8 @@ class UnabstractedState(IRepresentationState[Action]):
             raise ValueError(f"{AiStallCountComponent} missing for {self._gs}")
 
     def get_initiative(self) -> InitiativeState.Faction:
-        return InitiativeSystem.get_initiative(self._gs)
+        initiative_system = self._gs.get(InitiativeSystem)
+        return self._gs.get(initiative_system).get_initiative(self._gs)
 
     def initialize_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)

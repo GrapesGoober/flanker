@@ -8,12 +8,13 @@ from flanker_core.models.components import (
     EliminationObjective,
     FireControls,
     InitiativeState,
+    Transform,
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
-from flanker_core.systems.los_system import Transform
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -27,6 +28,7 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    register_systems(gs)
     # Rifle Squads
     gs.add_entity(
         InitiativeState(),
@@ -65,8 +67,8 @@ def test_kill_one(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id_1,
     )
-
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    objective_system = fixture.gs.get(ObjectiveSystem)
+    winner = objective_system.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as objective not met"
 
 
@@ -81,7 +83,8 @@ def test_kill_two(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id_2,
     )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    objective_system = fixture.gs.get(ObjectiveSystem)
+    winner = objective_system.get_winning_faction(fixture.gs)
     assert (
         winner == InitiativeState.Faction.BLUE
     ), "Expects attacker faction as winner as objective is met"

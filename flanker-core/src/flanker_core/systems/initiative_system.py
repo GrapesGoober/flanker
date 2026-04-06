@@ -33,8 +33,9 @@ class InitiativeSystem:
     @staticmethod
     def has_initiative(gs: GameState, unit_id: UUID) -> bool:
         """Check whether the unit's faction has initiative."""
+        initiative_system = gs.get(InitiativeSystem)
         unit = gs.get_component(unit_id, CombatUnit)
-        return unit.faction == InitiativeSystem.get_initiative(gs)
+        return unit.faction == initiative_system.get_initiative(gs)
 
     @staticmethod
     def get_initiative(gs: GameState) -> InitiativeState.Faction:

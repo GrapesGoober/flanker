@@ -54,11 +54,17 @@ class FireSystem:
             return InvalidAction.BAD_ENTITY
 
         # Check if attacker has LOS to target and within FOV
-        if not LosSystem.check(
-            gs, attacker_transform.position, target_transform.position
+        los_system = gs.get(LosSystem)
+        if not los_system.has_los(
+            gs,
+            attacker_transform.position,
+            target_transform.position,
         ):
             return InvalidAction.BAD_COORDS
-        if not LosSystem.in_fov(attacker_transform, target_transform.position):
+        if not los_system.in_fov(
+            attacker_transform,
+            target_transform.position,
+        ):
             return InvalidAction.BAD_COORDS
 
     @staticmethod
@@ -86,33 +92,35 @@ class FireSystem:
         target_id: UUID,
     ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
+        initiative_system = gs.get(InitiativeSystem)
 
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
-        if not InitiativeSystem.has_initiative(gs, attacker_id):
+        if not initiative_system.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
+        command_system = gs.get(CommandSystem)
         match FireSystem.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
-                InitiativeSystem.set_initiative(gs, target_unit.faction)
+                initiative_system.set_initiative(gs, target_unit.faction)
                 return _FireActionResult(outcome=FireOutcomes.MISS)
             case FireOutcomes.PIN:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.PINNED
-                InitiativeSystem.set_initiative(gs, target_unit.faction)
+                initiative_system.set_initiative(gs, target_unit.faction)
                 return _FireActionResult(outcome=FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.SUPPRESSED
                     return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
                 else:  # Kills the unit if it is already suppressed
-                    CommandSystem.kill_unit(gs, target_id)
+                    command_system.kill_unit(gs, target_id)
                     return _FireActionResult(outcome=FireOutcomes.KILL)
             case FireOutcomes.KILL:
-                CommandSystem.kill_unit(gs, target_id)
+                command_system.kill_unit(gs, target_id)
                 return _FireActionResult(outcome=FireOutcomes.KILL)
 
     @staticmethod

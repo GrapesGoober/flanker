@@ -58,14 +58,16 @@ class AiAgent:
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
 
-        if InitiativeSystem.get_initiative(self._gs) != self._faction:
+        initiative_system = self._gs.get(InitiativeSystem)
+        if initiative_system.get_initiative(self._gs) != self._faction:
             return []
 
         halt_counter = 0
         action_results: list[ActionResult] = []
-        while InitiativeSystem.get_initiative(self._gs) == self._faction:
+        while initiative_system.get_initiative(self._gs) == self._faction:
             # If win/lose condition is already met, pass
-            if ObjectiveSystem.get_winning_faction(self._gs) != None:
+            objective_system = self._gs.get(ObjectiveSystem)
+            if objective_system.get_winning_faction(self._gs) != None:
                 break
             if result := self._gs.query(AiStallCountComponent):
                 _, stall_comp = result[0]
@@ -77,7 +79,7 @@ class AiAgent:
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
                 print(f"{self._faction.value} AI made useless actions, breaking")
-                InitiativeSystem.flip_initiative(self._gs)
+                initiative_system.flip_initiative(self._gs)
                 break
 
             # Prepare the representation and run the policy on it
@@ -88,7 +90,7 @@ class AiAgent:
 
             if actions == []:
                 print(f"No valid action for {self._faction.value} AI, breaking")
-                InitiativeSystem.flip_initiative(self._gs)
+                initiative_system.flip_initiative(self._gs)
                 break
 
             action = rs.deabstract_action(
@@ -99,7 +101,7 @@ class AiAgent:
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
                 print(f"{self._faction.value} AI made invalid action, breaking")
-                InitiativeSystem.flip_initiative(self._gs)
+                initiative_system.flip_initiative(self._gs)
                 break
             # These result objects would be used for logging
             # Thus, prevent mutation by creating a copy

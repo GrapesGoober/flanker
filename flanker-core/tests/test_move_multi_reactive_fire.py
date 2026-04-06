@@ -15,6 +15,7 @@ from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -30,6 +31,7 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
+    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
@@ -98,17 +100,19 @@ def fixture() -> Fixture:
 
 
 def test_no_interrupt(fixture: Fixture) -> None:
+    initiative_system = fixture.gs.get(InitiativeSystem)
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         5, -15
     ), "Move action expects to not be interrupted"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
+        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
     ), "NO reactive fire mustn't flip initiative."
 
 
 def test_both_miss(fixture: Fixture) -> None:
+    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.MISS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
@@ -121,15 +125,16 @@ def test_both_miss(fixture: Fixture) -> None:
         fire_controls.can_reactive_fire == False
     ), "MISS reactive fire results in NO FIRE"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
+        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
     ), "MISS reactive fire mustn't flip initiative"
-    InitiativeSystem.flip_initiative(fixture.gs)
+    initiative_system.flip_initiative(fixture.gs)
     assert (
         fire_controls and fire_controls.can_reactive_fire == True
     ), "Passing initiative must reset reactive fire"
 
 
 def test_one_pin(fixture: Fixture) -> None:
+    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.PIN
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
@@ -140,11 +145,12 @@ def test_one_pin(fixture: Fixture) -> None:
     unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
     assert unit.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move) == True
+        initiative_system.has_initiative(fixture.gs, fixture.unit_move) == True
     ), "PINNED reactive fire must maintain initiative for moving unit."
 
 
 def test_one_pin_one_suppress(fixture: Fixture) -> None:
+    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls_1.override = FireOutcomes.PIN
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
@@ -157,16 +163,17 @@ def test_one_pin_one_suppress(fixture: Fixture) -> None:
         unit.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move) == False
+        initiative_system.has_initiative(fixture.gs, fixture.unit_move) == False
     ), "SUPPRESS reactive fire lose initiative for moving unit."
 
 
 def test_both_suppress(fixture: Fixture) -> None:
+    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls_1.override = FireOutcomes.SUPPRESS
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.try_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == True
+        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot_1) == True
     ), "KILL reactive fire lose initiative for moving unit."

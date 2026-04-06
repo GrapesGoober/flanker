@@ -45,6 +45,8 @@ class IntersectSystem:
     ) -> Iterable[Intersection]:
         """Yields intersections between the line segment and terrain."""
 
+        intersect_system = gs.get(IntersectSystem)
+
         if results := gs.query(_Context):
             _, context = results[0]
         else:
@@ -52,10 +54,10 @@ class IntersectSystem:
         terrain_datas = context.compiled_terrains_by_mask
 
         if mask not in terrain_datas:
-            terrain_datas[mask] = IntersectSystem._compile_terrain(gs, mask)
+            terrain_datas[mask] = intersect_system._compile_terrain(gs, mask)
         terrain_data: _TerrainData = terrain_datas[mask]
 
-        intersects = IntersectSystem._njit_get_intersect(
+        intersects = intersect_system._njit_get_intersect(
             start_pos=(start.x, start.y),
             end_pos=(end.x, end.y),
             edge_verts=terrain_data.np_verts,

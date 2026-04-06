@@ -54,11 +54,13 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
         move_controls = gs.get_component(unit_id, MoveControls)
+        intersect_system = gs.get(IntersectSystem)
+        initiative_system = gs.get(InitiativeSystem)
 
         # Check game state is valid for move action
         if unit.status != CombatUnit.Status.ACTIVE:
             return InvalidAction.INACTIVE_UNIT
-        if not InitiativeSystem.has_initiative(gs, unit_id):
+        if not initiative_system.has_initiative(gs, unit_id):
             return InvalidAction.NO_INITIATIVE
 
         # Check move action though correct terrain type
@@ -66,7 +68,7 @@ class MoveSystem:
         match move_controls.move_type:
             case MoveControls.MoveType.FOOT:
                 terrain_type = TerrainFeature.Flag.WALKABLE
-        for intersect in IntersectSystem.get(gs, transform.position, to):
+        for intersect in intersect_system.get(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
                 return InvalidAction.BAD_COORDS
 
@@ -86,12 +88,13 @@ class MoveSystem:
         interrupt_candidates: list[tuple[Vec2, list[UUID]]] = []
 
         transform = gs.get_component(unit_id, Transform)
+        los_system = gs.get(LosSystem)
 
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             if not spotter_fire_controls.los_polygon:
                 # LOS polygon should be generated
-                LosSystem.update_los_polygon(gs, spotter_id)
+                los_system.update_los_polygon(gs, spotter_id)
                 assert spotter_fire_controls.los_polygon
 
             # Find the interrupt position if spotted,
@@ -181,6 +184,7 @@ class MoveSystem:
                     break
 
                 # Apply each outcome
+                command_system = gs.get(CommandSystem)
                 match outcome:
                     case FireOutcomes.MISS:
                         # Marks the firer as NO FIRE
@@ -198,11 +202,11 @@ class MoveSystem:
                         if unit.status != CombatUnit.Status.SUPPRESSED:
                             unit.status = CombatUnit.Status.SUPPRESSED
                         else:  # Kill if already suppressed
-                            CommandSystem.kill_unit(gs, unit_id)
+                            command_system.kill_unit(gs, unit_id)
                         reactive_fire_outcome = outcome
                     case FireOutcomes.KILL:
                         reactive_fire_outcome = outcome
-                        CommandSystem.kill_unit(gs, unit_id)
+                        command_system.kill_unit(gs, unit_id)
 
         if reactive_fire_outcome is None:
             transform.position = to
@@ -219,6 +223,7 @@ class MoveSystem:
     ) -> _MoveActionResult | InvalidAction:
         """Mutator method performs move action with reactive fire."""
 
+        initiative_system = gs.get(InitiativeSystem)
         result = MoveSystem._singular_move(gs, unit_id, to)
         if not isinstance(result, _MoveActionResult):
             return result
@@ -226,7 +231,7 @@ class MoveSystem:
             FireOutcomes.SUPPRESS,
             FireOutcomes.KILL,
         ):
-            InitiativeSystem.flip_initiative(gs)
+            initiative_system.flip_initiative(gs)
 
         return result
 
@@ -236,7 +241,7 @@ class MoveSystem:
         moves: list[tuple[UUID, Vec2]],
     ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
-
+        initiative_system = gs.get(InitiativeSystem)
         results: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
@@ -251,7 +256,7 @@ class MoveSystem:
                 interrupt_count += 1
 
         if interrupt_count >= len(moves):
-            InitiativeSystem.flip_initiative(gs)
+            initiative_system.flip_initiative(gs)
 
         return _GroupMoveActionResult(results)
 

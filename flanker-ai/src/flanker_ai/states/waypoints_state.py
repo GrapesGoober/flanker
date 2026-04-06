@@ -505,7 +505,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
 
         # Assemble waypoint-graph game state
-        self._initiative = InitiativeSystem.get_initiative(gs)
+        self._initiative = gs.get(InitiativeSystem).get_initiative(gs)
         self._objectives: list[EliminationObjective] = list(
             [replace(objective) for _, objective in gs.query(EliminationObjective)]
         )
@@ -527,7 +527,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         gs: GameState,
     ) -> None:
 
-        self._initiative = InitiativeSystem.get_initiative(gs)
+        self._initiative = gs.get(InitiativeSystem).get_initiative(gs)
 
         if entities := gs.query(AiStallCountComponent):
             _, stall_component = entities[0]
@@ -789,8 +789,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         # The LOS polygon might be overkill for now,
         # but future cases might need it
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
+        los_system = gs.get(LosSystem)
         for waypoint_id, waypoint in waypoints_to_update:
-            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
+            waypoint_LOS_polygons[waypoint_id] = los_system.get_los_polygon(
                 gs, waypoint.position
             )
 

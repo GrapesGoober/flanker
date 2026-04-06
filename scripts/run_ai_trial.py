@@ -10,6 +10,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
+from flanker_core.systems.register_systems import register_systems
 
 
 def initialize_game_state(path: str) -> GameState:
@@ -25,7 +26,7 @@ def initialize_game_state(path: str) -> GameState:
             component_types=component_types,
         )
         gs = GameState.load(entities)
-
+    register_systems(gs)
     print("Creating BLUE agent...")
     AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
     print("Creating RED agent...")

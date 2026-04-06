@@ -38,7 +38,8 @@ class AiTrial:
         action_results: list[ActionResult] = []
 
         # Let two agents fight each other over and over
-        while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
+        objective_system = gs.get(ObjectiveSystem)
+        while (winner := objective_system.get_winning_faction(gs)) == None:
 
             blue_stall_count = AiTrial._get_stall_counter(
                 gs, InitiativeState.Faction.BLUE

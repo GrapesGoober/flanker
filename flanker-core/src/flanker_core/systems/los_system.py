@@ -57,13 +57,14 @@ class LosSystem:
         return dot >= math.cos(half_fov_rad)
 
     @staticmethod
-    def check(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
+    def has_los(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
         """
         Returns `True` if entity `spotter_id` can see position `target_pos`.
         Does not check for FOV.
         """
 
-        intersects = IntersectSystem.get(
+        intersect_system = gs.get(IntersectSystem)
+        intersects = intersect_system.get(
             gs=gs,
             start=spotter_pos,
             end=target_pos,
@@ -148,11 +149,12 @@ class LosSystem:
     ) -> None:
         """Updates a unit's fire controls with a new LOS polygon."""
         transform = gs.get_component(unit_id, Transform)
-        full_polygon = LosSystem.get_los_polygon(
+        los_system = gs.get(LosSystem)
+        full_polygon = los_system.get_los_polygon(
             gs=gs,
             spotter_pos=transform.position,
         )
-        fov_polygon = LosSystem._apply_fov_to_polygon(
+        fov_polygon = los_system._apply_fov_to_polygon(
             polyline=full_polygon,
             center_point=transform.position,
             heading_degree=transform.degrees,
@@ -168,15 +170,16 @@ class LosSystem:
         jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
+        los_system = gs.get(LosSystem)
         terrains = list(
-            LosSystem._get_terrain_vertices(
+            los_system._get_terrain_vertices(
                 gs,
                 spotter_pos,
                 mask=TerrainFeature.Flag.OPAQUE,
             )
         )
         terrain_verts = [vert for t in terrains for vert in t.vertices]
-        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
+        verts = los_system._sort_verts_by_angle(spotter_pos, terrain_verts)
         visible_points: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -188,14 +191,14 @@ class LosSystem:
             right_point = spotter_pos + jitter
             for point in [left_point, right_point]:
                 intersects = list(
-                    LosSystem._get_terrain_intersects(
+                    los_system._get_terrain_intersects(
                         line=(point, point + ray),
                         terrains=terrains,
                     )
                 )
                 # Choose which point from the intersects to append
                 if intersects:
-                    intersects = LosSystem._sort_intersects_by_distance(
+                    intersects = los_system._sort_intersects_by_distance(
                         intersects, spotter_pos
                     )
                     # Use the second intersection point to allow see-into terrain
@@ -214,7 +217,7 @@ class LosSystem:
                 if visible_points and visible_points[-1] == new_point:
                     continue
                 # If points are colinear, replace instead of append
-                if LosSystem._is_colinear(visible_points, new_point):
+                if los_system._is_colinear(visible_points, new_point):
                     visible_points[-1] = new_point
                     continue
                 visible_points.append(new_point)
