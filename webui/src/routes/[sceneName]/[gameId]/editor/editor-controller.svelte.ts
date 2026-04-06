@@ -85,7 +85,12 @@ export class EditorController {
 	/** Selects a terrain object and updates its data if already selected. */
 	selectTerrain(terrain: TerrainModel) {
 		if (this.state.type != 'default' && this.state.type != 'selected') return;
-		if (this.state.type == 'selected') UpdateTerrainData(this.state.terrain);
+		if (this.state.type == 'selected') {
+			const previousTerrain = this.state.terrain;
+			void this.executeRequestAsync('Failed to update terrain', async () => {
+				await UpdateTerrainData(previousTerrain);
+			});
+		}
 		this.state = {
 			type: 'selected',
 			terrain: terrain
@@ -95,12 +100,23 @@ export class EditorController {
 	/** Deletes the selected terrain */
 	async deleteTerrain() {
 		if (this.state.type != 'selected') return;
-		await DeleteTerrainData(this.state.terrain.terrainId);
+		const terrainId = this.state.terrain.terrainId;
+		const deleted = await this.executeRequestAsync('Failed to delete terrain', async () => {
+			await DeleteTerrainData(terrainId);
+			this.terrainData = await GetTerrainData();
+		});
+		if (deleted) {
+			this.reset();
+		}
 	}
 	/** Asynchronously updates the selected terrain data via the API. */
 	async updateTerrainAsync() {
 		if (this.state.type != 'selected') return;
-		await UpdateTerrainData(this.state.terrain);
+		await this.executeRequestAsync('Failed to update terrain', async () => {
+			if (this.state.type != 'selected') return;
+			await UpdateTerrainData(this.state.terrain);
+			this.terrainData = await GetTerrainData();
+		});
 	}
 
 	/** Adds a new waypoint */
@@ -111,7 +127,13 @@ export class EditorController {
 	/** Async updates the waypoints to server */
 	async updateWaypoint() {
 		if (this.state.type != 'draw-waypoints') return;
-		await UpdateWaypointsData(this.state.waypoints);
+		const waypoints = this.state.waypoints;
+		const updated = await this.executeRequestAsync('Failed to update waypoints', async () => {
+			await UpdateWaypointsData(waypoints);
+		});
+		if (updated) {
+			this.reset();
+		}
 	}
 
 	/** Runs an async request with UI-safe state transitions and error recording. */
