@@ -99,12 +99,12 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
             mutable_entities.add(id)
         for id, _ in self._gs.query(AiStallCountComponent):
             mutable_entities.add(id)
-        self._gs = self._gs.selective_copy(list(mutable_entities))
 
         new_gs = WaypointsStateECS(
             points=self._points,
             path_tolerance=self._path_tolerance,
         )
+        new_gs._gs = self._gs.selective_copy(list(mutable_entities))
         new_gs.waypoints = self.waypoints
         copied_units = {id: replace(unit) for id, unit in self.combat_units.items()}
         new_gs.combat_units = copied_units
