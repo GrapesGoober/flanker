@@ -314,8 +314,6 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                         current_unit.status = CombatUnit.Status.SUPPRESSED
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
-                    initiative_system = rs._gs.get(InitiativeSystem)
-                    initiative_system.flip_initiative(self._gs)
                     rs._stall_counter[rs.get_initiative()] += 1
                 return rs
 
@@ -650,7 +648,6 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
         for _, interrupt_enemies in interrupts:
             candidate_enemy_ids += interrupt_enemies
         permutations = self.get_all_fire_permutations(candidate_enemy_ids)
-        initiative_system = self._gs.get(InitiativeSystem)
 
         # For each permutation, build a new gs outcome
         all_outcomes: list[tuple[float, "WaypointsStateECS"]] = []
@@ -702,7 +699,8 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                 FireOutcomes.SUPPRESS,
                 FireOutcomes.KILL,
             ]:
-                initiative_system.flip_initiative(self._gs)
+                initiative_system = self._gs.get(InitiativeSystem)
+                initiative_system.flip_initiative(rs._gs)
 
             # Move to destination if no reactive fire
             # Note: pivot action doesn't have move_to_id

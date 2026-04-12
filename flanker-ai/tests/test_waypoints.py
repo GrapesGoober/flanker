@@ -4,7 +4,7 @@ from uuid import UUID
 
 import pytest
 from flanker_ai.states.waypoints_actions import WaypointMoveAction
-from flanker_ai.states.waypoints_state import WaypointsState
+from flanker_ai.states.waypoints_state_ecs import WaypointsStateECS
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -21,7 +21,7 @@ from flanker_core.systems.register_systems import register_systems
 
 @dataclass
 class Fixture:
-    state: WaypointsState
+    state: WaypointsStateECS
     unit_move: UUID
     enemy_1: UUID
     enemy_2: UUID
@@ -91,7 +91,7 @@ def fixture() -> Fixture:
         ),
     )
 
-    state = WaypointsState(
+    state = WaypointsStateECS(
         points=[
             # TODO: fixturize the waypoint IDs, not hardcoded IDs
             Vec2(6, -10),  # 0

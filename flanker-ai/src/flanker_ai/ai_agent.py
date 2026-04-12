@@ -21,7 +21,7 @@ from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints_actions import WaypointAction
-from flanker_ai.states.waypoints_state import WaypointsState
+from flanker_ai.states.waypoints_state_ecs import WaypointsStateECS
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -170,7 +170,7 @@ class AiAgent:
                         policy=policy,
                     )
                 case AiConfigComponent.WaypointsStateConfig():
-                    rs = WaypointsState(
+                    rs = WaypointsStateECS(
                         points=state_config.waypoint_coordinates,
                         path_tolerance=state_config.path_tolerance,
                     )
