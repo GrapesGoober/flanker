@@ -165,7 +165,7 @@ def test_two_interrupts(fixture: Fixture) -> None:
     ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 
-def test_permutations(fixture: Fixture) -> None:
+def test_reactive_fire_permutations(fixture: Fixture) -> None:
     action = WaypointMoveAction(
         unit_id=fixture.unit_move,
         move_to_waypoint_id=2,
