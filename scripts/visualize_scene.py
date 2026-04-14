@@ -39,7 +39,10 @@ def load_state(path: str) -> GameState:
 
 
 def visualize_polygon(
-    verts: list[Vec2], color: str = "C0", fill_alpha: float = 0, plot_alpha: float = 0
+    verts: list[Vec2],
+    color: str = "C0",
+    fill_alpha: float = 0,
+    plot_alpha: float = 1,
 ) -> None:
     xs = [v.x for v in verts]
     ys = [-v.y for v in verts]
@@ -62,12 +65,12 @@ def draw_terrains(gs: GameState) -> None:
         visualize_polygon(vertices, color="C1")
 
 
-def draw_los(gs: GameState, unit_id: UUID) -> None:
+def draw_los(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
     los_system = gs.get(LosSystem)
     los_system.update_los_polygon(gs, unit_id)
     poly = gs.get_component(unit_id, components.FireControls).los_polygon
     assert poly
-    visualize_polygon(poly, color="C0", fill_alpha=0.3, plot_alpha=0.2)
+    visualize_polygon(poly, color=color, fill_alpha=0.3, plot_alpha=0.2)
 
 
 def draw_graph(
@@ -182,7 +185,9 @@ if __name__ == "__main__":
     # draw_waypoints(gs, InitiativeState.Faction.BLUE)
     for id, unit in gs.query(CombatUnit):
         if unit.faction == InitiativeState.Faction.BLUE:
-            continue
-        draw_los(gs, unit_id=id)
+            draw_los(gs, unit_id=id, color="C0")
+
+        if unit.faction == InitiativeState.Faction.RED:
+            draw_los(gs, unit_id=id, color="C1")
     plt.axis("equal")  # type: ignore
     plt.show()  # type: ignore
