@@ -94,7 +94,11 @@ def draw_graph(
     plt.gca().add_collection(lc)
 
 
-def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
+def draw_waypoints(
+    gs: GameState,
+    faction: InitiativeState.Faction,
+    draw_ids: bool = False,
+) -> None:
 
     print("Creating waypoints...")
 
@@ -122,10 +126,18 @@ def draw_waypoints(gs: GameState, faction: InitiativeState.Faction) -> None:
     accented_segments: list[list[tuple[float, float]]] = []
     accented_points_x: list[float] = []
     accented_points_y: list[float] = []
+    accented_ids: list[int] = []
 
     for id, point in waypoints_gs.waypoints.items():
 
-        if id == 17:
+        if draw_ids:
+            plt.text(  # type: ignore
+                point.position.x,
+                -point.position.y,
+                str(id),
+            )
+
+        if id in accented_ids:
             accented_points_x.append(point.position.x)
             accented_points_y.append(-point.position.y)
 
@@ -182,7 +194,7 @@ if __name__ == "__main__":
     )
 
     # draw_terrains(gs)
-    # draw_waypoints(gs, InitiativeState.Faction.BLUE)
+    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
     for id, unit in gs.query(CombatUnit):
         if unit.faction == InitiativeState.Faction.BLUE:
             draw_los(gs, unit_id=id, color="C0")
