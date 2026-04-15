@@ -1,0 +1,194 @@
+{
+  "entities": {
+    "8c4864a4-0fb7-4ac1-b42b-cd8a39377be9": {
+      "InitiativeState": {
+        "faction": "BLUE"
+      }
+    },
+    "f03657e5-e33e-4847-96e1-b567a15311cf": {
+      "Transform": {
+        "position": {
+          "x": -1.0,
+          "y": 12.0
+        },
+        "degrees": -90.0
+      },
+      "CombatUnit": {
+        "faction": "BLUE",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "PIN",
+        "can_reactive_fire": true
+      }
+    },
+    "2fe93b9a-9f08-4ce1-bbe1-d2804f138103": {
+      "Transform": {
+        "position": {
+          "x": 1.0,
+          "y": 12.0
+        },
+        "degrees": -90.0
+      },
+      "CombatUnit": {
+        "faction": "BLUE",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "PIN",
+        "can_reactive_fire": true
+      }
+    },
+    "b7ab1f5e-2ad6-44eb-ae4c-596c2249354c": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": -15.0
+        },
+        "degrees": 70.0
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "PIN",
+        "can_reactive_fire": true
+      }
+    },
+    "77b83a64-a2b5-4a84-86c6-6480bf118979": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": -18.0
+        },
+        "degrees": 100.0
+      },
+      "CombatUnit": {
+        "faction": "RED",
+        "status": "ACTIVE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "PIN",
+        "can_reactive_fire": true
+      }
+    },
+    "f5395dc4-f0a1-4d24-84b1-94901781cb13": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": -5.0,
+            "y": -5.0
+          },
+          {
+            "x": 5.0,
+            "y": -5.0
+          },
+          {
+            "x": 5.0,
+            "y": 5.0
+          },
+          {
+            "x": -5.0,
+            "y": 5.0
+          },
+          {
+            "x": -5.0,
+            "y": -5.0
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 1
+      }
+    },
+    "55f9cb19-e284-472b-b007-303b2cd1a833": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": -20.0,
+            "y": -20.0
+          },
+          {
+            "x": 20.0,
+            "y": -20.0
+          },
+          {
+            "x": 20.0,
+            "y": 20.0
+          },
+          {
+            "x": -20.0,
+            "y": 20.0
+          },
+          {
+            "x": -20.0,
+            "y": -20.0
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
+      }
+    },
+    "7f56fedc-5591-4442-a9c9-1df4da516b6f": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "state_config": {
+          "type": "WaypointsStateConfig",
+          "waypoint_coordinates": [
+            {
+              "x": 0.0,
+              "y": 0.0
+            },
+            {
+              "x": 10.0,
+              "y": 1.0
+            },
+            {
+              "x": -10.0,
+              "y": 1.0
+            },
+            {
+              "x": -10.0,
+              "y": 10.0
+            },
+            {
+              "x": 10.0,
+              "y": 10.0
+            }
+          ],
+          "path_tolerance": 3.0
+        },
+        "policy_config": {
+          "type": "MinimaxPolicyConfig"
+        }
+      }
+    },
+    "688a4c15-93b6-4407-9e8a-b29dc263aa7d": {}
+  }
+}

@@ -17,6 +17,7 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
+from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.initiative_system import InitiativeState
@@ -47,24 +48,24 @@ def fixture() -> Fixture:
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(-1, 12), degrees=-90),
-        FireControls(),
+        FireControls(override=FireOutcomes.PIN),
     )
     friendly_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(1, 12), degrees=-90),
-        FireControls(),
+        FireControls(override=FireOutcomes.PIN),
     )
     enemy_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        FireControls(),
+        FireControls(override=FireOutcomes.PIN),
         Transform(position=Vec2(0, -15), degrees=70),
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        FireControls(),
+        FireControls(override=FireOutcomes.PIN),
         Transform(position=Vec2(0, -18), degrees=100),
     )
 
@@ -158,10 +159,18 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
 def test_optimal_waypoint(fixture: Fixture) -> None:
     actions = fixture.blue_agent.play_initiative()
     assert actions != [], "The minimax must find optimal action sequence."
-    assert isinstance(actions[0], MoveActionResult), "AI must start with Move Action"
-    assert isinstance(actions[1], MoveActionResult), "AI must start with be Move Action"
-    assert actions[0].action.to == Vec2(-10, 10), "AI must try to peek left"
-    assert actions[1].action.to == Vec2(-10, 1), "AI must try to peek left"
+    assert isinstance(
+        actions[0], MoveActionResult
+    ), "AI must start with Move Action to peeking"
+    assert isinstance(
+        actions[1], MoveActionResult
+    ), "AI must start with Move Action to peeking"
+    assert actions[0].action.to == Vec2(
+        -10, 10
+    ), "AI must start with Move Action to peeking"
+    assert actions[1].action.to == Vec2(
+        -10, 1
+    ), "AI must start with Move Action to peeking"
     assert isinstance(actions[2], FireActionResult), "AI must perform Fire Action"
 
 
