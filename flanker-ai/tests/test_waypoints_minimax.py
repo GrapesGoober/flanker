@@ -139,6 +139,8 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
     assert rs.waypoints[5].movable_paths[2] == [5, 2]
     assert rs.waypoints[5].movable_paths[7] == [5, 6, 0, 7]
     assert rs.waypoints[5].movable_paths[8] == [5, 6, 0, 7, 8]
+    assert rs.waypoints[3].movable_paths[7] == [3, 7]
+    assert rs.waypoints[3].movable_paths[8] == [3, 7, 8]
 
 
 def test_optimal_waypoint(fixture: Fixture) -> None:
