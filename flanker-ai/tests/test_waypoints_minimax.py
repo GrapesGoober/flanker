@@ -4,7 +4,7 @@ from typing import Any
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import MoveActionResult
+from flanker_ai.actions import FireActionResult, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.states.waypoints_state_ecs import WaypointsStateECS
@@ -145,13 +145,24 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
     assert rs.waypoints[2].movable_paths[1] == [2, 0, 1]
 
 
+def test_waypoints_visibility(fixture: Fixture) -> None:
+    conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
+    assert conf.type == "WaypointsStateConfig"
+    rs = WaypointsStateECS(conf.waypoint_coordinates, conf.path_tolerance)
+    rs.initialize_state(fixture.gs)
+    rs.update_state(fixture.gs)
+    assert set(rs.waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
+    assert set(rs.waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
+
+
 def test_optimal_waypoint(fixture: Fixture) -> None:
     actions = fixture.blue_agent.play_initiative()
     assert actions != [], "The minimax must find optimal action sequence."
-    assert isinstance(actions[0], MoveActionResult), "Equilibriuim must be Move Action"
-    assert isinstance(actions[1], MoveActionResult), "Equilibriuim must be Move Action"
-    assert actions[0].action.to == Vec2(-10, 10), "Equilibriuim must be to peek left"
-    assert actions[1].action.to == Vec2(-10, 1), "Equilibriuim must be to peek left"
+    assert isinstance(actions[0], MoveActionResult), "AI must start with Move Action"
+    assert isinstance(actions[1], MoveActionResult), "AI must start with be Move Action"
+    assert actions[0].action.to == Vec2(-10, 10), "AI must try to peek left"
+    assert actions[1].action.to == Vec2(-10, 1), "AI must try to peek left"
+    assert isinstance(actions[2], FireActionResult), "AI must perform Fire Action"
 
 
 def test_save_scene(fixture: Fixture) -> None:
