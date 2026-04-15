@@ -100,6 +100,8 @@ def fixture() -> Fixture:
                     Vec2(0, 0),  # 0
                     Vec2(10, 1),  # 1
                     Vec2(-10, 1),  # 2
+                    Vec2(-10, 10),  # 3
+                    Vec2(10, 10),  # 4
                 ],
                 path_tolerance=20,
             ),
