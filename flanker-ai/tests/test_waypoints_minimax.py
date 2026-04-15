@@ -4,8 +4,10 @@ from typing import Any
 from uuid import UUID
 
 import pytest
+from flanker_ai.actions import MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.waypoints_state_ecs import WaypointsStateECS
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import (
@@ -36,7 +38,11 @@ def fixture() -> Fixture:
 
     gs = GameState()
     register_systems(gs)
-    gs.add_entity(InitiativeState())
+    gs.add_entity(
+        InitiativeState(
+            faction=InitiativeState.Faction.BLUE,
+        )
+    )
     friendly_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
@@ -103,7 +109,7 @@ def fixture() -> Fixture:
                     Vec2(-10, 10),  # 3
                     Vec2(10, 10),  # 4
                 ],
-                path_tolerance=20,
+                path_tolerance=3,
             ),
             policy_config=AiConfigComponent.MinimaxPolicyConfig(
                 type="MinimaxPolicyConfig"
@@ -121,6 +127,27 @@ def fixture() -> Fixture:
         enemy_1=enemy_1,
         enemy_2=enemy_2,
     )
+
+
+def test_waypoints_pathing(fixture: Fixture) -> None:
+    conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
+    assert conf.type == "WaypointsStateConfig"
+    rs = WaypointsStateECS(conf.waypoint_coordinates, conf.path_tolerance)
+    rs.initialize_state(fixture.gs)
+    rs.update_state(fixture.gs)
+    assert rs.waypoints[5].movable_paths[3] == [5, 3]
+    assert rs.waypoints[5].movable_paths[2] == [5, 2]
+    assert rs.waypoints[5].movable_paths[7] == [5, 6, 0, 7]
+    assert rs.waypoints[5].movable_paths[8] == [5, 6, 0, 7, 8]
+
+
+def test_optimal_waypoint(fixture: Fixture) -> None:
+    actions = fixture.blue_agent.play_initiative()
+    assert actions != [], "The minimax must find optimal action sequence."
+    assert isinstance(actions[0], MoveActionResult), "Equilibriuim must be Move Action"
+    assert isinstance(actions[1], MoveActionResult), "Equilibriuim must be Move Action"
+    assert actions[0].action.to == Vec2(-10, 10), "Equilibriuim must be to peek left"
+    assert actions[1].action.to == Vec2(-10, 1), "Equilibriuim must be to peek left"
 
 
 def test_save_scene(fixture: Fixture) -> None:

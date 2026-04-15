@@ -288,7 +288,7 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                     elif num_shooters > 1:
                         current_unit.status = CombatUnit.Status.SUPPRESSED
                         initiative_system = rs._gs.get(InitiativeSystem)
-                        initiative_system.flip_initiative(self._gs)
+                        initiative_system.flip_initiative(rs._gs)
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     rs._stall_counter[rs.get_initiative()] += 1
@@ -300,7 +300,7 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                 rs._pivot_towards(action.unit_id, action.pivot_to_waypoint_id)
                 current_unit = rs.combat_units[action.unit_id]
                 # Check for move interrupts
-                interrupts = self.get_move_interrupts(
+                interrupts = rs.get_move_interrupts(
                     unit_id=action.unit_id,
                     move_to_id=None,
                 )
@@ -341,7 +341,7 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                 if interrupts != []:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
-                    initiative_system.flip_initiative(self._gs)
+                    initiative_system.flip_initiative(rs._gs)
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     current_unit.current_waypoint_id = target_waypoint
@@ -352,7 +352,7 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                 else:
                     rs._kill_unit(current_unit.unit_id)
                     # Assault failed
-                    initiative_system.flip_initiative(self._gs)
+                    initiative_system.flip_initiative(rs._gs)
 
                 return rs
 
@@ -431,11 +431,11 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                     target_unit = rs.combat_units[action.target_id]
                     match fire_outcome:
                         case FireOutcomes.MISS:
-                            initiative_system.flip_initiative(self._gs)
+                            initiative_system.flip_initiative(rs._gs)
                         case FireOutcomes.PIN:
                             if target_unit.status == CombatUnit.Status.ACTIVE:
                                 target_unit.status = CombatUnit.Status.PINNED
-                            initiative_system.flip_initiative(self._gs)
+                            initiative_system.flip_initiative(rs._gs)
                         case FireOutcomes.SUPPRESS:
                             target_unit.status = CombatUnit.Status.SUPPRESSED
                         case FireOutcomes.KILL:
@@ -459,7 +459,7 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                 if interrupts != []:
                     # Assumes determinic for now (assumes failed)
                     current_unit.status = CombatUnit.Status.SUPPRESSED
-                    initiative_system.flip_initiative(self._gs)
+                    initiative_system.flip_initiative(rs._gs)
                     current_unit.current_waypoint_id = interrupts[0][0]
                 else:
                     current_unit.current_waypoint_id = target_unit.current_waypoint_id
@@ -469,7 +469,7 @@ class WaypointsStateECS(IRepresentationState[WaypointAction]):
                     rs._kill_unit(action.target_id)
                 else:
                     rs._kill_unit(action.unit_id)
-                    initiative_system.flip_initiative(self._gs)
+                    initiative_system.flip_initiative(rs._gs)
 
                 return [(1, rs)]
 
