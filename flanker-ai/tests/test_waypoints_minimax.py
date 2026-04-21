@@ -5,7 +5,7 @@ import pytest
 from flanker_ai.actions import FireActionResult, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.states.waypoints_state_ecs import WaypointsStateECS
+from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -129,7 +129,7 @@ def fixture() -> Fixture:
 def test_waypoints_pathing(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsStateECS(conf.waypoint_coordinates, conf.path_tolerance)
+    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
     rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     assert rs.waypoints[5].movable_paths[3] == [5, 3]
@@ -145,7 +145,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 def test_waypoints_visibility(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsStateECS(conf.waypoint_coordinates, conf.path_tolerance)
+    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
     rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     assert set(rs.waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
