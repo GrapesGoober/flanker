@@ -1,6 +1,4 @@
-from dataclasses import dataclass, is_dataclass
-from inspect import isclass
-from typing import Any
+from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
@@ -9,7 +7,6 @@ from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.states.waypoints_state_ecs import WaypointsStateECS
 from flanker_core.gamestate import GameState
-from flanker_core.models import components
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
@@ -19,7 +16,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.serializer import Serializer
 from flanker_core.systems.initiative_system import InitiativeState
 from flanker_core.systems.register_systems import register_systems
 
@@ -172,19 +168,3 @@ def test_optimal_waypoint(fixture: Fixture) -> None:
         -10, 1
     ), "AI must start with Move Action to peeking"
     assert isinstance(actions[2], FireActionResult), "AI must perform Fire Action"
-
-
-def test_save_scene(fixture: Fixture) -> None:
-    component_types: list[type[Any]] = []
-    component_types.append(AiConfigComponent)
-    for _, cls in vars(components).items():
-        if isclass(cls) and is_dataclass(cls):
-            component_types.append(cls)
-
-    with open("scenes/test-waypoints-minimax.json", "w") as f:
-        f.write(
-            Serializer.serialize(
-                entities=fixture.gs.dump(),
-                component_types=component_types,
-            )
-        )
