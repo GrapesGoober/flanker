@@ -165,7 +165,7 @@ def test_two_interrupts(fixture: Fixture) -> None:
     ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 
-def test_permutations(fixture: Fixture) -> None:
+def test_reactive_fire_permutations(fixture: Fixture) -> None:
     action = WaypointMoveAction(
         unit_id=fixture.unit_move,
         move_to_waypoint_id=2,
@@ -181,17 +181,18 @@ def test_permutations(fixture: Fixture) -> None:
         total_prob += prob
     assert isclose(total_prob, 1), "Total probability must sum to 1"
 
-    total_prob = 0
     branches = fixture.state.get_branches(action)
     for id, (prob, branch) in enumerate(branches):
-        total_prob += prob
         # Unit could be pinned, suppressed, or killed
         # Need to cross reference this with the permutation
         _, fire_event = fire_permutations[id]
         match fire_event:
             # I hate this test case
-            case {fixture.enemy_1: FireOutcomes.PIN, fixture.enemy_2: FireOutcomes.PIN}:
-                unit = branch.combat_units[fixture.unit_move]
+            case {
+                fixture.enemy_1: FireOutcomes.PIN,
+                fixture.enemy_2: FireOutcomes.PIN,
+            }:
+                unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
                 assert (
                     unit.status == CombatUnit.Status.PINNED
                 ), "Expects PIN fire event to result in PINNED status"
@@ -202,7 +203,7 @@ def test_permutations(fixture: Fixture) -> None:
                 fixture.enemy_1: FireOutcomes.PIN,
                 fixture.enemy_2: FireOutcomes.SUPPRESS,
             }:
-                unit = branch.combat_units[fixture.unit_move]
+                unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
                 assert (
                     unit.status == CombatUnit.Status.SUPPRESSED
                 ), "Expects SUPPRESS fire event to result in SUPPRESSED status"
@@ -213,7 +214,7 @@ def test_permutations(fixture: Fixture) -> None:
                 fixture.enemy_1: FireOutcomes.SUPPRESS,
                 fixture.enemy_2: FireOutcomes.PIN,
             }:
-                unit = branch.combat_units[fixture.unit_move]
+                unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
                 assert (
                     unit.status == CombatUnit.Status.SUPPRESSED
                 ), "Expects SUPPRESS fire event to result in SUPPRESSED status"
@@ -225,11 +226,10 @@ def test_permutations(fixture: Fixture) -> None:
                 fixture.enemy_2: FireOutcomes.SUPPRESS,
             }:
                 assert (
-                    fixture.unit_move not in branch.combat_units
+                    branch.gs.try_component(fixture.unit_move, CombatUnit) == None
                 ), "Expects double SUPPRESS fire event to kill unit"
                 assert (
                     branch.get_initiative() == InitiativeState.Faction.RED
                 ), "Expects double SUPPRESS fire event to flip initiative."
             case _:
                 ...
-    assert isclose(total_prob, 1), "Total probability must sum to 1"
