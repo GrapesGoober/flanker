@@ -540,15 +540,15 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         self.gs = deepcopy(gs)
 
-        if entities := gs.query(AiStallCountComponent):
+        if entities := self.gs.query(AiStallCountComponent):
             _, stall_component = entities[0]
         else:
-            gs.add_entity(stall_component := AiStallCountComponent())
+            self.gs.add_entity(stall_component := AiStallCountComponent())
 
         self._stall_counter = deepcopy(stall_component.stall_counter)
 
         # Add combat units positions as new waypoinys
-        for unit_id, transform, _ in gs.query(Transform, CombatUnit):
+        for unit_id, transform, _ in self.gs.query(Transform, CombatUnit):
             # Try to find an existing waypoint at this position
             waypoint_id: int | None = None
             for id, waypoint in self.waypoints.items():
