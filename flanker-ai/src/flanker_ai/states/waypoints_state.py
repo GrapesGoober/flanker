@@ -530,7 +530,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             )
 
         # Add relationships between nodes
-        self._add_visibility_relationships(gs)
+        self._add_visibility_relationships(self.gs)
         self._add_path_relationships()
 
     def update_state(
@@ -569,8 +569,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         # Update their relationships
         # NOTE: using `waypoints_to_update` has a bug where
         # it doesn't update past existing waypoints
+        self._add_visibility_relationships(self.gs)
         self._add_path_relationships()
-        self._add_visibility_relationships(gs=gs)
 
     def get_move_interrupts(
         self,
