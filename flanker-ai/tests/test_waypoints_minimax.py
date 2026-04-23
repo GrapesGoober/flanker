@@ -5,6 +5,7 @@ import pytest
 from flanker_ai.actions import FireActionResult, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.waypoints_actions import WaypointMoveAction
 from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -124,6 +125,30 @@ def fixture() -> Fixture:
         enemy_1=enemy_1,
         enemy_2=enemy_2,
     )
+
+
+def test_stall(fixture: Fixture) -> None:
+    conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
+    assert conf.type == "WaypointsStateConfig"
+    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
+    rs.initialize_state(fixture.gs)
+    rs.update_state(fixture.gs)
+    for _ in range(5):
+        action = WaypointMoveAction(
+            unit_id=fixture.friendly_1,
+            move_to_waypoint_id=5,
+        )
+        rs = rs.get_deterministic_branch(action)
+    assert rs.get_winner() == None, "BLUE must not stall yet."
+
+    action = WaypointMoveAction(
+        unit_id=fixture.friendly_1,
+        move_to_waypoint_id=5,
+    )
+    rs = rs.get_deterministic_branch(action)
+    assert (
+        rs.get_winner() == InitiativeState.Faction.RED
+    ), "BLUE must be considered stall."
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
