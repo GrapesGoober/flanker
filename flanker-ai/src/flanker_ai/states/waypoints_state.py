@@ -1,7 +1,6 @@
 import math
 import random
 from copy import deepcopy
-from dataclasses import dataclass, field
 from itertools import product
 from math import prod
 from typing import Literal, override
@@ -17,6 +16,7 @@ from flanker_ai.actions import (
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
+from flanker_ai.states.waypoints.models import WaypointNode, WaypointsGraphComponent
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_ai.states.waypoints_actions import (
     WaypointAction,
@@ -54,23 +54,6 @@ _FIRE_REACTION_PROBABILITIES = {
 }
 
 
-@dataclass
-class _WaypointNode:
-    position: Vec2
-    visible_nodes: set[int]
-    movable_paths: dict[int, list[int]]
-
-
-@dataclass
-class WaypointsGraphComponent:
-    waypoints: dict[int, _WaypointNode] = field(
-        default_factory=dict[int, _WaypointNode],
-    )
-    units_waypoint_id: dict[UUID, int] = field(
-        default_factory=dict[UUID, int],
-    )
-
-
 class WaypointsState(IRepresentationState[WaypointAction]):
     def __init__(
         self,
@@ -80,7 +63,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self.gs = GameState()
         register_systems(self.gs)
         self._points = points
-        self.waypoints: dict[int, _WaypointNode] = {}
+        self.waypoints: dict[int, WaypointNode] = {}
         self._path_tolerance = path_tolerance
 
     @override
@@ -564,7 +547,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
         # Add grid points as a waypoint
         for point_id, point in enumerate(self._points):
-            self.waypoints[point_id] = _WaypointNode(
+            self.waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=set(),
                 movable_paths={},
@@ -610,7 +593,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # If none exists, create a new one
             if waypoint_id is None:
                 waypoint_id = len(self.waypoints)
-                self.waypoints[waypoint_id] = _WaypointNode(
+                self.waypoints[waypoint_id] = WaypointNode(
                     position=transform.position,
                     visible_nodes=set(),
                     movable_paths={},
@@ -798,7 +781,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self,
         waypoint_ids_to_update: list[int] | Literal["all"] = "all",
     ) -> None:
-        waypoints_to_update: list[tuple[int, _WaypointNode]] = []
+        waypoints_to_update: list[tuple[int, WaypointNode]] = []
         if waypoint_ids_to_update == "all":
             waypoints_to_update = list(self.waypoints.items())
         else:
@@ -844,7 +827,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         gs: GameState,
         waypoint_ids_to_update: list[int] | Literal["all"] = "all",
     ) -> None:
-        waypoints_to_update: list[tuple[int, _WaypointNode]] = []
+        waypoints_to_update: list[tuple[int, WaypointNode]] = []
         if waypoint_ids_to_update == "all":
             waypoints_to_update = list(self.waypoints.items())
         else:
