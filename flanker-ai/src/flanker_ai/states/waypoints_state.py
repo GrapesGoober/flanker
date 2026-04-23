@@ -776,6 +776,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         entities = self.gs.query(WaypointsGraphComponent)
         _, waypoints_component = entities[0]
         waypoints_component.units_waypoint_id[unit_id] = waypoint_id
+        transform = self.gs.get_component(unit_id, Transform)
+        transform.position = self.waypoints[waypoint_id].position
 
     def _add_path_relationships(
         self,
