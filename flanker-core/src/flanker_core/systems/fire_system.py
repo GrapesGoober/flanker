@@ -95,7 +95,8 @@ class FireSystem:
         initiative_system = gs.get(InitiativeSystem)
 
         # Validate fire actors
-        if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
+        fire_system = gs.get(FireSystem)
+        if reason := fire_system.validate_fire_actors(gs, attacker_id, target_id):
             return reason
         if not initiative_system.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
@@ -103,7 +104,7 @@ class FireSystem:
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
         command_system = gs.get(CommandSystem)
-        match FireSystem.get_fire_outcome(gs, attacker_id):
+        match fire_system.get_fire_outcome(gs, attacker_id):
             case FireOutcomes.MISS:
                 initiative_system.set_initiative(gs, target_unit.faction)
                 return _FireActionResult(outcome=FireOutcomes.MISS)

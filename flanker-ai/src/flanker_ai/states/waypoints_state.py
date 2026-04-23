@@ -35,6 +35,7 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.command_system import CommandSystem
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -311,9 +312,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             case WaypointFireAction():
                 rs = self.copy()
                 rs._count_stall(count="reset")
-                # Assumes determinic for now
-                target_unit = rs.gs.get_component(action.target_id, CombatUnit)
-                target_unit.status = CombatUnit.Status.SUPPRESSED
+                fire_controls = rs.gs.get_component(action.unit_id, FireControls)
+                # Assumes deterministic suppressive fire
+                fire_controls.override = FireOutcomes.SUPPRESS
+                fire_system = rs.gs.get(FireSystem)
+                fire_system.fire(rs.gs, action.unit_id, action.target_id)
                 return rs
 
             case WaypointAssaultAction():
