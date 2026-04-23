@@ -16,7 +16,7 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.unabstracted.AiObjectiveSystem import AiObjectiveSystem
+from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints_actions import (
     WaypointAction,
     WaypointAssaultAction,
