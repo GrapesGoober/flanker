@@ -18,13 +18,15 @@ class GameState:
             raise KeyError(f"System {cls} already exists.")
         self._systems[cls] = cls
 
-    def replace(self, existing: type[Any], cls: type[Any]) -> None:
+    def replace(self, existing: type[Any], replacement: type[Any]) -> None:
         """Replace an existing registered system with a subclass variant."""
         if existing not in self._systems:
             raise KeyError(f"System {existing} does not exists")
-        if not issubclass(cls, existing):
-            raise ValueError(f"Replacement {cls} is not subclass of {existing}.")
-        self._systems[existing] = cls
+        if not issubclass(replacement, existing):
+            raise ValueError(
+                f"Replacement {replacement} is not subclass of {existing}."
+            )
+        self._systems[existing] = replacement
 
     def get[T](self, cls: type[T]) -> type[T]:
         """Get a registered system."""

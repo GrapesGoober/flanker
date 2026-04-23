@@ -16,6 +16,7 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.unabstracted.AiObjectiveSystem import AiObjectiveSystem
 from flanker_ai.states.waypoints_actions import (
     WaypointAction,
     WaypointAssaultAction,
@@ -49,8 +50,6 @@ _FIRE_REACTION_PROBABILITIES = {
     FireOutcomes.PIN: 0.6,
     FireOutcomes.SUPPRESS: 0.4,
 }
-
-_MAX_STALL_LIMIT = 5
 
 
 @dataclass
@@ -469,20 +468,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-
-        if entities := self.gs.query(AiStallCountComponent):
-            _, stall_component = entities[0]
-        else:
-            self.gs.add_entity(stall_component := AiStallCountComponent())
-
-        for faction, counter in stall_component.stall_counter.items():
-            if counter > _MAX_STALL_LIMIT:
-                # mark faction as losing
-                if faction == InitiativeState.Faction.BLUE:
-                    return InitiativeState.Faction.RED
-                elif faction == InitiativeState.Faction.RED:
-                    return InitiativeState.Faction.BLUE
-
         objective_system = self.gs.get(ObjectiveSystem)
         return objective_system.get_winning_faction(self.gs)
 
@@ -521,6 +506,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
 
         self.gs = deepcopy(gs)
+        self.gs.replace(
+            existing=ObjectiveSystem,
+            replacement=AiObjectiveSystem,
+        )
 
         # Add grid points as a waypoint
         for point_id, point in enumerate(self._points):
@@ -540,6 +529,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     ) -> None:
 
         self.gs = deepcopy(gs)
+        self.gs.replace(
+            existing=ObjectiveSystem,
+            replacement=AiObjectiveSystem,
+        )
 
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
