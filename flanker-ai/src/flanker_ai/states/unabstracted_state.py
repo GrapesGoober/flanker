@@ -147,6 +147,7 @@ class UnabstractedState(IRepresentationState[Action]):
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
         new_rs = self.copy()
         initiative_system = new_rs._gs.get(InitiativeSystem)
+        fire_system = new_rs._gs.get(FireSystem)
         match action:
             case MoveAction():
                 initiative = initiative_system.get_initiative(new_rs._gs)
@@ -173,7 +174,7 @@ class UnabstractedState(IRepresentationState[Action]):
                 new_rs._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.SUPPRESS
-                result = FireSystem.fire(new_rs._gs, action.unit_id, action.target_id)
+                result = fire_system.fire(new_rs._gs, action.unit_id, action.target_id)
             case AssaultAction():
                 initiative = initiative_system.get_initiative(new_rs._gs)
                 new_rs._get_stall_counter()[initiative] = 0

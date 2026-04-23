@@ -62,7 +62,8 @@ def fixture() -> Fixture:
 
 
 def test_kill_one(fixture: Fixture) -> None:
-    FireSystem.fire(
+    fire_system = fixture.gs.get(FireSystem)
+    fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id_1,
@@ -73,12 +74,13 @@ def test_kill_one(fixture: Fixture) -> None:
 
 
 def test_kill_two(fixture: Fixture) -> None:
-    FireSystem.fire(
+    fire_system = fixture.gs.get(FireSystem)
+    fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id_1,
     )
-    FireSystem.fire(
+    fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id_2,

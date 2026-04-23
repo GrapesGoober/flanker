@@ -71,13 +71,14 @@ def fixture() -> Fixture:
 def test_no_los(fixture: Fixture) -> None:
     # Set attacker to position that is obstructed
     initiative_system = fixture.gs.get(InitiativeSystem)
+    fire_system = fixture.gs.get(FireSystem)
     attacker_transform = fixture.gs.get_component(
         fixture.attacker_id,
         Transform,
     )
     attacker_transform.position = Vec2(0, -10)
     # Fire action won't occur
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -94,8 +95,9 @@ def test_no_los(fixture: Fixture) -> None:
 
 def test_no_fire(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    fire_system = fixture.gs.get(FireSystem)
     fixture.fire_controls.override = FireOutcomes.MISS
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -112,8 +114,9 @@ def test_no_fire(fixture: Fixture) -> None:
 
 def test_pin_fire(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    fire_system = fixture.gs.get(FireSystem)
     fixture.fire_controls.override = FireOutcomes.PIN
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -130,8 +133,9 @@ def test_pin_fire(fixture: Fixture) -> None:
 
 def test_suppress_fire(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    fire_system = fixture.gs.get(FireSystem)
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -146,7 +150,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
     ), "Expects attacker to retain initiative"
 
     fixture.fire_controls.override = FireOutcomes.PIN
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -162,8 +166,9 @@ def test_suppress_fire(fixture: Fixture) -> None:
 
 def test_kill_fire(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    fire_system = fixture.gs.get(FireSystem)
     fixture.fire_controls.override = FireOutcomes.KILL
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -177,9 +182,10 @@ def test_kill_fire(fixture: Fixture) -> None:
 
 
 def test_status_pinned(fixture: Fixture) -> None:
+    fire_system = fixture.gs.get(FireSystem)
     fixture.attacker_unit.status = CombatUnit.Status.PINNED
     fixture.fire_controls.override = FireOutcomes.KILL
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -188,9 +194,10 @@ def test_status_pinned(fixture: Fixture) -> None:
 
 
 def test_status_supppressed(fixture: Fixture) -> None:
+    fire_system = fixture.gs.get(FireSystem)
     fixture.attacker_unit.status = CombatUnit.Status.SUPPRESSED
     fixture.fire_controls.override = FireOutcomes.KILL
-    fire_result = FireSystem.fire(
+    fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
