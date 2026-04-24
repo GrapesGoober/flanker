@@ -64,6 +64,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         register_systems(self.gs)
         self._points = points
         self.waypoints: dict[int, WaypointNode] = {}
+        self._units_waypoint_ids: dict[UUID, int] = {}
         self._path_tolerance = path_tolerance
 
     @override
@@ -77,16 +78,14 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             entities_to_copy.add(id)
         for id, _ in self.gs.query(AiStallCountComponent):
             entities_to_copy.add(id)
-        for id, _ in self.gs.query(WaypointsGraphComponent):
-            entities_to_copy.add(id)
 
         new_gs = WaypointsState(
             points=self._points,
             path_tolerance=self._path_tolerance,
         )
         new_gs.gs = self.gs.selective_copy(list(entities_to_copy))
-        _, waypoints_component = self.gs.query(WaypointsGraphComponent)[0]
-        new_gs.waypoints = waypoints_component.waypoints
+        new_gs.waypoints = self.waypoints
+        new_gs._units_waypoint_ids = deepcopy(self._units_waypoint_ids)
         return new_gs
 
     @override
@@ -219,9 +218,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # It creates new population list every branch
             if friendly_unit.status == CombatUnit.Status.ACTIVE:
                 # Collect occupied waypoint IDs
-                _, waypoints_component = self.gs.query(WaypointsGraphComponent)[0]
                 occupied_waypoint_ids: set[int] = {
-                    waypoints_component.units_waypoint_id[other_ids]
+                    self._units_waypoint_ids[other_ids]
                     for other_ids, _ in self.gs.query(CombatUnit)
                 }
 
@@ -768,14 +766,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 stall_component.stall_counter[initiative] = 0
 
     def _get_unit_waypoint_id(self, unit_id: UUID) -> int:
-        entities = self.gs.query(WaypointsGraphComponent)
-        _, waypoints_component = entities[0]
-        return waypoints_component.units_waypoint_id[unit_id]
+        return self._units_waypoint_ids[unit_id]
 
     def _set_unit_waypoint_id(self, unit_id: UUID, waypoint_id: int) -> None:
-        entities = self.gs.query(WaypointsGraphComponent)
-        _, waypoints_component = entities[0]
-        waypoints_component.units_waypoint_id[unit_id] = waypoint_id
+        self._units_waypoint_ids[unit_id] = waypoint_id
         transform = self.gs.get_component(unit_id, Transform)
         transform.position = self.waypoints[waypoint_id].position
 
