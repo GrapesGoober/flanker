@@ -101,7 +101,8 @@ def fixture() -> Fixture:
 
 def test_no_interrupt(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
+    move_system = fixture.gs.get(MoveSystem)
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         5, -15
@@ -113,9 +114,10 @@ def test_no_interrupt(fixture: Fixture) -> None:
 
 def test_both_miss(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.MISS
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         20, -10
@@ -135,9 +137,10 @@ def test_both_miss(fixture: Fixture) -> None:
 
 def test_one_pin(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.PIN
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         7.5, -10
@@ -151,9 +154,10 @@ def test_one_pin(fixture: Fixture) -> None:
 
 def test_one_pin_one_suppress(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls_1.override = FireOutcomes.PIN
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         7.5, -10
@@ -169,9 +173,10 @@ def test_one_pin_one_suppress(fixture: Fixture) -> None:
 
 def test_both_suppress(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls_1.override = FireOutcomes.SUPPRESS
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
-    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.try_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
     assert (

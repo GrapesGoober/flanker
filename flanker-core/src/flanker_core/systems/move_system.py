@@ -141,15 +141,16 @@ class MoveSystem:
         Mutator method moves a single unit with reactive fire.
         Doesn't flip initiative.
         """
+        move_system = gs.get(MoveSystem)
 
-        if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
+        if (reason := move_system._validate_move(gs, unit_id, to)) != True:
             return reason
 
         transform = gs.get_component(unit_id, Transform)
         unit = gs.get_component(unit_id, CombatUnit)
         move_direction = (to - transform.position).normalized()
 
-        interrupt_candidates = MoveSystem._get_interrupt_candidates(gs, unit_id, to)
+        interrupt_candidates = move_system._get_interrupt_candidates(gs, unit_id, to)
 
         # Reset LOS polygon after move
         mover_fire_controls = gs.try_component(unit_id, FireControls)
@@ -227,7 +228,9 @@ class MoveSystem:
         """Mutator method performs move action with reactive fire."""
 
         initiative_system = gs.get(InitiativeSystem)
-        result = MoveSystem._singular_move(gs, unit_id, to)
+        move_system = gs.get(MoveSystem)
+
+        result = move_system._singular_move(gs, unit_id, to)
         if not isinstance(result, _MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
@@ -245,11 +248,13 @@ class MoveSystem:
     ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
         initiative_system = gs.get(InitiativeSystem)
+        move_system = gs.get(MoveSystem)
+
         results: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
         for unit_id, to in moves:
-            result = MoveSystem._singular_move(gs, unit_id, to)
+            result = move_system._singular_move(gs, unit_id, to)
             if not isinstance(result, _MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
@@ -270,6 +275,7 @@ class MoveSystem:
         to: Vec2,
     ) -> _PivotActionResult | InvalidAction:
         """Mutator method performs pivot action with reactive fire."""
+        move_system = gs.get(MoveSystem)
 
         transform = gs.get_component(unit_id, Transform)
         initial_position = transform.position
@@ -278,7 +284,7 @@ class MoveSystem:
         # the singular move handles pivoting AND reactive fire
         move_vector = (to - transform.position).normalized() * 1e-12
         move_to = initial_position + move_vector
-        result = MoveSystem._singular_move(gs, unit_id, move_to)
+        result = move_system._singular_move(gs, unit_id, move_to)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
