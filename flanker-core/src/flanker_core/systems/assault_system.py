@@ -76,16 +76,18 @@ class AssaultSystem:
         target_id: UUID,
     ) -> _AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
+        assault_system = gs.get(AssaultSystem)
+        move_system = gs.get(MoveSystem)
 
         # Check assault action valid
-        if invalid_reason := AssaultSystem._validate_assault_action(
+        if invalid_reason := assault_system._validate_assault_action(
             gs, attacker_id, target_id
         ):
             return invalid_reason
 
         # Moves the unit to target position (allow reactive fire)
         target_position = gs.get_component(target_id, Transform).position
-        result = MoveSystem.move(gs, attacker_id, target_position)
+        result = move_system.move(gs, attacker_id, target_position)
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:
@@ -94,7 +96,7 @@ class AssaultSystem:
             )
 
         # Once at location, do dice roll; only one can survive
-        outcome = AssaultSystem._get_assault_outcome(
+        outcome = assault_system._get_assault_outcome(
             gs,
             attacker_id,
             target_id,

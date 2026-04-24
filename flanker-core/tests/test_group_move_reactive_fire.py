@@ -97,7 +97,8 @@ def fixture() -> Fixture:
 
 def test_group_move(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
-    MoveSystem.group_move(
+    move_system = fixture.gs.get(MoveSystem)
+    move_system.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_move_1, Vec2(5, -15)),
@@ -120,8 +121,9 @@ def test_group_move(fixture: Fixture) -> None:
 
 def test_interrupt_success(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    MoveSystem.group_move(
+    move_system.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_move_1, Vec2(7, -10)),
@@ -143,8 +145,9 @@ def test_interrupt_success(fixture: Fixture) -> None:
 
 def test_interrupt_fail(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
+    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    MoveSystem.group_move(
+    move_system.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_move_1, Vec2(9, -10)),

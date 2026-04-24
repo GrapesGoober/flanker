@@ -72,23 +72,26 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    move_system = fixture.gs.get(MoveSystem)
+    move_system.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
     assert transform.degrees == -45, "Unit #1 expects to pivot towards direction."
-    MoveSystem.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
+    move_system.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
     assert transform.position == Vec2(5, -15), "Pivot action shouldn't move unit"
     assert transform.degrees == 90, "Unit #1 expects to pivot towards direction."
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
+    move_system = fixture.gs.get(MoveSystem)
+    move_system.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
 
 
 def test_group_move(fixture: Fixture) -> None:
-    MoveSystem.group_move(
+    move_system = fixture.gs.get(MoveSystem)
+    move_system.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_id_1, Vec2(5, -15)),

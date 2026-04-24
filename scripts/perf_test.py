@@ -40,13 +40,15 @@ if __name__ == "__main__":
     #     MoveSystem.move(gs, id, Vec2(-50, -200))
     #     break
 
+    move_system = gs.get(MoveSystem)
+
     def move_many_times() -> None:
 
         for id, unit in gs.query(components.CombatUnit):
             if unit.faction == InitiativeState.Faction.RED:
                 continue
 
-            MoveSystem.move(gs, id, Vec2(-50, -200))
+            move_system.move(gs, id, Vec2(-50, -200))
 
     from timeit import timeit
 

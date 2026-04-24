@@ -147,13 +147,15 @@ class UnabstractedState(IRepresentationState[Action]):
     def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
         new_rs = self.copy()
         initiative_system = new_rs._gs.get(InitiativeSystem)
+        assault_system = new_rs._gs.get(AssaultSystem)
         fire_system = new_rs._gs.get(FireSystem)
+        move_system = self._gs.get(MoveSystem)
         match action:
             case MoveAction():
                 initiative = initiative_system.get_initiative(new_rs._gs)
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                result = MoveSystem.move(new_rs._gs, action.unit_id, action.to)
+                result = move_system.move(new_rs._gs, action.unit_id, action.to)
                 if not isinstance(result, InvalidAction):
                     if result.reactive_fire_outcome == None:
                         new_rs._get_stall_counter()[initiative] += 1
@@ -163,7 +165,7 @@ class UnabstractedState(IRepresentationState[Action]):
                 initiative = initiative_system.get_initiative(new_rs._gs)
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                result = MoveSystem.pivot(new_rs._gs, action.unit_id, action.to)
+                result = move_system.pivot(new_rs._gs, action.unit_id, action.to)
                 if not isinstance(result, InvalidAction):
                     if result.reactive_fire_outcome == None:
                         new_rs._get_stall_counter()[initiative] += 1
@@ -180,7 +182,7 @@ class UnabstractedState(IRepresentationState[Action]):
                 new_rs._get_stall_counter()[initiative] = 0
                 for _, fire_controls in new_rs._gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                result = AssaultSystem.assault(
+                result = assault_system.assault(
                     new_rs._gs, action.unit_id, action.target_id
                 )
         for _, fire_controls in new_rs._gs.query(FireControls):

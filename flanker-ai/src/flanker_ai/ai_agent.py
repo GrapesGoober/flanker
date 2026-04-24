@@ -196,10 +196,12 @@ class AiAgent:
         self,
         action: Action,
     ) -> ActionResult | InvalidAction:
+        assault_system = self._gs.get(AssaultSystem)
         fire_system = self._gs.get(FireSystem)
+        move_system = self._gs.get(MoveSystem)
         match action:
             case MoveAction():
-                result = MoveSystem.move(
+                result = move_system.move(
                     self._gs,
                     action.unit_id,
                     action.to,
@@ -217,7 +219,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
-                result = MoveSystem.pivot(
+                result = move_system.pivot(
                     self._gs,
                     action.unit_id,
                     action.to,
@@ -253,7 +255,7 @@ class AiAgent:
                 stall_counter_ent = self._gs.query(AiStallCountComponent)
                 _, counter = stall_counter_ent[0]
                 counter.stall_counter[self._faction] = 0
-                result = AssaultSystem.assault(
+                result = assault_system.assault(
                     self._gs,
                     action.unit_id,
                     action.target_id,
