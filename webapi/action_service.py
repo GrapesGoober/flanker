@@ -55,7 +55,8 @@ class ActionService:
     @staticmethod
     def fire(gs: GameState, body: FireActionRequest) -> None:
         """Perform a fire action."""
-        result = FireSystem.fire(gs, body.unit_id, body.target_id)
+        fire_system = gs.get(FireSystem)
+        result = fire_system.fire(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(

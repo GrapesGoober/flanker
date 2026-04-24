@@ -196,6 +196,7 @@ class AiAgent:
         self,
         action: Action,
     ) -> ActionResult | InvalidAction:
+        fire_system = self._gs.get(FireSystem)
         match action:
             case MoveAction():
                 result = MoveSystem.move(
@@ -237,7 +238,7 @@ class AiAgent:
                 stall_counter_ent = self._gs.query(AiStallCountComponent)
                 _, counter = stall_counter_ent[0]
                 counter.stall_counter[self._faction] = 0
-                result = FireSystem.fire(
+                result = fire_system.fire(
                     self._gs,
                     action.unit_id,
                     action.target_id,

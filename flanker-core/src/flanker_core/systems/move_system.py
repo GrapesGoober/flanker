@@ -82,13 +82,15 @@ class MoveSystem:
     ) -> list[tuple[Vec2, list[UUID]]]:
         """Returns move interrupt points and attacker IDs"""
 
+        fire_system = gs.get(FireSystem)
+        los_system = gs.get(LosSystem)
+
         spotter_candidates = list(
-            FireSystem.get_spotter_candidates(gs, unit_id),
+            fire_system.get_spotter_candidates(gs, unit_id),
         )
         interrupt_candidates: list[tuple[Vec2, list[UUID]]] = []
 
         transform = gs.get_component(unit_id, Transform)
-        los_system = gs.get(LosSystem)
 
         for spotter_id in spotter_candidates:
             spotter_fire_controls = gs.get_component(spotter_id, FireControls)
@@ -167,6 +169,7 @@ class MoveSystem:
         # More severe outcomes will override this variables.
         reactive_fire_outcome: FireOutcomes | None = None
 
+        fire_system = gs.get(FireSystem)
         for pos, spotter_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
@@ -176,7 +179,7 @@ class MoveSystem:
 
             # All spotters in this in candidate gets to reactive fire
             for spotter_id in spotter_ids:
-                outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+                outcome = fire_system.get_fire_outcome(gs, spotter_id)
 
                 # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
