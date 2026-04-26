@@ -71,7 +71,6 @@ class FireControls:
 
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
-    los_polygon: list[Vec2] | None = None
 
 
 @dataclass

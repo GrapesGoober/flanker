@@ -18,7 +18,6 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
 
 
 @dataclass
@@ -93,25 +92,11 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
 
         for spotter_id in spotter_candidates:
-            spotter_fire_controls = gs.get_component(spotter_id, FireControls)
-            if not spotter_fire_controls.los_polygon:
-                # LOS polygon should be generated
-                los_system.update_los_polygon(gs, spotter_id)
-                assert spotter_fire_controls.los_polygon
-
-            # Find the interrupt position if spotted,
-            # either already inside LOS or move-line crosses LOS polygon
-            interrupt_pos: Vec2 | None = None
-            if IntersectGetter.is_inside(
-                point=transform.position,
-                polygon=spotter_fire_controls.los_polygon,
-            ):
-                interrupt_pos = transform.position
-            elif intersects := IntersectGetter.get_intersects(
+            interrupt_pos = los_system.get_los_from_line(
+                gs=gs,
+                spotter_id=spotter_id,
                 line=(transform.position, to),
-                polyline=spotter_fire_controls.los_polygon,
-            ):
-                interrupt_pos = intersects[0]
+            )
 
             # Move interrupt found, add this as a candidate
             if interrupt_pos is not None:
@@ -151,11 +136,6 @@ class MoveSystem:
         move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = move_system._get_interrupt_candidates(gs, unit_id, to)
-
-        # Reset LOS polygon after move
-        mover_fire_controls = gs.try_component(unit_id, FireControls)
-        if mover_fire_controls:
-            mover_fire_controls.los_polygon = None
 
         # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
