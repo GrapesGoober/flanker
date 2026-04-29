@@ -127,6 +127,8 @@ class MoveSystem:
         Doesn't flip initiative.
         """
         move_system = gs.get(MoveSystem)
+        fire_system = gs.get(FireSystem)
+        command_system = gs.get(CommandSystem)
 
         if (reason := move_system._validate_move(gs, unit_id, to)) != True:
             return reason
@@ -145,7 +147,6 @@ class MoveSystem:
         # More severe outcomes will override this variables.
         reactive_fire_outcome: FireOutcomes | None = None
 
-        fire_system = gs.get(FireSystem)
         for pos, spotter_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
@@ -163,7 +164,6 @@ class MoveSystem:
                     break
 
                 # Apply each outcome
-                command_system = gs.get(CommandSystem)
                 match outcome:
                     case FireOutcomes.MISS:
                         # Marks the firer as NO FIRE
