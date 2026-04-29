@@ -18,6 +18,6 @@ class WaypointsIntersectSystem(IntersectSystem):
         # All the possible (start, end) coordinate pairs are already
         # precomputed by the waypoints state initialization.
 
-        # This doesn't need to be overriden since the AI demo
+        # This doesn't need to be overriden yet since the AI demo
         # doesn't have un-walkable terrain
-        ...
+        return IntersectSystem.get(gs, start, end, mask)
