@@ -141,11 +141,6 @@ class MoveSystem:
         angle_rad = math.atan2(move_direction.y, move_direction.x)
         transform.degrees = math.degrees(angle_rad)
 
-        # In case of being interrupted, add a tiny offset to
-        # prevent entity from sitting precisely on LOS polygon edge.
-        # This reduces floating point sensitivity
-        offset = move_direction * 1e-12
-
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
         reactive_fire_outcome: FireOutcomes | None = None
@@ -175,13 +170,13 @@ class MoveSystem:
                         fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
                     case FireOutcomes.PIN:
-                        transform.position = pos + offset
+                        transform.position = pos
                         # Only ACTIVE units become PINNED
                         if unit.status == CombatUnit.Status.ACTIVE:
                             unit.status = CombatUnit.Status.PINNED
                             reactive_fire_outcome = outcome
                     case FireOutcomes.SUPPRESS:
-                        transform.position = pos + offset
+                        transform.position = pos
                         # Non-suppressed becomes SUPPRESSED, otherwise KILL
                         if unit.status != CombatUnit.Status.SUPPRESSED:
                             unit.status = CombatUnit.Status.SUPPRESSED

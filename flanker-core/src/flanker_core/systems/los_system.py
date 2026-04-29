@@ -113,7 +113,6 @@ class LosSystem:
         los_system = gs.get(LosSystem)
 
         interrupt_pos: Vec2 | None = None
-        first_point: Vec2 = line[0]
 
         spotter_transform = gs.get_component(spotter_id, Transform)
 
@@ -127,16 +126,25 @@ class LosSystem:
             heading_degree=spotter_transform.degrees,
         )
 
+        # If the first point is inside, ignore any intersections and
+        # return the first point right away.
         if IntersectGetter.is_inside(
-            point=first_point,
+            point=line[0],
             polygon=los_polygon,
         ):
-            interrupt_pos = first_point
+            interrupt_pos = line[0]
+
+        # The first point is outside, thus only care about intersection
         elif intersects := IntersectGetter.get_intersects(
-            line=line,
+            line=(line[0], line[1]),
             polyline=los_polygon,
         ):
-            interrupt_pos = intersects[0]
+            # Add a tiny offset to prevent coordinate from sitting
+            # precisely on LOS polygon edge.
+            # This reduces floating point sensitivity.
+            line_direction = line[1] - line[0]
+            offset = line_direction * 1e-12
+            interrupt_pos = intersects[0] + offset
 
         return interrupt_pos
 
