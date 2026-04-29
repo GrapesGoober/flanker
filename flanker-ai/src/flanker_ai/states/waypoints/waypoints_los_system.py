@@ -1,4 +1,5 @@
 from typing import override
+from uuid import UUID
 
 from flanker_ai.states.waypoints.models import WaypointsGraphComponent
 from flanker_core.gamestate import GameState
@@ -25,3 +26,15 @@ class WaypointsLosSystem(LosSystem):
         )
 
         return target_waypoint_id in spotter_waypoint.visible_nodes
+
+    @staticmethod
+    @override
+    def get_los_from_line(
+        gs: GameState,
+        spotter_id: UUID,
+        line: tuple[Vec2, Vec2],
+    ) -> Vec2 | None:
+        # This override is intended for the move interrupt logic.
+        # This uses precomputed pathing to get the earliest
+        # point along the path that has valid LOS.
+        ...
