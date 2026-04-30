@@ -292,27 +292,19 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
             case WaypointPivotAction():
                 rs = self.copy()
-                rs._pivot_towards(action.unit_id, action.pivot_to_waypoint_id)
-                current_unit = rs.gs.get_component(action.unit_id, CombatUnit)
-                # Check for move interrupts
-                interrupts = rs.get_move_interrupts(
-                    unit_id=action.unit_id,
-                    move_to_id=None,
-                )
-                if interrupts != []:
-                    num_shooters = len(interrupts[0][1])
-                    rs._count_stall(count="reset")
-                    # Assumes determinic for now
-                    if num_shooters == 1:
-                        current_unit.status = CombatUnit.Status.PINNED
-                    elif num_shooters > 1:
-                        current_unit.status = CombatUnit.Status.SUPPRESSED
-                    rs._set_unit_waypoint_id(
-                        unit_id=action.unit_id,
-                        waypoint_id=interrupts[0][0],
-                    )
-                else:
+                # Perform pivot action to the target position
+                move_system = rs.gs.get(MoveSystem)
+                for _, fire_controls in rs.gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.PIN
+                pivot_waypoint = self.waypoints[action.pivot_to_waypoint_id]
+                move_system.pivot(rs.gs, action.unit_id, pivot_waypoint.position)
+
+                # Count stall depending on results
+                combat_unit = rs.gs.get_component(action.unit_id, CombatUnit)
+                if combat_unit.status == CombatUnit.Status.ACTIVE:
                     rs._count_stall(count="up")
+                else:
+                    rs._count_stall(count="reset")
                 return rs
 
             case WaypointFireAction():
