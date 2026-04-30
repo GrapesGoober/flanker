@@ -126,6 +126,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     @override
     def get_actions(self) -> list[WaypointAction]:
 
+        los_system = self.gs.get(LosSystem)
+
         actions: list[WaypointAction] = []
 
         # Aggregate a list of friendly and enemy units separately
@@ -166,7 +168,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     ):
                         continue
 
-                    if not LosSystem.in_fov(  # Firable only for within FOV
+                    if not los_system.in_fov(  # Firable only for within FOV
                         Transform(
                             friendly_waypoint.position, friendly_transform.degrees
                         ),
@@ -199,7 +201,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
                     enemy_waypoint_id = self._get_unit_waypoint_id(enemy_id)
                     enemy_waypoint = self.waypoints[enemy_waypoint_id]
-                    if LosSystem.in_fov(
+                    if los_system.in_fov(
                         Transform(
                             friendly_waypoint.position, friendly_transform.degrees
                         ),
