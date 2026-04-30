@@ -17,6 +17,7 @@ from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.models import WaypointNode, WaypointsGraphComponent
+from flanker_ai.states.waypoints.waypoints_fire_system import WaypointsFireSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_ai.states.waypoints_actions import (
     WaypointAction,
@@ -535,6 +536,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             existing=LosSystem,
             replacement=WaypointsLosSystem,
         )
+        self.gs.replace(
+            existing=FireSystem,
+            replacement=WaypointsFireSystem,
+        )
 
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
@@ -570,6 +575,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self.gs.replace(
             existing=LosSystem,
             replacement=WaypointsLosSystem,
+        )
+        self.gs.replace(
+            existing=FireSystem,
+            replacement=WaypointsFireSystem,
         )
 
         if self.gs.query(AiStallCountComponent) == []:
