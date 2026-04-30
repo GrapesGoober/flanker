@@ -28,14 +28,16 @@ from flanker_ai.states.waypoints_actions import (
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
     EliminationObjective,
     FireControls,
     InitiativeState,
     Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -263,7 +265,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
                 # Perform move action to the destination position
                 move_system = rs.gs.get(MoveSystem)
-                position = self.waypoints[action.move_to_waypoint_id].position
+                position = rs.waypoints[action.move_to_waypoint_id].position
                 for _, fire_controls in rs.gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
                 move_system.move(rs.gs, action.unit_id, position)
@@ -278,9 +280,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 # Coerce the resulting move position to the nearest waypoint
                 transform = rs.gs.get_component(action.unit_id, Transform)
                 coerced_move_waypoint_id = min(
-                    self.waypoints.keys(),
+                    rs.waypoints.keys(),
                     key=lambda idx: abs(
-                        (transform.position - self.waypoints[idx].position).length()
+                        (transform.position - rs.waypoints[idx].position).length()
                     ),
                 )
 
@@ -296,7 +298,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 move_system = rs.gs.get(MoveSystem)
                 for _, fire_controls in rs.gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                pivot_waypoint = self.waypoints[action.pivot_to_waypoint_id]
+                pivot_waypoint = rs.waypoints[action.pivot_to_waypoint_id]
                 move_system.pivot(rs.gs, action.unit_id, pivot_waypoint.position)
 
                 # Count stall depending on results
@@ -320,38 +322,31 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             case WaypointAssaultAction():
                 rs = self.copy()
                 rs._count_stall(count="reset")
-                # Check for move interrupts
-                current_unit = rs.gs.get_component(action.unit_id, CombatUnit)
-                target_unit = rs.gs.get_component(action.target_id, CombatUnit)
-                target_waypoint_id = rs._get_unit_waypoint_id(action.target_id)
-                rs._pivot_towards(action.unit_id, target_waypoint_id)
-                interrupts = rs.get_move_interrupts(
-                    unit_id=action.unit_id,
-                    move_to_id=target_waypoint_id,
+                # Perform move action to the destination position
+                assault_system = rs.gs.get(AssaultSystem)
+                for _, fire_controls in rs.gs.query(FireControls):
+                    fire_controls.override = FireOutcomes.PIN
+
+                assault_controls = rs.gs.get_component(action.unit_id, AssaultControls)
+                assault_controls.override = AssaultOutcomes.SUCCESS
+                assault_system.assault(rs.gs, action.unit_id, action.target_id)
+
+                # Coerce the resulting move position to the nearest waypoint
+                transform = rs.gs.try_component(action.unit_id, Transform)
+                if transform == None:
+                    rs._units_waypoint_ids.pop(action.unit_id)
+                    return rs
+                coerced_move_waypoint_id = min(
+                    rs.waypoints.keys(),
+                    key=lambda idx: abs(
+                        (transform.position - rs.waypoints[idx].position).length()
+                    ),
                 )
-                initiative_system = rs.gs.get(InitiativeSystem)
-                if interrupts != []:
-                    # Assumes determinic for now (assumes failed)
-                    current_unit.status = CombatUnit.Status.SUPPRESSED
-                    initiative_system.flip_initiative(rs.gs)
-                    rs._set_unit_waypoint_id(
-                        unit_id=action.unit_id,
-                        waypoint_id=interrupts[0][0],
-                    )
-                else:
-                    rs._set_unit_waypoint_id(
-                        unit_id=action.unit_id,
-                        waypoint_id=target_waypoint_id,
-                    )
 
-                # Runs the assault dice roll. Assumes determinic for now
-                if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                    rs._kill_unit(action.target_id)
-                else:
-                    rs._kill_unit(action.unit_id)
-                    # Assault failed
-                    initiative_system.flip_initiative(rs.gs)
-
+                rs._set_unit_waypoint_id(
+                    unit_id=action.unit_id,
+                    waypoint_id=coerced_move_waypoint_id,
+                )
                 return rs
 
     def get_all_fire_permutations(

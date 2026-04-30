@@ -9,6 +9,7 @@ from flanker_ai.states.waypoints_actions import WaypointMoveAction
 from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
     FireControls,
     MoveControls,
@@ -46,24 +47,28 @@ def fixture() -> Fixture:
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(-1, 12), degrees=-90),
         FireControls(override=FireOutcomes.PIN),
+        AssaultControls(),
     )
     friendly_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(1, 12), degrees=-90),
         FireControls(override=FireOutcomes.PIN),
+        AssaultControls(),
     )
     enemy_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
         Transform(position=Vec2(0, -15), degrees=70),
+        AssaultControls(),
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
         Transform(position=Vec2(0, -18), degrees=100),
+        AssaultControls(),
     )
 
     # 10x10 opaque box
