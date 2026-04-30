@@ -86,6 +86,30 @@ class FireSystem:
         return random.choices(outcomes, weights=weights, k=1)[0]
 
     @staticmethod
+    def apply_fire_outcome(
+        gs: GameState,
+        target_id: UUID,
+        fire_outcome: FireOutcomes,
+    ) -> None:
+        """Applies the fire outcome to the target combat unit."""
+
+        target_unit = gs.get_component(target_id, CombatUnit)
+        command_system = gs.get(CommandSystem)
+        match fire_outcome:
+            case FireOutcomes.MISS:
+                pass
+            case FireOutcomes.PIN:
+                if target_unit.status == CombatUnit.Status.ACTIVE:
+                    target_unit.status = CombatUnit.Status.PINNED
+            case FireOutcomes.SUPPRESS:
+                if target_unit.status != CombatUnit.Status.SUPPRESSED:
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
+                else:  # Kills the unit if it is already suppressed
+                    command_system.kill_unit(gs, target_id)
+            case FireOutcomes.KILL:
+                command_system.kill_unit(gs, target_id)
+
+    @staticmethod
     def fire(
         gs: GameState,
         attacker_id: UUID,
@@ -103,26 +127,14 @@ class FireSystem:
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
-        command_system = gs.get(CommandSystem)
-        match fire_system.get_fire_outcome(gs, attacker_id):
-            case FireOutcomes.MISS:
+        fire_outcome = fire_system.get_fire_outcome(gs, attacker_id)
+        fire_system.apply_fire_outcome(gs, target_id, fire_outcome)
+        match fire_outcome:
+            case FireOutcomes.MISS | FireOutcomes.PIN:
                 initiative_system.set_initiative(gs, target_unit.faction)
-                return _FireActionResult(outcome=FireOutcomes.MISS)
-            case FireOutcomes.PIN:
-                if target_unit.status != CombatUnit.Status.SUPPRESSED:
-                    target_unit.status = CombatUnit.Status.PINNED
-                initiative_system.set_initiative(gs, target_unit.faction)
-                return _FireActionResult(outcome=FireOutcomes.PIN)
-            case FireOutcomes.SUPPRESS:
-                if target_unit.status != CombatUnit.Status.SUPPRESSED:
-                    target_unit.status = CombatUnit.Status.SUPPRESSED
-                    return _FireActionResult(outcome=FireOutcomes.SUPPRESS)
-                else:  # Kills the unit if it is already suppressed
-                    command_system.kill_unit(gs, target_id)
-                    return _FireActionResult(outcome=FireOutcomes.KILL)
-            case FireOutcomes.KILL:
-                command_system.kill_unit(gs, target_id)
-                return _FireActionResult(outcome=FireOutcomes.KILL)
+            case FireOutcomes.SUPPRESS | FireOutcomes.KILL:
+                pass
+        return _FireActionResult(outcome=fire_outcome)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:

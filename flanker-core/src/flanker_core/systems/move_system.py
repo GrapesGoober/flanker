@@ -13,7 +13,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.intersect_system import IntersectSystem
@@ -128,13 +127,11 @@ class MoveSystem:
         """
         move_system = gs.get(MoveSystem)
         fire_system = gs.get(FireSystem)
-        command_system = gs.get(CommandSystem)
 
         if (reason := move_system._validate_move(gs, unit_id, to)) != True:
             return reason
 
         transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
         move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = move_system._get_interrupt_candidates(gs, unit_id, to)
@@ -156,36 +153,25 @@ class MoveSystem:
 
             # All spotters in this in candidate gets to reactive fire
             for spotter_id in spotter_ids:
-                outcome = fire_system.get_fire_outcome(gs, spotter_id)
 
                 # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
                 if not gs.try_component(unit_id, CombatUnit):
                     break
 
-                # Apply each outcome
+                # Apply reactive fire outcome
+                outcome = fire_system.get_fire_outcome(gs, spotter_id)
+                fire_system.apply_fire_outcome(gs, unit_id, outcome)
+                if outcome != FireOutcomes.MISS:
+                    reactive_fire_outcome = outcome
                 match outcome:
                     case FireOutcomes.MISS:
-                        # Marks the firer as NO FIRE
                         fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
-                    case FireOutcomes.PIN:
+                    case FireOutcomes.PIN | FireOutcomes.SUPPRESS:
                         transform.position = pos
-                        # Only ACTIVE units become PINNED
-                        if unit.status == CombatUnit.Status.ACTIVE:
-                            unit.status = CombatUnit.Status.PINNED
-                            reactive_fire_outcome = outcome
-                    case FireOutcomes.SUPPRESS:
-                        transform.position = pos
-                        # Non-suppressed becomes SUPPRESSED, otherwise KILL
-                        if unit.status != CombatUnit.Status.SUPPRESSED:
-                            unit.status = CombatUnit.Status.SUPPRESSED
-                        else:  # Kill if already suppressed
-                            command_system.kill_unit(gs, unit_id)
-                        reactive_fire_outcome = outcome
                     case FireOutcomes.KILL:
-                        reactive_fire_outcome = outcome
-                        command_system.kill_unit(gs, unit_id)
+                        pass
 
         if reactive_fire_outcome is None:
             transform.position = to
