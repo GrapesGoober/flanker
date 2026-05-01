@@ -378,7 +378,57 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     def get_branches(
         self, action: WaypointAction
     ) -> list[tuple[float, "WaypointsState"]]:
-        raise NotImplementedError()
+        match action:
+
+            # NOTE
+            # This is just a placeholder implementation
+            # to test out how the refactor works
+
+            case WaypointMoveAction():
+                move_system = self.gs.get(MoveSystem)
+                fire_system = self.gs.get(FireSystem)
+
+                position = self.waypoints[action.move_to_waypoint_id].position
+                enemy_ids = fire_system.get_spotter_candidates(
+                    gs=self.gs,
+                    target_id=action.unit_id,
+                )
+                permutations = self.get_all_fire_permutations(list(enemy_ids))
+                outcomes: list[tuple[float, "WaypointsState"]] = []
+                for probability, unit_fire_outcomes in permutations:
+                    rs = self.copy()
+
+                    for firer_id, firer_outcome in unit_fire_outcomes.items():
+                        fire_controls = rs.gs.get_component(firer_id, FireControls)
+                        fire_controls.override = firer_outcome
+
+                    move_system.move(rs.gs, action.unit_id, position)
+
+                    # Count stall depending on move results
+                    combat_unit = rs.gs.get_component(action.unit_id, CombatUnit)
+                    if combat_unit.status == CombatUnit.Status.ACTIVE:
+                        rs._count_stall(count="up")
+                    else:
+                        rs._count_stall(count="reset")
+
+                    # Coerce the resulting move position to the nearest waypoint
+                    transform = rs.gs.get_component(action.unit_id, Transform)
+                    coerced_move_waypoint_id = min(
+                        rs.waypoints.keys(),
+                        key=lambda idx: abs(
+                            (transform.position - rs.waypoints[idx].position).length()
+                        ),
+                    )
+                    rs._set_unit_waypoint_id(
+                        unit_id=action.unit_id,
+                        waypoint_id=coerced_move_waypoint_id,
+                    )
+
+                    # Record the outcome
+                    outcomes.append((probability, rs))
+                return outcomes
+            case _:
+                raise NotImplementedError()
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
