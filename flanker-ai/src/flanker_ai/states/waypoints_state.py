@@ -154,7 +154,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
                 enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
-                enemy_waypoint = self.waypoints[enemy_waypoint_id]
 
                 if enemy_unit.faction == friendly_unit.faction:
                     continue
@@ -173,7 +172,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         Transform(
                             friendly_waypoint.position, friendly_transform.degrees
                         ),
-                        enemy_waypoint.position,
+                        enemy_transform.position,
                     ):
                         continue
 
@@ -202,12 +201,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
                     enemy_transform = self.gs.get_component(enemy_id, Transform)
                     enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
-                    enemy_waypoint = self.waypoints[enemy_waypoint_id]
                     if los_system.in_fov(
                         Transform(
                             friendly_waypoint.position, friendly_transform.degrees
                         ),
-                        enemy_waypoint.position,
+                        enemy_transform.position,
                     ):
                         continue
                     # TODO: temporary fix to make running trials faster.
