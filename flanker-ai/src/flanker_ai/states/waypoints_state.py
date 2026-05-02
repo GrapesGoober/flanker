@@ -70,7 +70,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         register_systems(self.gs)
         self._points = points
         self.waypoints: dict[int, WaypointNode] = {}
-        self._units_waypoint_ids: dict[UUID, int] = {}
         self._path_tolerance = path_tolerance
 
     @override
@@ -91,7 +90,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         )
         new_gs.gs = self.gs.selective_copy(list(entities_to_copy))
         new_gs.waypoints = self.waypoints
-        new_gs._units_waypoint_ids = deepcopy(self._units_waypoint_ids)
         return new_gs
 
     @override
@@ -145,7 +143,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         for friendly_unit_id in friendly_unit_ids:
             friendly_unit = self.gs.get_component(friendly_unit_id, CombatUnit)
             friendly_transform = self.gs.get_component(friendly_unit_id, Transform)
-            friendly_waypoint_id = self._get_unit_waypoint_id(friendly_unit_id)
+            friendly_waypoint_id = self._get_waypoint_id(friendly_transform.position)
             friendly_waypoint = self.waypoints[friendly_waypoint_id]
 
             if friendly_unit.faction != self.get_initiative():
@@ -154,7 +152,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # Adds assault & fire actions
             for enemy_id in enemy_unit_ids:
                 enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
-                enemy_waypoint_id = self._get_unit_waypoint_id(enemy_id)
+                enemy_transform = self.gs.get_component(enemy_id, Transform)
+                enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
                 enemy_waypoint = self.waypoints[enemy_waypoint_id]
 
                 if enemy_unit.faction == friendly_unit.faction:
@@ -201,7 +200,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             if friendly_unit.status == CombatUnit.Status.ACTIVE:
                 for enemy_id in enemy_unit_ids:
                     enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
-                    enemy_waypoint_id = self._get_unit_waypoint_id(enemy_id)
+                    enemy_transform = self.gs.get_component(enemy_id, Transform)
+                    enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
                     enemy_waypoint = self.waypoints[enemy_waypoint_id]
                     if los_system.in_fov(
                         Transform(
@@ -227,8 +227,8 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             if friendly_unit.status == CombatUnit.Status.ACTIVE:
                 # Collect occupied waypoint IDs
                 occupied_waypoint_ids: set[int] = {
-                    self._units_waypoint_ids[other_ids]
-                    for other_ids, _ in self.gs.query(CombatUnit)
+                    self._get_waypoint_id(transform.position)
+                    for _, _, transform in self.gs.query(CombatUnit, Transform)
                 }
 
                 # Filter move actions so we don't move to occupied waypoints
@@ -289,20 +289,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     rs._count_stall(count="up")
                 else:
                     rs._count_stall(count="reset")
-
-                # Coerce the resulting move position to the nearest waypoint
-                transform = rs.gs.get_component(action.unit_id, Transform)
-                coerced_move_waypoint_id = min(
-                    rs.waypoints.keys(),
-                    key=lambda idx: abs(
-                        (transform.position - rs.waypoints[idx].position).length()
-                    ),
-                )
-
-                rs._set_unit_waypoint_id(
-                    unit_id=action.unit_id,
-                    waypoint_id=coerced_move_waypoint_id,
-                )
                 return rs
 
             case WaypointPivotAction():
@@ -343,23 +329,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 assault_controls = rs.gs.get_component(action.unit_id, AssaultControls)
                 assault_controls.override = AssaultOutcomes.SUCCESS
                 assault_system.assault(rs.gs, action.unit_id, action.target_id)
-
-                # Coerce the resulting move position to the nearest waypoint
-                transform = rs.gs.try_component(action.unit_id, Transform)
-                if transform == None:
-                    rs._units_waypoint_ids.pop(action.unit_id)
-                    return rs
-                coerced_move_waypoint_id = min(
-                    rs.waypoints.keys(),
-                    key=lambda idx: abs(
-                        (transform.position - rs.waypoints[idx].position).length()
-                    ),
-                )
-
-                rs._set_unit_waypoint_id(
-                    unit_id=action.unit_id,
-                    waypoint_id=coerced_move_waypoint_id,
-                )
                 return rs
 
     def get_all_fire_permutations(
@@ -432,20 +401,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         rs._count_stall(count="up")
                     else:
                         rs._count_stall(count="reset")
-
-                    # Coerce the resulting move position to the nearest waypoint
-                    transform = rs.gs.get_component(action.unit_id, Transform)
-                    coerced_move_waypoint_id = min(
-                        rs.waypoints.keys(),
-                        key=lambda idx: abs(
-                            (transform.position - rs.waypoints[idx].position).length()
-                        ),
-                    )
-                    rs._set_unit_waypoint_id(
-                        unit_id=action.unit_id,
-                        waypoint_id=coerced_move_waypoint_id,
-                    )
-
                     # Record the outcome
                     outcomes.append((probability, rs))
                 return outcomes
@@ -514,7 +469,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         if entities := self.gs.query(WaypointsGraphComponent):
             _, waypoints_component = entities[0]
         else:
-            self.gs.add_entity(waypoints_component := WaypointsGraphComponent())
+            self.gs.add_entity(waypoints_component := WaypointsGraphComponent({}))
         waypoints_component.waypoints = self.waypoints
 
         # Add grid points as a waypoint
@@ -557,11 +512,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         if entities := self.gs.query(WaypointsGraphComponent):
             _, waypoints_component = entities[0]
         else:
-            self.gs.add_entity(waypoints_component := WaypointsGraphComponent())
+            self.gs.add_entity(waypoints_component := WaypointsGraphComponent({}))
         waypoints_component.waypoints = self.waypoints
 
-        # Add combat units positions as new waypoinys
-        for unit_id, transform, _ in self.gs.query(Transform, CombatUnit):
+        # Add new waypoints to represent combat units
+        for _, transform, _ in self.gs.query(Transform, CombatUnit):
             # Try to find an existing waypoint at this position
             waypoint_id: int | None = None
             for id, waypoint in self.waypoints.items():
@@ -569,7 +524,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     waypoint_id = id
                     break
 
-            # If none exists, create a new one
+            # If waypoint doesn't exist, create a new one
             if waypoint_id is None:
                 waypoint_id = len(self.waypoints)
                 self.waypoints[waypoint_id] = WaypointNode(
@@ -577,7 +532,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     visible_nodes=set(),
                     movable_paths={},
                 )
-            self._set_unit_waypoint_id(unit_id, waypoint_id)
 
         # Update their relationships
         # NOTE: using `waypoints_to_update` has a bug where
@@ -606,13 +560,12 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             case "reset":
                 stall_component.stall_counter[initiative] = 0
 
-    def _get_unit_waypoint_id(self, unit_id: UUID) -> int:
-        return self._units_waypoint_ids[unit_id]
-
-    def _set_unit_waypoint_id(self, unit_id: UUID, waypoint_id: int) -> None:
-        self._units_waypoint_ids[unit_id] = waypoint_id
-        transform = self.gs.get_component(unit_id, Transform)
-        transform.position = self.waypoints[waypoint_id].position
+    def _get_waypoint_id(self, position: Vec2) -> int:
+        coerced_waypoint_id = min(
+            self.waypoints.keys(),
+            key=lambda idx: abs((position - self.waypoints[idx].position).length()),
+        )
+        return coerced_waypoint_id
 
     def _add_path_relationships(
         self,
