@@ -19,7 +19,7 @@ from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.states.unabstracted_state import UnabstractedState
+from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
