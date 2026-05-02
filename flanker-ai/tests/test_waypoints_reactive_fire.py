@@ -4,7 +4,7 @@ from uuid import UUID
 
 import pytest
 from flanker_ai.actions import MoveAction
-from flanker_ai.states.waypoints_state import WaypointsState
+from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
