@@ -67,10 +67,19 @@ def draw_terrains(gs: GameState) -> None:
 
 def draw_los(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
     los_system = gs.get(LosSystem)
-    los_system.update_los_polygon(gs, unit_id)
-    poly = gs.get_component(unit_id, components.FireControls).los_polygon
-    assert poly
-    visualize_polygon(poly, color=color, fill_alpha=0.3, plot_alpha=0.2)
+
+    spotter_transform = gs.get_component(unit_id, components.Transform)
+    full_polygon = los_system.get_los_polygon(
+        gs=gs,
+        spotter_pos=spotter_transform.position,
+    )
+    los_polygon = los_system.apply_fov_to_polygon(
+        polyline=full_polygon,
+        center_point=spotter_transform.position,
+        heading_degree=spotter_transform.degrees,
+    )
+
+    visualize_polygon(los_polygon, color=color, fill_alpha=0.3, plot_alpha=0.2)
 
 
 def draw_graph(

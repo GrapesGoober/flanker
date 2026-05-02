@@ -13,12 +13,10 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
 
 
 @dataclass
@@ -75,7 +73,7 @@ class MoveSystem:
         return True
 
     @staticmethod
-    def _get_interrupt_candidates(
+    def get_interrupt_candidates(
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
@@ -93,25 +91,11 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
 
         for spotter_id in spotter_candidates:
-            spotter_fire_controls = gs.get_component(spotter_id, FireControls)
-            if not spotter_fire_controls.los_polygon:
-                # LOS polygon should be generated
-                los_system.update_los_polygon(gs, spotter_id)
-                assert spotter_fire_controls.los_polygon
-
-            # Find the interrupt position if spotted,
-            # either already inside LOS or move-line crosses LOS polygon
-            interrupt_pos: Vec2 | None = None
-            if IntersectGetter.is_inside(
-                point=transform.position,
-                polygon=spotter_fire_controls.los_polygon,
-            ):
-                interrupt_pos = transform.position
-            elif intersects := IntersectGetter.get_intersects(
+            interrupt_pos = los_system.get_los_from_line(
+                gs=gs,
+                spotter_id=spotter_id,
                 line=(transform.position, to),
-                polyline=spotter_fire_controls.los_polygon,
-            ):
-                interrupt_pos = intersects[0]
+            )
 
             # Move interrupt found, add this as a candidate
             if interrupt_pos is not None:
@@ -142,81 +126,62 @@ class MoveSystem:
         Doesn't flip initiative.
         """
         move_system = gs.get(MoveSystem)
+        fire_system = gs.get(FireSystem)
 
         if (reason := move_system._validate_move(gs, unit_id, to)) != True:
             return reason
 
         transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
         move_direction = (to - transform.position).normalized()
 
-        interrupt_candidates = move_system._get_interrupt_candidates(gs, unit_id, to)
-
-        # Reset LOS polygon after move
-        mover_fire_controls = gs.try_component(unit_id, FireControls)
-        if mover_fire_controls:
-            mover_fire_controls.los_polygon = None
+        interrupt_candidates = move_system.get_interrupt_candidates(gs, unit_id, to)
 
         # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
         transform.degrees = math.degrees(angle_rad)
 
-        # In case of being interrupted, add a tiny offset to
-        # prevent entity from sitting precisely on LOS polygon edge.
-        # This reduces floating point sensitivity
-        offset = move_direction * 1e-12
-
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
-        reactive_fire_outcome: FireOutcomes | None = None
+        worst_fire_outcome: FireOutcomes | None = None
 
-        fire_system = gs.get(FireSystem)
         for pos, spotter_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
             # subsequent spotters don't get to fire.
-            if reactive_fire_outcome is not None:
+            if worst_fire_outcome is not None:
                 break
 
             # All spotters in this in candidate gets to reactive fire
             for spotter_id in spotter_ids:
-                outcome = fire_system.get_fire_outcome(gs, spotter_id)
 
                 # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
                 if not gs.try_component(unit_id, CombatUnit):
                     break
 
-                # Apply each outcome
-                command_system = gs.get(CommandSystem)
+                # Apply reactive fire outcome
+                outcome = fire_system.get_fire_outcome(gs, spotter_id)
+                fire_system.apply_fire_outcome(gs, unit_id, outcome)
                 match outcome:
                     case FireOutcomes.MISS:
-                        # Marks the firer as NO FIRE
                         fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
                     case FireOutcomes.PIN:
-                        transform.position = pos + offset
-                        # Only ACTIVE units become PINNED
-                        if unit.status == CombatUnit.Status.ACTIVE:
-                            unit.status = CombatUnit.Status.PINNED
-                            reactive_fire_outcome = outcome
+                        transform.position = pos
+                        if worst_fire_outcome == None:
+                            worst_fire_outcome = FireOutcomes.PIN
                     case FireOutcomes.SUPPRESS:
-                        transform.position = pos + offset
-                        # Non-suppressed becomes SUPPRESSED, otherwise KILL
-                        if unit.status != CombatUnit.Status.SUPPRESSED:
-                            unit.status = CombatUnit.Status.SUPPRESSED
-                        else:  # Kill if already suppressed
-                            command_system.kill_unit(gs, unit_id)
-                        reactive_fire_outcome = outcome
+                        transform.position = pos
+                        if worst_fire_outcome in [None, FireOutcomes.PIN]:
+                            worst_fire_outcome = FireOutcomes.SUPPRESS
                     case FireOutcomes.KILL:
-                        reactive_fire_outcome = outcome
-                        command_system.kill_unit(gs, unit_id)
+                        worst_fire_outcome = FireOutcomes.KILL
 
-        if reactive_fire_outcome is None:
+        if worst_fire_outcome is None:
             transform.position = to
 
         return _MoveActionResult(
-            reactive_fire_outcome=reactive_fire_outcome,
+            reactive_fire_outcome=worst_fire_outcome,
         )
 
     @staticmethod

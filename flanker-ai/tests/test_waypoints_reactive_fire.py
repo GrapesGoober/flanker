@@ -16,6 +16,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeState
+from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.register_systems import register_systems
 
 
@@ -116,63 +117,75 @@ def fixture() -> Fixture:
 
 
 def test_no_interrupt(fixture: Fixture) -> None:
+    move_system = fixture.state.gs.get(MoveSystem)
 
     action = WaypointMoveAction(
         unit_id=fixture.unit_move,
         move_to_waypoint_id=1,
     )
 
-    interrupts = fixture.state.get_move_interrupts(
-        action.unit_id,
-        action.move_to_waypoint_id,
+    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
+    interrupts = move_system.get_interrupt_candidates(
+        gs=fixture.state.gs,
+        unit_id=action.unit_id,
+        to=move_to_waypoint.position,
     )
 
     assert interrupts == [], "Expects no interrupt found at (7, -10)"
 
 
 def test_one_interrupt(fixture: Fixture) -> None:
+    move_system = fixture.state.gs.get(MoveSystem)
 
     action = WaypointMoveAction(
         unit_id=fixture.unit_move,
         move_to_waypoint_id=2,
     )
 
-    interrupts = fixture.state.get_move_interrupts(
-        action.unit_id,
-        action.move_to_waypoint_id,
+    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
+    interrupts = move_system.get_interrupt_candidates(
+        gs=fixture.state.gs,
+        unit_id=action.unit_id,
+        to=move_to_waypoint.position,
     )
 
     assert interrupts == [
-        (2, [fixture.enemy_1, fixture.enemy_2])
+        (fixture.state.waypoints[2].position, [fixture.enemy_1, fixture.enemy_2])
     ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 
 def test_two_interrupts(fixture: Fixture) -> None:
+    move_system = fixture.state.gs.get(MoveSystem)
 
     action = WaypointMoveAction(
         unit_id=fixture.unit_move,
         move_to_waypoint_id=3,
     )
 
-    interrupts = fixture.state.get_move_interrupts(
-        action.unit_id,
-        action.move_to_waypoint_id,
+    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
+    interrupts = move_system.get_interrupt_candidates(
+        gs=fixture.state.gs,
+        unit_id=action.unit_id,
+        to=move_to_waypoint.position,
     )
 
     assert interrupts == [
-        (2, [fixture.enemy_1, fixture.enemy_2]),
-        (3, [fixture.enemy_3]),
+        (fixture.state.waypoints[2].position, [fixture.enemy_1, fixture.enemy_2]),
+        (fixture.state.waypoints[3].position, [fixture.enemy_3]),
     ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 
 def test_reactive_fire_permutations(fixture: Fixture) -> None:
+    move_system = fixture.state.gs.get(MoveSystem)
     action = WaypointMoveAction(
         unit_id=fixture.unit_move,
         move_to_waypoint_id=2,
     )
-    interrupts = fixture.state.get_move_interrupts(
-        action.unit_id,
-        action.move_to_waypoint_id,
+    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
+    interrupts = move_system.get_interrupt_candidates(
+        gs=fixture.state.gs,
+        unit_id=action.unit_id,
+        to=move_to_waypoint.position,
     )
     _, enemies = interrupts[0]
     fire_permutations = fixture.state.get_all_fire_permutations(enemies)
@@ -193,6 +206,7 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
                 fixture.enemy_2: FireOutcomes.PIN,
             }:
                 unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
+                # TODO: double PIN avoidance conflicts with this test
                 assert (
                     unit.status == CombatUnit.Status.PINNED
                 ), "Expects PIN fire event to result in PINNED status"

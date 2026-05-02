@@ -4,7 +4,7 @@ from typing import Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import FireControls, TerrainFeature, Transform
+from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
@@ -40,7 +40,10 @@ class LosSystem:
         target_pos: Vec2,
         fov: float = FOV_DEGREE,
     ) -> bool:
-        """Util method checks whether the target position is in FOV cone of spotter."""
+        """
+        Util method returns `True` the target position `target_pos`
+        is in FOV cone of spotter position `spotter_transform`.
+        """
 
         # Direction the spotter is facing
         heading_rad = math.radians(spotter_transform.degrees)
@@ -57,10 +60,14 @@ class LosSystem:
         return dot >= math.cos(half_fov_rad)
 
     @staticmethod
-    def has_los(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
+    def has_los(
+        gs: GameState,
+        spotter_pos: Vec2,
+        target_pos: Vec2,
+    ) -> bool:
         """
-        Returns `True` if entity `spotter_id` can see position `target_pos`.
-        Does not check for FOV.
+        Returns `True` if position `spotter_pos` has LOS to
+        position `target_pos`. Does not check for FOV.
         """
 
         intersect_system = gs.get(IntersectSystem)
@@ -93,14 +100,63 @@ class LosSystem:
         return True
 
     @staticmethod
-    def _apply_fov_to_polygon(
+    def get_los_from_line(
+        gs: GameState,
+        spotter_id: UUID,
+        line: tuple[Vec2, Vec2],
+    ) -> Vec2 | None:
+        """
+        Returns an eariliest point position, if exists, along `line` that
+        has a valid LOS to the entity `spotter_id`. This considers FOV.
+        """
+
+        los_system = gs.get(LosSystem)
+
+        interrupt_pos: Vec2 | None = None
+
+        spotter_transform = gs.get_component(spotter_id, Transform)
+
+        full_polygon = los_system.get_los_polygon(
+            gs=gs,
+            spotter_pos=spotter_transform.position,
+        )
+        los_polygon = los_system.apply_fov_to_polygon(
+            polyline=full_polygon,
+            center_point=spotter_transform.position,
+            heading_degree=spotter_transform.degrees,
+        )
+
+        # If the first point is inside, ignore any intersections and
+        # return the first point right away.
+        if IntersectGetter.is_inside(
+            point=line[0],
+            polygon=los_polygon,
+        ):
+            interrupt_pos = line[0]
+
+        # The first point is outside, thus only care about intersection
+        elif intersects := IntersectGetter.get_intersects(
+            line=(line[0], line[1]),
+            polyline=los_polygon,
+        ):
+            # Add a tiny offset to prevent coordinate from sitting
+            # precisely on LOS polygon edge.
+            # This reduces floating point sensitivity.
+            line_direction = line[1] - line[0]
+            offset = line_direction * 1e-12
+            interrupt_pos = intersects[0] + offset
+
+        return interrupt_pos
+
+    @staticmethod
+    def apply_fov_to_polygon(
         polyline: list[Vec2],
         center_point: Vec2,
         heading_degree: float,
         fov_degree: int = FOV_DEGREE,
         radius: float = 1000,
     ) -> list[Vec2]:
-        """Applies FOV cone to LOS polygon to create a smaller LOS code."""
+        """Applies FOV cone to LOS polygon to create a smaller LOS cone."""
 
         # Create some rays that defines this FOV cone
         heading_rad = math.radians(heading_degree)
@@ -141,26 +197,6 @@ class LosSystem:
         new_los = LosSystem._sort_verts_by_angle(center_point, new_los)
         new_los.append(new_los[0])  # Loop back to a closed polyline
         return new_los
-
-    @staticmethod
-    def update_los_polygon(
-        gs: GameState,
-        unit_id: UUID,
-    ) -> None:
-        """Updates a unit's fire controls with a new LOS polygon."""
-        transform = gs.get_component(unit_id, Transform)
-        los_system = gs.get(LosSystem)
-        full_polygon = los_system.get_los_polygon(
-            gs=gs,
-            spotter_pos=transform.position,
-        )
-        fov_polygon = los_system._apply_fov_to_polygon(
-            polyline=full_polygon,
-            center_point=transform.position,
-            heading_degree=transform.degrees,
-        )
-        fire_controls = gs.get_component(unit_id, FireControls)
-        fire_controls.los_polygon = fov_polygon
 
     @staticmethod
     def get_los_polygon(
