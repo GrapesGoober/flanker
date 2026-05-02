@@ -585,61 +585,6 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         self._add_visibility_relationships(self.gs)
         self._add_path_relationships()
 
-    def get_move_interrupts(
-        self,
-        unit_id: UUID,
-        move_to_id: int | None,
-    ) -> list[tuple[int, list[UUID]]]:
-        """Returns a list of (waypoint_id, [enemy_ids]) pair."""
-        current_unit = self.gs.get_component(unit_id, CombatUnit)
-        current_waypoint_id = self._get_unit_waypoint_id(unit_id)
-        current_waypoint = self.waypoints[current_waypoint_id]
-        interrupt_points: list[tuple[int, list[UUID]]] = []
-        # Same enemy can't reactive fire twice, so need to track
-        # Enemies that's already added.
-        included_enemy_ids: list[UUID] = []
-        path_waypoint_ids: list[int] = []
-        if move_to_id is not None:
-            path_waypoint_ids = current_waypoint.movable_paths[move_to_id]
-        else:
-            path_waypoint_ids = [current_waypoint_id]
-        for path_waypoint_id in path_waypoint_ids:
-            enemy_ids: list[UUID] = []
-            for (
-                enemy_id,
-                enemy_unit,
-                enemy_fire_controls,
-                enemy_transform,
-            ) in self.gs.query(CombatUnit, FireControls, Transform):
-                # Add interrupt if the enemy can reactive fire it
-                if enemy_id in included_enemy_ids:
-                    continue
-                if enemy_unit.faction == current_unit.faction:
-                    continue
-                if enemy_unit.status == CombatUnit.Status.SUPPRESSED:
-                    continue
-                if not enemy_fire_controls.can_reactive_fire:
-                    continue
-
-                # Firable only if visible
-                enemy_waypoint_id = self._get_unit_waypoint_id(enemy_id)
-                enemy_waypoint = self.waypoints[enemy_waypoint_id]
-                enemy_visible_nodes = enemy_waypoint.visible_nodes
-                if path_waypoint_id not in enemy_visible_nodes:
-                    continue
-
-                path_waypoint = self.waypoints[path_waypoint_id]
-                if not LosSystem.in_fov(
-                    enemy_transform, path_waypoint.position
-                ):  # Firable only for within FOV
-                    continue
-
-                enemy_ids.append(enemy_id)
-                included_enemy_ids.append(enemy_id)
-            if enemy_ids != []:
-                interrupt_points.append((path_waypoint_id, enemy_ids))
-        return interrupt_points
-
     def _kill_unit(self, unit_id: UUID) -> None:
         command_system = self.gs.get(CommandSystem)
         command_system.kill_unit(self.gs, unit_id)
