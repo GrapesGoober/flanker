@@ -3,7 +3,7 @@ from math import isclose
 from uuid import UUID
 
 import pytest
-from flanker_ai.states.waypoints_actions import WaypointMoveAction
+from flanker_ai.actions import MoveAction
 from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -27,6 +27,7 @@ class Fixture:
     enemy_1: UUID
     enemy_2: UUID
     enemy_3: UUID
+    waypoint_positions: list[Vec2]
 
 
 @pytest.fixture
@@ -92,15 +93,16 @@ def fixture() -> Fixture:
         ),
     )
 
+    waypoint_positions = [
+        Vec2(6, -10),  # 0
+        Vec2(7, -10),  # 1
+        Vec2(8, -10),  # 2
+        Vec2(20, -10),  # 3
+        # The unit positions would be separate indices
+    ]
+
     state = WaypointsState(
-        points=[
-            # TODO: fixturize the waypoint IDs, not hardcoded IDs
-            Vec2(6, -10),  # 0
-            Vec2(7, -10),  # 1
-            Vec2(8, -10),  # 2
-            Vec2(20, -10),  # 3
-            # The unit positions would be separate IDs
-        ],
+        points=waypoint_positions,
         path_tolerance=20,
     )
 
@@ -113,22 +115,22 @@ def fixture() -> Fixture:
         enemy_1=enemy_1,
         enemy_2=enemy_2,
         enemy_3=enemy_3,
+        waypoint_positions=waypoint_positions,
     )
 
 
 def test_no_interrupt(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
 
-    action = WaypointMoveAction(
+    move_position = fixture.waypoint_positions[1]
+    action = MoveAction(
         unit_id=fixture.unit_move,
-        move_to_waypoint_id=1,
+        to=move_position,
     )
-
-    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
     interrupts = move_system.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=action.unit_id,
-        to=move_to_waypoint.position,
+        to=move_position,
     )
 
     assert interrupts == [], "Expects no interrupt found at (7, -10)"
@@ -137,16 +139,15 @@ def test_no_interrupt(fixture: Fixture) -> None:
 def test_one_interrupt(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
 
-    action = WaypointMoveAction(
+    move_position = fixture.waypoint_positions[2]
+    action = MoveAction(
         unit_id=fixture.unit_move,
-        move_to_waypoint_id=2,
+        to=move_position,
     )
-
-    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
     interrupts = move_system.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=action.unit_id,
-        to=move_to_waypoint.position,
+        to=move_position,
     )
 
     assert interrupts == [
@@ -157,16 +158,15 @@ def test_one_interrupt(fixture: Fixture) -> None:
 def test_two_interrupts(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
 
-    action = WaypointMoveAction(
+    move_position = fixture.waypoint_positions[3]
+    action = MoveAction(
         unit_id=fixture.unit_move,
-        move_to_waypoint_id=3,
+        to=move_position,
     )
-
-    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
     interrupts = move_system.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=action.unit_id,
-        to=move_to_waypoint.position,
+        to=move_position,
     )
 
     assert interrupts == [
@@ -177,15 +177,15 @@ def test_two_interrupts(fixture: Fixture) -> None:
 
 def test_reactive_fire_permutations(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
-    action = WaypointMoveAction(
+    move_position = fixture.waypoint_positions[2]
+    action = MoveAction(
         unit_id=fixture.unit_move,
-        move_to_waypoint_id=2,
+        to=move_position,
     )
-    move_to_waypoint = fixture.state.waypoints[action.move_to_waypoint_id]
     interrupts = move_system.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=action.unit_id,
-        to=move_to_waypoint.position,
+        to=move_position,
     )
     _, enemies = interrupts[0]
     fire_permutations = fixture.state.get_all_fire_permutations(enemies)

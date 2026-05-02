@@ -2,10 +2,9 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import FireActionResult, MoveActionResult
+from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.states.waypoints_actions import WaypointMoveAction
 from flanker_ai.states.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -30,6 +29,7 @@ class Fixture:
     friendly_2: UUID
     enemy_1: UUID
     enemy_2: UUID
+    waypoint_coordinates: list[Vec2]
 
 
 @pytest.fixture
@@ -100,18 +100,20 @@ def fixture() -> Fixture:
         ),
     )
 
+    waypoint_coordinates = [
+        Vec2(0, 0),  # 0
+        Vec2(10, 1),  # 1
+        Vec2(-10, 1),  # 2
+        Vec2(-10, 10),  # 3
+        Vec2(10, 10),  # 4
+    ]
+
     gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
             state_config=AiConfigComponent.WaypointsStateConfig(
                 type="WaypointsStateConfig",
-                waypoint_coordinates=[
-                    Vec2(0, 0),  # 0
-                    Vec2(10, 1),  # 1
-                    Vec2(-10, 1),  # 2
-                    Vec2(-10, 10),  # 3
-                    Vec2(10, 10),  # 4
-                ],
+                waypoint_coordinates=waypoint_coordinates,
                 path_tolerance=3,
             ),
             policy_config=AiConfigComponent.MinimaxPolicyConfig(
@@ -129,6 +131,7 @@ def fixture() -> Fixture:
         friendly_2=friendly_2,
         enemy_1=enemy_1,
         enemy_2=enemy_2,
+        waypoint_coordinates=waypoint_coordinates,
     )
 
 
@@ -139,16 +142,16 @@ def test_stall(fixture: Fixture) -> None:
     rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     for _ in range(5):
-        action = WaypointMoveAction(
+        action = MoveAction(
             unit_id=fixture.friendly_1,
-            move_to_waypoint_id=5,
+            to=fixture.waypoint_coordinates[3],
         )
         rs = rs.get_deterministic_branch(action)
     assert rs.get_winner() == None, "BLUE must not stall yet."
 
-    action = WaypointMoveAction(
+    action = MoveAction(
         unit_id=fixture.friendly_1,
-        move_to_waypoint_id=5,
+        to=fixture.waypoint_coordinates[3],
     )
     rs = rs.get_deterministic_branch(action)
     assert (

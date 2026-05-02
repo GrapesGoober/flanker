@@ -21,13 +21,6 @@ from flanker_ai.states.waypoints.waypoints_fire_system import (
     WaypointsFireSystem,
 )
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
-from flanker_ai.states.waypoints_actions import (
-    WaypointAction,
-    WaypointAssaultAction,
-    WaypointFireAction,
-    WaypointMoveAction,
-    WaypointPivotAction,
-)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
@@ -60,7 +53,7 @@ _FIRE_REACTION_PROBABILITIES = {
 }
 
 
-class WaypointsState(IRepresentationState[WaypointAction]):
+class WaypointsState(IRepresentationState[Action]):
     def __init__(
         self,
         points: list[Vec2],
@@ -124,11 +117,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         return score
 
     @override
-    def get_actions(self) -> list[WaypointAction]:
+    def get_actions(self) -> list[Action]:
 
         los_system = self.gs.get(LosSystem)
 
-        actions: list[WaypointAction] = []
+        actions: list[Action] = []
 
         # Aggregate a list of friendly and enemy units separately
         # instead of inside the big loop. This keeps time complexity low.
@@ -177,7 +170,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         continue
 
                     actions.append(
-                        WaypointFireAction(
+                        FireAction(
                             unit_id=friendly_unit_id,
                             target_id=enemy_id,
                         )
@@ -189,7 +182,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     if enemy_waypoint_id not in friendly_waypoint.movable_paths.keys():
                         continue
                     actions.append(
-                        WaypointAssaultAction(
+                        AssaultAction(
                             unit_id=friendly_unit_id,
                             target_id=enemy_id,
                         )
@@ -213,9 +206,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     if enemy_waypoint_id not in friendly_waypoint.visible_nodes:
                         continue
                     actions.append(
-                        WaypointPivotAction(
+                        PivotAction(
                             unit_id=friendly_unit_id,
-                            pivot_to_waypoint_id=enemy_waypoint_id,
+                            to=enemy_transform.position,
                         )
                     )
 
@@ -243,10 +236,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 )
 
                 for move_to_id in movable_nodes:
+                    move_position = self.waypoints[move_to_id].position
                     actions.append(
-                        WaypointMoveAction(
+                        MoveAction(
                             unit_id=friendly_unit_id,
-                            move_to_waypoint_id=move_to_id,
+                            to=move_position,
                         )
                     )
 
@@ -258,22 +252,21 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     @override
     def get_deterministic_branch(
         self,
-        action: WaypointAction,
+        action: Action,
     ) -> "WaypointsState":
 
         for _, conf in self.gs.query(DoublePinAvoidanceConfig):
             conf.avoids_double_pins = True
 
         match action:
-            case WaypointMoveAction():
+            case MoveAction():
                 rs = self.copy()
 
                 # Perform move action to the destination position
                 move_system = rs.gs.get(MoveSystem)
-                position = rs.waypoints[action.move_to_waypoint_id].position
                 for _, fire_controls in rs.gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                move_system.move(rs.gs, action.unit_id, position)
+                move_system.move(rs.gs, action.unit_id, action.to)
 
                 # Skip handling if unit is killed
                 combat_unit = rs.gs.try_component(action.unit_id, CombatUnit)
@@ -289,14 +282,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     rs._count_stall(count="reset")
                 return rs
 
-            case WaypointPivotAction():
+            case PivotAction():
                 rs = self.copy()
                 # Perform pivot action to the target position
                 move_system = rs.gs.get(MoveSystem)
                 for _, fire_controls in rs.gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                pivot_waypoint = rs.waypoints[action.pivot_to_waypoint_id]
-                move_system.pivot(rs.gs, action.unit_id, pivot_waypoint.position)
+                move_system.pivot(rs.gs, action.unit_id, action.to)
 
                 # Count stall depending on results
                 combat_unit = rs.gs.get_component(action.unit_id, CombatUnit)
@@ -306,7 +298,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                     rs._count_stall(count="reset")
                 return rs
 
-            case WaypointFireAction():
+            case FireAction():
                 rs = self.copy()
                 rs._count_stall(count="reset")
                 fire_controls = rs.gs.get_component(action.unit_id, FireControls)
@@ -316,7 +308,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                 fire_system.fire(rs.gs, action.unit_id, action.target_id)
                 return rs
 
-            case WaypointAssaultAction():
+            case AssaultAction():
                 rs = self.copy()
                 rs._count_stall(count="reset")
                 # Perform move action to the destination position
@@ -353,9 +345,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         return permutations
 
     @override
-    def get_branches(
-        self, action: WaypointAction
-    ) -> list[tuple[float, "WaypointsState"]]:
+    def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
 
         for _, conf in self.gs.query(DoublePinAvoidanceConfig):
             conf.avoids_double_pins = False
@@ -366,12 +356,11 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             # This is just a placeholder implementation
             # to test out how the refactor works
 
-            case WaypointMoveAction():
+            case MoveAction():
                 move_system = self.gs.get(MoveSystem)
 
-                position = self.waypoints[action.move_to_waypoint_id].position
                 candidates = move_system.get_interrupt_candidates(
-                    gs=self.gs, unit_id=action.unit_id, to=position
+                    gs=self.gs, unit_id=action.unit_id, to=action.to
                 )
                 enemy_ids = list(
                     {uid for _, uuid_list in candidates for uid in uuid_list}
@@ -385,7 +374,7 @@ class WaypointsState(IRepresentationState[WaypointAction]):
                         fire_controls = rs.gs.get_component(firer_id, FireControls)
                         fire_controls.override = firer_outcome
 
-                    move_system.move(rs.gs, action.unit_id, position)
+                    move_system.move(rs.gs, action.unit_id, action.to)
 
                     # Skip handling if unit is killed
                     combat_unit = rs.gs.try_component(action.unit_id, CombatUnit)
@@ -413,30 +402,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     @override
     def deabstract_action(
         self,
-        action: WaypointAction,
+        action: Action,
         gs: GameState,
     ) -> Action:
-        match action:
-            case WaypointMoveAction():
-                return MoveAction(
-                    unit_id=action.unit_id,
-                    to=self.waypoints[action.move_to_waypoint_id].position,
-                )
-            case WaypointPivotAction():
-                return PivotAction(
-                    unit_id=action.unit_id,
-                    to=self.waypoints[action.pivot_to_waypoint_id].position,
-                )
-            case WaypointFireAction():
-                return FireAction(
-                    unit_id=action.unit_id,
-                    target_id=action.target_id,
-                )
-            case WaypointAssaultAction():
-                return AssaultAction(
-                    unit_id=action.unit_id,
-                    target_id=action.target_id,
-                )
+        return action
 
     @override
     def initialize_state(
