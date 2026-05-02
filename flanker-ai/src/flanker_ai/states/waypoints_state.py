@@ -16,7 +16,10 @@ from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.models import WaypointNode, WaypointsGraphComponent
-from flanker_ai.states.waypoints.waypoints_fire_system import WaypointsFireSystem
+from flanker_ai.states.waypoints.waypoints_fire_system import (
+    DoublePinAvoidanceConfig,
+    WaypointsFireSystem,
+)
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_ai.states.waypoints_actions import (
     WaypointAction,
@@ -260,6 +263,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         action: WaypointAction,
     ) -> "WaypointsState":
 
+        for _, conf in self.gs.query(DoublePinAvoidanceConfig):
+            conf.avoids_double_pins = True
+
         match action:
             case WaypointMoveAction():
                 rs = self.copy()
@@ -383,6 +389,10 @@ class WaypointsState(IRepresentationState[WaypointAction]):
     def get_branches(
         self, action: WaypointAction
     ) -> list[tuple[float, "WaypointsState"]]:
+
+        for _, conf in self.gs.query(DoublePinAvoidanceConfig):
+            conf.avoids_double_pins = False
+
         match action:
 
             # NOTE
@@ -498,6 +508,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
 
+        if self.gs.query(DoublePinAvoidanceConfig) == []:
+            self.gs.add_entity(DoublePinAvoidanceConfig())
+
         if entities := self.gs.query(WaypointsGraphComponent):
             _, waypoints_component = entities[0]
         else:
@@ -534,6 +547,9 @@ class WaypointsState(IRepresentationState[WaypointAction]):
             existing=FireSystem,
             replacement=WaypointsFireSystem,
         )
+
+        if self.gs.query(DoublePinAvoidanceConfig) == []:
+            self.gs.add_entity(DoublePinAvoidanceConfig())
 
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
