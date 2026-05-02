@@ -391,12 +391,13 @@ class WaypointsState(IRepresentationState[WaypointAction]):
 
             case WaypointMoveAction():
                 move_system = self.gs.get(MoveSystem)
-                fire_system = self.gs.get(FireSystem)
 
                 position = self.waypoints[action.move_to_waypoint_id].position
-                enemy_ids = fire_system.get_spotter_candidates(
-                    gs=self.gs,
-                    target_id=action.unit_id,
+                candidates = move_system.get_interrupt_candidates(
+                    gs=self.gs, unit_id=action.unit_id, to=position
+                )
+                enemy_ids = list(
+                    {uid for _, uuid_list in candidates for uid in uuid_list}
                 )
                 permutations = self.get_all_fire_permutations(list(enemy_ids))
                 outcomes: list[tuple[float, "WaypointsState"]] = []

@@ -73,7 +73,7 @@ class MoveSystem:
         return True
 
     @staticmethod
-    def _get_interrupt_candidates(
+    def get_interrupt_candidates(
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
@@ -134,7 +134,7 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
         move_direction = (to - transform.position).normalized()
 
-        interrupt_candidates = move_system._get_interrupt_candidates(gs, unit_id, to)
+        interrupt_candidates = move_system.get_interrupt_candidates(gs, unit_id, to)
 
         # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
@@ -142,13 +142,13 @@ class MoveSystem:
 
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
-        reactive_fire_outcome: FireOutcomes | None = None
+        worst_fire_outcome: FireOutcomes | None = None
 
         for pos, spotter_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
             # subsequent spotters don't get to fire.
-            if reactive_fire_outcome is not None:
+            if worst_fire_outcome is not None:
                 break
 
             # All spotters in this in candidate gets to reactive fire
@@ -162,22 +162,26 @@ class MoveSystem:
                 # Apply reactive fire outcome
                 outcome = fire_system.get_fire_outcome(gs, spotter_id)
                 fire_system.apply_fire_outcome(gs, unit_id, outcome)
-                if outcome != FireOutcomes.MISS:
-                    reactive_fire_outcome = outcome
                 match outcome:
                     case FireOutcomes.MISS:
                         fire_controls = gs.get_component(spotter_id, FireControls)
                         fire_controls.can_reactive_fire = False
-                    case FireOutcomes.PIN | FireOutcomes.SUPPRESS:
+                    case FireOutcomes.PIN:
                         transform.position = pos
+                        if worst_fire_outcome == None:
+                            worst_fire_outcome = FireOutcomes.PIN
+                    case FireOutcomes.SUPPRESS:
+                        transform.position = pos
+                        if worst_fire_outcome in [None, FireOutcomes.PIN]:
+                            worst_fire_outcome = FireOutcomes.SUPPRESS
                     case FireOutcomes.KILL:
-                        pass
+                        worst_fire_outcome = FireOutcomes.KILL
 
-        if reactive_fire_outcome is None:
+        if worst_fire_outcome is None:
             transform.position = to
 
         return _MoveActionResult(
-            reactive_fire_outcome=reactive_fire_outcome,
+            reactive_fire_outcome=worst_fire_outcome,
         )
 
     @staticmethod
