@@ -134,58 +134,43 @@ class WaypointsState(IRepresentationState[Action]):
     def get_actions(self) -> list[Action]:
 
         los_system = self.gs.get(LosSystem)
+        fire_system = self.gs.get(FireSystem)
 
         actions: list[Action] = []
 
         # Aggregate a list of friendly and enemy units separately
         # instead of inside the big loop. This keeps time complexity low.
-        friendly_unit_ids: list[UUID] = []
-        enemy_unit_ids: list[UUID] = []
+        friendly_ids: list[UUID] = []
+        enemy_ids: list[UUID] = []
         for combat_unit_id, combat_unit in self.gs.query(CombatUnit):
             if combat_unit.faction == self.get_initiative():
-                friendly_unit_ids.append(combat_unit_id)
+                friendly_ids.append(combat_unit_id)
             if combat_unit.faction != self.get_initiative():
-                enemy_unit_ids.append(combat_unit_id)
+                enemy_ids.append(combat_unit_id)
 
-        for friendly_unit_id in friendly_unit_ids:
-            friendly_unit = self.gs.get_component(friendly_unit_id, CombatUnit)
-            friendly_transform = self.gs.get_component(friendly_unit_id, Transform)
+        for friendly_id in friendly_ids:
+            friendly_unit = self.gs.get_component(friendly_id, CombatUnit)
+            friendly_transform = self.gs.get_component(friendly_id, Transform)
             friendly_waypoint_id = self._get_waypoint_id(friendly_transform.position)
             friendly_waypoint = self.waypoints[friendly_waypoint_id]
 
-            if friendly_unit.faction != self.get_initiative():
-                continue
-
             # Adds assault & fire actions
-            for enemy_id in enemy_unit_ids:
-                enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
+            for enemy_id in enemy_ids:
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
                 enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
 
-                if enemy_unit.faction == friendly_unit.faction:
-                    continue
-
                 # Fire action possible, check for criteria
-                if friendly_unit.status in [
-                    CombatUnit.Status.ACTIVE,
-                    CombatUnit.Status.PINNED,
-                ]:
-                    if (  # Firable only for visible enemies
-                        enemy_waypoint_id not in friendly_waypoint.visible_nodes
-                    ):
-                        continue
-
-                    if not los_system.in_fov(  # Firable only for within FOV
-                        Transform(
-                            friendly_waypoint.position, friendly_transform.degrees
-                        ),
-                        enemy_transform.position,
-                    ):
-                        continue
-
+                if (
+                    fire_system.validate_fire_actors(
+                        gs=self.gs,
+                        attacker_id=friendly_id,
+                        target_id=enemy_id,
+                    )
+                    == None
+                ):
                     actions.append(
                         FireAction(
-                            unit_id=friendly_unit_id,
+                            unit_id=friendly_id,
                             target_id=enemy_id,
                         )
                     )
@@ -197,15 +182,14 @@ class WaypointsState(IRepresentationState[Action]):
                         continue
                     actions.append(
                         AssaultAction(
-                            unit_id=friendly_unit_id,
+                            unit_id=friendly_id,
                             target_id=enemy_id,
                         )
                     )
 
             # Add pivot actions; have it pivot towards enemies
             if friendly_unit.status == CombatUnit.Status.ACTIVE:
-                for enemy_id in enemy_unit_ids:
-                    enemy_unit = self.gs.get_component(enemy_id, CombatUnit)
+                for enemy_id in enemy_ids:
                     enemy_transform = self.gs.get_component(enemy_id, Transform)
                     enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
                     if los_system.in_fov(
@@ -221,7 +205,7 @@ class WaypointsState(IRepresentationState[Action]):
                         continue
                     actions.append(
                         PivotAction(
-                            unit_id=friendly_unit_id,
+                            unit_id=friendly_id,
                             to=enemy_transform.position,
                         )
                     )
@@ -253,7 +237,7 @@ class WaypointsState(IRepresentationState[Action]):
                     move_position = self.waypoints[move_to_id].position
                     actions.append(
                         MoveAction(
-                            unit_id=friendly_unit_id,
+                            unit_id=friendly_id,
                             to=move_position,
                         )
                     )
