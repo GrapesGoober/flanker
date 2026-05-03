@@ -145,14 +145,18 @@ def test_stall(fixture: Fixture) -> None:
             unit_id=fixture.friendly_1,
             to=fixture.waypoint_coordinates[3],
         )
-        rs = rs.get_deterministic_branch(action)
+        new_state = rs.get_deterministic_branch(action)
+        assert new_state != None, "Actions are not invalid"
+        rs = new_state
     assert rs.get_winner() == None, "BLUE must not stall yet."
 
     action = MoveAction(
         unit_id=fixture.friendly_1,
         to=fixture.waypoint_coordinates[3],
     )
-    rs = rs.get_deterministic_branch(action)
+    new_state = rs.get_deterministic_branch(action)
+    assert new_state != None, "Actions are not invalid"
+    rs = new_state
     assert (
         rs.get_winner() == InitiativeState.Faction.RED
     ), "BLUE must be considered stall."

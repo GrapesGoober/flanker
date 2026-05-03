@@ -31,7 +31,7 @@ from flanker_core.models.components import (
     InitiativeState,
     Transform,
 )
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -230,7 +230,7 @@ class WaypointsState(IRepresentationState[Action]):
     def get_deterministic_branch(
         self,
         action: Action,
-    ) -> "WaypointsState":
+    ) -> "WaypointsState | None":
 
         for _, conf in self.gs.query(DoublePinAvoidanceConfig):
             conf.avoids_double_pins = True
@@ -243,7 +243,9 @@ class WaypointsState(IRepresentationState[Action]):
                 move_system = rs.gs.get(MoveSystem)
                 for _, fire_controls in rs.gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                move_system.move(rs.gs, action.unit_id, action.to)
+                result = move_system.move(rs.gs, action.unit_id, action.to)
+                if isinstance(result, InvalidAction):
+                    return None
 
                 # Skip handling if unit is killed
                 combat_unit = rs.gs.try_component(action.unit_id, CombatUnit)
@@ -265,7 +267,9 @@ class WaypointsState(IRepresentationState[Action]):
                 move_system = rs.gs.get(MoveSystem)
                 for _, fire_controls in rs.gs.query(FireControls):
                     fire_controls.override = FireOutcomes.PIN
-                move_system.pivot(rs.gs, action.unit_id, action.to)
+                result = move_system.pivot(rs.gs, action.unit_id, action.to)
+                if isinstance(result, InvalidAction):
+                    return None
 
                 # Count stall depending on results
                 combat_unit = rs.gs.get_component(action.unit_id, CombatUnit)
@@ -282,7 +286,9 @@ class WaypointsState(IRepresentationState[Action]):
                 # Assumes deterministic suppressive fire
                 fire_controls.override = FireOutcomes.SUPPRESS
                 fire_system = rs.gs.get(FireSystem)
-                fire_system.fire(rs.gs, action.unit_id, action.target_id)
+                result = fire_system.fire(rs.gs, action.unit_id, action.target_id)
+                if isinstance(result, InvalidAction):
+                    return None
                 return rs
 
             case AssaultAction():
@@ -295,7 +301,9 @@ class WaypointsState(IRepresentationState[Action]):
 
                 assault_controls = rs.gs.get_component(action.unit_id, AssaultControls)
                 assault_controls.override = AssaultOutcomes.SUCCESS
-                assault_system.assault(rs.gs, action.unit_id, action.target_id)
+                result = assault_system.assault(rs.gs, action.unit_id, action.target_id)
+                if isinstance(result, InvalidAction):
+                    return None
                 return rs
 
     def get_all_fire_permutations(
