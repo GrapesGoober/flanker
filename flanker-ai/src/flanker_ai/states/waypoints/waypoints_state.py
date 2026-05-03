@@ -33,7 +33,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
@@ -62,8 +61,23 @@ class WaypointsState(IRepresentationState[Action]):
         self.gs = GameState()
         register_systems(self.gs)
         self._points = points
-        self.waypoints: dict[int, WaypointNode] = {}
         self._path_tolerance = path_tolerance
+
+    @property
+    def waypoints(self) -> dict[int, WaypointNode]:
+        if entities := self.gs.query(WaypointsGraphComponent):
+            _, component = entities[0]
+        else:
+            self.gs.add_entity(component := WaypointsGraphComponent({}))
+        return component.waypoints
+
+    @waypoints.setter
+    def waypoints(self, value: dict[int, WaypointNode]) -> None:
+        if entities := self.gs.query(WaypointsGraphComponent):
+            _, component = entities[0]
+        else:
+            self.gs.add_entity(component := WaypointsGraphComponent({}))
+        component.waypoints = value
 
     @override
     def copy(self) -> "WaypointsState":
@@ -433,12 +447,6 @@ class WaypointsState(IRepresentationState[Action]):
         if self.gs.query(DoublePinAvoidanceConfig) == []:
             self.gs.add_entity(DoublePinAvoidanceConfig())
 
-        if entities := self.gs.query(WaypointsGraphComponent):
-            _, waypoints_component = entities[0]
-        else:
-            self.gs.add_entity(waypoints_component := WaypointsGraphComponent({}))
-        waypoints_component.waypoints = self.waypoints
-
         # Add grid points as a waypoint
         for point_id, point in enumerate(self._points):
             self.waypoints[point_id] = WaypointNode(
@@ -456,7 +464,13 @@ class WaypointsState(IRepresentationState[Action]):
         gs: GameState,
     ) -> None:
 
+        # The waypoints getter is a game state query, thus the waypoints
+        # is gone when game state is copied and reset.
+        # NOTE: should there be a better state initialization framework?
+        initialized_waypoints = self.waypoints
         self.gs = deepcopy(gs)
+        self.waypoints = initialized_waypoints
+
         self.gs.replace(
             existing=ObjectiveSystem,
             replacement=AiObjectiveSystem,
@@ -475,12 +489,6 @@ class WaypointsState(IRepresentationState[Action]):
 
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
-
-        if entities := self.gs.query(WaypointsGraphComponent):
-            _, waypoints_component = entities[0]
-        else:
-            self.gs.add_entity(waypoints_component := WaypointsGraphComponent({}))
-        waypoints_component.waypoints = self.waypoints
 
         # Add new waypoints to represent combat units
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
@@ -505,10 +513,6 @@ class WaypointsState(IRepresentationState[Action]):
         # it doesn't update past existing waypoints
         self._add_visibility_relationships(self.gs)
         self._add_path_relationships()
-
-    def _kill_unit(self, unit_id: UUID) -> None:
-        command_system = self.gs.get(CommandSystem)
-        command_system.kill_unit(self.gs, unit_id)
 
     def _count_stall(
         self,
