@@ -20,6 +20,7 @@ from flanker_ai.states.waypoints.waypoints_fire_system import (
     DoublePinAvoidanceConfig,
     WaypointsFireSystem,
 )
+from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -39,7 +40,6 @@ from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.systems.register_systems import register_systems
-from flanker_core.utils.intersect_getter import IntersectGetter
 
 _FIRE_ACTION_PROBABILITIES = {
     FireOutcomes.PIN: 0.4,
@@ -134,6 +134,7 @@ class WaypointsState(IRepresentationState[Action]):
     def get_actions(self) -> list[Action]:
 
         los_system = self.gs.get(LosSystem)
+        waypoints_system = self.gs.get(WaypointGraphSystem)
 
         actions: list[Action] = []
 
@@ -149,7 +150,10 @@ class WaypointsState(IRepresentationState[Action]):
 
         for friendly_id in friendly_ids:
             friendly_transform = self.gs.get_component(friendly_id, Transform)
-            friendly_waypoint_id = self._get_waypoint_id(friendly_transform.position)
+            friendly_waypoint_id = waypoints_system.get_waypoint_id(
+                gs=self.gs,
+                position=friendly_transform.position,
+            )
             friendly_waypoint = self.waypoints[friendly_waypoint_id]
 
             # Adds assault & fire actions for each friendly-enemy permutation
@@ -172,7 +176,10 @@ class WaypointsState(IRepresentationState[Action]):
             # This is generalized action filter to reduce branching factor.
             for enemy_id in enemy_ids:
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
-                enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
+                enemy_waypoint_id = waypoints_system.get_waypoint_id(
+                    gs=self.gs,
+                    position=enemy_transform.position,
+                )
                 # if already looking there, no need to pivot again
                 if los_system.in_fov(
                     Transform(friendly_waypoint.position, friendly_transform.degrees),
@@ -192,7 +199,7 @@ class WaypointsState(IRepresentationState[Action]):
             # Adds move actions last, for best alpha-beta pruning.
             # Have friendly units move to non-occupied waypoints
             occupied_waypoint_ids: set[int] = {
-                self._get_waypoint_id(transform.position)
+                waypoints_system.get_waypoint_id(self.gs, transform.position)
                 for _, _, transform in self.gs.query(CombatUnit, Transform)
             }
             available_waypoints: list[int] = [
@@ -402,6 +409,7 @@ class WaypointsState(IRepresentationState[Action]):
             existing=FireSystem,
             replacement=WaypointsFireSystem,
         )
+        self.gs.register(WaypointGraphSystem)
 
         if self.gs.query(DoublePinAvoidanceConfig) == []:
             self.gs.add_entity(DoublePinAvoidanceConfig())
@@ -436,8 +444,9 @@ class WaypointsState(IRepresentationState[Action]):
                 )
 
         # Add relationships between nodes
-        self._add_visibility_relationships(self.gs)
-        self._add_path_relationships()
+        waypoints_system = self.gs.get(WaypointGraphSystem)
+        waypoints_system.add_visibility_relationships(self.gs)
+        waypoints_system.add_path_relationships(self.gs, self._path_tolerance)
 
     def _count_stall(
         self,
@@ -455,88 +464,3 @@ class WaypointsState(IRepresentationState[Action]):
                 stall_component.stall_counter[initiative] += 1
             case "reset":
                 stall_component.stall_counter[initiative] = 0
-
-    def _get_waypoint_id(self, position: Vec2) -> int:
-        coerced_waypoint_id = min(
-            self.waypoints.keys(),
-            key=lambda idx: abs((position - self.waypoints[idx].position).length()),
-        )
-        return coerced_waypoint_id
-
-    def _add_path_relationships(
-        self,
-        waypoint_ids_to_update: list[int] | Literal["all"] = "all",
-    ) -> None:
-        waypoints_to_update: list[tuple[int, WaypointNode]] = []
-        if waypoint_ids_to_update == "all":
-            waypoints_to_update = list(self.waypoints.items())
-        else:
-            waypoints_to_update = list(
-                [(id, self.waypoints[id]) for id in waypoint_ids_to_update]
-            )
-
-        for waypoint_id, waypoint in waypoints_to_update:
-            for move_id, move_waypoint in self.waypoints.items():
-                move_from = waypoint.position
-                move_to = move_waypoint.position
-                move_distance = (move_to - move_from).length()
-                direction = (move_to - move_from).normalized()
-
-                # Define a set of nodes that forms the best path for this move
-                path: list[tuple[int, float]] = []
-                for path_id, path_waypoint in self.waypoints.items():
-                    t = (path_waypoint.position - move_from).dot(direction)
-                    if path_id in [waypoint_id, move_id]:
-                        path.append((path_id, t))
-                        continue
-                    if t < 0:
-                        continue
-                    if t > move_distance:
-                        continue
-                    distance_to_line = (
-                        (path_waypoint.position - move_from) - (direction * t)
-                    ).length()
-                    if distance_to_line > self._path_tolerance:
-                        continue
-                    path.append((path_id, t))
-
-                def sort_key(node_entry: tuple[int, float]) -> float:
-                    _, t = node_entry
-                    return t
-
-                waypoint.movable_paths[move_id] = list(
-                    [id for id, _ in sorted(path, key=sort_key)]
-                )
-
-    def _add_visibility_relationships(
-        self,
-        gs: GameState,
-        waypoint_ids_to_update: list[int] | Literal["all"] = "all",
-    ) -> None:
-        waypoints_to_update: list[tuple[int, WaypointNode]] = []
-        if waypoint_ids_to_update == "all":
-            waypoints_to_update = list(self.waypoints.items())
-        else:
-            waypoints_to_update = list(
-                [(id, self.waypoints[id]) for id in waypoint_ids_to_update]
-            )
-
-        # Compute LOS polygon for all these waypoints.
-        # The LOS polygon might be overkill for now,
-        # but future cases might need it
-        waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
-        los_system = gs.get(LosSystem)
-        for waypoint_id, waypoint in waypoints_to_update:
-            waypoint_LOS_polygons[waypoint_id] = los_system.get_los_polygon(
-                gs, waypoint.position
-            )
-
-        # Add visibility relationships between nodes
-        for waypoint_id, waypoint in waypoints_to_update:
-            for other_id, other_waypoint in self.waypoints.items():
-                # Add visibility relationship
-                if IntersectGetter.is_inside(
-                    other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
-                ):
-                    waypoint.visible_nodes.add(other_id)
-                    other_waypoint.visible_nodes.add(waypoint_id)
