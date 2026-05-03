@@ -52,7 +52,6 @@ class AiAgent:
         self._faction: InitiativeState.Faction = faction
         self._policy = policy
         self._rs = rs
-        self._rs.initialize_state(gs)
 
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""

@@ -422,43 +422,6 @@ class WaypointsState(IRepresentationState[Action]):
         return action
 
     @override
-    def initialize_state(
-        self,
-        gs: GameState,
-    ) -> None:
-
-        self.gs = deepcopy(gs)
-        self.gs.replace(
-            existing=ObjectiveSystem,
-            replacement=AiObjectiveSystem,
-        )
-        self.gs.replace(
-            existing=LosSystem,
-            replacement=WaypointsLosSystem,
-        )
-        self.gs.replace(
-            existing=FireSystem,
-            replacement=WaypointsFireSystem,
-        )
-
-        if self.gs.query(AiStallCountComponent) == []:
-            self.gs.add_entity(AiStallCountComponent())
-
-        if self.gs.query(DoublePinAvoidanceConfig) == []:
-            self.gs.add_entity(DoublePinAvoidanceConfig())
-
-        # Add grid points as a waypoint
-        for point_id, point in enumerate(self._points):
-            self.waypoints[point_id] = WaypointNode(
-                position=point,
-                visible_nodes=set(),
-                movable_paths={},
-            )
-
-        # Add relationships between nodes
-        self._add_visibility_relationships(self.gs)
-        self._add_path_relationships()
-
     def update_state(
         self,
         gs: GameState,
@@ -490,6 +453,14 @@ class WaypointsState(IRepresentationState[Action]):
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
 
+        # Add grid points as a waypoint
+        for point_id, point in enumerate(self._points):
+            self.waypoints[point_id] = WaypointNode(
+                position=point,
+                visible_nodes=set(),
+                movable_paths={},
+            )
+
         # Add new waypoints to represent combat units
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             # Try to find an existing waypoint at this position
@@ -508,9 +479,7 @@ class WaypointsState(IRepresentationState[Action]):
                     movable_paths={},
                 )
 
-        # Update their relationships
-        # NOTE: using `waypoints_to_update` has a bug where
-        # it doesn't update past existing waypoints
+        # Add relationships between nodes
         self._add_visibility_relationships(self.gs)
         self._add_path_relationships()
 

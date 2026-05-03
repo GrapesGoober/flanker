@@ -122,7 +122,6 @@ def draw_waypoints(
         path_tolerance=10,
     )
 
-    waypoints_gs.initialize_state(gs)
     waypoints_gs.update_state(gs)
 
     print("Drawing waypoints...")

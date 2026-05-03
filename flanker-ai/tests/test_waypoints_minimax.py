@@ -139,7 +139,6 @@ def test_stall(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
     rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
-    rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     for _ in range(5):
         action = MoveAction(
@@ -163,7 +162,6 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
     rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
-    rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     assert rs.waypoints[5].movable_paths[3] == [5, 3]
     assert rs.waypoints[5].movable_paths[2] == [5, 2]
@@ -179,7 +177,6 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
     rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
-    rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     assert set(rs.waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
     assert set(rs.waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}

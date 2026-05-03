@@ -106,7 +106,6 @@ def fixture() -> Fixture:
         path_tolerance=20,
     )
 
-    state.initialize_state(gs)
     state.update_state(gs)
 
     return Fixture(
