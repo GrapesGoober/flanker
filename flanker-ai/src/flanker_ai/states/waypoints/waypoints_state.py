@@ -134,7 +134,6 @@ class WaypointsState(IRepresentationState[Action]):
     def get_actions(self) -> list[Action]:
 
         los_system = self.gs.get(LosSystem)
-        fire_system = self.gs.get(FireSystem)
 
         actions: list[Action] = []
 
@@ -149,98 +148,71 @@ class WaypointsState(IRepresentationState[Action]):
                 enemy_ids.append(combat_unit_id)
 
         for friendly_id in friendly_ids:
-            friendly_unit = self.gs.get_component(friendly_id, CombatUnit)
             friendly_transform = self.gs.get_component(friendly_id, Transform)
             friendly_waypoint_id = self._get_waypoint_id(friendly_transform.position)
             friendly_waypoint = self.waypoints[friendly_waypoint_id]
 
-            # Adds assault & fire actions
+            # Adds assault & fire actions for each friendly-enemy permutation
+            for enemy_id in enemy_ids:
+                actions.append(
+                    FireAction(
+                        unit_id=friendly_id,
+                        target_id=enemy_id,
+                    )
+                )
+                actions.append(
+                    AssaultAction(
+                        unit_id=friendly_id,
+                        target_id=enemy_id,
+                    )
+                )
+
+            # Add move and pivot actions.
+            # For pivot actions, have it pivot towards enemies only.
+            # This is generalized action filter to reduce branching factor.
             for enemy_id in enemy_ids:
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
                 enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
-
-                # Fire action possible, check for criteria
-                if (
-                    fire_system.validate_fire_actors(
-                        gs=self.gs,
-                        attacker_id=friendly_id,
-                        target_id=enemy_id,
-                    )
-                    == None
+                # if already looking there, no need to pivot again
+                if los_system.in_fov(
+                    Transform(friendly_waypoint.position, friendly_transform.degrees),
+                    enemy_transform.position,
                 ):
-                    actions.append(
-                        FireAction(
-                            unit_id=friendly_id,
-                            target_id=enemy_id,
-                        )
+                    continue
+                # If the target isn't in LOS, don't need to pivot.
+                if enemy_waypoint_id not in friendly_waypoint.visible_nodes:
+                    continue
+                actions.append(
+                    PivotAction(
+                        unit_id=friendly_id,
+                        to=enemy_transform.position,
                     )
-
-                # Add an assault action
-                if friendly_unit.status == CombatUnit.Status.ACTIVE:
-                    # Only assault there if it's movable
-                    if enemy_waypoint_id not in friendly_waypoint.movable_paths.keys():
-                        continue
-                    actions.append(
-                        AssaultAction(
-                            unit_id=friendly_id,
-                            target_id=enemy_id,
-                        )
-                    )
-
-            # Add pivot actions; have it pivot towards enemies
-            if friendly_unit.status == CombatUnit.Status.ACTIVE:
-                for enemy_id in enemy_ids:
-                    enemy_transform = self.gs.get_component(enemy_id, Transform)
-                    enemy_waypoint_id = self._get_waypoint_id(enemy_transform.position)
-                    if los_system.in_fov(
-                        Transform(
-                            friendly_waypoint.position, friendly_transform.degrees
-                        ),
-                        enemy_transform.position,
-                    ):
-                        continue
-                    # TODO: temporary fix to make running trials faster.
-                    # If the target isn't in LOS, don't need to pivot.
-                    if enemy_waypoint_id not in friendly_waypoint.visible_nodes:
-                        continue
-                    actions.append(
-                        PivotAction(
-                            unit_id=friendly_id,
-                            to=enemy_transform.position,
-                        )
-                    )
-
-            # Adds move actions later, for best alpha-beta pruning
-            # TODO: is this causing the speed decrease for 3v3?
-            # It creates new population list every branch
-            if friendly_unit.status == CombatUnit.Status.ACTIVE:
-                # Collect occupied waypoint IDs
-                occupied_waypoint_ids: set[int] = {
-                    self._get_waypoint_id(transform.position)
-                    for _, _, transform in self.gs.query(CombatUnit, Transform)
-                }
-
-                # Filter move actions so we don't move to occupied waypoints
-                available_waypoints: list[int] = [
-                    wid
-                    for wid in friendly_waypoint.movable_paths.keys()
-                    if wid not in occupied_waypoint_ids
-                ]
-
-                # Randomly sample to reduce branching factor
-                movable_nodes = random.sample(
-                    population=available_waypoints,
-                    k=min(9, len(available_waypoints)),
                 )
 
-                for move_to_id in movable_nodes:
-                    move_position = self.waypoints[move_to_id].position
-                    actions.append(
-                        MoveAction(
-                            unit_id=friendly_id,
-                            to=move_position,
-                        )
+            # Adds move actions last, for best alpha-beta pruning.
+            # Have friendly units move to non-occupied waypoints
+            occupied_waypoint_ids: set[int] = {
+                self._get_waypoint_id(transform.position)
+                for _, _, transform in self.gs.query(CombatUnit, Transform)
+            }
+            available_waypoints: list[int] = [
+                waypoint_id
+                for waypoint_id in friendly_waypoint.movable_paths.keys()
+                if waypoint_id not in occupied_waypoint_ids
+            ]
+
+            # Randomly filter move waypoints to reduce branching factor
+            for move_to_id in random.sample(
+                population=available_waypoints,
+                k=min(9, len(available_waypoints)),
+            ):
+                move_position = self.waypoints[move_to_id].position
+                actions.append(
+                    MoveAction(
+                        unit_id=friendly_id,
+                        to=move_position,
                     )
+                )
 
         return actions
 
