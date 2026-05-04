@@ -4,6 +4,7 @@ from uuid import UUID
 
 import pytest
 from flanker_ai.actions import MoveAction
+from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -137,6 +138,7 @@ def test_no_interrupt(fixture: Fixture) -> None:
 
 def test_one_interrupt(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
+    waypoints_system = fixture.state.gs.get(WaypointGraphSystem)
 
     move_position = fixture.waypoint_positions[2]
     action = MoveAction(
@@ -149,13 +151,15 @@ def test_one_interrupt(fixture: Fixture) -> None:
         to=move_position,
     )
 
+    waypoints = waypoints_system.get_waypoints(fixture.state.gs)
     assert interrupts == [
-        (fixture.state.waypoints[2].position, [fixture.enemy_1, fixture.enemy_2])
+        (waypoints[2].position, [fixture.enemy_1, fixture.enemy_2])
     ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 
 def test_two_interrupts(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
+    waypoints_system = fixture.state.gs.get(WaypointGraphSystem)
 
     move_position = fixture.waypoint_positions[3]
     action = MoveAction(
@@ -168,9 +172,10 @@ def test_two_interrupts(fixture: Fixture) -> None:
         to=move_position,
     )
 
+    waypoints = waypoints_system.get_waypoints(fixture.state.gs)
     assert interrupts == [
-        (fixture.state.waypoints[2].position, [fixture.enemy_1, fixture.enemy_2]),
-        (fixture.state.waypoints[3].position, [fixture.enemy_3]),
+        (waypoints[2].position, [fixture.enemy_1, fixture.enemy_2]),
+        (waypoints[3].position, [fixture.enemy_3]),
     ], "Expects one interrupt at (7.5, -10) with two enemies"
 
 

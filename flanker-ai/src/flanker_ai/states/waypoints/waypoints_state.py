@@ -15,7 +15,7 @@ from flanker_ai.actions import (
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
-from flanker_ai.states.waypoints.models import WaypointNode, WaypointsGraphComponent
+from flanker_ai.states.waypoints.models import WaypointNode
 from flanker_ai.states.waypoints.waypoints_fire_system import (
     DoublePinAvoidanceConfig,
     WaypointsFireSystem,
@@ -63,22 +63,6 @@ class WaypointsState(IRepresentationState[Action]):
         self._points = points
         self._path_tolerance = path_tolerance
 
-    @property
-    def waypoints(self) -> dict[int, WaypointNode]:
-        if entities := self.gs.query(WaypointsGraphComponent):
-            _, component = entities[0]
-        else:
-            self.gs.add_entity(component := WaypointsGraphComponent({}))
-        return component.waypoints
-
-    @waypoints.setter
-    def waypoints(self, value: dict[int, WaypointNode]) -> None:
-        if entities := self.gs.query(WaypointsGraphComponent):
-            _, component = entities[0]
-        else:
-            self.gs.add_entity(component := WaypointsGraphComponent({}))
-        component.waypoints = value
-
     @override
     def copy(self) -> "WaypointsState":
         entities_to_copy: set[UUID] = set()  # Use set to filter duplicates
@@ -96,7 +80,6 @@ class WaypointsState(IRepresentationState[Action]):
             path_tolerance=self._path_tolerance,
         )
         new_gs.gs = self.gs.selective_copy(list(entities_to_copy))
-        new_gs.waypoints = self.waypoints
         return new_gs
 
     @override
@@ -137,6 +120,7 @@ class WaypointsState(IRepresentationState[Action]):
         waypoints_system = self.gs.get(WaypointGraphSystem)
 
         actions: list[Action] = []
+        waypoints = waypoints_system.get_waypoints(self.gs)
 
         # Aggregate a list of friendly and enemy units separately
         # instead of inside the big loop. This keeps time complexity low.
@@ -154,7 +138,7 @@ class WaypointsState(IRepresentationState[Action]):
                 gs=self.gs,
                 position=friendly_transform.position,
             )
-            friendly_waypoint = self.waypoints[friendly_waypoint_id]
+            friendly_waypoint = waypoints[friendly_waypoint_id]
 
             # Adds assault & fire actions for each friendly-enemy permutation
             for enemy_id in enemy_ids:
@@ -213,7 +197,7 @@ class WaypointsState(IRepresentationState[Action]):
                 population=available_waypoints,
                 k=min(9, len(available_waypoints)),
             ):
-                move_position = self.waypoints[move_to_id].position
+                move_position = waypoints[move_to_id].position
                 actions.append(
                     MoveAction(
                         unit_id=friendly_id,
@@ -398,12 +382,7 @@ class WaypointsState(IRepresentationState[Action]):
         gs: GameState,
     ) -> None:
 
-        # The waypoints getter is a game state query, thus the waypoints
-        # is gone when game state is copied and reset.
-        # NOTE: should there be a better state initialization framework?
-        initialized_waypoints = self.waypoints
         self.gs = deepcopy(gs)
-        self.waypoints = initialized_waypoints
 
         self.gs.replace(
             existing=ObjectiveSystem,
@@ -425,9 +404,12 @@ class WaypointsState(IRepresentationState[Action]):
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
 
+        waypoints_system = self.gs.get(WaypointGraphSystem)
+        waypoints = waypoints_system.get_waypoints(self.gs)
+
         # Add grid points as a waypoint
         for point_id, point in enumerate(self._points):
-            self.waypoints[point_id] = WaypointNode(
+            waypoints[point_id] = WaypointNode(
                 position=point,
                 visible_nodes=set(),
                 movable_paths={},
@@ -437,15 +419,15 @@ class WaypointsState(IRepresentationState[Action]):
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             # Try to find an existing waypoint at this position
             waypoint_id: int | None = None
-            for id, waypoint in self.waypoints.items():
+            for id, waypoint in waypoints.items():
                 if waypoint.position == transform.position:
                     waypoint_id = id
                     break
 
             # If waypoint doesn't exist, create a new one
             if waypoint_id is None:
-                waypoint_id = len(self.waypoints)
-                self.waypoints[waypoint_id] = WaypointNode(
+                waypoint_id = len(waypoints)
+                waypoints[waypoint_id] = WaypointNode(
                     position=transform.position,
                     visible_nodes=set(),
                     movable_paths={},
