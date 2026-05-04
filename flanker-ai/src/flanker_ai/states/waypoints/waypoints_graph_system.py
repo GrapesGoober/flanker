@@ -28,6 +28,7 @@ class WaypointGraphSystem:
     def set_waypoints(gs: GameState, points: list[Vec2], path_tolerance: float) -> None:
         waypoints_system = gs.get(WaypointGraphSystem)
         waypoints = waypoints_system.get_waypoints(gs)
+        waypoints.clear()
 
         # Add new empty waypoints placed on specific coordinates
         for point_id, point in enumerate(points):
