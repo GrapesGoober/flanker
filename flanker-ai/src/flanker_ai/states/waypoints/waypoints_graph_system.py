@@ -25,7 +25,24 @@ class WaypointGraphSystem:
         return coerced_waypoint_id
 
     @staticmethod
-    def add_path_relationships(
+    def set_waypoints(gs: GameState, points: list[Vec2], path_tolerance: float) -> None:
+        waypoints_system = gs.get(WaypointGraphSystem)
+        waypoints = waypoints_system.get_waypoints(gs)
+
+        # Add new empty waypoints placed on specific coordinates
+        for point_id, point in enumerate(points):
+            waypoints[point_id] = WaypointNode(
+                position=point,
+                visible_nodes=set(),
+                movable_paths={},
+            )
+
+        # Add relationships between nodes
+        waypoints_system._add_visibility_relationships(gs)
+        waypoints_system._add_path_relationships(gs, path_tolerance)
+
+    @staticmethod
+    def _add_path_relationships(
         gs: GameState,
         path_tolerance: float,
     ) -> None:
@@ -66,7 +83,7 @@ class WaypointGraphSystem:
                 )
 
     @staticmethod
-    def add_visibility_relationships(
+    def _add_visibility_relationships(
         gs: GameState,
     ) -> None:
 

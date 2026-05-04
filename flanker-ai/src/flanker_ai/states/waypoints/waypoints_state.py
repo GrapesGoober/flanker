@@ -15,7 +15,6 @@ from flanker_ai.actions import (
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
-from flanker_ai.states.waypoints.models import WaypointNode
 from flanker_ai.states.waypoints.waypoints_fire_system import (
     DoublePinAvoidanceConfig,
     WaypointsFireSystem,
@@ -405,38 +404,19 @@ class WaypointsState(IRepresentationState[Action]):
             self.gs.add_entity(AiStallCountComponent())
 
         waypoints_system = self.gs.get(WaypointGraphSystem)
-        waypoints = waypoints_system.get_waypoints(self.gs)
 
-        # Add grid points as a waypoint
-        for point_id, point in enumerate(self._points):
-            waypoints[point_id] = WaypointNode(
-                position=point,
-                visible_nodes=set(),
-                movable_paths={},
-            )
-
-        # Add new waypoints to represent combat units
+        # Add the waypoints graph, with combat units as new waypoints
+        points: list[Vec2] = list(self._points)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
-            # Try to find an existing waypoint at this position
-            waypoint_id: int | None = None
-            for id, waypoint in waypoints.items():
-                if waypoint.position == transform.position:
-                    waypoint_id = id
-                    break
+            # Add new waypoints for each combat units
+            if transform.position not in points:
+                points.append(transform.position)
 
-            # If waypoint doesn't exist, create a new one
-            if waypoint_id is None:
-                waypoint_id = len(waypoints)
-                waypoints[waypoint_id] = WaypointNode(
-                    position=transform.position,
-                    visible_nodes=set(),
-                    movable_paths={},
-                )
-
-        # Add relationships between nodes
-        waypoints_system = self.gs.get(WaypointGraphSystem)
-        waypoints_system.add_visibility_relationships(self.gs)
-        waypoints_system.add_path_relationships(self.gs, self._path_tolerance)
+        waypoints_system.set_waypoints(
+            gs=self.gs,
+            points=points,
+            path_tolerance=self._path_tolerance,
+        )
 
     def _count_stall(
         self,
