@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from flanker_core.models.vec2 import Vec2
 
@@ -12,6 +12,4 @@ class WaypointNode:
 
 @dataclass
 class WaypointsGraphComponent:
-    waypoints: dict[int, WaypointNode] = field(
-        default_factory=dict[int, WaypointNode],
-    )
+    waypoints: dict[int, WaypointNode]

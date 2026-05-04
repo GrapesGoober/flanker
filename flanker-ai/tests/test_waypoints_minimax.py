@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import FireActionResult, MoveActionResult
+from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.states.waypoints_actions import WaypointMoveAction
-from flanker_ai.states.waypoints_state import WaypointsState
+from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
+from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
@@ -30,6 +30,7 @@ class Fixture:
     friendly_2: UUID
     enemy_1: UUID
     enemy_2: UUID
+    waypoint_coordinates: list[Vec2]
 
 
 @pytest.fixture
@@ -100,18 +101,20 @@ def fixture() -> Fixture:
         ),
     )
 
+    waypoint_coordinates = [
+        Vec2(0, 0),  # 0
+        Vec2(10, 1),  # 1
+        Vec2(-10, 1),  # 2
+        Vec2(-10, 10),  # 3
+        Vec2(10, 10),  # 4
+    ]
+
     gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
             state_config=AiConfigComponent.WaypointsStateConfig(
                 type="WaypointsStateConfig",
-                waypoint_coordinates=[
-                    Vec2(0, 0),  # 0
-                    Vec2(10, 1),  # 1
-                    Vec2(-10, 1),  # 2
-                    Vec2(-10, 10),  # 3
-                    Vec2(10, 10),  # 4
-                ],
+                waypoint_coordinates=waypoint_coordinates,
                 path_tolerance=3,
             ),
             policy_config=AiConfigComponent.MinimaxPolicyConfig(
@@ -129,6 +132,7 @@ def fixture() -> Fixture:
         friendly_2=friendly_2,
         enemy_1=enemy_1,
         enemy_2=enemy_2,
+        waypoint_coordinates=waypoint_coordinates,
     )
 
 
@@ -136,21 +140,24 @@ def test_stall(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
     rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
-    rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
     for _ in range(5):
-        action = WaypointMoveAction(
+        action = MoveAction(
             unit_id=fixture.friendly_1,
-            move_to_waypoint_id=5,
+            to=fixture.waypoint_coordinates[3],
         )
-        rs = rs.get_deterministic_branch(action)
+        new_state = rs.get_deterministic_branch(action)
+        assert new_state != None, "Actions are not invalid"
+        rs = new_state
     assert rs.get_winner() == None, "BLUE must not stall yet."
 
-    action = WaypointMoveAction(
+    action = MoveAction(
         unit_id=fixture.friendly_1,
-        move_to_waypoint_id=5,
+        to=fixture.waypoint_coordinates[3],
     )
-    rs = rs.get_deterministic_branch(action)
+    new_state = rs.get_deterministic_branch(action)
+    assert new_state != None, "Actions are not invalid"
+    rs = new_state
     assert (
         rs.get_winner() == InitiativeState.Faction.RED
     ), "BLUE must be considered stall."
@@ -160,26 +167,28 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
     rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
-    rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
-    assert rs.waypoints[5].movable_paths[3] == [5, 3]
-    assert rs.waypoints[5].movable_paths[2] == [5, 2]
-    assert rs.waypoints[5].movable_paths[7] == [5, 6, 0, 7]
-    assert rs.waypoints[5].movable_paths[8] == [5, 6, 0, 7, 8]
-    assert rs.waypoints[3].movable_paths[7] == [3, 7]
-    assert rs.waypoints[3].movable_paths[8] == [3, 7, 8]
-    assert rs.waypoints[3].movable_paths[4] == [3, 5, 6, 4]
-    assert rs.waypoints[2].movable_paths[1] == [2, 0, 1]
+    waypoints_system = rs.gs.get(WaypointGraphSystem)
+    waypoints = waypoints_system.get_waypoints(rs.gs)
+    assert waypoints[5].movable_paths[3] == [5, 3]
+    assert waypoints[5].movable_paths[2] == [5, 2]
+    assert waypoints[5].movable_paths[7] == [5, 6, 0, 7]
+    assert waypoints[5].movable_paths[8] == [5, 6, 0, 7, 8]
+    assert waypoints[3].movable_paths[7] == [3, 7]
+    assert waypoints[3].movable_paths[8] == [3, 7, 8]
+    assert waypoints[3].movable_paths[4] == [3, 5, 6, 4]
+    assert waypoints[2].movable_paths[1] == [2, 0, 1]
 
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
     rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
-    rs.initialize_state(fixture.gs)
     rs.update_state(fixture.gs)
-    assert set(rs.waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
-    assert set(rs.waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
+    waypoints_system = rs.gs.get(WaypointGraphSystem)
+    waypoints = waypoints_system.get_waypoints(rs.gs)
+    assert set(waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
+    assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
 def test_optimal_waypoint(fixture: Fixture) -> None:

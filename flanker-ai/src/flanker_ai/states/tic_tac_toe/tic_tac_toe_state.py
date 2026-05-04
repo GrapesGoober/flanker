@@ -3,7 +3,7 @@ from typing import Literal, Optional, Sequence
 
 from flanker_ai.actions import Action
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.tic_tac_toe_actions import TicTacToeAction
+from flanker_ai.states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 

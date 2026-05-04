@@ -42,10 +42,6 @@ class IRepresentationState[TAction](Protocol):
         """Get the current initiative holder."""
         ...
 
-    def initialize_state(self, gs: GameState) -> None:
-        """Expensive precompute phase the state to make this ready for AI."""
-        ...
-
     def update_state(self, gs: GameState) -> None:
         """Update the state to match the original game state."""
         ...

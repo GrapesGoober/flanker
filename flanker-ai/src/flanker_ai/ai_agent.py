@@ -19,9 +19,8 @@ from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.states.unabstracted_state import UnabstractedState
-from flanker_ai.states.waypoints_actions import WaypointAction
-from flanker_ai.states.waypoints_state import WaypointsState
+from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
+from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -53,7 +52,6 @@ class AiAgent:
         self._faction: InitiativeState.Faction = faction
         self._policy = policy
         self._rs = rs
-        self._rs.initialize_state(gs)
 
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
@@ -176,11 +174,11 @@ class AiAgent:
                     )
                     match policy_config:
                         case AiConfigComponent.ExpectimaxPolicyConfig():
-                            policy = ExpectimaxPolicy[WaypointAction](depth=4)
+                            policy = ExpectimaxPolicy[Action](depth=4)
                         case AiConfigComponent.MinimaxPolicyConfig():
-                            policy = MinimaxPolicy[WaypointAction](depth=4)
+                            policy = MinimaxPolicy[Action](depth=4)
                         case AiConfigComponent.RandomHeuristicPolicyConfig():
-                            policy = RandomHeuristicPolicy[WaypointAction](gs)
+                            policy = RandomHeuristicPolicy[Action](gs)
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
