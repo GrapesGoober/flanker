@@ -24,6 +24,12 @@ class AiConfigComponent:
         path_tolerance: float
 
     @dataclass
+    class DeterministicWaypointsStateConfig:
+        type: Literal["DeterministicWaypointsStateConfig"]
+        waypoint_coordinates: list[Vec2]
+        path_tolerance: float
+
+    @dataclass
     class UnabstractedStateConfig:
         type: Literal["UnabstractedStateConfig"]
         ...
@@ -43,7 +49,11 @@ class AiConfigComponent:
         type: Literal["MinimaxPolicyConfig"]
         ...
 
-    StateConfigTypes = WaypointsStateConfig | UnabstractedStateConfig
+    StateConfigTypes = (
+        WaypointsStateConfig
+        | DeterministicWaypointsStateConfig
+        | UnabstractedStateConfig
+    )
     PolicyConfigTypes = (
         RandomHeuristicPolicyConfig | ExpectimaxPolicyConfig | MinimaxPolicyConfig
     )

@@ -20,6 +20,9 @@ from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
+from flanker_ai.states.waypoints.deterministic_waypoints_state import (
+    DeterministicWaypointsState,
+)
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -167,11 +170,21 @@ class AiAgent:
                         rs=rs,
                         policy=policy,
                     )
-                case AiConfigComponent.WaypointsStateConfig():
-                    rs = WaypointsState(
-                        points=state_config.waypoint_coordinates,
-                        path_tolerance=state_config.path_tolerance,
-                    )
+                case (
+                    AiConfigComponent.WaypointsStateConfig()
+                    | AiConfigComponent.DeterministicWaypointsStateConfig()
+                ):
+                    match state_config:
+                        case AiConfigComponent.WaypointsStateConfig():
+                            rs = WaypointsState(
+                                points=state_config.waypoint_coordinates,
+                                path_tolerance=state_config.path_tolerance,
+                            )
+                        case AiConfigComponent.DeterministicWaypointsStateConfig():
+                            rs = DeterministicWaypointsState(
+                                points=state_config.waypoint_coordinates,
+                                path_tolerance=state_config.path_tolerance,
+                            )
                     match policy_config:
                         case AiConfigComponent.ExpectimaxPolicyConfig():
                             policy = ExpectimaxPolicy[Action](depth=4)

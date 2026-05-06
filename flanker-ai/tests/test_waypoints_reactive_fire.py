@@ -210,7 +210,6 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
                 fixture.enemy_2: FireOutcomes.PIN,
             }:
                 unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
-                # TODO: double PIN avoidance conflicts with this test
                 assert (
                     unit.status == CombatUnit.Status.PINNED
                 ), "Expects PIN fire event to result in PINNED status"

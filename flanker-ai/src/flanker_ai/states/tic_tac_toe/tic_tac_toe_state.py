@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional, Sequence, override
 
 from flanker_ai.actions import Action
 from flanker_ai.i_representation_state import IRepresentationState
@@ -34,18 +34,21 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
     # ---------- Core Protocol Methods ----------
 
+    @override
     def copy(self) -> "TicTacToeState":
         return TicTacToeState(
             current_player=MARK_TO_FACTION[self.current_player],
             board=deepcopy(self.board),
         )
 
+    @override
     def get_initiative(self) -> InitiativeState.Faction:
         return MARK_TO_FACTION[self.current_player]
 
     def is_maximizing(self) -> bool:
         return self.current_player == "O"
 
+    @override
     def get_winner(self) -> Optional[InitiativeState.Faction]:
         lines: list[list[MARK | None]] = []
 
@@ -66,23 +69,19 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
         return None
 
-    def get_deterministic_branch(
-        self,
-        action: TicTacToeAction,
-    ) -> "TicTacToeState | None":
+    @override
+    def get_branches(
+        self, action: TicTacToeAction
+    ) -> list[tuple[float, "TicTacToeState"]]:
         if self.get_winner() is not None:
-            return None
+            return []
 
         if self.board[action.row][action.column] is None:
             new_state = self.copy()
             new_state.board[action.row][action.column] = self.current_player
             new_state.current_player = "X" if self.current_player == "O" else "O"
-            return new_state
-
-    def get_branches(
-        self, action: TicTacToeAction
-    ) -> list[tuple[float, "TicTacToeState"]]:
-        raise NotImplementedError()
+            return [(1, new_state)]
+        return []
 
     def get_actions(self) -> Sequence[TicTacToeAction]:
         actions: list[TicTacToeAction] = []
@@ -97,6 +96,7 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
                     )
         return actions
 
+    @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         winner = self.get_winner()
 
@@ -124,11 +124,10 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
             for row in self.board
         )
 
-    def initialize_state(self, gs: GameState) -> None:
-        raise NotImplementedError
-
+    @override
     def update_state(self, gs: GameState) -> None:
         raise NotImplementedError
 
+    @override
     def deabstract_action(self, action: TicTacToeAction, gs: GameState) -> Action:
         raise NotImplementedError

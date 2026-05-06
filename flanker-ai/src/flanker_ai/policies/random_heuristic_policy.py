@@ -71,9 +71,10 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
             action = random.choice(remaining)
             remaining.remove(action)
 
-            branch = rs.get_deterministic_branch(action)
-            if branch is None:
+            branches = rs.get_branches(action)
+            if branches == []:
                 continue  # Invalid action has no branching
+            _, branch = max(branches, key=lambda b: b[0])
 
             # Reject losing actions
             if branch.get_winner() not in [None, rs.get_initiative()]:
