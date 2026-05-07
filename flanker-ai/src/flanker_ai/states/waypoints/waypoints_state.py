@@ -204,7 +204,7 @@ class WaypointsState(IRepresentationState[Action]):
 
     def get_one_fire_outcome(
         self,
-        enemy_ids: list[UUID],
+        enemy_ids: set[UUID],
     ) -> dict[UUID, FireOutcomes]:
         """Returns a single most-likely fire outcome given enemy units."""
         if len(enemy_ids) == 1:
@@ -214,12 +214,12 @@ class WaypointsState(IRepresentationState[Action]):
         # by assuming it gets suppressed
         if len(enemy_ids) > 1:
             one_pin = {enemy_id: FireOutcomes.SUPPRESS for enemy_id in enemy_ids}
-            one_pin[enemy_ids[0]] = FireOutcomes.PIN
+            one_pin[next(iter(enemy_ids))] = FireOutcomes.PIN
             return one_pin
         return {}
 
     def get_all_fire_outcomes(
-        self, enemy_ids: list[UUID]
+        self, enemy_ids: set[UUID]
     ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
         """Returns all probabilites and fire outcomes given enemy units."""
         permutations: list[
@@ -251,19 +251,19 @@ class WaypointsState(IRepresentationState[Action]):
                 candidates = move_system.get_interrupt_candidates(
                     gs=self.gs, unit_id=action.unit_id, to=action.to
                 )
-                enemy_ids = list(
-                    {uid for _, uuid_list in candidates for uid in uuid_list}
-                )
-                if enemy_ids == []:
+                enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
+                if len(enemy_ids) == 0:
                     rs = self.copy()
-                    move_system.move(rs.gs, action.unit_id, action.to)
+                    result = move_system.move(rs.gs, action.unit_id, action.to)
+                    if isinstance(result, InvalidAction):
+                        return []
                     rs._count_stall(count="up")
                     return [(1, rs)]
 
                 if self._is_deterministic:
-                    permutations = [(1, self.get_one_fire_outcome(list(enemy_ids)))]
+                    permutations = [(1, self.get_one_fire_outcome(enemy_ids))]
                 else:
-                    permutations = self.get_all_fire_outcomes(list(enemy_ids))
+                    permutations = self.get_all_fire_outcomes(enemy_ids)
 
                 outcomes: list[tuple[float, "WaypointsState"]] = []
                 for probability, unit_fire_outcomes in permutations:
@@ -276,9 +276,8 @@ class WaypointsState(IRepresentationState[Action]):
 
                     result = move_system.move(rs.gs, action.unit_id, action.to)
                     if isinstance(result, InvalidAction):
-                        # NOTE: this might have a bug where the probability
-                        # won't sum up to 1
-                        continue
+                        # Invalid action won't be performable.
+                        return []
                     outcomes.append((probability, rs))
                 return outcomes
 
