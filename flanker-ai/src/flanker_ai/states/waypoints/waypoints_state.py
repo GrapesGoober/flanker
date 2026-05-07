@@ -202,23 +202,23 @@ class WaypointsState(IRepresentationState[Action]):
 
         return actions
 
-    def get_determinisic_fire_permutation(
+    def get_one_fire_outcome(
         self,
         enemy_ids: list[UUID],
-    ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
+    ) -> dict[UUID, FireOutcomes]:
         """Returns a single most-likely fire outcome given enemy units."""
         if len(enemy_ids) == 1:
             all_pins = {enemy_id: FireOutcomes.PIN for enemy_id in enemy_ids}
-            return [(1, all_pins)]
+            return all_pins
         # It should avoid being pinned by more than one enemy
         # by assuming it gets suppressed
         if len(enemy_ids) > 1:
-            one_pins = {enemy_id: FireOutcomes.SUPPRESS for enemy_id in enemy_ids}
-            one_pins[enemy_ids[0]] = FireOutcomes.PIN
-            return [(1, one_pins)]
-        return []
+            one_pin = {enemy_id: FireOutcomes.SUPPRESS for enemy_id in enemy_ids}
+            one_pin[enemy_ids[0]] = FireOutcomes.PIN
+            return one_pin
+        return {}
 
-    def get_all_fire_permutations(
+    def get_all_fire_outcomes(
         self, enemy_ids: list[UUID]
     ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
         """Returns all probabilites and fire outcomes given enemy units."""
@@ -261,11 +261,9 @@ class WaypointsState(IRepresentationState[Action]):
                     return [(1, rs)]
 
                 if self._is_deterministic:
-                    permutations = self.get_determinisic_fire_permutation(
-                        list(enemy_ids)
-                    )
+                    permutations = [(1, self.get_one_fire_outcome(list(enemy_ids)))]
                 else:
-                    permutations = self.get_all_fire_permutations(list(enemy_ids))
+                    permutations = self.get_all_fire_outcomes(list(enemy_ids))
 
                 outcomes: list[tuple[float, "WaypointsState"]] = []
                 for probability, unit_fire_outcomes in permutations:
