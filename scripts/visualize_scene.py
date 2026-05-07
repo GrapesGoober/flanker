@@ -121,6 +121,7 @@ def draw_waypoints(
     waypoints_gs = WaypointsState(
         points=config.waypoint_coordinates,
         path_tolerance=10,
+        is_deterministic=True,
     )
 
     waypoints_gs.update_state(gs)

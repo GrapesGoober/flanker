@@ -105,6 +105,7 @@ def fixture() -> Fixture:
     state = WaypointsState(
         points=waypoint_positions,
         path_tolerance=20,
+        is_deterministic=False,
     )
 
     state.update_state(gs)

@@ -5,10 +5,8 @@ import pytest
 from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.states.waypoints.deterministic_waypoints_state import (
-    DeterministicWaypointsState,
-)
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
+from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
@@ -114,10 +112,11 @@ def fixture() -> Fixture:
     gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
-            state_config=AiConfigComponent.DeterministicWaypointsStateConfig(
-                type="DeterministicWaypointsStateConfig",
+            state_config=AiConfigComponent.WaypointsStateConfig(
+                type="WaypointsStateConfig",
                 waypoint_coordinates=waypoint_coordinates,
                 path_tolerance=3,
+                is_deterministic=True,
             ),
             policy_config=AiConfigComponent.MinimaxPolicyConfig(
                 type="MinimaxPolicyConfig"
@@ -140,10 +139,9 @@ def fixture() -> Fixture:
 
 def test_stall(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
-    assert conf.type == "DeterministicWaypointsStateConfig"
-    rs = DeterministicWaypointsState(
-        conf.waypoint_coordinates,
-        conf.path_tolerance,
+    assert conf.type == "WaypointsStateConfig"
+    rs = WaypointsState(
+        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
     )
     rs.update_state(fixture.gs)
     for _ in range(5):
@@ -170,8 +168,10 @@ def test_stall(fixture: Fixture) -> None:
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
-    assert conf.type == "DeterministicWaypointsStateConfig"
-    rs = DeterministicWaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
+    assert conf.type == "WaypointsStateConfig"
+    rs = WaypointsState(
+        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
+    )
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)
@@ -187,8 +187,10 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
-    assert conf.type == "DeterministicWaypointsStateConfig"
-    rs = DeterministicWaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
+    assert conf.type == "WaypointsStateConfig"
+    rs = WaypointsState(
+        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
+    )
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)

@@ -49,14 +49,13 @@ _FIRE_REACTION_PROBABILITIES = {
 
 class WaypointsState(IRepresentationState[Action]):
     def __init__(
-        self,
-        points: list[Vec2],
-        path_tolerance: float,
+        self, points: list[Vec2], path_tolerance: float, is_deterministic: bool
     ) -> None:
         self.gs = GameState()
         register_systems(self.gs)
         self._points = points
         self._path_tolerance = path_tolerance
+        self._is_deterministic = is_deterministic
 
     @override
     def copy(self) -> "WaypointsState":
@@ -70,11 +69,10 @@ class WaypointsState(IRepresentationState[Action]):
         for id, _ in self.gs.query(AiStallCountComponent):
             entities_to_copy.add(id)
 
-        # FIXME: the DeterministicWaypointsState doesnt return
-        # the same copied type. It returns the stochastic one.
         new_gs = WaypointsState(
             points=self._points,
             path_tolerance=self._path_tolerance,
+            is_deterministic=self._is_deterministic,
         )
         new_gs.gs = self.gs.selective_copy(list(entities_to_copy))
         return new_gs
@@ -204,10 +202,26 @@ class WaypointsState(IRepresentationState[Action]):
 
         return actions
 
+    def get_determinisic_fire_permutation(
+        self,
+        enemy_ids: list[UUID],
+    ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
+        """Returns a single most-likely fire outcome given enemy units."""
+        if len(enemy_ids) == 1:
+            all_pins = {enemy_id: FireOutcomes.PIN for enemy_id in enemy_ids}
+            return [(1, all_pins)]
+        # It should avoid being pinned by more than one enemy
+        # by assuming it gets suppressed
+        if len(enemy_ids) > 1:
+            one_pins = {enemy_id: FireOutcomes.SUPPRESS for enemy_id in enemy_ids}
+            one_pins[enemy_ids[0]] = FireOutcomes.PIN
+            return [(1, one_pins)]
+        return []
+
     def get_all_fire_permutations(
         self, enemy_ids: list[UUID]
     ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
-        """Returns all permutations of (unit, outcome) and their probabilities."""
+        """Returns all probabilites and fire outcomes given enemy units."""
         permutations: list[
             tuple[
                 float,  # total probability of this permutation event
@@ -246,7 +260,13 @@ class WaypointsState(IRepresentationState[Action]):
                     rs._count_stall(count="up")
                     return [(1, rs)]
 
-                permutations = self.get_all_fire_permutations(list(enemy_ids))
+                if self._is_deterministic:
+                    permutations = self.get_determinisic_fire_permutation(
+                        list(enemy_ids)
+                    )
+                else:
+                    permutations = self.get_all_fire_permutations(list(enemy_ids))
+
                 outcomes: list[tuple[float, "WaypointsState"]] = []
                 for probability, unit_fire_outcomes in permutations:
                     rs = self.copy()
