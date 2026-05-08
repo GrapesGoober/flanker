@@ -241,15 +241,25 @@ class WaypointsState(IRepresentationState[Action]):
             permutations.append((probability, event))
         return permutations
 
-    def get_reactive_fire_outcomes(
+    def _get_fire_configured_branches(
         self,
-        enemy_ids: set[UUID],
-    ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
-
+        firer_ids: set[UUID],
+    ) -> list[tuple[float, "WaypointsState"]]:
+        permutations: list[tuple[float, dict[UUID, FireOutcomes]]] = []
         if self._is_deterministic:
-            return [(1, self.get_one_fire_outcome(enemy_ids))]
+            permutations = [(1, self.get_one_fire_outcome(firer_ids))]
         else:
-            return self.get_all_fire_outcomes(enemy_ids)
+            permutations = self.get_all_fire_outcomes(firer_ids)
+
+        branching_states: list[tuple[float, "WaypointsState"]] = []
+        for probability, unit_fire_outcomes in permutations:
+            new_state = self.copy()
+            new_state._count_stall(count="reset")
+            for firer_id, firer_outcome in unit_fire_outcomes.items():
+                fire_controls = new_state.gs.get_component(firer_id, FireControls)
+                fire_controls.override = firer_outcome
+            branching_states.append((probability, new_state))
+        return branching_states
 
     @override
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
@@ -263,26 +273,17 @@ class WaypointsState(IRepresentationState[Action]):
                 )
                 enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
 
-                # Build a list of new branching states
+                # Build a list of new configured branching states
                 branching_states: list[tuple[float, "WaypointsState"]] = []
                 if len(enemy_ids) == 0:
                     new_state = self.copy()
                     new_state._count_stall(count="up")
                     branching_states.append((1, new_state))
                 else:
-                    permutations = self.get_reactive_fire_outcomes(enemy_ids)
-                    for probability, unit_fire_outcomes in permutations:
-                        new_state = self.copy()
-                        new_state._count_stall(count="reset")
-                        for firer_id, firer_outcome in unit_fire_outcomes.items():
-                            fire_controls = new_state.gs.get_component(
-                                firer_id, FireControls
-                            )
-                            fire_controls.override = firer_outcome
-                        branching_states.append((probability, new_state))
+                    branching_states = self._get_fire_configured_branches(enemy_ids)
 
-                # Perform the action
-                for probability, new_state in branching_states:
+                # Perform the action for each branch
+                for _, new_state in branching_states:
                     result = move_system.move(
                         gs=new_state.gs,
                         unit_id=action.unit_id,
