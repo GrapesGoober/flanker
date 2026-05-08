@@ -19,14 +19,13 @@ from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSyst
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
-    AssaultControls,
     CombatUnit,
     EliminationObjective,
     FireControls,
     InitiativeState,
     Transform,
 )
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -269,7 +268,9 @@ class WaypointsState(IRepresentationState[Action]):
                 move_system = self.gs.get(MoveSystem)
 
                 candidates = move_system.get_interrupt_candidates(
-                    gs=self.gs, unit_id=action.unit_id, to=action.to
+                    gs=self.gs,
+                    unit_id=action.unit_id,
+                    to=action.to,
                 )
                 enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
 
@@ -296,22 +297,36 @@ class WaypointsState(IRepresentationState[Action]):
                 return branching_states
 
             case PivotAction():
-                rs = self.copy()
-                # Perform pivot action to the target position
-                move_system = rs.gs.get(MoveSystem)
-                for _, fire_controls in rs.gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.PIN
-                result = move_system.pivot(rs.gs, action.unit_id, action.to)
-                if isinstance(result, InvalidAction):
-                    return []
+                move_system = self.gs.get(MoveSystem)
 
-                # Count stall depending on results
-                combat_unit = rs.gs.get_component(action.unit_id, CombatUnit)
-                if combat_unit.status == CombatUnit.Status.ACTIVE:
-                    rs._count_stall(count="up")
+                candidates = move_system.get_interrupt_candidates(
+                    gs=self.gs,
+                    unit_id=action.unit_id,
+                    to=action.to,
+                )
+                enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
+
+                # Build a list of new configured branching states
+                branching_states: list[tuple[float, "WaypointsState"]] = []
+                if len(enemy_ids) == 0:
+                    new_state = self.copy()
+                    new_state._count_stall(count="up")
+                    branching_states.append((1, new_state))
                 else:
-                    rs._count_stall(count="reset")
-                return [(1, rs)]
+                    branching_states = self._get_fire_configured_branches(enemy_ids)
+
+                # Perform the action for each branch
+                for _, new_state in branching_states:
+                    result = move_system.pivot(
+                        gs=new_state.gs,
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                    if isinstance(result, InvalidAction):
+                        # Invalid action won't be performable.
+                        return []
+
+                return branching_states
 
             case FireAction():
                 rs = self.copy()
@@ -326,19 +341,37 @@ class WaypointsState(IRepresentationState[Action]):
                 return [(1, rs)]
 
             case AssaultAction():
-                rs = self.copy()
-                rs._count_stall(count="reset")
-                # Perform move action to the destination position
-                assault_system = rs.gs.get(AssaultSystem)
-                for _, fire_controls in rs.gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.PIN
+                move_system = self.gs.get(MoveSystem)
+                assault_system = self.gs.get(AssaultSystem)
 
-                assault_controls = rs.gs.get_component(action.unit_id, AssaultControls)
-                assault_controls.override = AssaultOutcomes.SUCCESS
-                result = assault_system.assault(rs.gs, action.unit_id, action.target_id)
-                if isinstance(result, InvalidAction):
-                    return []
-                return [(1, rs)]
+                target_transform = self.gs.get_component(action.target_id, Transform)
+                candidates = move_system.get_interrupt_candidates(
+                    gs=self.gs,
+                    unit_id=action.unit_id,
+                    to=target_transform.position,
+                )
+                enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
+
+                branching_states: list[tuple[float, "WaypointsState"]] = []
+                if len(enemy_ids) == 0:
+                    new_state = self.copy()
+                    new_state._count_stall(count="reset")
+                    branching_states.append((1, new_state))
+                else:
+                    branching_states = self._get_fire_configured_branches(enemy_ids)
+
+                # Perform the action for each branch
+                for _, new_state in branching_states:
+                    result = assault_system.assault(
+                        gs=new_state.gs,
+                        attacker_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
+                    if isinstance(result, InvalidAction):
+                        # Invalid action won't be performable.
+                        return []
+
+                return branching_states
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
