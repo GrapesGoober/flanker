@@ -298,11 +298,12 @@ class WaypointsState(IRepresentationState[Action]):
 
             case PivotAction():
                 move_system = self.gs.get(MoveSystem)
+                unit_transform = self.gs.get_component(action.unit_id, Transform)
 
                 candidates = move_system.get_interrupt_candidates(
                     gs=self.gs,
                     unit_id=action.unit_id,
-                    to=action.to,
+                    to=unit_transform.position,
                 )
                 enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
 
