@@ -19,13 +19,14 @@ from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSyst
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
     EliminationObjective,
     FireControls,
     InitiativeState,
     Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -260,119 +261,102 @@ class WaypointsState(IRepresentationState[Action]):
             branching_states.append((probability, new_state))
         return branching_states
 
+    def _get_reactive_fire_ids(self, unit_id: UUID, move_to: Vec2) -> set[UUID]:
+        move_system = self.gs.get(MoveSystem)
+        reactive_fire_candidates = move_system.get_interrupt_candidates(
+            self.gs, unit_id, move_to
+        )
+        return {uid for _, uuid_list in reactive_fire_candidates for uid in uuid_list}
+
     @override
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
+        move_system = self.gs.get(MoveSystem)
+        assault_system = self.gs.get(AssaultSystem)
+        fire_system = self.gs.get(FireSystem)
 
+        # Build a list of branching states, configured based on each action type.
+        branching_states: list[tuple[float, "WaypointsState"]] = []
         match action:
             case MoveAction():
-                move_system = self.gs.get(MoveSystem)
-
-                candidates = move_system.get_interrupt_candidates(
-                    gs=self.gs,
-                    unit_id=action.unit_id,
-                    to=action.to,
-                )
-                enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
-
-                # Build a list of new configured branching states
-                branching_states: list[tuple[float, "WaypointsState"]] = []
-                if len(enemy_ids) == 0:
+                firer_ids = self._get_reactive_fire_ids(action.unit_id, action.to)
+                if len(firer_ids) == 0:
                     new_state = self.copy()
                     new_state._count_stall(count="up")
-                    branching_states.append((1, new_state))
+                    branching_states = [(1, new_state)]
                 else:
-                    branching_states = self._get_fire_configured_branches(enemy_ids)
-
-                # Perform the action for each branch
+                    branching_states = self._get_fire_configured_branches(firer_ids)
+            case PivotAction():
+                unit_transform = self.gs.get_component(action.unit_id, Transform)
+                firer_ids = self._get_reactive_fire_ids(
+                    action.unit_id, unit_transform.position
+                )
+                if len(firer_ids) == 0:
+                    new_state = self.copy()
+                    new_state._count_stall(count="up")
+                    branching_states = [(1, new_state)]
+                else:
+                    branching_states = self._get_fire_configured_branches(firer_ids)
+            case AssaultAction():
+                target_transform = self.gs.get_component(action.target_id, Transform)
+                firer_ids = self._get_reactive_fire_ids(
+                    action.unit_id, target_transform.position
+                )
+                if len(firer_ids) == 0:
+                    new_state = self.copy()
+                    new_state._count_stall(count="reset")
+                    branching_states = [(1, new_state)]
+                else:
+                    branching_states = self._get_fire_configured_branches(firer_ids)
+                # Use a simpler deterministic assault outcome for now
                 for _, new_state in branching_states:
+                    assault_controls = new_state.gs.get_component(
+                        action.unit_id, AssaultControls
+                    )
+                    assault_controls.override = AssaultOutcomes.SUCCESS
+            case FireAction():
+                # firer_ids = {action.unit_id}
+                # branching_states = self._get_fire_configured_branches(firer_ids)
+
+                # Use a simpler deterministic branching for now
+                new_state = self.copy()
+                new_state._count_stall(count="reset")
+                fire_controls = new_state.gs.get_component(action.unit_id, FireControls)
+                fire_controls.override = FireOutcomes.SUPPRESS
+                branching_states = [(1, new_state)]
+
+        # Perform the action on each configured branches by mutating in-place.
+        for _, new_state in branching_states:
+            match action:
+                case MoveAction():
                     result = move_system.move(
                         gs=new_state.gs,
                         unit_id=action.unit_id,
                         to=action.to,
                     )
-                    if isinstance(result, InvalidAction):
-                        # Invalid action won't be performable.
-                        return []
-
-                return branching_states
-
-            case PivotAction():
-                move_system = self.gs.get(MoveSystem)
-                unit_transform = self.gs.get_component(action.unit_id, Transform)
-
-                candidates = move_system.get_interrupt_candidates(
-                    gs=self.gs,
-                    unit_id=action.unit_id,
-                    to=unit_transform.position,
-                )
-                enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
-
-                # Build a list of new configured branching states
-                branching_states: list[tuple[float, "WaypointsState"]] = []
-                if len(enemy_ids) == 0:
-                    new_state = self.copy()
-                    new_state._count_stall(count="up")
-                    branching_states.append((1, new_state))
-                else:
-                    branching_states = self._get_fire_configured_branches(enemy_ids)
-
-                # Perform the action for each branch
-                for _, new_state in branching_states:
+                case PivotAction():
                     result = move_system.pivot(
                         gs=new_state.gs,
                         unit_id=action.unit_id,
                         to=action.to,
                     )
-                    if isinstance(result, InvalidAction):
-                        # Invalid action won't be performable.
-                        return []
-
-                return branching_states
-
-            case FireAction():
-                rs = self.copy()
-                rs._count_stall(count="reset")
-                fire_controls = rs.gs.get_component(action.unit_id, FireControls)
-                # Assumes deterministic suppressive fire
-                fire_controls.override = FireOutcomes.SUPPRESS
-                fire_system = rs.gs.get(FireSystem)
-                result = fire_system.fire(rs.gs, action.unit_id, action.target_id)
-                if isinstance(result, InvalidAction):
-                    return []
-                return [(1, rs)]
-
-            case AssaultAction():
-                move_system = self.gs.get(MoveSystem)
-                assault_system = self.gs.get(AssaultSystem)
-
-                target_transform = self.gs.get_component(action.target_id, Transform)
-                candidates = move_system.get_interrupt_candidates(
-                    gs=self.gs,
-                    unit_id=action.unit_id,
-                    to=target_transform.position,
-                )
-                enemy_ids = {uid for _, uuid_list in candidates for uid in uuid_list}
-
-                branching_states: list[tuple[float, "WaypointsState"]] = []
-                if len(enemy_ids) == 0:
-                    new_state = self.copy()
-                    new_state._count_stall(count="reset")
-                    branching_states.append((1, new_state))
-                else:
-                    branching_states = self._get_fire_configured_branches(enemy_ids)
-
-                # Perform the action for each branch
-                for _, new_state in branching_states:
+                case AssaultAction():
                     result = assault_system.assault(
                         gs=new_state.gs,
                         attacker_id=action.unit_id,
                         target_id=action.target_id,
                     )
-                    if isinstance(result, InvalidAction):
-                        # Invalid action won't be performable.
-                        return []
+                case FireAction():
+                    result = fire_system.fire(
+                        gs=new_state.gs,
+                        attacker_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
 
-                return branching_states
+            if isinstance(result, InvalidAction):
+                # Invalid action won't be performable.
+                return []
+
+        return branching_states
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
