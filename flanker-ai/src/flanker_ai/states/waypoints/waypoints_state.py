@@ -274,57 +274,66 @@ class WaypointsState(IRepresentationState[Action]):
         assault_system = self.gs.get(AssaultSystem)
         fire_system = self.gs.get(FireSystem)
 
-        # Build a list of branching states, configured based on each action type.
-        branching_states: list[tuple[float, "WaypointsState"]] = []
+        # Derive a set of unit IDs that needs overriding
+        # TODO: add a more generalized override configuration for less boilerplate.
+        # TODO: There needs reactive fire, fire, and assault overrides.
+        firer_ids: set[UUID]
         match action:
             case MoveAction():
                 firer_ids = self._get_reactive_fire_ids(action.unit_id, action.to)
-                if len(firer_ids) == 0:
-                    new_state = self.copy()
-                    new_state._count_stall(count="up")
-                    branching_states = [(1, new_state)]
-                else:
-                    branching_states = self._get_fire_configured_branches(firer_ids)
             case PivotAction():
                 unit_transform = self.gs.get_component(action.unit_id, Transform)
                 firer_ids = self._get_reactive_fire_ids(
                     action.unit_id, unit_transform.position
                 )
-                if len(firer_ids) == 0:
-                    new_state = self.copy()
-                    new_state._count_stall(count="up")
-                    branching_states = [(1, new_state)]
-                else:
-                    branching_states = self._get_fire_configured_branches(firer_ids)
             case AssaultAction():
                 target_transform = self.gs.get_component(action.target_id, Transform)
                 firer_ids = self._get_reactive_fire_ids(
                     action.unit_id, target_transform.position
                 )
-                if len(firer_ids) == 0:
+            case FireAction():
+                # Simplify fire action to be deterministic for now
+                firer_ids = set()
+
+        # Build a list of branching states with override configured
+        branching_states: list[tuple[float, "WaypointsState"]]
+
+        if len(firer_ids) == 0:
+            new_state = self.copy()
+            match action:
+                case MoveAction() | PivotAction():
+                    # Consider stall for move-type actions with no reactive fire
+                    new_state._count_stall(count="up")
+                case AssaultAction() | FireAction():
+                    new_state._count_stall(count="reset")
+            branching_states = [(1, new_state)]
+        else:
+            match action:
+                case MoveAction() | PivotAction():
+                    branching_states = self._get_fire_configured_branches(firer_ids)
+                case AssaultAction():
+                    branching_states = self._get_fire_configured_branches(firer_ids)
+                    # Use a simpler deterministic assault outcome for now
+                    for _, new_state in branching_states:
+                        assault_controls = new_state.gs.get_component(
+                            action.unit_id, AssaultControls
+                        )
+                        assault_controls.override = AssaultOutcomes.SUCCESS
+                case FireAction():
+                    # firer_ids = {action.unit_id}
+                    # branching_states = self._get_fire_configured_branches(firer_ids)
+
+                    # Use a simpler deterministic branching for now.
+                    # This avoids double-PIN avoidance for deterministic branching
                     new_state = self.copy()
                     new_state._count_stall(count="reset")
-                    branching_states = [(1, new_state)]
-                else:
-                    branching_states = self._get_fire_configured_branches(firer_ids)
-                # Use a simpler deterministic assault outcome for now
-                for _, new_state in branching_states:
-                    assault_controls = new_state.gs.get_component(
-                        action.unit_id, AssaultControls
+                    fire_controls = new_state.gs.get_component(
+                        action.unit_id, FireControls
                     )
-                    assault_controls.override = AssaultOutcomes.SUCCESS
-            case FireAction():
-                # firer_ids = {action.unit_id}
-                # branching_states = self._get_fire_configured_branches(firer_ids)
+                    fire_controls.override = FireOutcomes.SUPPRESS
+                    branching_states = [(1, new_state)]
 
-                # Use a simpler deterministic branching for now
-                new_state = self.copy()
-                new_state._count_stall(count="reset")
-                fire_controls = new_state.gs.get_component(action.unit_id, FireControls)
-                fire_controls.override = FireOutcomes.SUPPRESS
-                branching_states = [(1, new_state)]
-
-        # Perform the action on each configured branches by mutating in-place.
+        # Perform the action on each configured branches by mutating each element.
         for _, new_state in branching_states:
             match action:
                 case MoveAction():
