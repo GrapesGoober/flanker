@@ -199,10 +199,6 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
 
 
 def test_optimal_waypoint(fixture: Fixture) -> None:
-    # TODO: it doesnt seem to do double PIN avoidance properly.
-    # Why is moving to waypoint 4 having score of 3? Same as to peek.
-    # NOTE: also, why is some move actions resulting in empty branches?
-    # FIXME: bug found, waypoints state copy()
     actions = fixture.blue_agent.play_initiative()
     assert actions != [], "The minimax must find optimal action sequence."
     assert isinstance(
