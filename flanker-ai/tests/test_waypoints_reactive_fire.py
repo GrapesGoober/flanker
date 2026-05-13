@@ -193,7 +193,13 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
         to=move_position,
     )
     _, enemies = interrupts[0]
-    fire_permutations = fixture.state.get_all_fire_outcomes(set(enemies))
+    fire_permutations = fixture.state.get_permutations(
+        unit_ids=set(enemies),
+        outcome_probabilities={
+            FireOutcomes.PIN: 0.6,
+            FireOutcomes.SUPPRESS: 0.4,
+        },
+    )
     total_prob = 0
     for prob, _ in fire_permutations:
         total_prob += prob
