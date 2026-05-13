@@ -54,10 +54,10 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         best_action: TAction | None = None
 
         for action in actions:
-            branch = rs.get_deterministic_branch(action)
-            if branch is None:
+            branches = rs.get_branches(action)
+            if branches == []:
                 continue
-
+            _, branch = max(branches, key=lambda b: b[0])
             score, _ = self._search(branch, depth - 1, alpha, beta)
 
             if maximizing:

@@ -116,6 +116,7 @@ def fixture() -> Fixture:
                 type="WaypointsStateConfig",
                 waypoint_coordinates=waypoint_coordinates,
                 path_tolerance=3,
+                is_deterministic=True,
             ),
             policy_config=AiConfigComponent.MinimaxPolicyConfig(
                 type="MinimaxPolicyConfig"
@@ -139,14 +140,16 @@ def fixture() -> Fixture:
 def test_stall(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
+    rs = WaypointsState(
+        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
+    )
     rs.update_state(fixture.gs)
     for _ in range(5):
         action = MoveAction(
             unit_id=fixture.friendly_1,
             to=fixture.waypoint_coordinates[3],
         )
-        new_state = rs.get_deterministic_branch(action)
+        _, new_state = rs.get_branches(action)[0]
         assert new_state != None, "Actions are not invalid"
         rs = new_state
     assert rs.get_winner() == None, "BLUE must not stall yet."
@@ -155,7 +158,7 @@ def test_stall(fixture: Fixture) -> None:
         unit_id=fixture.friendly_1,
         to=fixture.waypoint_coordinates[3],
     )
-    new_state = rs.get_deterministic_branch(action)
+    _, new_state = rs.get_branches(action)[0]
     assert new_state != None, "Actions are not invalid"
     rs = new_state
     assert (
@@ -166,7 +169,9 @@ def test_stall(fixture: Fixture) -> None:
 def test_waypoints_pathing(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
+    rs = WaypointsState(
+        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
+    )
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)
@@ -183,7 +188,9 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 def test_waypoints_visibility(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
+    rs = WaypointsState(
+        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
+    )
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)
@@ -196,14 +203,16 @@ def test_optimal_waypoint(fixture: Fixture) -> None:
     assert actions != [], "The minimax must find optimal action sequence."
     assert isinstance(
         actions[0], MoveActionResult
-    ), "AI must start with Move Action to peeking"
+    ), "AI must start first with Move Action"
     assert isinstance(
         actions[1], MoveActionResult
-    ), "AI must start with Move Action to peeking"
+    ), "AI must continue with Move Actions"
     assert actions[0].action.to == Vec2(
         -10, 10
-    ), "AI must start with Move Action to peeking"
+    ), "AI must try to peek to the left at Vec2(-10, 10)"
     assert actions[1].action.to == Vec2(
         -10, 1
-    ), "AI must start with Move Action to peeking"
-    assert isinstance(actions[2], FireActionResult), "AI must perform Fire Action"
+    ), "AI must try to peek to the left at Vec2(-10, 1)"
+    assert isinstance(
+        actions[2], FireActionResult
+    ), "AI must perform Fire Action after peeking"

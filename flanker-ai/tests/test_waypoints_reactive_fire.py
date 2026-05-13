@@ -105,6 +105,7 @@ def fixture() -> Fixture:
     state = WaypointsState(
         points=waypoint_positions,
         path_tolerance=20,
+        is_deterministic=False,
     )
 
     state.update_state(gs)
@@ -192,7 +193,7 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
         to=move_position,
     )
     _, enemies = interrupts[0]
-    fire_permutations = fixture.state.get_all_fire_permutations(enemies)
+    fire_permutations = fixture.state.get_all_fire_outcomes(set(enemies))
     total_prob = 0
     for prob, _ in fire_permutations:
         total_prob += prob
@@ -210,7 +211,6 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
                 fixture.enemy_2: FireOutcomes.PIN,
             }:
                 unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
-                # TODO: double PIN avoidance conflicts with this test
                 assert (
                     unit.status == CombatUnit.Status.PINNED
                 ), "Expects PIN fire event to result in PINNED status"

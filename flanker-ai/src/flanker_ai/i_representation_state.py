@@ -27,13 +27,6 @@ class IRepresentationState[TAction](Protocol):
         """Generate branches and their probability from the current action."""
         ...
 
-    def get_deterministic_branch(
-        self,
-        action: TAction,
-    ) -> "IRepresentationState[TAction] | None":
-        """Generates one most likely branch deterministically."""
-        ...
-
     def get_winner(self) -> InitiativeState.Faction | None:
         """Get the winning faction, if any"""
         ...

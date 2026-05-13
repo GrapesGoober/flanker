@@ -22,6 +22,7 @@ class AiConfigComponent:
         type: Literal["WaypointsStateConfig"]
         waypoint_coordinates: list[Vec2]
         path_tolerance: float
+        is_deterministic: bool
 
     @dataclass
     class UnabstractedStateConfig:

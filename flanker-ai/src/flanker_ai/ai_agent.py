@@ -168,10 +168,13 @@ class AiAgent:
                         policy=policy,
                     )
                 case AiConfigComponent.WaypointsStateConfig():
-                    rs = WaypointsState(
-                        points=state_config.waypoint_coordinates,
-                        path_tolerance=state_config.path_tolerance,
-                    )
+                    match state_config:
+                        case AiConfigComponent.WaypointsStateConfig():
+                            rs = WaypointsState(
+                                points=state_config.waypoint_coordinates,
+                                path_tolerance=state_config.path_tolerance,
+                                is_deterministic=state_config.is_deterministic,
+                            )
                     match policy_config:
                         case AiConfigComponent.ExpectimaxPolicyConfig():
                             policy = ExpectimaxPolicy[Action](depth=4)
