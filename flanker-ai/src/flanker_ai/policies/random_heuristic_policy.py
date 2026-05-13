@@ -1,13 +1,19 @@
 import random
 from typing import Sequence
 
-from flanker_ai.actions import AssaultAction, FireAction, MoveAction, PivotAction
+from flanker_ai.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.gamestate import GameState
 
 
-class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
+class RandomHeuristicPolicy(IPolicy[Action]):
     """
     Random Heuristic baseline agent.
     Logic:
@@ -24,9 +30,7 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
     ) -> None:
         self._gs = gs
 
-    def get_action_sequence(
-        self, rs: IRepresentationState[TAction]
-    ) -> Sequence[TAction]:
+    def get_action_sequence(self, rs: IRepresentationState[Action]) -> Sequence[Action]:
 
         winner = rs.get_winner()
         if winner is not None:
@@ -36,12 +40,11 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
         if not actions:
             return []
 
-        # Categorizes actions into candidante fire actions or move actions
-        fire_actions: list[TAction] = []
-        move_actions: list[TAction] = []
+        # Categorizes actions into candidate fire actions or move actions
+        fire_actions: list[Action] = []
+        move_actions: list[Action] = []
         for action in actions:
-            real_action = rs.deabstract_action(action, self._gs)
-            match real_action:
+            match action:
                 case FireAction():
                     fire_actions.append(action)
                 case MoveAction() | AssaultAction() | PivotAction():
@@ -62,9 +65,9 @@ class RandomHeuristicPolicy[TAction](IPolicy[TAction]):
 
     def _pick_valid_action(
         self,
-        rs: IRepresentationState[TAction],
-        candidates: list[TAction],
-    ) -> TAction | None:
+        rs: IRepresentationState[Action],
+        candidates: list[Action],
+    ) -> Action | None:
         """Randomly pick a valid action."""
         remaining = candidates.copy()
         while remaining:

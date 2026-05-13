@@ -273,14 +273,6 @@ class WaypointsState(IRepresentationState[Action]):
         return objective_system.get_winning_faction(self.gs)
 
     @override
-    def deabstract_action(
-        self,
-        action: Action,
-        gs: GameState,
-    ) -> Action:
-        return action
-
-    @override
     def update_state(
         self,
         gs: GameState,

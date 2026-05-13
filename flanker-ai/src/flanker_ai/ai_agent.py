@@ -41,12 +41,12 @@ class _AiAgentInstanceComponent:
 
 
 class AiAgent:
-    def __init__[TAction](
+    def __init__(
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
-        rs: IRepresentationState[TAction],
-        policy: IPolicy[TAction],
+        rs: IRepresentationState[Action],
+        policy: IPolicy[Action],
     ) -> None:
         self._gs = gs
         self._faction: InitiativeState.Faction = faction
@@ -91,10 +91,7 @@ class AiAgent:
                 initiative_system.flip_initiative(self._gs)
                 break
 
-            action = rs.deabstract_action(
-                action=actions[0],
-                gs=self._gs,
-            )
+            action = actions[0]
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
@@ -160,7 +157,7 @@ class AiAgent:
                         case AiConfigComponent.MinimaxPolicyConfig():
                             policy = MinimaxPolicy[Action](depth=4)
                         case AiConfigComponent.RandomHeuristicPolicyConfig():
-                            policy = RandomHeuristicPolicy[Action](gs)
+                            policy = RandomHeuristicPolicy(gs)
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,
@@ -181,7 +178,7 @@ class AiAgent:
                         case AiConfigComponent.MinimaxPolicyConfig():
                             policy = MinimaxPolicy[Action](depth=4)
                         case AiConfigComponent.RandomHeuristicPolicyConfig():
-                            policy = RandomHeuristicPolicy[Action](gs)
+                            policy = RandomHeuristicPolicy(gs)
                     agent = AiAgent(
                         gs=gs,
                         faction=faction,

@@ -1,6 +1,5 @@
 from typing import Protocol, Sequence, runtime_checkable
 
-from flanker_ai.actions import Action
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -37,14 +36,4 @@ class IRepresentationState[TAction](Protocol):
 
     def update_state(self, gs: GameState) -> None:
         """Update the state to match the original game state."""
-        ...
-
-    def deabstract_action(
-        self,
-        action: TAction,
-        gs: GameState,
-    ) -> Action:
-        """
-        Converts the abstract action within the abstract representation
-        into a raw game state action."""
         ...
