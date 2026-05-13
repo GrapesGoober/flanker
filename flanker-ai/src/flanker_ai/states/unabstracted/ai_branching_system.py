@@ -1,0 +1,152 @@
+from itertools import product
+from math import prod
+from typing import Literal
+from uuid import UUID
+
+from flanker_ai.components import AiStallCountComponent, InitiativeState
+from flanker_core.gamestate import GameState
+from flanker_core.models.components import (
+    CombatUnit,
+    EliminationObjective,
+    FireControls,
+)
+from flanker_core.models.outcomes import FireOutcomes
+from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.move_system import MoveSystem
+
+
+class AiBranchingSystem:
+    @staticmethod
+    def get_permutations[T](
+        unit_ids: set[UUID],
+        outcome_probabilities: dict[T, float],
+    ) -> list[tuple[float, dict[UUID, T]]]:
+        """Get a list of all event permutations T for each entity ID"""
+
+        permutations: list[
+            tuple[
+                float,  # total probability of this permutation event
+                dict[UUID, T],  # event (key=entity, value=outcome)
+            ]
+        ] = []
+
+        # Assemble the probability and fire outcomes
+        outcomes = list(outcome_probabilities.keys())
+        for outcome_combo in product(outcomes, repeat=len(unit_ids)):
+            probability = prod(
+                outcome_probabilities[outcome] for outcome in outcome_combo
+            )
+            event = {
+                unit_id: outcome for unit_id, outcome in zip(unit_ids, outcome_combo)
+            }
+            permutations.append((probability, event))
+        return permutations
+
+    @staticmethod
+    def _count_stall(
+        gs: GameState,
+        count: Literal["up"] | Literal["reset"],
+    ) -> None:
+
+        if entities := gs.query(AiStallCountComponent):
+            _, stall_component = entities[0]
+        else:
+            gs.add_entity(stall_component := AiStallCountComponent())
+
+        initiative_system = gs.get(InitiativeSystem)
+        initiative = initiative_system.get_initiative(gs)
+        match count:
+            case "up":
+                stall_component.stall_counter[initiative] += 1
+            case "reset":
+                stall_component.stall_counter[initiative] = 0
+
+    @staticmethod
+    def copy(gs: GameState) -> GameState:
+        """Selectively copy the game state for mutating entities."""
+
+        entities_to_copy: set[UUID] = set()
+        for id, _ in gs.query(InitiativeState):
+            entities_to_copy.add(id)
+        for id, _ in gs.query(EliminationObjective):
+            entities_to_copy.add(id)
+        for id, _ in gs.query(CombatUnit):
+            entities_to_copy.add(id)
+        for id, _ in gs.query(AiStallCountComponent):
+            entities_to_copy.add(id)
+        return gs.selective_copy(list(entities_to_copy))
+
+    @staticmethod
+    def get_reactive_fire_branches(
+        gs: GameState,
+        unit_id: UUID,
+        move_to: Vec2,
+        is_deterministic: bool,
+    ) -> list[tuple[float, GameState]]:
+        """Get new game state branches configured with reactive fire overrides."""
+
+        move_system = gs.get(MoveSystem)
+        branching_system = gs.get(AiBranchingSystem)
+        reactive_fire_candidates = move_system.get_interrupt_candidates(
+            gs, unit_id, move_to
+        )
+        reactive_fire_ids = {
+            uid for _, uuid_list in reactive_fire_candidates for uid in uuid_list
+        }
+
+        # No reactive fire found; this is garantee outcome
+        if len(reactive_fire_ids) == 0:
+            new_state = branching_system.copy(gs)
+            branching_system._count_stall(new_state, "up")
+            return [(1, new_state)]
+
+        # Reactive fire found; configure all permutations
+        permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
+        if is_deterministic:
+            if len(reactive_fire_ids) == 1:
+                outcomes = {next(iter(reactive_fire_ids)): FireOutcomes.PIN}
+            else:
+                # Enforce avoidance by having it assume
+                # 2 reactive fires means SUPPRESS, and 3 means KILL
+                outcomes = {
+                    enemy_id: FireOutcomes.SUPPRESS for enemy_id in reactive_fire_ids
+                }
+                outcomes[next(iter(reactive_fire_ids))] = FireOutcomes.PIN
+            permutations = [(1, outcomes)]
+        else:
+            permutations = branching_system.get_permutations(
+                unit_ids=reactive_fire_ids,
+                outcome_probabilities={
+                    FireOutcomes.PIN: 0.6,
+                    FireOutcomes.SUPPRESS: 0.4,
+                },
+            )
+        if len(permutations) == 0:
+            raise Exception("Permutations are empty, something went wrong!")
+
+        # Permutation configured; create branches
+        branching_states: list[tuple[float, GameState]] = []
+        for probability, unit_fire_outcomes in permutations:
+            new_state = branching_system.copy(gs)
+            branching_system._count_stall(new_state, count="reset")
+            for firer_id, firer_outcome in unit_fire_outcomes.items():
+                fire_controls = new_state.get_component(firer_id, FireControls)
+                fire_controls.override = firer_outcome
+            branching_states.append((probability, new_state))
+        return branching_states
+
+    @staticmethod
+    def get_fire_branches(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> list[tuple[float, GameState]]:
+        """Get new game state branches configured with active fire overrides."""
+
+        # Configure this to be deterministic for simplicity for now.
+        branching_system = gs.get(AiBranchingSystem)
+        new_state = branching_system.copy(gs)
+        branching_system._count_stall(new_state, count="reset")
+        fire_controls = new_state.get_component(unit_id, FireControls)
+        fire_controls.override = FireOutcomes.SUPPRESS
+        return [(1, new_state)]

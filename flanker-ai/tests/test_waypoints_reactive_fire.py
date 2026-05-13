@@ -4,6 +4,7 @@ from uuid import UUID
 
 import pytest
 from flanker_ai.actions import MoveAction
+from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -182,6 +183,7 @@ def test_two_interrupts(fixture: Fixture) -> None:
 
 def test_reactive_fire_permutations(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
+    branching_system = fixture.state.gs.get(AiBranchingSystem)
     move_position = fixture.waypoint_positions[2]
     action = MoveAction(
         unit_id=fixture.unit_move,
@@ -193,7 +195,7 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
         to=move_position,
     )
     _, enemies = interrupts[0]
-    fire_permutations = fixture.state.get_permutations(
+    fire_permutations = branching_system.get_permutations(
         unit_ids=set(enemies),
         outcome_probabilities={
             FireOutcomes.PIN: 0.6,
