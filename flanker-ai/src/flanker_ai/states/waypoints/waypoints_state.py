@@ -304,8 +304,19 @@ class WaypointsState(IRepresentationState[Action]):
                 case MoveAction() | PivotAction():
                     # Consider stall for move-type actions with no reactive fire
                     new_state._count_stall(count="up")
-                case AssaultAction() | FireAction():
+                case AssaultAction():
                     new_state._count_stall(count="reset")
+                case FireAction():
+                    # firer_ids = {action.unit_id}
+                    # branching_states = self._get_fire_configured_branches(firer_ids)
+
+                    # Use a simpler deterministic branching for now.
+                    # This avoids double-PIN avoidance for deterministic branching
+                    new_state._count_stall(count="reset")
+                    fire_controls = new_state.gs.get_component(
+                        action.unit_id, FireControls
+                    )
+                    fire_controls.override = FireOutcomes.SUPPRESS
             branching_states = [(1, new_state)]
         else:
             match action:
@@ -320,18 +331,7 @@ class WaypointsState(IRepresentationState[Action]):
                         )
                         assault_controls.override = AssaultOutcomes.SUCCESS
                 case FireAction():
-                    # firer_ids = {action.unit_id}
-                    # branching_states = self._get_fire_configured_branches(firer_ids)
-
-                    # Use a simpler deterministic branching for now.
-                    # This avoids double-PIN avoidance for deterministic branching
-                    new_state = self.copy()
-                    new_state._count_stall(count="reset")
-                    fire_controls = new_state.gs.get_component(
-                        action.unit_id, FireControls
-                    )
-                    fire_controls.override = FireOutcomes.SUPPRESS
-                    branching_states = [(1, new_state)]
+                    raise Exception("This logic path can't arrive.")
 
         # Perform the action on each configured branches by mutating each element.
         for _, new_state in branching_states:
