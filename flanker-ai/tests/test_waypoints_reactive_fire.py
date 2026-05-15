@@ -192,3 +192,28 @@ def test_reactive_fire_branches(fixture: Fixture) -> None:
                 fixture.enemy_2: enemy_2_fire.override,
             },
         ) in permutations
+
+
+def test_deterministic_double_pin(fixture: Fixture) -> None:
+    branching_system = fixture.state.gs.get(AiBranchingSystem)
+
+    move_position = fixture.waypoint_positions[2]
+
+    # Based on test_one_interrupt, there are two enemies reactive fire
+    branches = branching_system.get_reactive_fire_branches(
+        gs=fixture.state.gs,
+        unit_id=fixture.unit_move,
+        move_to=move_position,
+        is_deterministic=True,  # This test is deterministic
+    )
+    assert len(branches) == 1, "There must be 1 deterministic branch"
+    probability, branch = branches[0]
+    assert probability == 1, "Only 1 branch means 100% probability"
+
+    enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
+    enemy_2_fire = branch.get_component(fixture.enemy_2, FireControls)
+
+    assert set([enemy_1_fire.override, enemy_2_fire.override]) == {
+        FireOutcomes.PIN,
+        FireOutcomes.SUPPRESS,
+    }, "At least one reactive fire must SUPPRESS, the other PIN."
