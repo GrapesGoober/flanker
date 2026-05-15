@@ -125,13 +125,9 @@ def test_no_interrupt(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
 
     move_position = fixture.waypoint_positions[1]
-    action = MoveAction(
-        unit_id=fixture.unit_move,
-        to=move_position,
-    )
     interrupts = move_system.get_interrupt_candidates(
         gs=fixture.state.gs,
-        unit_id=action.unit_id,
+        unit_id=fixture.unit_move,
         to=move_position,
     )
 
@@ -143,16 +139,11 @@ def test_one_interrupt(fixture: Fixture) -> None:
     waypoints_system = fixture.state.gs.get(WaypointGraphSystem)
 
     move_position = fixture.waypoint_positions[2]
-    action = MoveAction(
+    interrupts = move_system.get_interrupt_candidates(
+        gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         to=move_position,
     )
-    interrupts = move_system.get_interrupt_candidates(
-        gs=fixture.state.gs,
-        unit_id=action.unit_id,
-        to=move_position,
-    )
-
     waypoints = waypoints_system.get_waypoints(fixture.state.gs)
     assert interrupts == [
         (waypoints[2].position, [fixture.enemy_1, fixture.enemy_2])
@@ -164,13 +155,9 @@ def test_two_interrupts(fixture: Fixture) -> None:
     waypoints_system = fixture.state.gs.get(WaypointGraphSystem)
 
     move_position = fixture.waypoint_positions[3]
-    action = MoveAction(
-        unit_id=fixture.unit_move,
-        to=move_position,
-    )
     interrupts = move_system.get_interrupt_candidates(
         gs=fixture.state.gs,
-        unit_id=action.unit_id,
+        unit_id=fixture.unit_move,
         to=move_position,
     )
 
@@ -206,6 +193,13 @@ def test_reactive_fire_permutations(fixture: Fixture) -> None:
     for prob, _ in fire_permutations:
         total_prob += prob
     assert isclose(total_prob, 1), "Total probability must sum to 1"
+
+    # TODO
+    # Update this tests with AI config.
+    # Also, no need to repeat code from Core.
+    # Make it more minimalist. Have it generate permutations
+    # and check that permutations (troubling ones) are being
+    # applied properly. Just a few cases. Don't duplicate Core tests.
 
     branches = fixture.state.get_branches(action)
     for id, (prob, branch) in enumerate(branches):
