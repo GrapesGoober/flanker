@@ -1,11 +1,8 @@
 from dataclasses import dataclass
-from math import isclose
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import MoveAction
 from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -136,7 +133,6 @@ def test_no_interrupt(fixture: Fixture) -> None:
 
 def test_one_interrupt(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
-    waypoints_system = fixture.state.gs.get(WaypointGraphSystem)
 
     move_position = fixture.waypoint_positions[2]
     interrupts = move_system.get_interrupt_candidates(
@@ -144,15 +140,13 @@ def test_one_interrupt(fixture: Fixture) -> None:
         unit_id=fixture.unit_move,
         to=move_position,
     )
-    waypoints = waypoints_system.get_waypoints(fixture.state.gs)
     assert interrupts == [
-        (waypoints[2].position, [fixture.enemy_1, fixture.enemy_2])
-    ], "Expects one interrupt at (7.5, -10) with two enemies"
+        (fixture.waypoint_positions[2], [fixture.enemy_1, fixture.enemy_2])
+    ], "Expects one interrupt with two enemies"
 
 
 def test_two_interrupts(fixture: Fixture) -> None:
     move_system = fixture.state.gs.get(MoveSystem)
-    waypoints_system = fixture.state.gs.get(WaypointGraphSystem)
 
     move_position = fixture.waypoint_positions[3]
     interrupts = move_system.get_interrupt_candidates(
@@ -161,95 +155,40 @@ def test_two_interrupts(fixture: Fixture) -> None:
         to=move_position,
     )
 
-    waypoints = waypoints_system.get_waypoints(fixture.state.gs)
     assert interrupts == [
-        (waypoints[2].position, [fixture.enemy_1, fixture.enemy_2]),
-        (waypoints[3].position, [fixture.enemy_3]),
-    ], "Expects one interrupt at (7.5, -10) with two enemies"
+        (fixture.waypoint_positions[2], [fixture.enemy_1, fixture.enemy_2]),
+        (fixture.waypoint_positions[3], [fixture.enemy_3]),
+    ], "Expects two interrupts with three enemies"
 
 
-def test_reactive_fire_permutations(fixture: Fixture) -> None:
-    move_system = fixture.state.gs.get(MoveSystem)
+def test_reactive_fire_branches(fixture: Fixture) -> None:
     branching_system = fixture.state.gs.get(AiBranchingSystem)
+
     move_position = fixture.waypoint_positions[2]
-    action = MoveAction(
-        unit_id=fixture.unit_move,
-        to=move_position,
-    )
-    interrupts = move_system.get_interrupt_candidates(
-        gs=fixture.state.gs,
-        unit_id=action.unit_id,
-        to=move_position,
-    )
-    _, enemies = interrupts[0]
-    fire_permutations = branching_system.get_permutations(
-        unit_ids=set(enemies),
+
+    # Based on test_one_interrupt, there are two enemies reactive fire
+    permutations = branching_system.get_permutations(
+        unit_ids={fixture.enemy_1, fixture.enemy_2},
         outcome_probabilities={
             FireOutcomes.PIN: 0.6,
             FireOutcomes.SUPPRESS: 0.4,
         },
     )
-    total_prob = 0
-    for prob, _ in fire_permutations:
-        total_prob += prob
-    assert isclose(total_prob, 1), "Total probability must sum to 1"
 
-    # TODO
-    # Update this tests with AI config.
-    # Also, no need to repeat code from Core.
-    # Make it more minimalist. Have it generate permutations
-    # and check that permutations (troubling ones) are being
-    # applied properly. Just a few cases. Don't duplicate Core tests.
-
-    branches = fixture.state.get_branches(action)
-    for id, (prob, branch) in enumerate(branches):
-        # Unit could be pinned, suppressed, or killed
-        # Need to cross reference this with the permutation
-        _, fire_event = fire_permutations[id]
-        match fire_event:
-            # I hate this test case
-            case {
-                fixture.enemy_1: FireOutcomes.PIN,
-                fixture.enemy_2: FireOutcomes.PIN,
-            }:
-                unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
-                assert (
-                    unit.status == CombatUnit.Status.PINNED
-                ), "Expects PIN fire event to result in PINNED status"
-                assert (
-                    branch.get_initiative() == InitiativeState.Faction.BLUE
-                ), "Expects PIN fire event to not flip initiative."
-            case {
-                fixture.enemy_1: FireOutcomes.PIN,
-                fixture.enemy_2: FireOutcomes.SUPPRESS,
-            }:
-                unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
-                assert (
-                    unit.status == CombatUnit.Status.SUPPRESSED
-                ), "Expects SUPPRESS fire event to result in SUPPRESSED status"
-                assert (
-                    branch.get_initiative() == InitiativeState.Faction.RED
-                ), "Expects SUPPRESS fire event to flip initiative."
-            case {
-                fixture.enemy_1: FireOutcomes.SUPPRESS,
-                fixture.enemy_2: FireOutcomes.PIN,
-            }:
-                unit = branch.gs.get_component(fixture.unit_move, CombatUnit)
-                assert (
-                    unit.status == CombatUnit.Status.SUPPRESSED
-                ), "Expects SUPPRESS fire event to result in SUPPRESSED status"
-                assert (
-                    branch.get_initiative() == InitiativeState.Faction.RED
-                ), "Expects SUPPRESS fire event to flip initiative."
-            case {
-                fixture.enemy_1: FireOutcomes.SUPPRESS,
-                fixture.enemy_2: FireOutcomes.SUPPRESS,
-            }:
-                assert (
-                    branch.gs.try_component(fixture.unit_move, CombatUnit) == None
-                ), "Expects double SUPPRESS fire event to kill unit"
-                assert (
-                    branch.get_initiative() == InitiativeState.Faction.RED
-                ), "Expects double SUPPRESS fire event to flip initiative."
-            case _:
-                ...
+    # Check that the configured branch matches the permutations
+    branches = branching_system.get_reactive_fire_branches(
+        gs=fixture.state.gs,
+        unit_id=fixture.unit_move,
+        move_to=move_position,
+        is_deterministic=False,
+    )
+    for probability, branch in branches:
+        enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
+        enemy_2_fire = branch.get_component(fixture.enemy_2, FireControls)
+        assert (
+            probability,
+            {
+                fixture.enemy_1: enemy_1_fire.override,
+                fixture.enemy_2: enemy_2_fire.override,
+            },
+        ) in permutations
