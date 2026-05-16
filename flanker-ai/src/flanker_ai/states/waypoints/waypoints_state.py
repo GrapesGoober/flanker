@@ -12,8 +12,8 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
-from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
+from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState

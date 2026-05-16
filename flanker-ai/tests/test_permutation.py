@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 import pytest
-from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_core.models.outcomes import FireOutcomes
 
 

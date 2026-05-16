@@ -5,7 +5,7 @@ from typing import Sequence, override
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
