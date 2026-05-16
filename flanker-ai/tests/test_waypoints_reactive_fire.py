@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
+from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -162,12 +162,8 @@ def test_two_interrupts(fixture: Fixture) -> None:
 
 
 def test_reactive_fire_branches(fixture: Fixture) -> None:
-    branching_system = fixture.state.gs.get(AiBranchingSystem)
-
-    move_position = fixture.waypoint_positions[2]
-
     # Based on test_one_interrupt, there are two enemies reactive fire
-    permutations = branching_system.get_permutations(
+    permutations = AiBranchingService.get_permutations(
         unit_ids={fixture.enemy_1, fixture.enemy_2},
         outcome_probabilities={
             FireOutcomes.PIN: 0.6,
@@ -176,7 +172,8 @@ def test_reactive_fire_branches(fixture: Fixture) -> None:
     )
 
     # Check that the configured branch matches the permutations
-    branches = branching_system.get_reactive_fire_branches(
+    move_position = fixture.waypoint_positions[2]
+    branches = AiBranchingService.get_reactive_fire_branches(
         gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         move_to=move_position,
@@ -195,12 +192,9 @@ def test_reactive_fire_branches(fixture: Fixture) -> None:
 
 
 def test_deterministic_double_pin(fixture: Fixture) -> None:
-    branching_system = fixture.state.gs.get(AiBranchingSystem)
-
-    move_position = fixture.waypoint_positions[2]
-
     # Based on test_one_interrupt, there are two enemies reactive fire
-    branches = branching_system.get_reactive_fire_branches(
+    move_position = fixture.waypoint_positions[2]
+    branches = AiBranchingService.get_reactive_fire_branches(
         gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         move_to=move_position,

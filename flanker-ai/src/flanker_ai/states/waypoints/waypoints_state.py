@@ -12,7 +12,7 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
+from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
 from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
@@ -42,8 +42,7 @@ class WaypointsState(IRepresentationState[Action]):
             path_tolerance=self._path_tolerance,
             is_deterministic=self._is_deterministic,
         )
-        branching_system = self.gs.get(AiBranchingSystem)
-        new_waypoints_state.gs = branching_system.copy(self.gs)
+        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
         return new_waypoints_state
 
     @override
@@ -173,9 +172,7 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
-
-        branching_system = self.gs.get(AiBranchingSystem)
-        branches = branching_system.get_action_branches(
+        branches = AiBranchingService.get_action_branches(
             self.gs, action, self._is_deterministic
         )
         state_branches: list[tuple[float, WaypointsState]] = []
@@ -211,7 +208,6 @@ class WaypointsState(IRepresentationState[Action]):
             replacement=WaypointsLosSystem,
         )
         self.gs.register(WaypointGraphSystem)
-        self.gs.register(AiBranchingSystem)
 
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())

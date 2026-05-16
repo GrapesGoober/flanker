@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID, uuid4
 
 import pytest
-from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
+from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
 from flanker_core.models.outcomes import FireOutcomes
 
 
@@ -18,7 +18,7 @@ def fixture() -> Fixture:
 
 
 def test_permutation_one_outcome(fixture: Fixture) -> None:
-    permutations = AiBranchingSystem.get_permutations(
+    permutations = AiBranchingService.get_permutations(
         unit_ids={fixture.enemy_1},
         outcome_probabilities={FireOutcomes.SUPPRESS: 1},
     )
@@ -28,7 +28,7 @@ def test_permutation_one_outcome(fixture: Fixture) -> None:
 
 
 def test_permutation_two_outcomes(fixture: Fixture) -> None:
-    permutations = AiBranchingSystem.get_permutations(
+    permutations = AiBranchingService.get_permutations(
         unit_ids={fixture.enemy_1},
         outcome_probabilities={
             FireOutcomes.PIN: 0.6,
@@ -42,7 +42,7 @@ def test_permutation_two_outcomes(fixture: Fixture) -> None:
 
 
 def test_permutation_four_outcomes(fixture: Fixture) -> None:
-    permutations = AiBranchingSystem.get_permutations(
+    permutations = AiBranchingService.get_permutations(
         unit_ids={fixture.enemy_1, fixture.enemy_2},
         outcome_probabilities={
             FireOutcomes.PIN: 0.6,

@@ -27,9 +27,9 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
-class AiBranchingSystem:
+class AiBranchingService:
     """
-    AI specific system class responsible for generating branching states
+    AI specific service class responsible for generating branching states
     and their probabilities given an action. This will configure permutations
     for each action type, copy the game state, and apply the actions.
     """
@@ -104,7 +104,6 @@ class AiBranchingSystem:
         """Get new game state branches configured with reactive fire overrides."""
 
         move_system = gs.get(MoveSystem)
-        branching_system = gs.get(AiBranchingSystem)
         reactive_fire_candidates = move_system.get_interrupt_candidates(
             gs, unit_id, move_to
         )
@@ -114,8 +113,8 @@ class AiBranchingSystem:
 
         # No reactive fire found; this is garantee outcome
         if len(reactive_fire_ids) == 0:
-            new_state = branching_system.copy(gs)
-            branching_system._count_stall(new_state, "up")
+            new_state = AiBranchingService.copy(gs)
+            AiBranchingService._count_stall(new_state, "up")
             return [(1, new_state)]
 
         # Reactive fire found; configure all permutations
@@ -132,7 +131,7 @@ class AiBranchingSystem:
                 outcomes[next(iter(reactive_fire_ids))] = FireOutcomes.PIN
             permutations = [(1, outcomes)]
         else:
-            permutations = branching_system.get_permutations(
+            permutations = AiBranchingService.get_permutations(
                 unit_ids=reactive_fire_ids,
                 outcome_probabilities={
                     FireOutcomes.PIN: 0.6,
@@ -145,8 +144,8 @@ class AiBranchingSystem:
         # Permutation configured; create branches
         branching_states: list[tuple[float, GameState]] = []
         for probability, unit_fire_outcomes in permutations:
-            new_state = branching_system.copy(gs)
-            branching_system._count_stall(new_state, count="reset")
+            new_state = AiBranchingService.copy(gs)
+            AiBranchingService._count_stall(new_state, count="reset")
             for firer_id, firer_outcome in unit_fire_outcomes.items():
                 fire_controls = new_state.get_component(firer_id, FireControls)
                 fire_controls.override = firer_outcome
@@ -160,13 +159,12 @@ class AiBranchingSystem:
         is_deterministic: bool,
     ) -> list[tuple[float, GameState]]:
         """Get new game state branches configured with active fire overrides."""
-        branching_system = gs.get(AiBranchingSystem)
 
         permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
         if is_deterministic:
             permutations = [(1, {unit_id: FireOutcomes.SUPPRESS})]
         else:
-            permutations = branching_system.get_permutations(
+            permutations = AiBranchingService.get_permutations(
                 unit_ids={unit_id},
                 outcome_probabilities={
                     # Make AI assume it's more likely to suppress
@@ -177,8 +175,8 @@ class AiBranchingSystem:
 
         branching_states: list[tuple[float, GameState]] = []
         for probability, outcomes in permutations:
-            new_state = branching_system.copy(gs)
-            branching_system._count_stall(new_state, count="reset")
+            new_state = AiBranchingService.copy(gs)
+            AiBranchingService._count_stall(new_state, count="reset")
             for id_to_override, outcome in outcomes.items():
                 fire_controls = new_state.get_component(id_to_override, FireControls)
                 fire_controls.override = outcome
@@ -197,13 +195,12 @@ class AiBranchingSystem:
         move_system = gs.get(MoveSystem)
         assault_system = gs.get(AssaultSystem)
         fire_system = gs.get(FireSystem)
-        branching_system = gs.get(AiBranchingSystem)
 
         # Prepare a list of configured branches
         branches: list[tuple[float, GameState]]
         match action:
             case MoveAction():
-                branches = branching_system.get_reactive_fire_branches(
+                branches = AiBranchingService.get_reactive_fire_branches(
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=action.to,
@@ -211,7 +208,7 @@ class AiBranchingSystem:
                 )
             case PivotAction():
                 transform = gs.get_component(action.unit_id, Transform)
-                branches = branching_system.get_reactive_fire_branches(
+                branches = AiBranchingService.get_reactive_fire_branches(
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=transform.position,
@@ -220,7 +217,7 @@ class AiBranchingSystem:
             case AssaultAction():
                 target_transform = gs.get_component(action.target_id, Transform)
                 target_unit = gs.get_component(action.target_id, CombatUnit)
-                branches = branching_system.get_reactive_fire_branches(
+                branches = AiBranchingService.get_reactive_fire_branches(
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=target_transform.position,
@@ -235,7 +232,7 @@ class AiBranchingSystem:
                     else:
                         assault_controls.override = AssaultOutcomes.FAIL
             case FireAction():
-                branches = branching_system.get_fire_branches(
+                branches = AiBranchingService.get_fire_branches(
                     gs=gs, unit_id=action.unit_id, is_deterministic=is_deterministic
                 )
 

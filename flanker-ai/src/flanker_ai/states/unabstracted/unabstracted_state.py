@@ -5,7 +5,7 @@ from typing import Sequence, override
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
+from flanker_ai.states.unabstracted.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -41,8 +41,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def copy(self) -> "UnabstractedState":
-        branching_system = self._gs.get(AiBranchingSystem)
-        new_gs = branching_system.copy(self._gs)
+        new_gs = AiBranchingService.copy(self._gs)
         return UnabstractedState(new_gs)
 
     @override
@@ -118,8 +117,7 @@ class UnabstractedState(IRepresentationState[Action]):
         self,
         action: Action,
     ) -> list[tuple[float, "UnabstractedState"]]:
-        branching_system = self._gs.get(AiBranchingSystem)
-        branches = branching_system.get_action_branches(
+        branches = AiBranchingService.get_action_branches(
             self._gs, action, is_deterministic=True
         )
         state_branches: list[tuple[float, UnabstractedState]] = []
@@ -156,7 +154,6 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
-        self._gs.register(AiBranchingSystem)
 
     def deabstract_action(self, action: Action, gs: GameState) -> Action:
         return action
