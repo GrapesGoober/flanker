@@ -202,6 +202,7 @@ class AiBranchingSystem:
                 )
             case AssaultAction():
                 target_transform = gs.get_component(action.target_id, Transform)
+                target_unit = gs.get_component(action.target_id, CombatUnit)
                 branches = branching_system.get_reactive_fire_branches(
                     gs=gs,
                     unit_id=action.unit_id,
@@ -212,7 +213,10 @@ class AiBranchingSystem:
                     assault_controls = new_state.get_component(
                         action.unit_id, AssaultControls
                     )
-                    assault_controls.override = AssaultOutcomes.SUCCESS
+                    if target_unit.status == CombatUnit.Status.SUPPRESSED:
+                        assault_controls.override = AssaultOutcomes.SUCCESS
+                    else:
+                        assault_controls.override = AssaultOutcomes.FAIL
             case FireAction():
                 branches = branching_system.get_fire_branches(
                     gs=gs,
