@@ -1,8 +1,6 @@
 import random
 from copy import deepcopy
-from typing import Sequence
-from uuid import UUID
-from warnings import warn
+from typing import Any, Sequence, override
 
 from flanker_ai.actions import (
     Action,
@@ -13,16 +11,16 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.unabstracted.ai_branching_system import AiBranchingSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
-    EliminationObjective,
-    FireControls,
     InitiativeState,
     TerrainFeature,
     Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import AssaultOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -52,19 +50,13 @@ class UnabstractedState(IRepresentationState[Action]):
         self.min_y = int(min(v.y for v in boundary_vertices))
         self.max_y = int(max(v.y for v in boundary_vertices))
 
+    @override
     def copy(self) -> "UnabstractedState":
-        mutable_entities: set[UUID] = set()
-        for id, _ in self._gs.query(InitiativeState):
-            mutable_entities.add(id)
-        for id, _ in self._gs.query(EliminationObjective):
-            mutable_entities.add(id)
-        for id, _ in self._gs.query(CombatUnit):
-            mutable_entities.add(id)
-        for id, _ in self._gs.query(AiStallCountComponent):
-            mutable_entities.add(id)
-        new_gs = self._gs.selective_copy(list(mutable_entities))
+        branching_system = self._gs.get(AiBranchingSystem)
+        new_gs = branching_system.copy(self._gs)
         return UnabstractedState(new_gs)
 
+    @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         winner = self.get_winner()
         if winner is not None:
@@ -90,6 +82,7 @@ class UnabstractedState(IRepresentationState[Action]):
                 score -= value
         return score
 
+    @override
     def get_actions(self) -> Sequence[Action]:
         # Generate an action for each combat unit
         actions: list[Action] = []
@@ -131,67 +124,92 @@ class UnabstractedState(IRepresentationState[Action]):
 
         return actions
 
+    @override
     def get_branches(
         self,
         action: Action,
-    ) -> Sequence[tuple[float, "UnabstractedState"]]:
-        warn(
-            "Unabstracted state is deterministic and does not support generating"
-            " stochastic branches. Using deterministic branch for now."
-        )
-        branch = self.get_deterministic_branch(action)
-        if branch == None:
-            return []
-        return [(1, branch)]
-
-    def get_deterministic_branch(self, action: Action) -> "UnabstractedState | None":
-        new_rs = self.copy()
-        initiative_system = new_rs._gs.get(InitiativeSystem)
-        assault_system = new_rs._gs.get(AssaultSystem)
-        fire_system = new_rs._gs.get(FireSystem)
+    ) -> list[tuple[float, "UnabstractedState"]]:
         move_system = self._gs.get(MoveSystem)
+        assault_system = self._gs.get(AssaultSystem)
+        fire_system = self._gs.get(FireSystem)
+        branching_system = self._gs.get(AiBranchingSystem)
+
+        # Prepare a list of configured branches
+        branches: list[tuple[float, GameState]]
         match action:
             case MoveAction():
-                initiative = initiative_system.get_initiative(new_rs._gs)
-                for _, fire_controls in new_rs._gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.PIN
-                result = move_system.move(new_rs._gs, action.unit_id, action.to)
-                if not isinstance(result, InvalidAction):
-                    if result.reactive_fire_outcome == None:
-                        new_rs._get_stall_counter()[initiative] += 1
-                    else:
-                        new_rs._get_stall_counter()[initiative] = 0
-            case PivotAction():
-                initiative = initiative_system.get_initiative(new_rs._gs)
-                for _, fire_controls in new_rs._gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.PIN
-                result = move_system.pivot(new_rs._gs, action.unit_id, action.to)
-                if not isinstance(result, InvalidAction):
-                    if result.reactive_fire_outcome == None:
-                        new_rs._get_stall_counter()[initiative] += 1
-                    else:
-                        new_rs._get_stall_counter()[initiative] = 0
-            case FireAction():
-                initiative = initiative_system.get_initiative(new_rs._gs)
-                new_rs._get_stall_counter()[initiative] = 0
-                for _, fire_controls in new_rs._gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.SUPPRESS
-                result = fire_system.fire(new_rs._gs, action.unit_id, action.target_id)
-            case AssaultAction():
-                initiative = initiative_system.get_initiative(new_rs._gs)
-                new_rs._get_stall_counter()[initiative] = 0
-                for _, fire_controls in new_rs._gs.query(FireControls):
-                    fire_controls.override = FireOutcomes.PIN
-                result = assault_system.assault(
-                    new_rs._gs, action.unit_id, action.target_id
+                branches = branching_system.get_reactive_fire_branches(
+                    gs=self._gs,
+                    unit_id=action.unit_id,
+                    move_to=action.to,
+                    is_deterministic=True,
                 )
-        for _, fire_controls in new_rs._gs.query(FireControls):
-            fire_controls.override = None
+            case PivotAction():
+                transform = self._gs.get_component(action.unit_id, Transform)
+                branches = branching_system.get_reactive_fire_branches(
+                    gs=self._gs,
+                    unit_id=action.unit_id,
+                    move_to=transform.position,
+                    is_deterministic=True,
+                )
+            case AssaultAction():
+                target_transform = self._gs.get_component(action.target_id, Transform)
+                branches = branching_system.get_reactive_fire_branches(
+                    gs=self._gs,
+                    unit_id=action.unit_id,
+                    move_to=target_transform.position,
+                    is_deterministic=True,
+                )
+                for _, new_state in branches:
+                    assault_controls = new_state.get_component(
+                        action.unit_id, AssaultControls
+                    )
+                    assault_controls.override = AssaultOutcomes.SUCCESS
+            case FireAction():
+                branches = branching_system.get_fire_branches(
+                    gs=self._gs,
+                    unit_id=action.unit_id,
+                )
 
-        if isinstance(result, InvalidAction):
-            return None
-        return new_rs
+        # Perform the actions
+        waypoints_state_branches: list[tuple[float, UnabstractedState]] = []
+        for probability, new_state in branches:
+            result: Any | InvalidAction
+            match action:
+                case MoveAction():
+                    result = move_system.move(
+                        gs=new_state,
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                case PivotAction():
+                    result = move_system.pivot(
+                        gs=new_state,
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                case AssaultAction():
+                    result = assault_system.assault(
+                        gs=new_state,
+                        attacker_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
+                case FireAction():
+                    result = fire_system.fire(
+                        gs=new_state,
+                        attacker_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
 
+            # Invalid action won't be performable.
+            if isinstance(result, InvalidAction):
+                return []
+
+            new_branch = UnabstractedState(new_state)
+            waypoints_state_branches.append((probability, new_branch))
+        return waypoints_state_branches
+
+    @override
     def get_winner(self) -> InitiativeState.Faction | None:
         for faction, counter in self._get_stall_counter().items():
             if counter > _MAX_STALL_LIMIT:
@@ -211,19 +229,16 @@ class UnabstractedState(IRepresentationState[Action]):
         else:
             raise ValueError(f"{AiStallCountComponent} missing for {self._gs}")
 
+    @override
     def get_initiative(self) -> InitiativeState.Faction:
         initiative_system = self._gs.get(InitiativeSystem)
         return self._gs.get(initiative_system).get_initiative(self._gs)
-
-    def initialize_state(self, gs: GameState) -> None:
-        self._gs = deepcopy(gs)
-        if self._gs.query(AiStallCountComponent) == []:
-            self._gs.add_entity(AiStallCountComponent())
 
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
+        self._gs.register(AiBranchingSystem)
 
     def deabstract_action(self, action: Action, gs: GameState) -> Action:
         return action
