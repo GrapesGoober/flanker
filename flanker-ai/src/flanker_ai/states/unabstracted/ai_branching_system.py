@@ -157,16 +157,33 @@ class AiBranchingSystem:
     def get_fire_branches(
         gs: GameState,
         unit_id: UUID,
+        is_deterministic: bool,
     ) -> list[tuple[float, GameState]]:
         """Get new game state branches configured with active fire overrides."""
-
-        # Configure this to be deterministic for simplicity for now.
         branching_system = gs.get(AiBranchingSystem)
-        new_state = branching_system.copy(gs)
-        branching_system._count_stall(new_state, count="reset")
-        fire_controls = new_state.get_component(unit_id, FireControls)
-        fire_controls.override = FireOutcomes.SUPPRESS
-        return [(1, new_state)]
+
+        permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
+        if is_deterministic:
+            permutations = [(1, {unit_id: FireOutcomes.SUPPRESS})]
+        else:
+            permutations = branching_system.get_permutations(
+                unit_ids={unit_id},
+                outcome_probabilities={
+                    # Make AI assume it's more likely to suppress
+                    FireOutcomes.SUPPRESS: 0.6,
+                    FireOutcomes.PIN: 0.4,
+                },
+            )
+
+        branching_states: list[tuple[float, GameState]] = []
+        for probability, outcomes in permutations:
+            new_state = branching_system.copy(gs)
+            branching_system._count_stall(new_state, count="reset")
+            for id_to_override, outcome in outcomes.items():
+                fire_controls = new_state.get_component(id_to_override, FireControls)
+                fire_controls.override = outcome
+            branching_states.append((probability, new_state))
+        return branching_states
 
     @staticmethod
     def get_action_branches(
@@ -219,8 +236,7 @@ class AiBranchingSystem:
                         assault_controls.override = AssaultOutcomes.FAIL
             case FireAction():
                 branches = branching_system.get_fire_branches(
-                    gs=gs,
-                    unit_id=action.unit_id,
+                    gs=gs, unit_id=action.unit_id, is_deterministic=is_deterministic
                 )
 
         # Perform the actions
