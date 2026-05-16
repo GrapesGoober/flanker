@@ -1,22 +1,39 @@
 from itertools import product
 from math import prod
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
+from flanker_ai.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_ai.components import AiStallCountComponent, InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
     EliminationObjective,
     FireControls,
+    Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
 class AiBranchingSystem:
+    """
+    AI specific system class responsible for generating branching states
+    and their probabilities given an action. This will configure permutations
+    for each action type, copy the game state, and apply the actions.
+    """
+
     @staticmethod
     def get_permutations[T](
         unit_ids: set[UUID],
@@ -150,3 +167,89 @@ class AiBranchingSystem:
         fire_controls = new_state.get_component(unit_id, FireControls)
         fire_controls.override = FireOutcomes.SUPPRESS
         return [(1, new_state)]
+
+    @staticmethod
+    def get_action_branches(
+        gs: GameState, action: Action, is_deterministic: bool
+    ) -> list[tuple[float, GameState]]:
+        """
+        Returns a list of branching states and their probabilities
+        from a given action.
+        """
+
+        move_system = gs.get(MoveSystem)
+        assault_system = gs.get(AssaultSystem)
+        fire_system = gs.get(FireSystem)
+        branching_system = gs.get(AiBranchingSystem)
+
+        # Prepare a list of configured branches
+        branches: list[tuple[float, GameState]]
+        match action:
+            case MoveAction():
+                branches = branching_system.get_reactive_fire_branches(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=action.to,
+                    is_deterministic=is_deterministic,
+                )
+            case PivotAction():
+                transform = gs.get_component(action.unit_id, Transform)
+                branches = branching_system.get_reactive_fire_branches(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=transform.position,
+                    is_deterministic=is_deterministic,
+                )
+            case AssaultAction():
+                target_transform = gs.get_component(action.target_id, Transform)
+                branches = branching_system.get_reactive_fire_branches(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=target_transform.position,
+                    is_deterministic=is_deterministic,
+                )
+                for _, new_state in branches:
+                    assault_controls = new_state.get_component(
+                        action.unit_id, AssaultControls
+                    )
+                    assault_controls.override = AssaultOutcomes.SUCCESS
+            case FireAction():
+                branches = branching_system.get_fire_branches(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                )
+
+        # Perform the actions
+        for _, new_state in branches:
+            result: Any | InvalidAction
+            match action:
+                case MoveAction():
+                    result = move_system.move(
+                        gs=new_state,
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                case PivotAction():
+                    result = move_system.pivot(
+                        gs=new_state,
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                case AssaultAction():
+                    result = assault_system.assault(
+                        gs=new_state,
+                        attacker_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
+                case FireAction():
+                    result = fire_system.fire(
+                        gs=new_state,
+                        attacker_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
+
+            # Invalid action won't be performable.
+            if isinstance(result, InvalidAction):
+                return []
+
+        return branches
