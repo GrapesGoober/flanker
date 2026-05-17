@@ -149,6 +149,3 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
-
-    def deabstract_action(self, action: Action, gs: GameState) -> Action:
-        return action
