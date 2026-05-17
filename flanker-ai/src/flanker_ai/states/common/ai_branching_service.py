@@ -184,6 +184,29 @@ class AiBranchingService:
         return branching_states
 
     @staticmethod
+    def get_assault_branches(
+        gs: GameState,
+        unit_id: UUID,
+        target_id: UUID,
+        is_deterministic: bool,
+    ) -> list[tuple[float, GameState]]:
+        target_transform = gs.get_component(target_id, Transform)
+        target_unit = gs.get_component(target_id, CombatUnit)
+        branches = AiBranchingService.get_reactive_fire_branches(
+            gs=gs,
+            unit_id=unit_id,
+            move_to=target_transform.position,
+            is_deterministic=is_deterministic,
+        )
+        for _, new_state in branches:
+            assault_controls = new_state.get_component(unit_id, AssaultControls)
+            if target_unit.status == CombatUnit.Status.SUPPRESSED:
+                assault_controls.override = AssaultOutcomes.SUCCESS
+            else:
+                assault_controls.override = AssaultOutcomes.FAIL
+        return branches
+
+    @staticmethod
     def get_action_branches(
         gs: GameState, action: Action, is_deterministic: bool
     ) -> list[tuple[float, GameState]]:
@@ -215,22 +238,12 @@ class AiBranchingService:
                     is_deterministic=is_deterministic,
                 )
             case AssaultAction():
-                target_transform = gs.get_component(action.target_id, Transform)
-                target_unit = gs.get_component(action.target_id, CombatUnit)
-                branches = AiBranchingService.get_reactive_fire_branches(
+                branches = AiBranchingService.get_assault_branches(
                     gs=gs,
                     unit_id=action.unit_id,
-                    move_to=target_transform.position,
+                    target_id=action.target_id,
                     is_deterministic=is_deterministic,
                 )
-                for _, new_state in branches:
-                    assault_controls = new_state.get_component(
-                        action.unit_id, AssaultControls
-                    )
-                    if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                        assault_controls.override = AssaultOutcomes.SUCCESS
-                    else:
-                        assault_controls.override = AssaultOutcomes.FAIL
             case FireAction():
                 branches = AiBranchingService.get_fire_branches(
                     gs=gs, unit_id=action.unit_id, is_deterministic=is_deterministic
