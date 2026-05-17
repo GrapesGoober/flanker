@@ -115,9 +115,7 @@ class UnabstractedState(IRepresentationState[Action]):
         self,
         action: Action,
     ) -> list[tuple[float, "UnabstractedState"]]:
-        branches = AiBranchingService.get_action_branches(
-            self._gs, action, is_deterministic=True
-        )
+        branches = AiBranchingService.get_action_branches(self._gs, action)
         state_branches: list[tuple[float, UnabstractedState]] = []
         for probability, new_state in branches:
             state_branches.append((probability, UnabstractedState(new_state)))
@@ -128,9 +126,7 @@ class UnabstractedState(IRepresentationState[Action]):
         self,
         action: Action,
     ) -> IRepresentationState[Action] | None:
-        branches = AiBranchingService.get_action_branches(
-            self._gs, action, is_deterministic=True
-        )
+        branches = AiBranchingService.get_action_branches(self._gs, action)
         if branches == []:
             return None
         branch = AiBranchAbstractionService.get_one_approximate_branch(

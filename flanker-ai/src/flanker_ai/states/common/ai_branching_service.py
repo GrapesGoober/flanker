@@ -99,7 +99,6 @@ class AiBranchingService:
         gs: GameState,
         unit_id: UUID,
         move_to: Vec2,
-        is_deterministic: bool,
     ) -> list[tuple[float, GameState]]:
         """Get new game state branches configured with reactive fire overrides."""
 
@@ -119,25 +118,13 @@ class AiBranchingService:
 
         # Reactive fire found; configure all permutations
         permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
-        if is_deterministic:
-            if len(reactive_fire_ids) == 1:
-                outcomes = {next(iter(reactive_fire_ids)): FireOutcomes.PIN}
-            else:
-                # Enforce avoidance by having it assume
-                # 2 reactive fires means SUPPRESS, and 3 means KILL
-                outcomes = {
-                    enemy_id: FireOutcomes.SUPPRESS for enemy_id in reactive_fire_ids
-                }
-                outcomes[next(iter(reactive_fire_ids))] = FireOutcomes.PIN
-            permutations = [(1, outcomes)]
-        else:
-            permutations = AiBranchingService.get_permutations(
-                unit_ids=reactive_fire_ids,
-                outcome_probabilities={
-                    FireOutcomes.PIN: 0.6,
-                    FireOutcomes.SUPPRESS: 0.4,
-                },
-            )
+        permutations = AiBranchingService.get_permutations(
+            unit_ids=reactive_fire_ids,
+            outcome_probabilities={
+                FireOutcomes.PIN: 0.6,
+                FireOutcomes.SUPPRESS: 0.4,
+            },
+        )
         if len(permutations) == 0:
             raise Exception("Permutations are empty, something went wrong!")
 
@@ -156,22 +143,18 @@ class AiBranchingService:
     def get_fire_branches(
         gs: GameState,
         unit_id: UUID,
-        is_deterministic: bool,
     ) -> list[tuple[float, GameState]]:
         """Get new game state branches configured with active fire overrides."""
 
         permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
-        if is_deterministic:
-            permutations = [(1, {unit_id: FireOutcomes.SUPPRESS})]
-        else:
-            permutations = AiBranchingService.get_permutations(
-                unit_ids={unit_id},
-                outcome_probabilities={
-                    # Make AI assume it's more likely to suppress
-                    FireOutcomes.SUPPRESS: 0.6,
-                    FireOutcomes.PIN: 0.4,
-                },
-            )
+        permutations = AiBranchingService.get_permutations(
+            unit_ids={unit_id},
+            outcome_probabilities={
+                # Make AI assume it's more likely to suppress
+                FireOutcomes.SUPPRESS: 0.6,
+                FireOutcomes.PIN: 0.4,
+            },
+        )
 
         branching_states: list[tuple[float, GameState]] = []
         for probability, outcomes in permutations:
@@ -188,7 +171,6 @@ class AiBranchingService:
         gs: GameState,
         unit_id: UUID,
         target_id: UUID,
-        is_deterministic: bool,
     ) -> list[tuple[float, GameState]]:
         target_transform = gs.get_component(target_id, Transform)
         target_unit = gs.get_component(target_id, CombatUnit)
@@ -196,7 +178,6 @@ class AiBranchingService:
             gs=gs,
             unit_id=unit_id,
             move_to=target_transform.position,
-            is_deterministic=is_deterministic,
         )
         for _, new_state in branches:
             assault_controls = new_state.get_component(unit_id, AssaultControls)
@@ -208,7 +189,7 @@ class AiBranchingService:
 
     @staticmethod
     def get_action_branches(
-        gs: GameState, action: Action, is_deterministic: bool
+        gs: GameState, action: Action
     ) -> list[tuple[float, GameState]]:
         """
         Returns a list of branching states and their probabilities
@@ -227,7 +208,6 @@ class AiBranchingService:
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=action.to,
-                    is_deterministic=is_deterministic,
                 )
             case PivotAction():
                 transform = gs.get_component(action.unit_id, Transform)
@@ -235,18 +215,17 @@ class AiBranchingService:
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=transform.position,
-                    is_deterministic=is_deterministic,
                 )
             case AssaultAction():
                 branches = AiBranchingService.get_assault_branches(
                     gs=gs,
                     unit_id=action.unit_id,
                     target_id=action.target_id,
-                    is_deterministic=is_deterministic,
                 )
             case FireAction():
                 branches = AiBranchingService.get_fire_branches(
-                    gs=gs, unit_id=action.unit_id, is_deterministic=is_deterministic
+                    gs=gs,
+                    unit_id=action.unit_id,
                 )
 
         # Perform the actions

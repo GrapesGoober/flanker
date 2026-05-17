@@ -205,8 +205,7 @@
               "y": 211.6475753969924
             }
           ],
-          "path_tolerance": 30.0,
-          "is_deterministic": true
+          "path_tolerance": 30.0
         },
         "policy_config": {
           "type": "MinimaxPolicyConfig"

@@ -118,7 +118,6 @@ def test_branches(fixture: Fixture) -> None:
             unit_id=fixture.unit_move,
             to=move_position,
         ),
-        is_deterministic=False,
     )
     total_probability = 0
     for probability, _ in branches:
