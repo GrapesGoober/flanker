@@ -62,7 +62,7 @@ class AiBranchAbstractionService:
     ) -> GameState:
         """
         Returns one most representative approximate branch.
-        The criteria is the most likely branch to happen, after merged.
+        The criteria is to pick the most likely branch to happen, after merged.
         """
         merged_branches = AiBranchAbstractionService.merge_branches(branches, unit_id)
         _, branch = max(merged_branches, key=lambda b: b[0])
