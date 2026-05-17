@@ -1,7 +1,6 @@
 from copy import deepcopy
 from typing import Literal, Optional, Sequence, override
 
-from flanker_ai.actions import Action
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
 from flanker_core.gamestate import GameState
@@ -126,8 +125,4 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
     @override
     def update_state(self, gs: GameState) -> None:
-        raise NotImplementedError
-
-    @override
-    def deabstract_action(self, action: TicTacToeAction, gs: GameState) -> Action:
         raise NotImplementedError

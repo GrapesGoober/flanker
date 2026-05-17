@@ -1,8 +1,6 @@
 import random
 from copy import deepcopy
-from itertools import product
-from math import prod
-from typing import Literal, override
+from typing import override
 from uuid import UUID
 
 from flanker_ai.actions import (
@@ -14,37 +12,17 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_ai.states.unabstracted.ai_objective_system import AiObjectiveSystem
+from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import (
-    AssaultControls,
-    CombatUnit,
-    EliminationObjective,
-    FireControls,
-    InitiativeState,
-    Transform,
-)
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
+from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.systems.register_systems import register_systems
-
-_FIRE_ACTION_PROBABILITIES = {
-    FireOutcomes.PIN: 0.4,
-    FireOutcomes.SUPPRESS: 0.6,
-}
-
-_FIRE_REACTION_PROBABILITIES = {
-    FireOutcomes.PIN: 0.6,
-    FireOutcomes.SUPPRESS: 0.4,
-}
 
 
 class WaypointsState(IRepresentationState[Action]):
@@ -59,23 +37,13 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def copy(self) -> "WaypointsState":
-        entities_to_copy: set[UUID] = set()  # Use set to filter duplicates
-        for id, _ in self.gs.query(InitiativeState):
-            entities_to_copy.add(id)
-        for id, _ in self.gs.query(EliminationObjective):
-            entities_to_copy.add(id)
-        for id, _ in self.gs.query(CombatUnit):
-            entities_to_copy.add(id)
-        for id, _ in self.gs.query(AiStallCountComponent):
-            entities_to_copy.add(id)
-
-        new_gs = WaypointsState(
+        new_waypoints_state = WaypointsState(
             points=self._points,
             path_tolerance=self._path_tolerance,
             is_deterministic=self._is_deterministic,
         )
-        new_gs.gs = self.gs.selective_copy(list(entities_to_copy))
-        return new_gs
+        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        return new_waypoints_state
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
@@ -202,183 +170,26 @@ class WaypointsState(IRepresentationState[Action]):
 
         return actions
 
-    def get_one_fire_outcome(
-        self,
-        enemy_ids: set[UUID],
-    ) -> dict[UUID, FireOutcomes]:
-        """Returns a single most-likely fire outcome given enemy units."""
-        if len(enemy_ids) == 1:
-            all_pins = {enemy_id: FireOutcomes.PIN for enemy_id in enemy_ids}
-            return all_pins
-        # It should avoid being pinned by more than one enemy
-        # by assuming it gets suppressed
-        if len(enemy_ids) > 1:
-            one_pin = {enemy_id: FireOutcomes.SUPPRESS for enemy_id in enemy_ids}
-            one_pin[next(iter(enemy_ids))] = FireOutcomes.PIN
-            return one_pin
-        return {}
-
-    def get_all_fire_outcomes(
-        self, enemy_ids: set[UUID]
-    ) -> list[tuple[float, dict[UUID, FireOutcomes]]]:
-        """Returns all probabilites and fire outcomes given enemy units."""
-        permutations: list[
-            tuple[
-                float,  # total probability of this permutation event
-                dict[UUID, FireOutcomes],  # event (key=enemy, value=outcome)
-            ]
-        ] = []
-
-        # Assemble the probability and fire outcomes
-        outcomes = list(_FIRE_REACTION_PROBABILITIES.keys())
-        for outcome_combo in product(outcomes, repeat=len(enemy_ids)):
-            probability = prod(
-                _FIRE_REACTION_PROBABILITIES[outcome] for outcome in outcome_combo
-            )
-            event = {
-                enemy_id: outcome for enemy_id, outcome in zip(enemy_ids, outcome_combo)
-            }
-            permutations.append((probability, event))
-        return permutations
-
-    def _get_fire_configured_branches(
-        self,
-        firer_ids: set[UUID],
-    ) -> list[tuple[float, "WaypointsState"]]:
-        permutations: list[tuple[float, dict[UUID, FireOutcomes]]] = []
-        if self._is_deterministic:
-            permutations = [(1, self.get_one_fire_outcome(firer_ids))]
-        else:
-            permutations = self.get_all_fire_outcomes(firer_ids)
-
-        branching_states: list[tuple[float, "WaypointsState"]] = []
-        for probability, unit_fire_outcomes in permutations:
-            new_state = self.copy()
-            new_state._count_stall(count="reset")
-            for firer_id, firer_outcome in unit_fire_outcomes.items():
-                fire_controls = new_state.gs.get_component(firer_id, FireControls)
-                fire_controls.override = firer_outcome
-            branching_states.append((probability, new_state))
-        return branching_states
-
-    def _get_reactive_fire_ids(self, unit_id: UUID, move_to: Vec2) -> set[UUID]:
-        move_system = self.gs.get(MoveSystem)
-        reactive_fire_candidates = move_system.get_interrupt_candidates(
-            self.gs, unit_id, move_to
-        )
-        return {uid for _, uuid_list in reactive_fire_candidates for uid in uuid_list}
-
     @override
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
-        move_system = self.gs.get(MoveSystem)
-        assault_system = self.gs.get(AssaultSystem)
-        fire_system = self.gs.get(FireSystem)
-
-        # Derive a set of unit IDs that needs overriding
-        # TODO: add a more generalized override configuration for less boilerplate.
-        # TODO: There needs reactive fire, fire, and assault overrides.
-        firer_ids: set[UUID]
-        match action:
-            case MoveAction():
-                firer_ids = self._get_reactive_fire_ids(action.unit_id, action.to)
-            case PivotAction():
-                unit_transform = self.gs.get_component(action.unit_id, Transform)
-                firer_ids = self._get_reactive_fire_ids(
-                    action.unit_id, unit_transform.position
-                )
-            case AssaultAction():
-                target_transform = self.gs.get_component(action.target_id, Transform)
-                firer_ids = self._get_reactive_fire_ids(
-                    action.unit_id, target_transform.position
-                )
-            case FireAction():
-                # Simplify fire action to be deterministic for now
-                firer_ids = set()
-
-        # Build a list of branching states with override configured
-        branching_states: list[tuple[float, "WaypointsState"]]
-
-        if len(firer_ids) == 0:
-            new_state = self.copy()
-            match action:
-                case MoveAction() | PivotAction():
-                    # Consider stall for move-type actions with no reactive fire
-                    new_state._count_stall(count="up")
-                case AssaultAction():
-                    new_state._count_stall(count="reset")
-                case FireAction():
-                    # firer_ids = {action.unit_id}
-                    # branching_states = self._get_fire_configured_branches(firer_ids)
-
-                    # Use a simpler deterministic branching for now.
-                    # This avoids double-PIN avoidance for deterministic branching
-                    new_state._count_stall(count="reset")
-                    fire_controls = new_state.gs.get_component(
-                        action.unit_id, FireControls
-                    )
-                    fire_controls.override = FireOutcomes.SUPPRESS
-            branching_states = [(1, new_state)]
-        else:
-            match action:
-                case MoveAction() | PivotAction():
-                    branching_states = self._get_fire_configured_branches(firer_ids)
-                case AssaultAction():
-                    branching_states = self._get_fire_configured_branches(firer_ids)
-                    # Use a simpler deterministic assault outcome for now
-                    for _, new_state in branching_states:
-                        assault_controls = new_state.gs.get_component(
-                            action.unit_id, AssaultControls
-                        )
-                        assault_controls.override = AssaultOutcomes.SUCCESS
-                case FireAction():
-                    raise Exception("This logic path can't arrive.")
-
-        # Perform the action on each configured branches by mutating each element.
-        for _, new_state in branching_states:
-            match action:
-                case MoveAction():
-                    result = move_system.move(
-                        gs=new_state.gs,
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    )
-                case PivotAction():
-                    result = move_system.pivot(
-                        gs=new_state.gs,
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    )
-                case AssaultAction():
-                    result = assault_system.assault(
-                        gs=new_state.gs,
-                        attacker_id=action.unit_id,
-                        target_id=action.target_id,
-                    )
-                case FireAction():
-                    result = fire_system.fire(
-                        gs=new_state.gs,
-                        attacker_id=action.unit_id,
-                        target_id=action.target_id,
-                    )
-
-            if isinstance(result, InvalidAction):
-                # Invalid action won't be performable.
-                return []
-
-        return branching_states
+        branches = AiBranchingService.get_action_branches(
+            self.gs, action, self._is_deterministic
+        )
+        state_branches: list[tuple[float, WaypointsState]] = []
+        for probability, new_state in branches:
+            new_waypoints_state = WaypointsState(
+                points=self._points,
+                path_tolerance=self._path_tolerance,
+                is_deterministic=self._is_deterministic,
+            )
+            new_waypoints_state.gs = new_state
+            state_branches.append((probability, new_waypoints_state))
+        return state_branches
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
         objective_system = self.gs.get(ObjectiveSystem)
         return objective_system.get_winning_faction(self.gs)
-
-    @override
-    def deabstract_action(
-        self,
-        action: Action,
-        gs: GameState,
-    ) -> Action:
-        return action
 
     @override
     def update_state(
@@ -415,20 +226,3 @@ class WaypointsState(IRepresentationState[Action]):
             points=points,
             path_tolerance=self._path_tolerance,
         )
-
-    def _count_stall(
-        self,
-        count: Literal["up"] | Literal["reset"],
-    ) -> None:
-
-        if entities := self.gs.query(AiStallCountComponent):
-            _, stall_component = entities[0]
-        else:
-            self.gs.add_entity(stall_component := AiStallCountComponent())
-
-        initiative = self.get_initiative()
-        match count:
-            case "up":
-                stall_component.stall_counter[initiative] += 1
-            case "reset":
-                stall_component.stall_counter[initiative] = 0
