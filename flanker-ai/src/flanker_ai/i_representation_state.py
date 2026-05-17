@@ -8,10 +8,6 @@ from flanker_core.models.components import InitiativeState
 class IRepresentationState[TAction](Protocol):
     """Interface for defining game state representation for AI"""
 
-    def copy(self) -> "IRepresentationState[TAction]":
-        """Implements copying mechanism for Game State."""
-        ...
-
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         """Implements objective scoring given a maximizer."""
         ...

@@ -36,16 +36,6 @@ class WaypointsState(IRepresentationState[Action]):
         self._is_deterministic = is_deterministic
 
     @override
-    def copy(self) -> "WaypointsState":
-        new_waypoints_state = WaypointsState(
-            points=self._points,
-            path_tolerance=self._path_tolerance,
-            is_deterministic=self._is_deterministic,
-        )
-        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
-        return new_waypoints_state
-
-    @override
     def get_initiative(self) -> InitiativeState.Faction:
         initiative_system = self.gs.get(InitiativeSystem)
         return initiative_system.get_initiative(self.gs)

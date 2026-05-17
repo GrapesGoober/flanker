@@ -40,11 +40,6 @@ class UnabstractedState(IRepresentationState[Action]):
         self.max_y = int(max(v.y for v in boundary_vertices))
 
     @override
-    def copy(self) -> "UnabstractedState":
-        new_gs = AiBranchingService.copy(self._gs)
-        return UnabstractedState(new_gs)
-
-    @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         winner = self.get_winner()
         if winner is not None:
