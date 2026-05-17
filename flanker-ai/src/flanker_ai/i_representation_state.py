@@ -8,18 +8,29 @@ from flanker_core.models.components import InitiativeState
 class IRepresentationState[TAction](Protocol):
     """Interface for defining game state representation for AI"""
 
-    def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
+    def get_score(
+        self,
+        maximizing_faction: InitiativeState.Faction,
+    ) -> float:
         """Implements objective scoring given a maximizer."""
         ...
 
     def get_actions(self) -> Sequence[TAction]:
-        """Generates possible actions from the current state"""
+        """Get possible actions from the current state"""
         ...
 
     def get_branches(
-        self, action: TAction
+        self,
+        action: TAction,
     ) -> Sequence[tuple[float, "IRepresentationState[TAction]"]]:
-        """Generate branches and their probability from the current action."""
+        """Get branches and their probability from the current action."""
+        ...
+
+    def get_one_branch(
+        self,
+        action: TAction,
+    ) -> "IRepresentationState[TAction] | None":
+        """Get one most likely branch from the current action."""
         ...
 
     def get_winner(self) -> InitiativeState.Faction | None:

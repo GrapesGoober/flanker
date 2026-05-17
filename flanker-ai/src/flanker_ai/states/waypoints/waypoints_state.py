@@ -12,6 +12,9 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.common.ai_branch_abstraction_service import (
+    AiBranchAbstractionService,
+)
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
@@ -175,6 +178,24 @@ class WaypointsState(IRepresentationState[Action]):
             new_waypoints_state.gs = new_state
             state_branches.append((probability, new_waypoints_state))
         return state_branches
+
+    @override
+    def get_one_branch(self, action: Action) -> "WaypointsState | None":
+        branches = AiBranchingService.get_action_branches(
+            self.gs, action, self._is_deterministic
+        )
+        if branches == []:
+            return None
+        branch = AiBranchAbstractionService.get_one_approximate_branch(
+            branches, action.unit_id
+        )
+        new_waypoints_state = WaypointsState(
+            points=self._points,
+            path_tolerance=self._path_tolerance,
+            is_deterministic=self._is_deterministic,
+        )
+        new_waypoints_state.gs = branch
+        return new_waypoints_state
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:

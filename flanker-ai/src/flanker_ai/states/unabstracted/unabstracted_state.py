@@ -5,6 +5,9 @@ from typing import Sequence, override
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.common.ai_branch_abstraction_service import (
+    AiBranchAbstractionService,
+)
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -119,6 +122,22 @@ class UnabstractedState(IRepresentationState[Action]):
         for probability, new_state in branches:
             state_branches.append((probability, UnabstractedState(new_state)))
         return state_branches
+
+    @override
+    def get_one_branch(
+        self,
+        action: Action,
+    ) -> IRepresentationState[Action] | None:
+        branches = AiBranchingService.get_action_branches(
+            self._gs, action, is_deterministic=True
+        )
+        if branches == []:
+            return None
+        branch = AiBranchAbstractionService.get_one_approximate_branch(
+            branches, action.unit_id
+        )
+        new_state = UnabstractedState(branch)
+        return new_state
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:

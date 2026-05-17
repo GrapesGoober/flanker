@@ -31,6 +31,9 @@ class AiBranchAbstractionService:
         unit_id: UUID,
     ) -> list[tuple[float, GameState]]:
         """Merge similar branches with similar outcomes, if any."""
+        if branches == []:
+            raise ValueError("The provided branches list is empty.")
+
         new_branches: list[tuple[float, GameState]] = list(branches)
 
         # Keep merging until can't merge no more.
