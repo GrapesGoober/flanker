@@ -11,7 +11,10 @@ class AiBranchAbstractionService:
         branches: list[tuple[float, GameState]],
         unit_id: UUID,
     ) -> tuple[int, int] | None:
-        """Returns a pair of branch indices that are considered mergable."""
+        """
+        Returns a pair of branch indices that are considered mergable.
+        This uses a simple criteria that the two units must be the same.
+        """
         for left_id, (_, branch_left) in enumerate(branches):
             for right_id, (_, branch_right) in enumerate(branches):
                 if left_id == right_id:
@@ -32,21 +35,35 @@ class AiBranchAbstractionService:
 
         # Keep merging until can't merge no more.
         while True:
+            # Find a pair that can be merged
             pair = AiBranchAbstractionService._find_one_mergable_branch_pair(
                 new_branches, unit_id
             )
             if pair == None:
                 break
 
+            # Pair found, add a new merged branch. Assume that the
+            # left branch is considered representative of both branches.
             left_index, right_index = pair
-
             left_probability, left_branch = new_branches[left_index]
-            right_probability, right_branch = new_branches[right_index]
+            right_probability, _ = new_branches[right_index]
             new_probability = left_probability + right_probability
             new_state = left_branch
-            new_branches.append((new_probability, new_state))
-            # Can't use pop based on index, since the list is mutated
-            # and indices are not the same.
-            new_branches.remove((left_probability, left_branch))
-            new_branches.remove((right_probability, right_branch))
+
+            # Update the list of branches
+            new_branches[left_index] = (new_probability, new_state)
+            new_branches.pop(right_index)
         return new_branches
+
+    @staticmethod
+    def get_one_approximate_branch(
+        branches: list[tuple[float, GameState]],
+        unit_id: UUID,
+    ) -> GameState:
+        """
+        Returns one most representative approximate branch.
+        The criteria is the most likely branch to happen, after merged.
+        """
+        merged_branches = AiBranchAbstractionService.merge_branches(branches, unit_id)
+        _, branch = max(merged_branches, key=lambda b: b[0])
+        return branch
