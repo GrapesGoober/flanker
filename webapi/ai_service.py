@@ -9,15 +9,11 @@ from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_trial import AiTrial
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import InitiativeState, TerrainFeature, Transform
-from flanker_core.models.vec2 import Vec2
-from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
+from flanker_core.models.components import InitiativeState
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
-    AiWaypointConfigGridRequest,
     AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
@@ -61,61 +57,6 @@ class AiService:
         config = AiAgent.get_state_config(gs, request.faction)
         if isinstance(config, AiConfigComponent.WaypointsStateConfig):
             config.waypoint_coordinates = request.points
-
-    @staticmethod
-    def set_ai_waypoints_config_to_grid(
-        gs: GameState,
-        request: AiWaypointConfigGridRequest,
-    ) -> None:
-        config = AiAgent.get_state_config(gs, request.faction)
-        if isinstance(config, AiConfigComponent.WaypointsStateConfig):
-            config.path_tolerance = request.spacing
-            config.waypoint_coordinates = AiService.get_grid_coordinates(
-                gs, spacing=request.spacing, offset=request.spacing / 2
-            )
-
-    @staticmethod
-    def get_grid_coordinates(
-        gs: GameState,
-        spacing: float,
-        offset: float,
-    ) -> list[Vec2]:
-
-        # Build an array of grids within the boundary
-        mask = TerrainFeature.Flag.BOUNDARY
-        boundary_vertices: list[Vec2] | None = None
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-
-        assert boundary_vertices, "Can't abstract; boundary terrain missing!"
-
-        # Boundary terrrain might not be a box
-        min_x = min(v.x for v in boundary_vertices) + offset
-        max_x = max(v.x for v in boundary_vertices)
-        min_y = min(v.y for v in boundary_vertices) + offset
-        max_y = max(v.y for v in boundary_vertices)
-
-        # Generates waypoints at specified spacing
-        points: list[Vec2] = []
-        y = min_y
-        while y <= max_y:
-            x = min_x
-            while x <= max_x:
-                p = Vec2(x, y)
-
-                # Keep only points inside polygon
-                if IntersectGetter.is_inside(p, boundary_vertices):
-                    points.append(p)
-
-                x += spacing
-            y += spacing
-        return points
 
     @staticmethod
     def _log_ai_action_results(
