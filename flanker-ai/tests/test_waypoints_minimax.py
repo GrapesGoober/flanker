@@ -116,7 +116,6 @@ def fixture() -> Fixture:
                 type="WaypointsStateConfig",
                 waypoint_coordinates=waypoint_coordinates,
                 path_tolerance=3,
-                is_deterministic=True,
             ),
             policy_config=AiConfigComponent.MinimaxPolicyConfig(
                 type="MinimaxPolicyConfig"
@@ -140,9 +139,7 @@ def fixture() -> Fixture:
 def test_stall(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsState(
-        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
-    )
+    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
     rs.update_state(fixture.gs)
     for _ in range(5):
         action = MoveAction(
@@ -169,9 +166,7 @@ def test_stall(fixture: Fixture) -> None:
 def test_waypoints_pathing(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsState(
-        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
-    )
+    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)
@@ -188,9 +183,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 def test_waypoints_visibility(fixture: Fixture) -> None:
     conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
     assert conf.type == "WaypointsStateConfig"
-    rs = WaypointsState(
-        conf.waypoint_coordinates, conf.path_tolerance, conf.is_deterministic
-    )
+    rs = WaypointsState(conf.waypoint_coordinates, conf.path_tolerance)
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)

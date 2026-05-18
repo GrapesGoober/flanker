@@ -12,6 +12,9 @@ from flanker_ai.actions import (
 )
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.common.ai_branch_abstraction_service import (
+    AiBranchAbstractionService,
+)
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
@@ -26,24 +29,11 @@ from flanker_core.systems.register_systems import register_systems
 
 
 class WaypointsState(IRepresentationState[Action]):
-    def __init__(
-        self, points: list[Vec2], path_tolerance: float, is_deterministic: bool
-    ) -> None:
+    def __init__(self, points: list[Vec2], path_tolerance: float) -> None:
         self.gs = GameState()
         register_systems(self.gs)
         self._points = points
         self._path_tolerance = path_tolerance
-        self._is_deterministic = is_deterministic
-
-    @override
-    def copy(self) -> "WaypointsState":
-        new_waypoints_state = WaypointsState(
-            points=self._points,
-            path_tolerance=self._path_tolerance,
-            is_deterministic=self._is_deterministic,
-        )
-        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
-        return new_waypoints_state
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
@@ -172,19 +162,29 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
-        branches = AiBranchingService.get_action_branches(
-            self.gs, action, self._is_deterministic
-        )
+        branches = AiBranchingService.get_action_branches(self.gs, action)
         state_branches: list[tuple[float, WaypointsState]] = []
         for probability, new_state in branches:
             new_waypoints_state = WaypointsState(
                 points=self._points,
                 path_tolerance=self._path_tolerance,
-                is_deterministic=self._is_deterministic,
             )
             new_waypoints_state.gs = new_state
             state_branches.append((probability, new_waypoints_state))
         return state_branches
+
+    @override
+    def get_one_branch(self, action: Action) -> "WaypointsState | None":
+        branches = AiBranchingService.get_action_branches(self.gs, action)
+        if branches == []:
+            return None
+        branch = AiBranchAbstractionService.pick_branch(branches, action)
+        new_waypoints_state = WaypointsState(
+            points=self._points,
+            path_tolerance=self._path_tolerance,
+        )
+        new_waypoints_state.gs = branch
+        return new_waypoints_state
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:

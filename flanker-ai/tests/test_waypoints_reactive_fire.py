@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
+from flanker_ai.actions import MoveAction
+from flanker_ai.states.common.ai_branch_abstraction_service import (
+    AiBranchAbstractionService,
+)
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -103,7 +107,6 @@ def fixture() -> Fixture:
     state = WaypointsState(
         points=waypoint_positions,
         path_tolerance=20,
-        is_deterministic=False,
     )
 
     state.update_state(gs)
@@ -177,7 +180,6 @@ def test_reactive_fire_branches(fixture: Fixture) -> None:
         gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         move_to=move_position,
-        is_deterministic=False,
     )
     for probability, branch in branches:
         enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
@@ -192,17 +194,20 @@ def test_reactive_fire_branches(fixture: Fixture) -> None:
 
 
 def test_deterministic_double_pin(fixture: Fixture) -> None:
-    # Based on test_one_interrupt, there are two enemies reactive fire
+    # Based on test_one_interrupt, there are two enemies reactive fire.
+    # Thus the most likely outcome is being suppressed.
+
     move_position = fixture.waypoint_positions[2]
-    branches = AiBranchingService.get_reactive_fire_branches(
+    move_action = MoveAction(unit_id=fixture.unit_move, to=move_position)
+
+    branches = AiBranchingService.get_action_branches(
         gs=fixture.state.gs,
-        unit_id=fixture.unit_move,
-        move_to=move_position,
-        is_deterministic=True,  # This test is deterministic
+        action=move_action,
     )
-    assert len(branches) == 1, "There must be 1 deterministic branch"
-    probability, branch = branches[0]
-    assert probability == 1, "Only 1 branch means 100% probability"
+    branch = AiBranchAbstractionService.pick_branch(
+        branches=branches,
+        action=move_action,
+    )
 
     enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
     enemy_2_fire = branch.get_component(fixture.enemy_2, FireControls)

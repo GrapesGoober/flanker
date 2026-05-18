@@ -34,13 +34,6 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
     # ---------- Core Protocol Methods ----------
 
     @override
-    def copy(self) -> "TicTacToeState":
-        return TicTacToeState(
-            current_player=MARK_TO_FACTION[self.current_player],
-            board=deepcopy(self.board),
-        )
-
-    @override
     def get_initiative(self) -> InitiativeState.Faction:
         return MARK_TO_FACTION[self.current_player]
 
@@ -72,15 +65,25 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
     def get_branches(
         self, action: TicTacToeAction
     ) -> list[tuple[float, "TicTacToeState"]]:
-        if self.get_winner() is not None:
+        if new_branch := self.get_one_branch(action):
+            return [(1.0, new_branch)]
+        else:
             return []
 
+    @override
+    def get_one_branch(
+        self,
+        action: TicTacToeAction,
+    ) -> "TicTacToeState | None":
+        if self.get_winner() is not None:
+            return None
+
         if self.board[action.row][action.column] is None:
-            new_state = self.copy()
+            new_state = self._copy()
             new_state.board[action.row][action.column] = self.current_player
             new_state.current_player = "X" if self.current_player == "O" else "O"
-            return [(1, new_state)]
-        return []
+            return new_state
+        return None
 
     def get_actions(self) -> Sequence[TicTacToeAction]:
         actions: list[TicTacToeAction] = []
@@ -112,6 +115,10 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
         # Non-terminal heuristic (simple)
         return 0.0
 
+    @override
+    def update_state(self, gs: GameState) -> None:
+        raise NotImplementedError
+
     # ---------- Utility ----------
 
     def is_full(self) -> bool:
@@ -123,6 +130,8 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
             for row in self.board
         )
 
-    @override
-    def update_state(self, gs: GameState) -> None:
-        raise NotImplementedError
+    def _copy(self) -> "TicTacToeState":
+        return TicTacToeState(
+            current_player=MARK_TO_FACTION[self.current_player],
+            board=deepcopy(self.board),
+        )

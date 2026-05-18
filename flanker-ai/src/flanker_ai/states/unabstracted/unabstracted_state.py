@@ -5,6 +5,9 @@ from typing import Sequence, override
 from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.common.ai_branch_abstraction_service import (
+    AiBranchAbstractionService,
+)
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -38,11 +41,6 @@ class UnabstractedState(IRepresentationState[Action]):
         self.max_x = int(max(v.x for v in boundary_vertices))
         self.min_y = int(min(v.y for v in boundary_vertices))
         self.max_y = int(max(v.y for v in boundary_vertices))
-
-    @override
-    def copy(self) -> "UnabstractedState":
-        new_gs = AiBranchingService.copy(self._gs)
-        return UnabstractedState(new_gs)
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -117,13 +115,23 @@ class UnabstractedState(IRepresentationState[Action]):
         self,
         action: Action,
     ) -> list[tuple[float, "UnabstractedState"]]:
-        branches = AiBranchingService.get_action_branches(
-            self._gs, action, is_deterministic=True
-        )
+        branches = AiBranchingService.get_action_branches(self._gs, action)
         state_branches: list[tuple[float, UnabstractedState]] = []
         for probability, new_state in branches:
             state_branches.append((probability, UnabstractedState(new_state)))
         return state_branches
+
+    @override
+    def get_one_branch(
+        self,
+        action: Action,
+    ) -> IRepresentationState[Action] | None:
+        branches = AiBranchingService.get_action_branches(self._gs, action)
+        if branches == []:
+            return None
+        branch = AiBranchAbstractionService.pick_branch(branches, action)
+        new_state = UnabstractedState(branch)
+        return new_state
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
@@ -154,6 +162,3 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
-
-    def deabstract_action(self, action: Action, gs: GameState) -> Action:
-        return action
