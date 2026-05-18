@@ -73,7 +73,7 @@ class AiBranchAbstractionService:
         return new_branches
 
     @staticmethod
-    def get_one_approximate_branch(
+    def pick_branch(
         branches: list[tuple[float, GameState]],
         action: Action,
     ) -> GameState:

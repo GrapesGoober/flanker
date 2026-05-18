@@ -129,7 +129,7 @@ class UnabstractedState(IRepresentationState[Action]):
         branches = AiBranchingService.get_action_branches(self._gs, action)
         if branches == []:
             return None
-        branch = AiBranchAbstractionService.get_one_approximate_branch(branches, action)
+        branch = AiBranchAbstractionService.pick_branch(branches, action)
         new_state = UnabstractedState(branch)
         return new_state
 

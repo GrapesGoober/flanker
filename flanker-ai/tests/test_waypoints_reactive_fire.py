@@ -204,7 +204,7 @@ def test_deterministic_double_pin(fixture: Fixture) -> None:
         gs=fixture.state.gs,
         action=move_action,
     )
-    branch = AiBranchAbstractionService.get_one_approximate_branch(
+    branch = AiBranchAbstractionService.pick_branch(
         branches=branches,
         action=move_action,
     )
