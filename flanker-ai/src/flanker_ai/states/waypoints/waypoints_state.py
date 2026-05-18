@@ -17,7 +17,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
+from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
@@ -70,7 +70,7 @@ class WaypointsState(IRepresentationState[Action]):
     def get_actions(self) -> list[Action]:
 
         los_system = self.gs.get(LosSystem)
-        waypoints_system = self.gs.get(WaypointGraphSystem)
+        waypoints_system = self.gs.get(WaypointsGraphSystem)
 
         actions: list[Action] = []
         waypoints = waypoints_system.get_waypoints(self.gs)
@@ -207,12 +207,12 @@ class WaypointsState(IRepresentationState[Action]):
             existing=LosSystem,
             replacement=WaypointsLosSystem,
         )
-        self.gs.register(WaypointGraphSystem)
+        self.gs.register(WaypointsGraphSystem)
 
         if self.gs.query(AiStallCountComponent) == []:
             self.gs.add_entity(AiStallCountComponent())
 
-        waypoints_system = self.gs.get(WaypointGraphSystem)
+        waypoints_system = self.gs.get(WaypointsGraphSystem)
 
         # Add the waypoints graph, with combat units as new waypoints
         points: list[Vec2] = list(self._points)

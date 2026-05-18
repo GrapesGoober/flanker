@@ -6,7 +6,7 @@ from uuid import UUID
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointGraphSystem
+from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -137,7 +137,7 @@ def draw_waypoints(
     accented_points_y: list[float] = []
     accented_ids: list[int] = []
 
-    waypoints_system = waypoints_gs.gs.get(WaypointGraphSystem)
+    waypoints_system = waypoints_gs.gs.get(WaypointsGraphSystem)
     waypoints = waypoints_system.get_waypoints(waypoints_gs.gs)
 
     for id, point in waypoints.items():

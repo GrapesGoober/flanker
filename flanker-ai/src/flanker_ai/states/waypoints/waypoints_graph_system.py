@@ -5,7 +5,7 @@ from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 
 
-class WaypointGraphSystem:
+class WaypointsGraphSystem:
     @staticmethod
     def get_waypoints(gs: GameState) -> dict[int, WaypointNode]:
         if entities := gs.query(WaypointsGraphComponent):
@@ -16,7 +16,7 @@ class WaypointGraphSystem:
 
     @staticmethod
     def get_waypoint_id(gs: GameState, position: Vec2) -> int:
-        waypoints_system = gs.get(WaypointGraphSystem)
+        waypoints_system = gs.get(WaypointsGraphSystem)
         waypoints = waypoints_system.get_waypoints(gs)
         coerced_waypoint_id = min(
             waypoints.keys(),
@@ -25,8 +25,15 @@ class WaypointGraphSystem:
         return coerced_waypoint_id
 
     @staticmethod
+    def get_waypoint(gs: GameState, position: Vec2) -> WaypointNode:
+        waypoints_system = gs.get(WaypointsGraphSystem)
+        waypoint_id = waypoints_system.get_waypoint_id(gs, position)
+        waypoints = waypoints_system.get_waypoints(gs)
+        return waypoints[waypoint_id]
+
+    @staticmethod
     def set_waypoints(gs: GameState, points: list[Vec2], path_tolerance: float) -> None:
-        waypoints_system = gs.get(WaypointGraphSystem)
+        waypoints_system = gs.get(WaypointsGraphSystem)
         waypoints = waypoints_system.get_waypoints(gs)
         waypoints.clear()
 
@@ -47,7 +54,7 @@ class WaypointGraphSystem:
         gs: GameState,
         path_tolerance: float,
     ) -> None:
-        waypoints_system = gs.get(WaypointGraphSystem)
+        waypoints_system = gs.get(WaypointsGraphSystem)
 
         waypoints = waypoints_system.get_waypoints(gs)
         for waypoint_id, waypoint in waypoints.items():
@@ -88,7 +95,7 @@ class WaypointGraphSystem:
         gs: GameState,
     ) -> None:
 
-        waypoints_system = gs.get(WaypointGraphSystem)
+        waypoints_system = gs.get(WaypointsGraphSystem)
         los_system = gs.get(LosSystem)
 
         # Compute LOS polygon for all these waypoints.
