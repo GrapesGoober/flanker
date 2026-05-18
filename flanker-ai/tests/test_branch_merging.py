@@ -110,14 +110,14 @@ def test_one_interrupt(fixture: Fixture) -> None:
 
 def test_branches(fixture: Fixture) -> None:
 
-    move_position = Vec2(20, -10)
+    move_action = MoveAction(
+        unit_id=fixture.unit_move,
+        to=Vec2(20, -10),
+    )
 
     branches = AiBranchingService.get_action_branches(
         gs=fixture.gs,
-        action=MoveAction(
-            unit_id=fixture.unit_move,
-            to=move_position,
-        ),
+        action=move_action,
     )
     total_probability = 0
     for probability, _ in branches:
@@ -126,7 +126,7 @@ def test_branches(fixture: Fixture) -> None:
 
     merged_branches = AiBranchAbstractionService.merge_branches(
         branches=branches,
-        unit_id=fixture.unit_move,
+        action=move_action,
     )
 
     total_probability = 0

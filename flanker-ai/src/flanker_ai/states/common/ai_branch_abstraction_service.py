@@ -1,7 +1,6 @@
-from uuid import UUID
-
+from flanker_ai.actions import Action, FireAction
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import CombatUnit
+from flanker_core.models.components import CombatUnit, FireControls
 
 
 class AiBranchAbstractionService:
@@ -9,7 +8,7 @@ class AiBranchAbstractionService:
     @staticmethod
     def _find_one_mergable_branch_pair(
         branches: list[tuple[float, GameState]],
-        unit_id: UUID,
+        action: Action,
     ) -> tuple[int, int] | None:
         """
         Returns a pair of branch indices that are considered mergable.
@@ -19,16 +18,31 @@ class AiBranchAbstractionService:
             for right_id, (_, branch_right) in enumerate(branches):
                 if left_id == right_id:
                     continue
-                unit_left = branch_left.try_component(unit_id, CombatUnit)
-                unit_right = branch_right.try_component(unit_id, CombatUnit)
-                if unit_left == unit_right:
-                    return (left_id, right_id)
+                unit_left = branch_left.try_component(action.unit_id, CombatUnit)
+                unit_right = branch_right.try_component(action.unit_id, CombatUnit)
+                if unit_left != unit_right:
+                    continue
+
+                match action:
+                    case FireAction():
+                        unit_left_fire = branch_left.try_component(
+                            action.unit_id, FireControls
+                        )
+                        unit_right_fire = branch_left.try_component(
+                            action.unit_id, FireControls
+                        )
+                        if unit_left_fire != unit_right_fire:
+                            continue
+                    case _:
+                        ...
+
+                return (left_id, right_id)
         return None
 
     @staticmethod
     def merge_branches(
         branches: list[tuple[float, GameState]],
-        unit_id: UUID,
+        action: Action,
     ) -> list[tuple[float, GameState]]:
         """Merge similar branches with similar outcomes, if any."""
         if branches == []:
@@ -40,7 +54,7 @@ class AiBranchAbstractionService:
         while True:
             # Find a pair that can be merged
             pair = AiBranchAbstractionService._find_one_mergable_branch_pair(
-                new_branches, unit_id
+                new_branches, action
             )
             if pair == None:
                 break
@@ -61,12 +75,12 @@ class AiBranchAbstractionService:
     @staticmethod
     def get_one_approximate_branch(
         branches: list[tuple[float, GameState]],
-        unit_id: UUID,
+        action: Action,
     ) -> GameState:
         """
         Returns one most representative approximate branch.
         The criteria is to pick the most likely branch to happen, after merged.
         """
-        merged_branches = AiBranchAbstractionService.merge_branches(branches, unit_id)
+        merged_branches = AiBranchAbstractionService.merge_branches(branches, action)
         _, branch = max(merged_branches, key=lambda b: b[0])
         return branch

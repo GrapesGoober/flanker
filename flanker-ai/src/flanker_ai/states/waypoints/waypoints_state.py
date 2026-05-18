@@ -178,9 +178,7 @@ class WaypointsState(IRepresentationState[Action]):
         branches = AiBranchingService.get_action_branches(self.gs, action)
         if branches == []:
             return None
-        branch = AiBranchAbstractionService.get_one_approximate_branch(
-            branches, action.unit_id
-        )
+        branch = AiBranchAbstractionService.get_one_approximate_branch(branches, action)
         new_waypoints_state = WaypointsState(
             points=self._points,
             path_tolerance=self._path_tolerance,

@@ -206,7 +206,7 @@ def test_deterministic_double_pin(fixture: Fixture) -> None:
     )
     branch = AiBranchAbstractionService.get_one_approximate_branch(
         branches=branches,
-        unit_id=fixture.unit_move,
+        action=move_action,
     )
 
     enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
