@@ -7,15 +7,22 @@ from flanker_core.utils.intersect_getter import IntersectGetter
 
 class WaypointsGraphSystem:
     @staticmethod
-    def get_waypoints(gs: GameState) -> dict[int, WaypointNode]:
+    def get_waypoints(
+        gs: GameState,
+    ) -> dict[int, WaypointNode]:
+        """Get a configured waypoints dictionary"""
         if entities := gs.query(WaypointsGraphComponent):
             _, component = entities[0]
+            return component.waypoints
         else:
-            gs.add_entity(component := WaypointsGraphComponent({}))
-        return component.waypoints
+            raise ValueError("Waypoints not configured in this game state.")
 
     @staticmethod
-    def get_waypoint_id(gs: GameState, position: Vec2) -> int:
+    def get_waypoint_id(
+        gs: GameState,
+        position: Vec2,
+    ) -> int:
+        """Returns a waypoint ID from coerced position."""
         waypoints_system = gs.get(WaypointsGraphSystem)
         waypoints = waypoints_system.get_waypoints(gs)
         coerced_waypoint_id = min(
@@ -25,16 +32,32 @@ class WaypointsGraphSystem:
         return coerced_waypoint_id
 
     @staticmethod
-    def get_waypoint(gs: GameState, position: Vec2) -> WaypointNode:
+    def get_waypoint(
+        gs: GameState,
+        position: Vec2,
+    ) -> WaypointNode:
+        """Returns a waypoint object from coerced position."""
         waypoints_system = gs.get(WaypointsGraphSystem)
         waypoint_id = waypoints_system.get_waypoint_id(gs, position)
         waypoints = waypoints_system.get_waypoints(gs)
         return waypoints[waypoint_id]
 
     @staticmethod
-    def set_waypoints(gs: GameState, points: list[Vec2], path_tolerance: float) -> None:
+    def set_waypoints(
+        gs: GameState,
+        points: list[Vec2],
+        path_tolerance: float,
+    ) -> None:
+        """Sets a new waypoints graph configured on the given waypoints"""
+
         waypoints_system = gs.get(WaypointsGraphSystem)
-        waypoints = waypoints_system.get_waypoints(gs)
+
+        # Creates or resets a new empty singleton graph if not exists.
+        if entities := gs.query(WaypointsGraphComponent):
+            _, component = entities[0]
+        else:
+            gs.add_entity(component := WaypointsGraphComponent({}))
+        waypoints = component.waypoints
         waypoints.clear()
 
         # Add new empty waypoints placed on specific coordinates
