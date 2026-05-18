@@ -1,8 +1,21 @@
-from flanker_ai.states.waypoints.models import WaypointNode, WaypointsGraphComponent
+from dataclasses import dataclass
+
 from flanker_core.gamestate import GameState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
+
+
+@dataclass
+class WaypointNode:
+    position: Vec2
+    visible_nodes: set[int]
+    movable_paths: dict[int, list[int]]
+
+
+@dataclass
+class _WaypointsGraphComponent:
+    waypoints: dict[int, WaypointNode]
 
 
 class WaypointsGraphSystem:
@@ -11,7 +24,7 @@ class WaypointsGraphSystem:
         gs: GameState,
     ) -> dict[int, WaypointNode]:
         """Get a configured waypoints dictionary"""
-        if entities := gs.query(WaypointsGraphComponent):
+        if entities := gs.query(_WaypointsGraphComponent):
             _, component = entities[0]
             return component.waypoints
         else:
@@ -53,10 +66,10 @@ class WaypointsGraphSystem:
         waypoints_system = gs.get(WaypointsGraphSystem)
 
         # Creates or resets a new empty singleton graph if not exists.
-        if entities := gs.query(WaypointsGraphComponent):
+        if entities := gs.query(_WaypointsGraphComponent):
             _, component = entities[0]
         else:
-            gs.add_entity(component := WaypointsGraphComponent({}))
+            gs.add_entity(component := _WaypointsGraphComponent({}))
         waypoints = component.waypoints
         waypoints.clear()
 
