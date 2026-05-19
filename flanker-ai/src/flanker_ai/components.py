@@ -1,7 +1,13 @@
 from dataclasses import dataclass, field
-from typing import Literal
 
-from flanker_core.models.components import InitiativeState, Vec2
+from flanker_ai.config_models import (
+    ExpectimaxPolicyConfig,
+    MinimaxPolicyConfig,
+    RandomHeuristicPolicyConfig,
+    UnabstractedStateConfig,
+    WaypointsStateConfig,
+)
+from flanker_core.models.components import InitiativeState
 
 
 @dataclass
@@ -16,32 +22,6 @@ class AiStallCountComponent:
 
 @dataclass
 class AiConfigComponent:
-
-    @dataclass
-    class WaypointsStateConfig:
-        type: Literal["WaypointsStateConfig"]
-        waypoint_coordinates: list[Vec2]
-        path_tolerance: float
-
-    @dataclass
-    class UnabstractedStateConfig:
-        type: Literal["UnabstractedStateConfig"]
-        ...
-
-    @dataclass
-    class RandomHeuristicPolicyConfig:
-        type: Literal["RandomHeuristicPolicyConfig"]
-        ...
-
-    @dataclass
-    class ExpectimaxPolicyConfig:
-        type: Literal["ExpectimaxPolicyConfig"]
-        ...
-
-    @dataclass
-    class MinimaxPolicyConfig:
-        type: Literal["MinimaxPolicyConfig"]
-        ...
 
     StateConfigTypes = WaypointsStateConfig | UnabstractedStateConfig
     PolicyConfigTypes = (

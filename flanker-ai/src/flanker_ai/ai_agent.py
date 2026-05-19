@@ -14,6 +14,13 @@ from flanker_ai.actions import (
     PivotActionResult,
 )
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
+from flanker_ai.config_models import (
+    ExpectimaxPolicyConfig,
+    MinimaxPolicyConfig,
+    RandomHeuristicPolicyConfig,
+    UnabstractedStateConfig,
+    WaypointsStateConfig,
+)
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
@@ -149,14 +156,14 @@ class AiAgent:
             policy_config = AiAgent.get_policy_config(gs, faction)
 
             match state_config:
-                case AiConfigComponent.UnabstractedStateConfig():
+                case UnabstractedStateConfig():
                     rs = UnabstractedState(gs)
                     match policy_config:
-                        case AiConfigComponent.ExpectimaxPolicyConfig():
+                        case ExpectimaxPolicyConfig():
                             policy = ExpectimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.MinimaxPolicyConfig():
+                        case MinimaxPolicyConfig():
                             policy = MinimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.RandomHeuristicPolicyConfig():
+                        case RandomHeuristicPolicyConfig():
                             policy = RandomHeuristicPolicy(gs)
                     agent = AiAgent(
                         gs=gs,
@@ -164,19 +171,24 @@ class AiAgent:
                         rs=rs,
                         policy=policy,
                     )
-                case AiConfigComponent.WaypointsStateConfig():
+                case WaypointsStateConfig():
                     match state_config:
-                        case AiConfigComponent.WaypointsStateConfig():
+                        case WaypointsStateConfig():
+                            if (
+                                state_config.coordinates.type
+                                != "WaypointsCoordinatesHandDrawnConfig"
+                            ):
+                                raise NotImplementedError()
                             rs = WaypointsState(
-                                points=state_config.waypoint_coordinates,
+                                points=state_config.coordinates.waypoint_coordinates,
                                 path_tolerance=state_config.path_tolerance,
                             )
                     match policy_config:
-                        case AiConfigComponent.ExpectimaxPolicyConfig():
+                        case ExpectimaxPolicyConfig():
                             policy = ExpectimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.MinimaxPolicyConfig():
+                        case MinimaxPolicyConfig():
                             policy = MinimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.RandomHeuristicPolicyConfig():
+                        case RandomHeuristicPolicyConfig():
                             policy = RandomHeuristicPolicy(gs)
                     agent = AiAgent(
                         gs=gs,

@@ -7,7 +7,10 @@ from flanker_ai.actions import (
 )
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_trial import AiTrial
-from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import (
+    WaypointsCoordinatesHandDrawnConfig,
+    WaypointsStateConfig,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -50,13 +53,18 @@ class AiService:
             print(f"Winner is {result.winner}")
 
     @staticmethod
-    def set_ai_waypoints_config(
+    def set_ai_waypoints_coordinates(
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
         config = AiAgent.get_state_config(gs, request.faction)
-        if isinstance(config, AiConfigComponent.WaypointsStateConfig):
-            config.waypoint_coordinates = request.points
+        if isinstance(config, WaypointsStateConfig):
+            config.coordinates = WaypointsCoordinatesHandDrawnConfig(
+                "WaypointsCoordinatesHandDrawnConfig",
+                waypoint_coordinates=request.points,
+            )
+        else:
+            raise ValueError(f"The AI config is not waypoints state.")
 
     @staticmethod
     def _log_ai_action_results(

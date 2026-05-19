@@ -6,6 +6,7 @@ from uuid import UUID
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import WaypointsStateConfig
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -115,11 +116,14 @@ def draw_waypoints(
     config = AiAgent.get_state_config(gs, faction)
 
     assert isinstance(
-        config, AiConfigComponent.WaypointsStateConfig
+        config, WaypointsStateConfig
     ), "Can't visualize non-waypoints AI config"
 
+    if config.coordinates.type != "WaypointsCoordinatesHandDrawnConfig":
+        raise NotImplementedError()
+
     waypoints_gs = WaypointsState(
-        points=config.waypoint_coordinates,
+        points=config.coordinates.waypoint_coordinates,
         path_tolerance=10,
     )
 
