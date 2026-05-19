@@ -12,6 +12,7 @@ from flanker_ai.actions import (
     MoveActionResult,
     PivotAction,
     PivotActionResult,
+    Vec2,
 )
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.config_models import (
@@ -26,6 +27,9 @@ from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
+from flanker_ai.states.waypoints.waypoints_placement_service import (
+    WaypointsPlacementService,
+)
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -151,13 +155,22 @@ class AiAgent:
                         state = UnabstractedState(gs)
                     case WaypointsStateConfig():
                         waypoints_config = config_component.config.state
-                        if (
-                            waypoints_config.points.type
-                            != "WaypointsCoordinatesHandDrawnConfig"
-                        ):
-                            raise NotImplementedError()
+                        points_config = waypoints_config.points
+                        points: list[Vec2]
+                        match points_config:
+                            case WaypointsStateConfig.HandDrawnConfig():
+                                points = points_config.waypoint_coordinates
+                            case WaypointsStateConfig.GridConfig():
+                                points = WaypointsPlacementService.get_grid_coordinates(
+                                    gs=gs,
+                                    spacing=points_config.spacing,
+                                    offset=points_config.offset,
+                                )
+                            case WaypointsStateConfig.VoronoiConfig():
+                                raise NotImplementedError()
+
                         state = WaypointsState(
-                            points=waypoints_config.points.waypoint_coordinates,
+                            points=points,
                             path_tolerance=waypoints_config.path_tolerance,
                         )
 

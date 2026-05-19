@@ -192,7 +192,7 @@ def draw_waypoints(
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-s2.json")
+    gs = load_state("./scenes/experiment-grid.json")
 
     img = mpimg.imread("./scripts/experiment-s2.png")  # type: ignore
     plt.imshow(  # type: ignore

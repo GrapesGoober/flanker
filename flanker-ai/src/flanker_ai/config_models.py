@@ -11,7 +11,7 @@ from flanker_core.models.components import Vec2
 class WaypointsStateConfig:
 
     @dataclass
-    class CoordinatesGridConfig:
+    class GridConfig:
         type: Literal["WaypointsCoordinatesGridConfig"]
         spacing: float
         offset: float
@@ -26,7 +26,7 @@ class WaypointsStateConfig:
         type: Literal["WaypointsCoordinatesVoronoiConfig"]
 
     type: Literal["WaypointsStateConfig"]
-    points: CoordinatesGridConfig | HandDrawnConfig | VoronoiConfig
+    points: GridConfig | HandDrawnConfig | VoronoiConfig
     path_tolerance: float
 
 
