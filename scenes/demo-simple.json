@@ -936,22 +936,16 @@
     "728186f9-e50b-42ca-9e06-86be86314081": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
-        },
-        "state_config": {
-          "type": "UnabstractedStateConfig"
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     },
     "96c4dd33-8099-43e9-bf5c-439cc67ec1de": {
       "AiConfigComponent": {
-        "faction": "RED",
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
-        },
-        "state_config": {
-          "type": "UnabstractedStateConfig"
+        "faction": "BLUE",
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     }

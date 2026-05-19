@@ -3445,22 +3445,16 @@
     "4a19f452-1458-428e-adc9-a8f388948d3a": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
-        },
-        "state_config": {
-          "type": "UnabstractedStateConfig"
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     },
     "f540c7c4-f68a-4ad9-a923-9ab384d68aea": {
       "AiConfigComponent": {
-        "faction": "RED",
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
-        },
-        "state_config": {
-          "type": "UnabstractedStateConfig"
+        "faction": "BLUE",
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     }

@@ -214,12 +214,9 @@
     },
     "cf857527-84a1-4f31-b181-a8ae3682ec77": {
       "AiConfigComponent": {
-        "faction": "RED",
-        "state_config": {
-          "type": "UnabstractedStateConfig"
-        },
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
+        "faction": "BLUE",
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     },
