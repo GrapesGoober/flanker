@@ -5,11 +5,7 @@ import pytest
 from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import (
-    MinimaxPolicyConfig,
-    WaypointsCoordinatesHandDrawnConfig,
-    WaypointsStateConfig,
-)
+from flanker_ai.config_models import SearchPolicyConfig, WaypointsStateConfig
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -117,15 +113,17 @@ def fixture() -> Fixture:
     gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
-            state_config=WaypointsStateConfig(
-                type="WaypointsStateConfig",
-                coordinates=WaypointsCoordinatesHandDrawnConfig(
-                    type="WaypointsCoordinatesHandDrawnConfig",
-                    waypoint_coordinates=waypoint_coordinates,
+            config=SearchPolicyConfig(
+                policy_type="Minimax",
+                state=WaypointsStateConfig(
+                    type="WaypointsStateConfig",
+                    points=WaypointsStateConfig.HandDrawnConfig(
+                        type="WaypointsCoordinatesHandDrawnConfig",
+                        waypoint_coordinates=waypoint_coordinates,
+                    ),
+                    path_tolerance=3,
                 ),
-                path_tolerance=3,
             ),
-            policy_config=MinimaxPolicyConfig(type="MinimaxPolicyConfig"),
         )
     )
 
@@ -143,10 +141,11 @@ def fixture() -> Fixture:
 
 
 def test_stall(fixture: Fixture) -> None:
-    conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
-    assert conf.type == "WaypointsStateConfig"
-    assert conf.coordinates.type == "WaypointsCoordinatesHandDrawnConfig"
-    rs = WaypointsState(conf.coordinates.waypoint_coordinates, conf.path_tolerance)
+    agent = fixture.blue_agent
+    rs = agent.rs
+    assert isinstance(
+        rs, WaypointsState
+    ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
     for _ in range(5):
         action = MoveAction(
@@ -171,10 +170,11 @@ def test_stall(fixture: Fixture) -> None:
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
-    conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
-    assert conf.type == "WaypointsStateConfig"
-    assert conf.coordinates.type == "WaypointsCoordinatesHandDrawnConfig"
-    rs = WaypointsState(conf.coordinates.waypoint_coordinates, conf.path_tolerance)
+    agent = fixture.blue_agent
+    rs = agent.rs
+    assert isinstance(
+        rs, WaypointsState
+    ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointsGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)
@@ -189,10 +189,11 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
-    conf = AiAgent.get_state_config(fixture.gs, InitiativeState.Faction.BLUE)
-    assert conf.type == "WaypointsStateConfig"
-    assert conf.coordinates.type == "WaypointsCoordinatesHandDrawnConfig"
-    rs = WaypointsState(conf.coordinates.waypoint_coordinates, conf.path_tolerance)
+    agent = fixture.blue_agent
+    rs = agent.rs
+    assert isinstance(
+        rs, WaypointsState
+    ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
     waypoints_system = rs.gs.get(WaypointsGraphSystem)
     waypoints = waypoints_system.get_waypoints(rs.gs)

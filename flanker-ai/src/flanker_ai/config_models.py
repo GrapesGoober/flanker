@@ -3,55 +3,44 @@ from typing import Literal
 
 from flanker_core.models.components import Vec2
 
-
-@dataclass
-class WaypointsCoordinatesGridConfig:
-    type: Literal["WaypointsCoordinatesGridConfig"]
-    spacing: float
-    offset: float
-
-
-@dataclass
-class WaypointsCoordinatesHandDrawnConfig:
-    type: Literal["WaypointsCoordinatesHandDrawnConfig"]
-    waypoint_coordinates: list[Vec2]
-
-
-@dataclass
-class WaypointsCoordinatesVoronoiConfig:
-    type: Literal["WaypointsCoordinatesVoronoiConfig"]
+# TODO: this is using string literal type discriminator
+# Is this needed? Should it be removed? What cleaner options is available?
 
 
 @dataclass
 class WaypointsStateConfig:
+
+    @dataclass
+    class CoordinatesGridConfig:
+        type: Literal["WaypointsCoordinatesGridConfig"]
+        spacing: float
+        offset: float
+
+    @dataclass
+    class HandDrawnConfig:
+        type: Literal["WaypointsCoordinatesHandDrawnConfig"]
+        waypoint_coordinates: list[Vec2]
+
+    @dataclass
+    class VoronoiConfig:
+        type: Literal["WaypointsCoordinatesVoronoiConfig"]
+
     type: Literal["WaypointsStateConfig"]
-    coordinates: (
-        WaypointsCoordinatesGridConfig
-        | WaypointsCoordinatesHandDrawnConfig
-        | WaypointsCoordinatesVoronoiConfig
-    )
+    points: CoordinatesGridConfig | HandDrawnConfig | VoronoiConfig
     path_tolerance: float
 
 
 @dataclass
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
-    ...
 
 
 @dataclass
-class RandomHeuristicPolicyConfig:
-    type: Literal["RandomHeuristicPolicyConfig"]
-    ...
+class SearchPolicyConfig:
+    policy_type: Literal["Minimax"] | Literal["Expectimax"]
+    state: WaypointsStateConfig | UnabstractedStateConfig
 
 
 @dataclass
-class ExpectimaxPolicyConfig:
-    type: Literal["ExpectimaxPolicyConfig"]
-    ...
-
-
-@dataclass
-class MinimaxPolicyConfig:
-    type: Literal["MinimaxPolicyConfig"]
-    ...
+class HeuristicPolicyConfig:
+    policy_type: Literal["RandomHeuristic"]

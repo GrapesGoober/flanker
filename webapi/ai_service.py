@@ -5,12 +5,10 @@ from flanker_ai.actions import (
     MoveActionResult,
     PivotActionResult,
 )
-from flanker_ai.ai_agent import AiAgent
+from flanker_ai.ai_agent import AiAgent, SearchPolicyConfig
 from flanker_ai.ai_trial import AiTrial
-from flanker_ai.config_models import (
-    WaypointsCoordinatesHandDrawnConfig,
-    WaypointsStateConfig,
-)
+from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import WaypointsStateConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -57,14 +55,20 @@ class AiService:
         gs: GameState,
         request: AiWaypointConfigRequest,
     ) -> None:
-        config = AiAgent.get_state_config(gs, request.faction)
-        if isinstance(config, WaypointsStateConfig):
-            config.coordinates = WaypointsCoordinatesHandDrawnConfig(
-                "WaypointsCoordinatesHandDrawnConfig",
-                waypoint_coordinates=request.points,
-            )
-        else:
-            raise ValueError(f"The AI config is not waypoints state.")
+        for _, config_component in gs.query(AiConfigComponent):
+            if config_component.faction != request.faction:
+                continue
+            if not isinstance(config_component.config, SearchPolicyConfig):
+                continue
+            if not isinstance(config_component.config.state, WaypointsStateConfig):
+                continue
+            if not isinstance(
+                config_component.config.state.points,
+                WaypointsStateConfig.HandDrawnConfig,
+            ):
+                continue
+            points_config = config_component.config.state.points
+            points_config.waypoint_coordinates = request.points
 
     @staticmethod
     def _log_ai_action_results(

@@ -1,12 +1,6 @@
 from dataclasses import dataclass, field
 
-from flanker_ai.config_models import (
-    ExpectimaxPolicyConfig,
-    MinimaxPolicyConfig,
-    RandomHeuristicPolicyConfig,
-    UnabstractedStateConfig,
-    WaypointsStateConfig,
-)
+from flanker_ai.config_models import HeuristicPolicyConfig, SearchPolicyConfig
 from flanker_core.models.components import InitiativeState
 
 
@@ -22,12 +16,5 @@ class AiStallCountComponent:
 
 @dataclass
 class AiConfigComponent:
-
-    StateConfigTypes = WaypointsStateConfig | UnabstractedStateConfig
-    PolicyConfigTypes = (
-        RandomHeuristicPolicyConfig | ExpectimaxPolicyConfig | MinimaxPolicyConfig
-    )
-
+    config: SearchPolicyConfig | HeuristicPolicyConfig
     faction: InitiativeState.Faction
-    state_config: StateConfigTypes
-    policy_config: PolicyConfigTypes

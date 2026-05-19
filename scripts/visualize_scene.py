@@ -6,7 +6,6 @@ from uuid import UUID
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import WaypointsStateConfig
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -113,21 +112,13 @@ def draw_waypoints(
 
     print("Creating waypoints...")
 
-    config = AiAgent.get_state_config(gs, faction)
-
+    agent = AiAgent.get_agent(gs, faction)
+    waypoints_state = agent.rs
     assert isinstance(
-        config, WaypointsStateConfig
-    ), "Can't visualize non-waypoints AI config"
+        waypoints_state, WaypointsState
+    ), "Configured agent's state representation must be waypoints state."
 
-    if config.coordinates.type != "WaypointsCoordinatesHandDrawnConfig":
-        raise NotImplementedError()
-
-    waypoints_gs = WaypointsState(
-        points=config.coordinates.waypoint_coordinates,
-        path_tolerance=10,
-    )
-
-    waypoints_gs.update_state(gs)
+    waypoints_state.update_state(gs)
 
     print("Drawing waypoints...")
 
@@ -141,8 +132,8 @@ def draw_waypoints(
     accented_points_y: list[float] = []
     accented_ids: list[int] = []
 
-    waypoints_system = waypoints_gs.gs.get(WaypointsGraphSystem)
-    waypoints = waypoints_system.get_waypoints(waypoints_gs.gs)
+    waypoints_system = waypoints_state.gs.get(WaypointsGraphSystem)
+    waypoints = waypoints_system.get_waypoints(waypoints_state.gs)
 
     for id, point in waypoints.items():
 
