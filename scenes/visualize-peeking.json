@@ -115,7 +115,7 @@
     },
     "7d4437e8-e5cb-4465-aa39-fb8143b29c49": {
       "AiConfigComponent": {
-        "faction": "BLUE",
+        "faction": "RED",
         "config": {
           "policy_type": "RandomHeuristic"
         }

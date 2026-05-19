@@ -124,14 +124,16 @@ class AiAgent:
                 continue
             return agent_instance.agent
 
-        # If not exist, create a new empty one
+        # If not exist, create a new empty one using config
         config_component: AiConfigComponent | None = None
-        for _, config_component in gs.query(AiConfigComponent):
-            if config_component.faction != faction:
-                continue
+        for _, component in gs.query(AiConfigComponent):
+            if component.faction == faction:
+                config_component = component
+                break
         if config_component == None:
             raise ValueError("AiConfigComponent not found")
 
+        # Config found, create the agent
         policy: IPolicy[Action]
         state: IRepresentationState[Action]
         match config_component.config:
