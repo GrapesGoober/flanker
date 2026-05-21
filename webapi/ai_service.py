@@ -5,10 +5,10 @@ from flanker_ai.actions import (
     MoveActionResult,
     PivotActionResult,
 )
-from flanker_ai.ai_agent import AiAgent, SearchPolicyConfig
+from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_trial import AiTrial
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import WaypointsStateConfig
+from flanker_ai.config_models import SearchPolicyConfig, WaypointsStateConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
