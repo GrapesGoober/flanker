@@ -1,6 +1,6 @@
 from flanker_ai.config_models import WaypointsStateConfig
-from flanker_ai.states.waypoints.waypoints_placement_service import (
-    WaypointsPlacementService,
+from flanker_ai.states.waypoints.waypoints_generator_service import (
+    WaypointsGeneratorService,
 )
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -27,7 +27,7 @@ class WaypointsStateFactory:
             case WaypointsStateConfig.HandDrawnConfig():
                 points = points_config.waypoint_coordinates
             case WaypointsStateConfig.GridConfig():
-                points = WaypointsPlacementService.get_grid_coordinates(
+                points = WaypointsGeneratorService.get_grid_coordinates(
                     gs=gs,
                     spacing=points_config.spacing,
                     offset=points_config.offset,
