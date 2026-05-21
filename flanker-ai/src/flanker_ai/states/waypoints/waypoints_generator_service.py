@@ -66,7 +66,7 @@ class WaypointsGeneratorService:
         los_system = gs.get(LosSystem)
 
         waypoints_los_polygon: dict[Vec2, list[Vec2]] = {}
-        waypoints = list(initial_waypoints)
+        waypoints = set(initial_waypoints)
 
         terrain_vertices: list[list[Vec2]] = []
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
@@ -81,11 +81,12 @@ class WaypointsGeneratorService:
             for waypoint_a in waypoints:
                 for waypoint_b in waypoints:
                     if waypoint_a == waypoint_b:
-                        break
+                        continue
                     if (waypoint_a, waypoint_b) in processed_pair:
-                        break
+                        continue
                     if (waypoint_b, waypoint_a) in processed_pair:
-                        break
+                        continue
+                    processed_pair.append((waypoint_a, waypoint_b))
 
                     # Check against all terrain for intersections
                     for terrain in terrain_vertices:
@@ -96,9 +97,12 @@ class WaypointsGeneratorService:
 
                     # Check against all other waypoints for interrupts
                     for other_waypoint in waypoints:
+                        if other_waypoint in [waypoint_a, waypoint_b]:
+                            continue
+
                         if other_waypoint not in waypoints_los_polygon:
                             waypoints_los_polygon[other_waypoint] = (
-                                los_system.get_los_polygon(gs, waypoint_a)
+                                los_system.get_los_polygon(gs, other_waypoint)
                             )
                         los_polygon = waypoints_los_polygon[other_waypoint]
 
@@ -108,5 +112,5 @@ class WaypointsGeneratorService:
                             line=(waypoint_a, waypoint_b),
                             polyline=los_polygon,
                         )
-            waypoints += intersects
-        return waypoints
+            waypoints |= set(intersects)
+        return list(waypoints)
