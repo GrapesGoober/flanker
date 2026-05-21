@@ -227,12 +227,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AiWaypointConfigGridRequest */
-        AiWaypointConfigGridRequest: {
-            faction: components["schemas"]["Faction"];
-            /** Spacing */
-            spacing: number;
-        };
         /** AiWaypointConfigRequest */
         AiWaypointConfigRequest: {
             faction: components["schemas"]["Faction"];
@@ -839,7 +833,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AiWaypointConfigRequest"] | components["schemas"]["AiWaypointConfigGridRequest"];
+                "application/json": components["schemas"]["AiWaypointConfigRequest"];
             };
         };
         responses: {

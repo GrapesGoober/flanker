@@ -10,7 +10,6 @@ from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
-    AiWaypointConfigGridRequest,
     AiWaypointConfigRequest,
     AssaultActionRequest,
     CombatUnitsViewState,
@@ -137,14 +136,10 @@ async def ai_play(
 async def ai_config_waypoints(
     scene_name: str = Path(..., alias="sceneName"),
     game_id: int = Path(..., alias="gameId"),
-    body: AiWaypointConfigRequest | AiWaypointConfigGridRequest = Body(...),
+    body: AiWaypointConfigRequest = Body(...),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    match body:
-        case AiWaypointConfigRequest():
-            AiService.set_ai_waypoints_config(gs, body)
-        case AiWaypointConfigGridRequest():
-            AiService.set_ai_waypoints_config_to_grid(gs, body)
+    AiService.set_ai_waypoints_coordinates(gs, body)
 
 
 @app.put("/api/{sceneName}/{gameId}/terrain")

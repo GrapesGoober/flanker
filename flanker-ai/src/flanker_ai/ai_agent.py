@@ -14,13 +14,19 @@ from flanker_ai.actions import (
     PivotActionResult,
 )
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
+from flanker_ai.config_models import (
+    HeuristicPolicyConfig,
+    SearchPolicyConfig,
+    UnabstractedStateConfig,
+    WaypointsStateConfig,
+)
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
-from flanker_ai.states.waypoints.waypoints_state import WaypointsState
+from flanker_ai.states.waypoints.waypoints_state_factory import WaypointsStateFactory
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -48,55 +54,55 @@ class AiAgent:
         rs: IRepresentationState[Action],
         policy: IPolicy[Action],
     ) -> None:
-        self._gs = gs
-        self._faction: InitiativeState.Faction = faction
-        self._policy = policy
-        self._rs = rs
+        self.gs = gs
+        self.faction: InitiativeState.Faction = faction
+        self.policy: IPolicy[Action] = policy
+        self.rs: IRepresentationState[Action] = rs
 
     def play_initiative(self) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
 
-        initiative_system = self._gs.get(InitiativeSystem)
-        if initiative_system.get_initiative(self._gs) != self._faction:
+        initiative_system = self.gs.get(InitiativeSystem)
+        if initiative_system.get_initiative(self.gs) != self.faction:
             return []
 
         halt_counter = 0
         action_results: list[ActionResult] = []
-        while initiative_system.get_initiative(self._gs) == self._faction:
+        while initiative_system.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
-            objective_system = self._gs.get(ObjectiveSystem)
-            if objective_system.get_winning_faction(self._gs) != None:
+            objective_system = self.gs.get(ObjectiveSystem)
+            if objective_system.get_winning_faction(self.gs) != None:
                 break
-            if result := self._gs.query(AiStallCountComponent):
+            if result := self.gs.query(AiStallCountComponent):
                 _, stall_comp = result[0]
             else:
-                self._gs.add_entity(stall_comp := AiStallCountComponent())
-            if stall_comp.stall_counter[self._faction] > _MAX_STALL_LIMIT:
+                self.gs.add_entity(stall_comp := AiStallCountComponent())
+            if stall_comp.stall_counter[self.faction] > _MAX_STALL_LIMIT:
                 break
 
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
-                print(f"{self._faction.value} AI made useless actions, breaking")
-                initiative_system.flip_initiative(self._gs)
+                print(f"{self.faction.value} AI made useless actions, breaking")
+                initiative_system.flip_initiative(self.gs)
                 break
 
             # Prepare the representation and run the policy on it
-            rs = deepcopy(self._rs)
-            rs.update_state(self._gs)
-            actions = self._policy.get_action_sequence(rs)
-            print(f"{self._faction.value} AI made action: {actions}")
+            rs = deepcopy(self.rs)
+            rs.update_state(self.gs)
+            actions = self.policy.get_action_sequence(rs)
+            print(f"{self.faction.value} AI made action: {actions}")
 
             if actions == []:
-                print(f"No valid action for {self._faction.value} AI, breaking")
-                initiative_system.flip_initiative(self._gs)
+                print(f"No valid action for {self.faction.value} AI, breaking")
+                initiative_system.flip_initiative(self.gs)
                 break
 
             action = actions[0]
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
-                print(f"{self._faction.value} AI made invalid action, breaking")
-                initiative_system.flip_initiative(self._gs)
+                print(f"{self.faction.value} AI made invalid action, breaking")
+                initiative_system.flip_initiative(self.gs)
                 break
             # These result objects would be used for logging
             # Thus, prevent mutation by creating a copy
@@ -106,161 +112,129 @@ class AiAgent:
         return action_results
 
     @staticmethod
-    def get_state_config(
-        gs: GameState,
-        faction: InitiativeState.Faction,
-    ) -> AiConfigComponent.StateConfigTypes:
-        # Get the config. If not exist, create a new empty one
-        for _, config_component in gs.query(AiConfigComponent):
-            if config_component.faction != faction:
-                continue
-            return config_component.state_config
-        raise ValueError(f"No AI config for {gs}")
-
-    @staticmethod
-    def get_policy_config(
-        gs: GameState,
-        faction: InitiativeState.Faction,
-    ) -> AiConfigComponent.PolicyConfigTypes:
-        # Get the config. If not exist, create a new empty one
-        for _, config_component in gs.query(AiConfigComponent):
-            if config_component.faction != faction:
-                continue
-            return config_component.policy_config
-        raise ValueError(f"No AI config for {gs}")
-
-    @staticmethod
     def get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
     ) -> "AiAgent":
         """Use the config to build an AI agent, or reuse agent if exists."""
 
-        # Get the agent instance component.
-        agent: AiAgent | None = None
+        # Get the agent instance component if already exists
         for _, agent_instance in gs.query(_AiAgentInstanceComponent):
             if agent_instance.faction != faction:
                 continue
-            agent = agent_instance.agent
-            break
-        # If not exist, create a new empty one
-        if agent is None:
-            state_config = AiAgent.get_state_config(gs, faction)
-            policy_config = AiAgent.get_policy_config(gs, faction)
+            return agent_instance.agent
 
-            match state_config:
-                case AiConfigComponent.UnabstractedStateConfig():
-                    rs = UnabstractedState(gs)
-                    match policy_config:
-                        case AiConfigComponent.ExpectimaxPolicyConfig():
-                            policy = ExpectimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.MinimaxPolicyConfig():
-                            policy = MinimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.RandomHeuristicPolicyConfig():
-                            policy = RandomHeuristicPolicy(gs)
-                    agent = AiAgent(
-                        gs=gs,
-                        faction=faction,
-                        rs=rs,
-                        policy=policy,
-                    )
-                case AiConfigComponent.WaypointsStateConfig():
-                    match state_config:
-                        case AiConfigComponent.WaypointsStateConfig():
-                            rs = WaypointsState(
-                                points=state_config.waypoint_coordinates,
-                                path_tolerance=state_config.path_tolerance,
-                            )
-                    match policy_config:
-                        case AiConfigComponent.ExpectimaxPolicyConfig():
-                            policy = ExpectimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.MinimaxPolicyConfig():
-                            policy = MinimaxPolicy[Action](depth=4)
-                        case AiConfigComponent.RandomHeuristicPolicyConfig():
-                            policy = RandomHeuristicPolicy(gs)
-                    agent = AiAgent(
-                        gs=gs,
-                        faction=faction,
-                        rs=rs,
-                        policy=policy,
-                    )
+        # If not exist, create a new empty one using config
+        config_component: AiConfigComponent | None = None
+        for _, component in gs.query(AiConfigComponent):
+            if component.faction == faction:
+                config_component = component
+                break
+        if config_component == None:
+            raise ValueError("AiConfigComponent not found")
 
-            gs.add_entity(_AiAgentInstanceComponent(faction=faction, agent=agent))
+        # Config found, create the agent
+        policy: IPolicy[Action]
+        state: IRepresentationState[Action]
+        match config_component.config:
+            case HeuristicPolicyConfig():
+                policy = RandomHeuristicPolicy(gs)
+                state = UnabstractedState(gs)
+            case SearchPolicyConfig():
+                match config_component.config.policy_type:
+                    case "Expectimax":
+                        policy = ExpectimaxPolicy[Action](depth=4)
+                    case "Minimax":
+                        policy = MinimaxPolicy[Action](depth=4)
+                match config_component.config.state:
+                    case UnabstractedStateConfig():
+                        state = UnabstractedState(gs)
+                    case WaypointsStateConfig():
+                        state = WaypointsStateFactory.create_state(
+                            gs, config_component.config.state
+                        )
 
+        agent = AiAgent(gs, faction, state, policy)
+        gs.add_entity(
+            _AiAgentInstanceComponent(
+                faction=faction,
+                agent=agent,
+            )
+        )
         return agent
 
     def _perform_action(
         self,
         action: Action,
     ) -> ActionResult | InvalidAction:
-        assault_system = self._gs.get(AssaultSystem)
-        fire_system = self._gs.get(FireSystem)
-        move_system = self._gs.get(MoveSystem)
+        assault_system = self.gs.get(AssaultSystem)
+        fire_system = self.gs.get(FireSystem)
+        move_system = self.gs.get(MoveSystem)
         match action:
             case MoveAction():
                 result = move_system.move(
-                    self._gs,
+                    self.gs,
                     action.unit_id,
                     action.to,
                 )
                 if not isinstance(result, InvalidAction):
-                    stall_counter_ent = self._gs.query(AiStallCountComponent)
+                    stall_counter_ent = self.gs.query(AiStallCountComponent)
                     _, counter = stall_counter_ent[0]
                     if result.reactive_fire_outcome == None:
-                        counter.stall_counter[self._faction] += 1
+                        counter.stall_counter[self.faction] += 1
                     else:
-                        counter.stall_counter[self._faction] = 0
+                        counter.stall_counter[self.faction] = 0
                     return MoveActionResult(
                         action=action,
-                        result_gs=self._gs,
+                        result_gs=self.gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
                 result = move_system.pivot(
-                    self._gs,
+                    self.gs,
                     action.unit_id,
                     action.to,
                 )
                 if not isinstance(result, InvalidAction):
-                    stall_counter_ent = self._gs.query(AiStallCountComponent)
+                    stall_counter_ent = self.gs.query(AiStallCountComponent)
                     _, counter = stall_counter_ent[0]
                     if result.reactive_fire_outcome == None:
-                        counter.stall_counter[self._faction] += 1
+                        counter.stall_counter[self.faction] += 1
                     else:
-                        counter.stall_counter[self._faction] = 0
+                        counter.stall_counter[self.faction] = 0
                     return PivotActionResult(
                         action=action,
-                        result_gs=self._gs,
+                        result_gs=self.gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
-                stall_counter_ent = self._gs.query(AiStallCountComponent)
+                stall_counter_ent = self.gs.query(AiStallCountComponent)
                 _, counter = stall_counter_ent[0]
-                counter.stall_counter[self._faction] = 0
+                counter.stall_counter[self.faction] = 0
                 result = fire_system.fire(
-                    self._gs,
+                    self.gs,
                     action.unit_id,
                     action.target_id,
                 )
                 if not isinstance(result, InvalidAction):
                     return FireActionResult(
                         action=action,
-                        result_gs=self._gs,
+                        result_gs=self.gs,
                         outcome=result.outcome,
                     )
             case AssaultAction():
-                stall_counter_ent = self._gs.query(AiStallCountComponent)
+                stall_counter_ent = self.gs.query(AiStallCountComponent)
                 _, counter = stall_counter_ent[0]
-                counter.stall_counter[self._faction] = 0
+                counter.stall_counter[self.faction] = 0
                 result = assault_system.assault(
-                    self._gs,
+                    self.gs,
                     action.unit_id,
                     action.target_id,
                 )
                 if not isinstance(result, InvalidAction):
                     return AssaultActionResult(
                         action=action,
-                        result_gs=self._gs,
+                        result_gs=self.gs,
                         outcome=result.outcome,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )

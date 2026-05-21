@@ -87,22 +87,16 @@
     "3417bfb3-c72d-406a-b7c5-c7ff989ec70a": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "state_config": {
-          "type": "UnabstractedStateConfig"
-        },
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     },
     "49a187dc-b48e-4d0a-b7a5-c628b5acc568": {
       "AiConfigComponent": {
         "faction": "RED",
-        "state_config": {
-          "type": "UnabstractedStateConfig"
-        },
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     },

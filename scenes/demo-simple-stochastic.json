@@ -932,22 +932,16 @@
     "f1cbba49-5092-46a2-bc6e-f9ef4a5dc6c6": {
       "AiConfigComponent": {
         "faction": "BLUE",
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
-        },
-        "state_config": {
-          "type": "UnabstractedStateConfig"
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     },
     "845e1a2e-90bc-4071-b524-d7f1f4d45b20": {
       "AiConfigComponent": {
         "faction": "RED",
-        "policy_config": {
-          "type": "RandomHeuristicPolicyConfig"
-        },
-        "state_config": {
-          "type": "UnabstractedStateConfig"
+        "config": {
+          "policy_type": "RandomHeuristic"
         }
       }
     }
