@@ -121,6 +121,7 @@ def fixture() -> Fixture:
                         type="WaypointsCoordinatesHandDrawnConfig",
                         waypoint_coordinates=waypoint_coordinates,
                     ),
+                    expansion=None,
                     path_tolerance=3,
                 ),
             ),

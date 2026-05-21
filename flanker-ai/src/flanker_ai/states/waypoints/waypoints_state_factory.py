@@ -21,19 +21,29 @@ class WaypointsStateFactory:
         Create a new waypoints state from game state and a config.
         """
 
-        points_config = config.points
         points: list[Vec2]
-        match points_config:
+        match config.points:
             case WaypointsStateConfig.HandDrawnConfig():
-                points = points_config.waypoint_coordinates
+                points = config.points.waypoint_coordinates
             case WaypointsStateConfig.GridConfig():
                 points = WaypointsGeneratorService.get_grid_coordinates(
                     gs=gs,
-                    spacing=points_config.spacing,
-                    offset=points_config.offset,
+                    spacing=config.points.spacing,
+                    offset=config.points.offset,
                 )
             case WaypointsStateConfig.VoronoiConfig():
                 raise NotImplementedError()
+
+        if config.expansion != None:
+            match config.expansion.type:
+                case "LineBased":
+                    points = WaypointsGeneratorService.expand_waypoints_interrupt(
+                        gs=gs,
+                        initial_waypoints=points,
+                        iterations=config.expansion.iterations,
+                    )
+                case "Polygonal":
+                    raise NotImplementedError()
 
         return WaypointsState(
             points=points,
