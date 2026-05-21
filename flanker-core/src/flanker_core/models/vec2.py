@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from math import isclose, sqrt
 
 
-@dataclass
+@dataclass(frozen=True)
 class Vec2:
     """2D vector class for basic vector operations"""
 

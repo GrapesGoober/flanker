@@ -1,6 +1,7 @@
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -51,3 +52,61 @@ class WaypointsGeneratorService:
                 x += spacing
             y += spacing
         return points
+
+    @staticmethod
+    def expand_waypoints_interrupt(
+        gs: GameState,
+        initial_waypoints: list[Vec2],
+        iterations: int,
+    ) -> list[Vec2]:
+        """
+        Given a list of waypoints, expand and create more waypoints
+        representing move interrupt candidates.
+        """
+        los_system = gs.get(LosSystem)
+
+        waypoints_los_polygon: dict[Vec2, list[Vec2]] = {}
+        waypoints = list(initial_waypoints)
+
+        terrain_vertices: list[list[Vec2]] = []
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            vertices = LinearTransform.apply(terrain.vertices, transform)
+            if terrain.is_closed_loop:
+                vertices.append(vertices[0])
+            terrain_vertices.append(vertices)
+
+        for _ in range(iterations):
+            processed_pair: list[tuple[Vec2, Vec2]] = []
+            intersects: list[Vec2] = []
+            for waypoint_a in waypoints:
+                for waypoint_b in waypoints:
+                    if waypoint_a == waypoint_b:
+                        break
+                    if (waypoint_a, waypoint_b) in processed_pair:
+                        break
+                    if (waypoint_b, waypoint_a) in processed_pair:
+                        break
+
+                    # Check against all terrain for intersections
+                    for terrain in terrain_vertices:
+                        intersects += IntersectGetter.get_intersects(
+                            line=(waypoint_a, waypoint_b),
+                            polyline=terrain,
+                        )
+
+                    # Check against all other waypoints for interrupts
+                    for other_waypoint in waypoints:
+                        if other_waypoint not in waypoints_los_polygon:
+                            waypoints_los_polygon[other_waypoint] = (
+                                los_system.get_los_polygon(gs, waypoint_a)
+                            )
+                        los_polygon = waypoints_los_polygon[other_waypoint]
+
+                        # For now, consider polygon-edge as interrupts.
+                        # Let's ignore FOV constraints for now.
+                        intersects += IntersectGetter.get_intersects(
+                            line=(waypoint_a, waypoint_b),
+                            polyline=los_polygon,
+                        )
+            waypoints += intersects
+        return waypoints
