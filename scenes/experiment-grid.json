@@ -139,12 +139,12 @@
             "type": "WaypointsStateConfig",
             "points": {
               "type": "WaypointsCoordinatesGridConfig",
-              "spacing": 50,
-              "offset": 25
+              "spacing": 280,
+              "offset": 10
             },
             "expansion": {
               "type": "LineBased",
-              "iterations": 0
+              "iterations": 1
             },
             "path_tolerance": 30.0
           }

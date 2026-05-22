@@ -66,7 +66,7 @@ def draw_terrains(gs: GameState) -> None:
         visualize_polygon(vertices, color="C1")
 
 
-def draw_los(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
+def draw_combat_unit_los_cone(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
     los_system = gs.get(LosSystem)
 
     spotter_transform = gs.get_component(unit_id, components.Transform)
@@ -80,7 +80,7 @@ def draw_los(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
         heading_degree=spotter_transform.degrees,
     )
 
-    visualize_polygon(los_polygon, color=color, fill_alpha=0.3, plot_alpha=0.2)
+    visualize_polygon(los_polygon, color=color, fill_alpha=0.06, plot_alpha=0.04)
 
 
 def draw_graph(
@@ -119,6 +119,8 @@ def draw_waypoints(
     ), "Configured agent's state representation must be waypoints state."
 
     waypoints_state.update_state(gs)
+    waypoints_system = waypoints_state.gs.get(WaypointsGraphSystem)
+    los_system = gs.get(LosSystem)
 
     print("Drawing waypoints...")
 
@@ -132,7 +134,6 @@ def draw_waypoints(
     accented_points_y: list[float] = []
     accented_ids: list[int] = []
 
-    waypoints_system = waypoints_state.gs.get(WaypointsGraphSystem)
     waypoints = waypoints_system.get_waypoints(waypoints_state.gs)
 
     for id, point in waypoints.items():
@@ -172,22 +173,29 @@ def draw_waypoints(
                 ]
             )
 
-    draw_graph(
-        points_x,
-        points_y,
-        segments,
-        color="C0",
-        linewidth=1,
-        alpha=0.15,
-    )
-    draw_graph(
-        accented_points_x,
-        accented_points_y,
-        accented_segments,
-        color="C1",
-        linewidth=2,
-        alpha=0.3,
-    )
+        # Draw LOS polygon for each waypoint
+        full_polygon = los_system.get_los_polygon(
+            gs=gs,
+            spotter_pos=point.position,
+        )
+        visualize_polygon(full_polygon, color="C0", fill_alpha=0.02, plot_alpha=0.05)
+
+    # draw_graph(
+    #     points_x,
+    #     points_y,
+    #     segments,
+    #     color="C0",
+    #     linewidth=1,
+    #     alpha=0.05,
+    # )
+    # draw_graph(
+    #     accented_points_x,
+    #     accented_points_y,
+    #     accented_segments,
+    #     color="C1",
+    #     linewidth=2,
+    #     alpha=0.3,
+    # )
 
 
 if __name__ == "__main__":
@@ -202,11 +210,14 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
+
+    # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
         if unit.faction == InitiativeState.Faction.BLUE:
-            draw_los(gs, unit_id=id, color="C0")
+            draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
 
         if unit.faction == InitiativeState.Faction.RED:
-            draw_los(gs, unit_id=id, color="C1")
+            draw_combat_unit_los_cone(gs, unit_id=id, color="C1")
+
     plt.axis("equal")  # type: ignore
     plt.show()  # type: ignore
