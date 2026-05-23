@@ -1,3 +1,5 @@
+from itertools import pairwise
+
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -77,9 +79,17 @@ class WaypointsGeneratorService:
 
         for _ in range(iterations):
             processed_pair: list[tuple[Vec2, Vec2]] = []
-            intersects: list[Vec2] = []
+
+            # Loop through each waypoint pair to consider new
+            # waypoint candidates to add. Note that this loop
+            # can't add (mutate) directly to the waypoints set
+            # while looping.
+            new_waypoints: set[Vec2] = set()
             for waypoint_a in waypoints:
                 for waypoint_b in waypoints:
+                    intersects: list[Vec2] = []
+
+                    # Ignore redundant pairs.
                     if waypoint_a == waypoint_b:
                         continue
                     if (waypoint_a, waypoint_b) in processed_pair:
@@ -88,14 +98,14 @@ class WaypointsGeneratorService:
                         continue
                     processed_pair.append((waypoint_a, waypoint_b))
 
-                    # Check against all terrain for intersections
+                    # Check against all terrain for intersections.
                     for terrain in terrain_vertices:
                         intersects += IntersectGetter.get_intersects(
                             line=(waypoint_a, waypoint_b),
                             polyline=terrain,
                         )
 
-                    # Check against all other waypoints for interrupts
+                    # Check against all other waypoints for interrupts.
                     for other_waypoint in waypoints:
                         if other_waypoint in [waypoint_a, waypoint_b]:
                             continue
@@ -112,5 +122,16 @@ class WaypointsGeneratorService:
                             line=(waypoint_a, waypoint_b),
                             polyline=los_polygon,
                         )
-            waypoints |= set(intersects)
+
+                    # Loop through each subsegment on this waypoint line pair
+                    # and add a new waypoint on the midpoint of subsegment.
+                    points_on_line: list[Vec2] = list(set(intersects))
+                    points_on_line.append(waypoint_a)
+                    points_on_line.append(waypoint_b)
+                    points_on_line.sort(key=lambda p: (waypoint_a - p).length())
+                    for left_point, right_point in pairwise(points_on_line):
+                        new_waypoints.add((left_point + right_point) / 2)
+
+            # The 'or' operator |= is set concat
+            waypoints |= new_waypoints
         return list(waypoints)
