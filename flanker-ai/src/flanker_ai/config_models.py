@@ -25,8 +25,14 @@ class WaypointsStateConfig:
     class VoronoiConfig:
         type: Literal["WaypointsCoordinatesVoronoiConfig"]
 
+    @dataclass
+    class ExpansionConfig:
+        type: Literal["LineBased"] | Literal["Polygonal"]
+        iterations: int
+
     type: Literal["WaypointsStateConfig"]
     points: GridConfig | HandDrawnConfig | VoronoiConfig
+    expansion: ExpansionConfig | None
     path_tolerance: float
 
 
