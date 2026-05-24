@@ -26,8 +26,6 @@ class MockLosSystem(LosSystem):
         radius: float = 1000,
         jitter_size: float = 0.000001,
     ) -> list[Vec2]:
-
-        # Intersects waypoint-pair at (4, 10)
         return [
             Vec2(12, 12),
             Vec2(4, 12),
@@ -111,6 +109,6 @@ def test_one_iteration(fixture: Fixture) -> None:
     assert Vec2(1, 9) in new_waypoints, "Expects a segment at (2, 8) to (10, 10)."
     assert Vec2(6, 4) in new_waypoints, "Expects a segment at (2, 8) to (10, 0)."
 
-    # Right straight segment intersects LOS
+    # Right vertical segment intersects LOS
     assert Vec2(10, 9) in new_waypoints, "Expects a segment at (10, 8) to (10, 10)."
     assert Vec2(10, 4) in new_waypoints, "Expects a segment at (10, 8) to (10, 0)."
