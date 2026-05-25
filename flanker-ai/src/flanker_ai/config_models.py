@@ -29,7 +29,7 @@ class WaypointsStateConfig:
     class ExpansionConfig:
         type: Literal["LineBased"] | Literal["Polygonal"]
         iterations: int
-        prune_frequency: int | None
+        prune_iterations: int
 
     type: Literal["WaypointsStateConfig"]
     points: GridConfig | HandDrawnConfig | VoronoiConfig

@@ -96,7 +96,7 @@ def test_one_iteration(fixture: Fixture) -> None:
         initial_waypoints=fixture.waypoints_coodinates,
         iterations=1,
         # There can't be any pruning since LOS is mocked.
-        prune_frequency=None,
+        prune_iterations=0,
     )
     assert set(fixture.waypoints_coodinates).issubset(
         new_waypoints

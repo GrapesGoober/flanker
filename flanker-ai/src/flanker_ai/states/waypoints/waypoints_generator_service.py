@@ -61,7 +61,7 @@ class WaypointsGeneratorService:
         gs: GameState,
         initial_waypoints: list[Vec2],
         iterations: int,
-        prune_frequency: int | None,
+        prune_iterations: int,
     ) -> list[Vec2]:
         """
         Given a list of waypoints, expand and create more waypoints
@@ -79,7 +79,7 @@ class WaypointsGeneratorService:
                 vertices.append(vertices[0])
             terrain_vertices.append(vertices)
 
-        for iteration in range(iterations):
+        for _ in range(iterations):
             processed_pair: list[tuple[Vec2, Vec2]] = []
 
             # Loop through each waypoint pair to consider new
@@ -138,6 +138,6 @@ class WaypointsGeneratorService:
             waypoints |= new_waypoints
 
             # Prune some waypoints to reduce combinatorial explosion
-            if prune_frequency and iteration % prune_frequency == 0:
+            for _ in range(prune_iterations):
                 waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
         return list(waypoints)

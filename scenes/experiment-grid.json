@@ -145,7 +145,7 @@
             "expansion": {
               "type": "LineBased",
               "iterations": 1,
-              "prune_frequency": 1
+              "prune_iterations": 2
             },
             "path_tolerance": 30.0
           }
