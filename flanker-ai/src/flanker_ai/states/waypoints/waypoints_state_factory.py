@@ -41,6 +41,7 @@ class WaypointsStateFactory:
                         gs=gs,
                         initial_waypoints=points,
                         iterations=config.expansion.iterations,
+                        prune_frequency=config.expansion.prune_frequency,
                     )
                 case "Polygonal":
                     raise NotImplementedError()
