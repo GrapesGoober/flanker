@@ -116,7 +116,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "AiConfigComponent(config: flanker_ai.config_models.SearchPolicyConfig | flanker_ai.config_models.HeuristicPolicyConfig, faction: flanker_core.models.components.InitiativeState.Faction)"
         },
         "Vec2": {
           "anyOf": [
@@ -127,7 +128,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "2D vector class for basic vector operations"
         },
         "Transform": {
           "anyOf": [
@@ -138,7 +140,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Holds spatial data for 2D entities. Used by rendering, movement,\ncombat mechanics, etc. The existence of this component implies\nthat the entity can be visualized in 2D space."
         },
         "InitiativeState": {
           "anyOf": [
@@ -149,7 +152,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Singleton component that keeps track of faction & initiatives."
         },
         "CombatUnit": {
           "anyOf": [
@@ -160,7 +164,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Marks an entity as a direct combat-capable unit.\nTracks unit suppression and command hierarchy tree."
         },
         "MoveControls": {
           "anyOf": [
@@ -171,7 +176,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Marks entity as movable, along with its. Used by move action to\ndetermine which terrain can or cannot cross."
         },
         "FireControls": {
           "anyOf": [
@@ -182,7 +188,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Marks an entity as capable for fire action.\nDefines the set of outcomes and override."
         },
         "AssaultControls": {
           "anyOf": [
@@ -193,7 +200,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Marks an entity as capable for assault action.\nDefines the RNG roll multiplier."
         },
         "TerrainFeature": {
           "anyOf": [
@@ -204,7 +212,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Represents a polygonal terrain feature with terrain type bit flags.\nBit flags are used to determine LOS, movement, and fire types."
         },
         "EliminationObjective": {
           "anyOf": [
@@ -215,7 +224,8 @@
               "type": "null"
             }
           ],
-          "default": null
+          "default": null,
+          "description": "Represents the enemy elimination objective for a given faction."
         }
       },
       "title": "Entity",

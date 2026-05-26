@@ -16,5 +16,7 @@ class AiStallCountComponent:
 
 @dataclass
 class AiConfigComponent:
+    """Configures that AI agent of that faction with policy and state."""
+
     config: SearchPolicyConfig | HeuristicPolicyConfig
     faction: InitiativeState.Faction

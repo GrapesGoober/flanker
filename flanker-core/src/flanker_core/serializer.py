@@ -1,8 +1,9 @@
+import inspect
 import json
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, Field, create_model
 
 
 class Serializer:
@@ -19,14 +20,20 @@ class Serializer:
     ) -> tuple[type[BaseModel], type[EntitiesTable[BaseModel]]]:
         """Build BaseModels of Entity and EntitiesTable using component types."""
 
-        component_fields: dict[str, Any] = {
-            t.__name__: (Optional[t], None) for t in component_types
-        }
+        component_fields: dict[str, Any] = {}
+
+        for t in component_types:
+            # Define the field with its type, default value, and description
+            component_fields[t.__name__] = (
+                Optional[t],
+                Field(default=None, description=inspect.getdoc(t)),
+            )
         # TODO: this create_model is security risk by executing arbitrary code
         # see https://docs.pydantic.dev/latest/examples/dynamic_models/
         Entity = create_model("Entity", **component_fields)
         EntitiesTable = create_model(
-            "EntitiesTable", __base__=Serializer.EntitiesTable[Entity]
+            "EntitiesTable",
+            __base__=Serializer.EntitiesTable[Entity],
         )
         return Entity, EntitiesTable
 
