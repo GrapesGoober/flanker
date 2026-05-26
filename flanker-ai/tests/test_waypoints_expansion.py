@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import override
 
-from flanker_core.systems.los_system import LosSystem
 import pytest
 from flanker_ai.states.waypoints.waypoints_generator_service import (
     WaypointsGeneratorService,
@@ -9,6 +8,7 @@ from flanker_ai.states.waypoints.waypoints_generator_service import (
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.register_systems import register_systems
 
 
@@ -31,6 +31,7 @@ class MockLosSystem(LosSystem):
             Vec2(4, 12),
             Vec2(4, 8),
             Vec2(12, 8),
+            Vec2(12, 12),
         ]
 
 
@@ -94,6 +95,8 @@ def test_one_iteration(fixture: Fixture) -> None:
         gs=fixture.gs,
         initial_waypoints=fixture.waypoints_coodinates,
         iterations=1,
+        # There can't be any pruning since LOS is mocked.
+        prune_iterations=0,
     )
     assert set(fixture.waypoints_coodinates).issubset(
         new_waypoints

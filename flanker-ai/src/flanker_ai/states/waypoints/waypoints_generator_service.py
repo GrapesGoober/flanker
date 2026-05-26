@@ -1,5 +1,6 @@
 from itertools import pairwise
 
+from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -60,6 +61,7 @@ class WaypointsGeneratorService:
         gs: GameState,
         initial_waypoints: list[Vec2],
         iterations: int,
+        prune_iterations: int,
     ) -> list[Vec2]:
         """
         Given a list of waypoints, expand and create more waypoints
@@ -134,4 +136,8 @@ class WaypointsGeneratorService:
 
             # The 'or' operator |= is set concat
             waypoints |= new_waypoints
+
+            # Prune some waypoints to reduce combinatorial explosion
+            for _ in range(prune_iterations):
+                waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
         return list(waypoints)
