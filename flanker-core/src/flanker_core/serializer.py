@@ -1,3 +1,4 @@
+import json
 from typing import Any, Optional
 from uuid import UUID
 
@@ -28,6 +29,14 @@ class Serializer:
             "EntitiesTable", __base__=Serializer.EntitiesTable[Entity]
         )
         return Entity, EntitiesTable
+
+    @staticmethod
+    def get_entities_json_schema(
+        component_types: list[type],
+    ) -> str:
+        _, EntitiesTable = Serializer._get_entities_types(component_types)
+        schema = EntitiesTable.model_json_schema()
+        return json.dumps(schema, indent=2)
 
     @staticmethod
     def serialize(

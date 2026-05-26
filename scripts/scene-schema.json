@@ -1,0 +1,579 @@
+{
+  "$defs": {
+    "AiConfigComponent": {
+      "properties": {
+        "config": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SearchPolicyConfig"
+            },
+            {
+              "$ref": "#/$defs/HeuristicPolicyConfig"
+            }
+          ],
+          "title": "Config"
+        },
+        "faction": {
+          "$ref": "#/$defs/Faction"
+        }
+      },
+      "required": [
+        "config",
+        "faction"
+      ],
+      "title": "AiConfigComponent",
+      "type": "object"
+    },
+    "AssaultControls": {
+      "properties": {
+        "override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssaultOutcomes"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "AssaultControls",
+      "type": "object"
+    },
+    "AssaultOutcomes": {
+      "description": "Defines an assault outcome as fail or success.",
+      "enum": [
+        "FAIL",
+        "SUCCESS"
+      ],
+      "title": "AssaultOutcomes",
+      "type": "string"
+    },
+    "CombatUnit": {
+      "properties": {
+        "faction": {
+          "$ref": "#/$defs/Faction"
+        },
+        "command_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Command Id"
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "default": "ACTIVE"
+        }
+      },
+      "required": [
+        "faction"
+      ],
+      "title": "CombatUnit",
+      "type": "object"
+    },
+    "EliminationObjective": {
+      "properties": {
+        "target_faction": {
+          "$ref": "#/$defs/Faction"
+        },
+        "winning_faction": {
+          "$ref": "#/$defs/Faction"
+        },
+        "units_to_destroy": {
+          "title": "Units To Destroy",
+          "type": "integer"
+        },
+        "units_destroyed_counter": {
+          "title": "Units Destroyed Counter",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "target_faction",
+        "winning_faction",
+        "units_to_destroy",
+        "units_destroyed_counter"
+      ],
+      "title": "EliminationObjective",
+      "type": "object"
+    },
+    "Entity": {
+      "properties": {
+        "AiConfigComponent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AiConfigComponent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "Vec2": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Vec2"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "Transform": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Transform"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "InitiativeState": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InitiativeState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "CombatUnit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CombatUnit"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "MoveControls": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MoveControls"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "FireControls": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FireControls"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "AssaultControls": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssaultControls"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "TerrainFeature": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TerrainFeature"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "EliminationObjective": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EliminationObjective"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Entity",
+      "type": "object"
+    },
+    "ExpansionConfig": {
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "const": "LineBased",
+              "type": "string"
+            },
+            {
+              "const": "Polygonal",
+              "type": "string"
+            }
+          ],
+          "title": "Type"
+        },
+        "iterations": {
+          "title": "Iterations",
+          "type": "integer"
+        },
+        "prune_iterations": {
+          "title": "Prune Iterations",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "iterations",
+        "prune_iterations"
+      ],
+      "title": "ExpansionConfig",
+      "type": "object"
+    },
+    "Faction": {
+      "enum": [
+        "BLUE",
+        "RED"
+      ],
+      "title": "Faction",
+      "type": "string"
+    },
+    "FireControls": {
+      "properties": {
+        "override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FireOutcomes"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "can_reactive_fire": {
+          "default": true,
+          "title": "Can Reactive Fire",
+          "type": "boolean"
+        }
+      },
+      "title": "FireControls",
+      "type": "object"
+    },
+    "FireOutcomes": {
+      "description": "Defines all fire outcomes.",
+      "enum": [
+        "MISS",
+        "PIN",
+        "SUPPRESS",
+        "KILL"
+      ],
+      "title": "FireOutcomes",
+      "type": "string"
+    },
+    "GridConfig": {
+      "properties": {
+        "type": {
+          "const": "WaypointsCoordinatesGridConfig",
+          "title": "Type",
+          "type": "string"
+        },
+        "spacing": {
+          "title": "Spacing",
+          "type": "number"
+        },
+        "offset": {
+          "title": "Offset",
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "spacing",
+        "offset"
+      ],
+      "title": "GridConfig",
+      "type": "object"
+    },
+    "HandDrawnConfig": {
+      "properties": {
+        "type": {
+          "const": "WaypointsCoordinatesHandDrawnConfig",
+          "title": "Type",
+          "type": "string"
+        },
+        "waypoint_coordinates": {
+          "items": {
+            "$ref": "#/$defs/Vec2"
+          },
+          "title": "Waypoint Coordinates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "waypoint_coordinates"
+      ],
+      "title": "HandDrawnConfig",
+      "type": "object"
+    },
+    "HeuristicPolicyConfig": {
+      "properties": {
+        "policy_type": {
+          "const": "RandomHeuristic",
+          "title": "Policy Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "policy_type"
+      ],
+      "title": "HeuristicPolicyConfig",
+      "type": "object"
+    },
+    "InitiativeState": {
+      "properties": {
+        "faction": {
+          "$ref": "#/$defs/Faction",
+          "default": "BLUE"
+        }
+      },
+      "title": "InitiativeState",
+      "type": "object"
+    },
+    "MoveControls": {
+      "properties": {
+        "move_type": {
+          "$ref": "#/$defs/MoveType",
+          "default": "FOOT"
+        }
+      },
+      "title": "MoveControls",
+      "type": "object"
+    },
+    "MoveType": {
+      "enum": [
+        "FOOT"
+      ],
+      "title": "MoveType",
+      "type": "string"
+    },
+    "SearchPolicyConfig": {
+      "properties": {
+        "policy_type": {
+          "anyOf": [
+            {
+              "const": "Minimax",
+              "type": "string"
+            },
+            {
+              "const": "Expectimax",
+              "type": "string"
+            }
+          ],
+          "title": "Policy Type"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WaypointsStateConfig"
+            },
+            {
+              "$ref": "#/$defs/UnabstractedStateConfig"
+            }
+          ],
+          "title": "State"
+        }
+      },
+      "required": [
+        "policy_type",
+        "state"
+      ],
+      "title": "SearchPolicyConfig",
+      "type": "object"
+    },
+    "Status": {
+      "enum": [
+        "ACTIVE",
+        "PINNED",
+        "SUPPRESSED"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "TerrainFeature": {
+      "properties": {
+        "vertices": {
+          "items": {
+            "$ref": "#/$defs/Vec2"
+          },
+          "title": "Vertices",
+          "type": "array"
+        },
+        "is_closed_loop": {
+          "default": true,
+          "title": "Is Closed Loop",
+          "type": "boolean"
+        },
+        "flag": {
+          "default": -1,
+          "title": "Flag",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "vertices"
+      ],
+      "title": "TerrainFeature",
+      "type": "object"
+    },
+    "Transform": {
+      "properties": {
+        "position": {
+          "$ref": "#/$defs/Vec2"
+        },
+        "degrees": {
+          "default": 0,
+          "title": "Degrees",
+          "type": "number"
+        }
+      },
+      "required": [
+        "position"
+      ],
+      "title": "Transform",
+      "type": "object"
+    },
+    "UnabstractedStateConfig": {
+      "properties": {
+        "type": {
+          "const": "UnabstractedStateConfig",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "UnabstractedStateConfig",
+      "type": "object"
+    },
+    "Vec2": {
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "Vec2",
+      "type": "object"
+    },
+    "VoronoiConfig": {
+      "properties": {
+        "type": {
+          "const": "WaypointsCoordinatesVoronoiConfig",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "VoronoiConfig",
+      "type": "object"
+    },
+    "WaypointsStateConfig": {
+      "properties": {
+        "type": {
+          "const": "WaypointsStateConfig",
+          "title": "Type",
+          "type": "string"
+        },
+        "points": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GridConfig"
+            },
+            {
+              "$ref": "#/$defs/HandDrawnConfig"
+            },
+            {
+              "$ref": "#/$defs/VoronoiConfig"
+            }
+          ],
+          "title": "Points"
+        },
+        "expansion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpansionConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path_tolerance": {
+          "title": "Path Tolerance",
+          "type": "number"
+        }
+      },
+      "required": [
+        "type",
+        "points",
+        "expansion",
+        "path_tolerance"
+      ],
+      "title": "WaypointsStateConfig",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "entities": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Entity"
+      },
+      "propertyNames": {
+        "format": "uuid"
+      },
+      "title": "Entities",
+      "type": "object"
+    }
+  },
+  "required": [
+    "entities"
+  ],
+  "title": "EntitiesTable",
+  "type": "object"
+}
