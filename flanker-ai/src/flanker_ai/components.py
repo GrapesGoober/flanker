@@ -16,5 +16,10 @@ class AiStallCountComponent:
 
 @dataclass
 class AiConfigComponent:
+    """
+    Configures AI agent of either BLUE or RED with search policy and state.
+    Supports search-based policy or heuristic rule-based policy.
+    """
+
     config: SearchPolicyConfig | HeuristicPolicyConfig
     faction: InitiativeState.Faction
