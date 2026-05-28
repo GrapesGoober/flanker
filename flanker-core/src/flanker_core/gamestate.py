@@ -60,41 +60,51 @@ class GameState:
         return self._entities.get(entity_id, {}).get(component_type, None)
 
     @overload
-    def query[T](self, t: type[T]) -> list[tuple[UUID, T]]: ...
+    def query[T](
+        self,
+        t: type[T],
+    ) -> list[tuple[UUID, T]]: ...
 
     @overload
-    def query[T, U](self, t: type[T], u: type[U]) -> list[tuple[UUID, T, U]]: ...
+    def query[T, U](
+        self,
+        t: type[T],
+        u: type[U],
+    ) -> list[tuple[UUID, T, U]]: ...
 
     @overload
     def query[T, U, V](
-        self, t: type[T], u: type[U], v: type[V]
+        self,
+        t: type[T],
+        u: type[U],
+        v: type[V],
     ) -> list[tuple[UUID, T, U, V]]: ...
 
     def query(
-        self, t: type, u: type | None = None, v: type | None = None
+        self,
+        t: type,
+        u: type | None = None,
+        v: type | None = None,
     ) -> list[tuple[Any, ...]]:
-        """Yields entities and their component instances by given component types."""
+        """Yields entities and their components by given component types."""
         component_types = tuple(filter(None, (t, u, v)))
-        if component_types in self._cache:
-            result: list[tuple[Any, ...]] = []
-            for entity_id in self._cache[component_types]:
-                component_instances: list[Any] = []
-                for component_type in component_types:
-                    entity = self._entities[entity_id]
-                    component_instances.append(entity[component_type])
-                result.append((entity_id, *component_instances))
-            return result
-        else:
-            result: list[tuple[Any, ...]] = []
-            entity_ids: list[UUID] = []
-            for entity_id, components in self._entities.items():
-                if all(ct in components for ct in component_types):
-                    entity_ids.append(entity_id)
-                    result.append(
-                        (entity_id, *(components[ct] for ct in component_types))
-                    )
+
+        # If cache miss, linear search entities with matching component types
+        if component_types not in self._cache:
+            entity_ids: list[UUID] = [
+                entity_id
+                for entity_id, components in self._entities.items()
+                if all(ct in components for ct in component_types)
+            ]
             self._cache[component_types] = entity_ids
-            return result
+
+        # The entity IDs are matched; return their components
+        result: list[tuple[Any, ...]] = []
+        for entity_id in self._cache[component_types]:
+            entity = self._entities[entity_id]
+            components: list[Any] = [entity[ct] for ct in component_types]
+            result.append((entity_id, *components))
+        return result
 
     def dump(self) -> dict[UUID, dict[type, Any]]:
         """Returns a deep copy of the entities table."""
