@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, overload
+from typing import Any, Callable, overload
 from uuid import UUID, uuid4
 
 
@@ -9,7 +9,7 @@ class GameState:
     def __init__(self) -> None:
         """Initializes the game state with empty entities."""
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
-        self._cache: dict[tuple[type, ...], list[tuple[UUID, Any]]] = {}
+        self._query_cache: dict[tuple[type, ...], list[UUID]] = {}
         self._systems: dict[type, type] = {}
 
     def register(self, cls: type[Any]) -> None:
@@ -40,13 +40,13 @@ class GameState:
             raise ValueError(f"entity {id=} already exists")
         new_id = uuid4() if id is None else id
         self._entities[new_id] = {type(c): c for c in components}
-        self._cache = {}
+        self._query_cache = {}
         return new_id
 
     def delete_entity(self, entity_id: UUID) -> None:
         """Deletes an entity by its ID"""
         self._entities.pop(entity_id)
-        self._cache = {}
+        self._query_cache = {}
 
     def get_component[T](self, entity_id: UUID, component_type: type[T]) -> T:
         """Get an entity's component. None if entity or component not found."""
@@ -60,32 +60,51 @@ class GameState:
         return self._entities.get(entity_id, {}).get(component_type, None)
 
     @overload
-    def query[T](self, t: type[T]) -> list[tuple[UUID, T]]: ...
+    def query[T](
+        self,
+        t: type[T],
+    ) -> list[tuple[UUID, T]]: ...
 
     @overload
-    def query[T, U](self, t: type[T], u: type[U]) -> list[tuple[UUID, T, U]]: ...
+    def query[T, U](
+        self,
+        t: type[T],
+        u: type[U],
+    ) -> list[tuple[UUID, T, U]]: ...
 
     @overload
     def query[T, U, V](
-        self, t: type[T], u: type[U], v: type[V]
+        self,
+        t: type[T],
+        u: type[U],
+        v: type[V],
     ) -> list[tuple[UUID, T, U, V]]: ...
 
     def query(
-        self, t: type, u: type | None = None, v: type | None = None
+        self,
+        t: type,
+        u: type | None = None,
+        v: type | None = None,
     ) -> list[tuple[Any, ...]]:
-        """Yields all entities with a specific component type."""
+        """Yields entities and their components by given component types."""
         component_types = tuple(filter(None, (t, u, v)))
-        if component_types in self._cache:
-            return self._cache[component_types]
-        else:
-            result: list[tuple[Any, ...]] = []
-            for entity_id, components in self._entities.items():
-                if all(ct in components for ct in component_types):
-                    result.append(
-                        (entity_id, *(components[ct] for ct in component_types))
-                    )
-            self._cache[component_types] = result
-            return result
+
+        # If cache miss, linear search entities with matching component types
+        if component_types not in self._query_cache:
+            entity_ids: list[UUID] = [
+                entity_id
+                for entity_id, components in self._entities.items()
+                if all(ct in components for ct in component_types)
+            ]
+            self._query_cache[component_types] = entity_ids
+
+        # The entity IDs are matched; return their components
+        result: list[tuple[Any, ...]] = []
+        for entity_id in self._query_cache[component_types]:
+            entity = self._entities[entity_id]
+            components: list[Any] = [entity[ct] for ct in component_types]
+            result.append((entity_id, *components))
+        return result
 
     def dump(self) -> dict[UUID, dict[type, Any]]:
         """Returns a deep copy of the entities table."""
@@ -98,23 +117,29 @@ class GameState:
         gs._entities = deepcopy(entities)
         return gs
 
-    def selective_copy(self, entity_ids: list[UUID]) -> "GameState":
-        """Deep copies the selected entities."""
-        new_gs = GameState()
+    def selective_copy(
+        self,
+        *component_types: type[Any],
+        copy_method: Callable[[Any], Any],
+    ) -> "GameState":
+        """Copies the selected components using specified copy method."""
+
         # Shallow copy everything by default
-        new_gs._entities = dict(self._entities)
-        new_gs._cache = dict(self._cache)
-        new_gs._systems = dict(self._systems)
-        # Deep copy the selected entities.
-        for id in entity_ids:
-            if id not in new_gs._entities:
-                raise KeyError(f"entity {id=} does not exist.")
-            new_gs._entities[id] = deepcopy(self._entities[id])
-            # Clear cache for selected entities.
-            components = list(new_gs._entities[id].keys())
-            for component_type in components:
-                for cache_key in list(new_gs._cache.keys()):
-                    if component_type in cache_key:
-                        new_gs._cache.pop(cache_key)
+        new_gs = GameState()
+        new_gs._entities = self._entities.copy()
+        new_gs._query_cache = self._query_cache.copy()
+        new_gs._systems = self._systems.copy()
+
+        # Copies each entity dict and its component instances
+        for entity_id in new_gs._entities:
+            new_entity = new_gs._entities[entity_id].copy()
+            new_gs._entities[entity_id] = new_entity
+
+            # Copy its components instances using specified method
+            for component_type in new_entity:
+                if component_type not in component_types:
+                    continue
+                new_component = copy_method(new_entity[component_type])
+                new_entity[component_type] = new_component
 
         return new_gs

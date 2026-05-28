@@ -93,6 +93,30 @@ def fixture() -> Fixture:
     )
 
 
+def test_copy(fixture: Fixture) -> None:
+    new_gs = AiBranchingService.copy(fixture.gs)
+
+    # Check that combat units are copied
+    for unit_id, unit, transform, fire_controls in new_gs.query(
+        CombatUnit, Transform, FireControls
+    ):
+        old_unit = fixture.gs.get_component(unit_id, CombatUnit)
+        old_transform = fixture.gs.get_component(unit_id, Transform)
+        old_fire_controls = fixture.gs.get_component(unit_id, FireControls)
+
+        assert id(old_unit) != id(unit)
+        assert id(old_transform) != id(transform)
+        assert id(old_fire_controls) != id(fire_controls)
+
+    # Check that terrains are not copied
+    for terrain_id, transform, terrain in new_gs.query(Transform, TerrainFeature):
+        old_transform = fixture.gs.get_component(terrain_id, Transform)
+        old_terrain = fixture.gs.get_component(terrain_id, TerrainFeature)
+
+        assert id(old_transform) != id(transform)
+        assert id(old_terrain) == id(terrain)
+
+
 def test_one_interrupt(fixture: Fixture) -> None:
 
     move_system = fixture.gs.get(MoveSystem)

@@ -1,3 +1,5 @@
+from copy import deepcopy
+from dataclasses import replace
 from itertools import product
 from math import prod
 from typing import Any, Literal
@@ -83,16 +85,21 @@ class AiBranchingService:
     def copy(gs: GameState) -> GameState:
         """Selectively copy the game state for mutating entities."""
 
-        entities_to_copy: set[UUID] = set()
-        for id, _ in gs.query(InitiativeState):
-            entities_to_copy.add(id)
-        for id, _ in gs.query(EliminationObjective):
-            entities_to_copy.add(id)
-        for id, _ in gs.query(CombatUnit):
-            entities_to_copy.add(id)
-        for id, _ in gs.query(AiStallCountComponent):
-            entities_to_copy.add(id)
-        return gs.selective_copy(list(entities_to_copy))
+        return gs.selective_copy(
+            # Copy the combat units
+            Transform,
+            CombatUnit,
+            FireControls,
+            AssaultControls,
+            # Copy the singletons
+            InitiativeState,
+            EliminationObjective,
+            copy_method=replace,
+        ).selective_copy(
+            # AI stall count component has a mutable dict
+            AiStallCountComponent,
+            copy_method=deepcopy,
+        )
 
     @staticmethod
     def get_reactive_fire_branches(
