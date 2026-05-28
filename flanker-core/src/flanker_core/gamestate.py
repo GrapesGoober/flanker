@@ -9,8 +9,7 @@ class GameState:
     def __init__(self) -> None:
         """Initializes the game state with empty entities."""
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
-        self._cache: dict[tuple[type, ...], list[tuple[UUID, Any]]] = {}
-        self._ent_id_cache: dict[tuple[type, ...], UUID] = {}
+        self._cache: dict[tuple[type, ...], list[UUID]] = {}
         self._systems: dict[type, type] = {}
 
     def register(self, cls: type[Any]) -> None:
@@ -77,15 +76,24 @@ class GameState:
         """Yields entities and their component instances by given component types."""
         component_types = tuple(filter(None, (t, u, v)))
         if component_types in self._cache:
-            return self._cache[component_types]
+            result: list[tuple[Any, ...]] = []
+            for entity_id in self._cache[component_types]:
+                component_instances: list[Any] = []
+                for component_type in component_types:
+                    entity = self._entities[entity_id]
+                    component_instances.append(entity[component_type])
+                result.append((entity_id, *component_instances))
+            return result
         else:
             result: list[tuple[Any, ...]] = []
+            entity_ids: list[UUID] = []
             for entity_id, components in self._entities.items():
                 if all(ct in components for ct in component_types):
+                    entity_ids.append(entity_id)
                     result.append(
                         (entity_id, *(components[ct] for ct in component_types))
                     )
-            self._cache[component_types] = result
+            self._cache[component_types] = entity_ids
             return result
 
     def dump(self) -> dict[UUID, dict[type, Any]]:
@@ -131,7 +139,7 @@ class GameState:
         new_gs = GameState()
         new_gs._entities = self._entities.copy()
         # new_gs._cache = self._cache.copy()
-        new_gs._cache = {}
+        new_gs._cache = self._cache.copy()
         new_gs._systems = self._systems.copy()
 
         # Copies each entity dict and its component instances
