@@ -85,7 +85,7 @@ class AiBranchingService:
     def copy(gs: GameState) -> GameState:
         """Selectively copy the game state for mutating entities."""
 
-        return gs.component_selective_copy(
+        return gs.selective_copy(
             # Copy the combat units
             Transform,
             CombatUnit,
@@ -95,7 +95,7 @@ class AiBranchingService:
             InitiativeState,
             EliminationObjective,
             copy_method=replace,
-        ).component_selective_copy(
+        ).selective_copy(
             # AI stall count component has a mutable dict
             AiStallCountComponent,
             copy_method=deepcopy,

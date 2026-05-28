@@ -9,7 +9,7 @@ class GameState:
     def __init__(self) -> None:
         """Initializes the game state with empty entities."""
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
-        self._cache: dict[tuple[type, ...], list[UUID]] = {}
+        self._query_cache: dict[tuple[type, ...], list[UUID]] = {}
         self._systems: dict[type, type] = {}
 
     def register(self, cls: type[Any]) -> None:
@@ -40,13 +40,13 @@ class GameState:
             raise ValueError(f"entity {id=} already exists")
         new_id = uuid4() if id is None else id
         self._entities[new_id] = {type(c): c for c in components}
-        self._cache = {}
+        self._query_cache = {}
         return new_id
 
     def delete_entity(self, entity_id: UUID) -> None:
         """Deletes an entity by its ID"""
         self._entities.pop(entity_id)
-        self._cache = {}
+        self._query_cache = {}
 
     def get_component[T](self, entity_id: UUID, component_type: type[T]) -> T:
         """Get an entity's component. None if entity or component not found."""
@@ -90,17 +90,17 @@ class GameState:
         component_types = tuple(filter(None, (t, u, v)))
 
         # If cache miss, linear search entities with matching component types
-        if component_types not in self._cache:
+        if component_types not in self._query_cache:
             entity_ids: list[UUID] = [
                 entity_id
                 for entity_id, components in self._entities.items()
                 if all(ct in components for ct in component_types)
             ]
-            self._cache[component_types] = entity_ids
+            self._query_cache[component_types] = entity_ids
 
         # The entity IDs are matched; return their components
         result: list[tuple[Any, ...]] = []
-        for entity_id in self._cache[component_types]:
+        for entity_id in self._query_cache[component_types]:
             entity = self._entities[entity_id]
             components: list[Any] = [entity[ct] for ct in component_types]
             result.append((entity_id, *components))
@@ -117,39 +117,17 @@ class GameState:
         gs._entities = deepcopy(entities)
         return gs
 
-    # TODO: deprecate this
-    def selective_copy(self, entity_ids: list[UUID]) -> "GameState":
-        """Deep copies the selected components."""
-        new_gs = GameState()
-        # Shallow copy everything by default
-        new_gs._entities = dict(self._entities)
-        new_gs._cache = dict(self._cache)
-        new_gs._systems = dict(self._systems)
-        # Deep copy the selected entities.
-        for id in entity_ids:
-            if id not in new_gs._entities:
-                raise KeyError(f"entity {id=} does not exist.")
-            new_gs._entities[id] = deepcopy(self._entities[id])
-            # Clear cache for selected entities.
-            components = list(new_gs._entities[id].keys())
-            for component_type in components:
-                for cache_key in list(new_gs._cache.keys()):
-                    if component_type in cache_key:
-                        new_gs._cache.pop(cache_key)
-
-        return new_gs
-
-    def component_selective_copy(
+    def selective_copy(
         self,
         *component_types: type[Any],
         copy_method: Callable[[Any], Any],
     ) -> "GameState":
+        """Deep copies the selected components."""
 
         # Shallow copy everything by default
         new_gs = GameState()
         new_gs._entities = self._entities.copy()
-        # new_gs._cache = self._cache.copy()
-        new_gs._cache = self._cache.copy()
+        new_gs._query_cache = self._query_cache.copy()
         new_gs._systems = self._systems.copy()
 
         # Copies each entity dict and its component instances
@@ -163,13 +141,5 @@ class GameState:
                     continue
                 new_component = copy_method(new_entity[component_type])
                 new_entity[component_type] = new_component
-
-        # IDEA
-        # What about making the cache store the entity ID instead?
-        # This makes entity table be the SSOT and cache simply points there
-        # Avoids linear search just fine with a few extra dict lookup.
-        # It makes cache clearing easier for selective copy.
-        # for cache_key, cache in new_gs._cache.items():
-        #     ...
 
         return new_gs
