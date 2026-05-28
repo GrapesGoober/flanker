@@ -122,7 +122,7 @@ class GameState:
         *component_types: type[Any],
         copy_method: Callable[[Any], Any],
     ) -> "GameState":
-        """Deep copies the selected components."""
+        """Copies the selected components using specified copy method."""
 
         # Shallow copy everything by default
         new_gs = GameState()
