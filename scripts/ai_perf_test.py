@@ -1,9 +1,11 @@
+import random
 from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
+from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_trial import AiTrial
-from flanker_ai.components import AiConfigComponent
+from flanker_ai.components import AiConfigComponent, InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
@@ -32,6 +34,13 @@ def load_state(path: str) -> GameState:
 if __name__ == "__main__":
     PATH = "./scenes/experiment-s2.json"
     gs = load_state(PATH)
+
+    # Ensures that each run is consistent in search size
+    random.seed(10)
+
+    # Initialize the state first
+    _ = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
+    _ = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
 
     def run_ai_trial() -> None:
         result = AiTrial.run_trial(gs)
