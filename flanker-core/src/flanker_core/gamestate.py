@@ -135,7 +135,7 @@ class GameState:
             new_entity = new_gs._entities[entity_id].copy()
             new_gs._entities[entity_id] = new_entity
 
-            # Copy its components based using specified method
+            # Copy its components instances using specified method
             for component_type in new_entity:
                 if component_type not in component_types:
                     continue
