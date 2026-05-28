@@ -31,6 +31,11 @@ class _Terrain:
     vertices: list[Vec2]
 
 
+@dataclass
+class _LosCacheComponent:
+    los_polygon_by_point: dict[Vec2, list[Vec2]]
+
+
 class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
@@ -207,6 +212,15 @@ class LosSystem:
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
         los_system = gs.get(LosSystem)
+
+        # If already exists in cache, no need to recalculate
+        if ent := gs.query(_LosCacheComponent):
+            _, cache = ent[0]
+        else:
+            gs.add_entity(cache := _LosCacheComponent({}))
+        if spotter_pos in cache.los_polygon_by_point:
+            return cache.los_polygon_by_point[spotter_pos]
+
         terrains = list(
             los_system._get_terrain_vertices(
                 gs,
@@ -216,7 +230,7 @@ class LosSystem:
         )
         terrain_verts = [vert for t in terrains for vert in t.vertices]
         verts = los_system._sort_verts_by_angle(spotter_pos, terrain_verts)
-        visible_points: list[Vec2] = []
+        los_polygon: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
             ray = direction * radius
@@ -250,16 +264,17 @@ class LosSystem:
                 if (new_point - vert).length() < 1e-3:
                     new_point = vert
                 # If points are colocated, don't append
-                if visible_points and visible_points[-1] == new_point:
+                if los_polygon and los_polygon[-1] == new_point:
                     continue
                 # If points are colinear, replace instead of append
-                if los_system._is_colinear(visible_points, new_point):
-                    visible_points[-1] = new_point
+                if los_system._is_colinear(los_polygon, new_point):
+                    los_polygon[-1] = new_point
                     continue
-                visible_points.append(new_point)
+                los_polygon.append(new_point)
 
-        visible_points.append(visible_points[0])
-        return visible_points
+        los_polygon.append(los_polygon[0])
+        cache.los_polygon_by_point[spotter_pos] = los_polygon
+        return los_polygon
 
     @staticmethod
     def _sort_verts_by_angle(
