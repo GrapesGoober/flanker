@@ -159,12 +159,16 @@ class LosSystem:
             line=(line[0], line[1]),
             polyline=fov_polygon,
         ):
+            earliest_point = min(
+                intersects,
+                key=lambda point: (line[0] - point).length(),
+            )
             # Add a tiny offset to prevent coordinate from sitting
             # precisely on LOS polygon edge.
             # This reduces floating point sensitivity.
             line_direction = line[1] - line[0]
             offset = line_direction * 1e-12
-            interrupt_pos = intersects[0] + offset
+            interrupt_pos = earliest_point + offset
 
         return interrupt_pos
 
@@ -185,12 +189,20 @@ class LosSystem:
         half_angle_rad = math.radians(fov_degree / 2)
         left_ray: Vec2 = center_point + forward_ray.rotated(half_angle_rad)
         right_ray: Vec2 = center_point + forward_ray.rotated(-half_angle_rad)
-        left_point: Vec2 = IntersectGetter.get_intersects(
-            line=(center_point, left_ray), polyline=polyline
-        )[0]
-        right_point: Vec2 = IntersectGetter.get_intersects(
-            line=(center_point, right_ray), polyline=polyline
-        )[0]
+
+        # Choose the two first intersection points of this FOV cone
+        left_point = min(
+            IntersectGetter.get_intersects(
+                line=(center_point, left_ray), polyline=polyline
+            ),
+            key=lambda point: (center_point - point).length(),
+        )
+        right_point = min(
+            IntersectGetter.get_intersects(
+                line=(center_point, right_ray), polyline=polyline
+            ),
+            key=lambda point: (center_point - point).length(),
+        )
 
         # Filter LOS polygon of any points outside of FOV
         threshold_rad: float = math.cos(half_angle_rad)
@@ -255,18 +267,16 @@ class LosSystem:
             left_point = spotter_pos - jitter
             right_point = spotter_pos + jitter
             for point in [left_point, right_point]:
-                intersects = list(
+                intersects = sorted(
                     los_system._get_terrain_intersects(
                         line=(point, point + ray),
                         terrains=terrains,
-                    )
+                    ),
+                    key=lambda i: (i.point - spotter_pos).length(),
                 )
                 # Choose which point from the intersects to append
                 if intersects:
-                    intersects = los_system._sort_intersects_by_distance(
-                        intersects, spotter_pos
-                    )
-                    # Use the second intersection point to allow see-into terrain
+                    # Selects the second point to allow see-into terrain
                     if len(intersects) > 1:
                         new_point = intersects[1].point
                     else:
@@ -342,7 +352,7 @@ class LosSystem:
         line: tuple[Vec2, Vec2],
         terrains: list[_Terrain],
     ) -> Iterable[_TerrainIntersection]:
-        """Yields intersections between the line segment and terrain."""
+        """Yields unsorted intersections between the line segment and terrain."""
         for terrain in terrains:
             points = IntersectGetter.get_intersects(
                 line=line,
