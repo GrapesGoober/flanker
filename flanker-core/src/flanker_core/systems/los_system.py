@@ -34,6 +34,7 @@ class _Terrain:
 @dataclass
 class _LosCacheComponent:
     los_polygon_by_point: dict[Vec2, list[Vec2]]
+    fov_polygon_by_point: dict[tuple[Vec2, float], list[Vec2]]
 
 
 class LosSystem:
@@ -121,28 +122,42 @@ class LosSystem:
 
         spotter_transform = gs.get_component(spotter_id, Transform)
 
-        full_polygon = los_system.get_los_polygon(
-            gs=gs,
-            spotter_pos=spotter_transform.position,
+        # If already exists in cache, no need to recalculate
+        if ent := gs.query(_LosCacheComponent):
+            _, cache = ent[0]
+        else:
+            gs.add_entity(cache := _LosCacheComponent({}, {}))
+
+        cache_key: tuple[Vec2, float] = (
+            spotter_transform.position,
+            spotter_transform.degrees,
         )
-        los_polygon = los_system.apply_fov_to_polygon(
-            polyline=full_polygon,
-            center_point=spotter_transform.position,
-            heading_degree=spotter_transform.degrees,
-        )
+        if cache_key in cache.fov_polygon_by_point:
+            fov_polygon = cache.fov_polygon_by_point[cache_key]
+        else:
+            los_polygon = los_system.get_los_polygon(
+                gs=gs,
+                spotter_pos=spotter_transform.position,
+            )
+            fov_polygon = los_system.apply_fov_to_polygon(
+                polyline=los_polygon,
+                center_point=spotter_transform.position,
+                heading_degree=spotter_transform.degrees,
+            )
+            cache.fov_polygon_by_point[cache_key] = fov_polygon
 
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
         if IntersectGetter.is_inside(
             point=line[0],
-            polygon=los_polygon,
+            polygon=fov_polygon,
         ):
             interrupt_pos = line[0]
 
         # The first point is outside, thus only care about intersection
         elif intersects := IntersectGetter.get_intersects(
             line=(line[0], line[1]),
-            polyline=los_polygon,
+            polyline=fov_polygon,
         ):
             # Add a tiny offset to prevent coordinate from sitting
             # precisely on LOS polygon edge.
@@ -217,7 +232,7 @@ class LosSystem:
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
         else:
-            gs.add_entity(cache := _LosCacheComponent({}))
+            gs.add_entity(cache := _LosCacheComponent({}, {}))
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
