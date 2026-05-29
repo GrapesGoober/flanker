@@ -1,10 +1,10 @@
-import random
 from copy import deepcopy
 from typing import Sequence, override
 
-from flanker_ai.actions import Action, AssaultAction, FireAction, MoveAction
+from flanker_ai.actions import Action
 from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
@@ -13,13 +13,9 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
-    TerrainFeature,
-    Transform,
 )
-from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-from flanker_core.utils.linear_transform import LinearTransform
 
 _MAX_STALL_LIMIT = 5
 
@@ -27,20 +23,6 @@ _MAX_STALL_LIMIT = 5
 class UnabstractedState(IRepresentationState[Action]):
     def __init__(self, gs: GameState) -> None:
         self._gs = gs
-        boundary_vertices: list[Vec2] = []
-        mask = TerrainFeature.Flag.BOUNDARY
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-        self.min_x = int(min(v.x for v in boundary_vertices))
-        self.max_x = int(max(v.x for v in boundary_vertices))
-        self.min_y = int(min(v.y for v in boundary_vertices))
-        self.max_y = int(max(v.y for v in boundary_vertices))
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -70,45 +52,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> Sequence[Action]:
-        # Generate an action for each combat unit
-        actions: list[Action] = []
-        for unit_id, unit in self._gs.query(CombatUnit):
-            if unit.faction == self.get_initiative():
-                pos = self._gs.get_component(unit_id, Transform).position
-                actions.append(
-                    MoveAction(
-                        unit_id=unit_id,
-                        to=pos,
-                    )
-                )
-                for _ in range(10):
-                    rand_x = random.randrange(self.min_x, self.max_x)
-                    rand_y = random.randrange(self.min_y, self.max_y)
-                    vec = Vec2(rand_x, rand_y)
-                    actions.append(
-                        MoveAction(
-                            unit_id=unit_id,
-                            to=vec,
-                        )
-                    )
-
-                # Fire and Assault actions for all permutations
-                for target_id, target in self._gs.query(CombatUnit):
-                    if target.faction != self.get_initiative():
-                        actions.append(
-                            AssaultAction(
-                                unit_id=unit_id,
-                                target_id=target_id,
-                            )
-                        )
-                        actions.append(
-                            FireAction(
-                                unit_id=unit_id,
-                                target_id=target_id,
-                            )
-                        )
-
-        return actions
+        return AiActionService.get_actions(self._gs, self.get_initiative())
 
     @override
     def get_branches(
