@@ -1,3 +1,4 @@
+import random
 from copy import deepcopy
 from typing import Sequence, override
 
@@ -13,9 +14,14 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
+    TerrainFeature,
+    Transform,
 )
+from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.linear_transform import LinearTransform
 
 _MAX_STALL_LIMIT = 5
 
@@ -23,6 +29,23 @@ _MAX_STALL_LIMIT = 5
 class UnabstractedState(IRepresentationState[Action]):
     def __init__(self, gs: GameState) -> None:
         self._gs = gs
+        self.boundary_vertices: list[Vec2] = []
+        mask = TerrainFeature.Flag.BOUNDARY
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            if terrain.flag & mask:
+                self.boundary_vertices = LinearTransform.apply(
+                    terrain.vertices,
+                    transform,
+                )
+                if terrain.is_closed_loop:
+                    self.boundary_vertices.append(self.boundary_vertices[0])
+        self.min_x = int(min(v.x for v in self.boundary_vertices))
+        self.max_x = int(max(v.x for v in self.boundary_vertices))
+        self.min_y = int(min(v.y for v in self.boundary_vertices))
+        self.max_y = int(max(v.y for v in self.boundary_vertices))
+
+    @staticmethod
+    def _generate_sample_coordinates(): ...
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -52,7 +75,23 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> Sequence[Action]:
-        return AiActionService.get_actions(self._gs, self.get_initiative())
+        MOVE_SAMPLE_SIZE = 10
+        move_candidates: list[Vec2] = []
+        for _ in range(MOVE_SAMPLE_SIZE):
+            rand_x = random.randrange(self.min_x, self.max_x)
+            rand_y = random.randrange(self.min_y, self.max_y)
+            move_candidate = Vec2(rand_x, rand_y)
+            if not IntersectGetter.is_inside(
+                point=move_candidate,
+                polygon=self.boundary_vertices,
+            ):
+                continue
+            move_candidates.append(move_candidate)
+        return AiActionService.get_actions(
+            gs=self._gs,
+            initiative=self.get_initiative(),
+            move_candidates=move_candidates,
+        )
 
     @override
     def get_branches(
