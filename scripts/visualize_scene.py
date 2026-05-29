@@ -202,11 +202,15 @@ if __name__ == "__main__":
 
     gs = load_state("./scenes/experiment-grid.json")
 
-    img = mpimg.imread("./scripts/experiment-s2.png")  # type: ignore
-    plt.imshow(  # type: ignore
-        img,  # type: ignore
-        extent=[0, 300, 300, 0],  # type: ignore
-    )
+    screenshot = "./scripts/experiment-s2.png"
+    if screenshot:
+        img = mpimg.imread(screenshot)  # type: ignore
+        plt.imshow(  # type: ignore
+            img,  # type: ignore
+            extent=[0, 300, 300, 0],  # type: ignore
+        )
+    else:
+        plt.gca().invert_yaxis()
 
     # draw_terrains(gs)
     draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
