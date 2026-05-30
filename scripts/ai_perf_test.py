@@ -32,7 +32,7 @@ def load_state(path: str) -> GameState:
 
 
 if __name__ == "__main__":
-    PATH = "./scenes/experiment-s2.json"
+    PATH = "./scenes/experiment-unabstracted.json"
     gs = load_state(PATH)
 
     # Ensures that each run is consistent in search size
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     import cProfile
     import pstats
 
-    cProfile.run("run_ai_trial()", sort="tottime", filename="./scripts/ai-perftest.txt")
+    cProfile.run("run_ai_trial()", sort="cumtime", filename="./scripts/ai-perftest.txt")
     p = pstats.Stats("./scripts/ai-perftest.txt")
-    p.sort_stats("tottime")
+    p.sort_stats("cumtime")
     p.print_stats(20)

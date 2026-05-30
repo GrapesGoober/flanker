@@ -31,6 +31,12 @@ class _Terrain:
     vertices: list[Vec2]
 
 
+@dataclass
+class _LosCacheComponent:
+    los_polygon_by_point: dict[Vec2, list[Vec2]]
+    fov_polygon_by_point: dict[tuple[Vec2, float], list[Vec2]]
+
+
 class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
@@ -116,35 +122,53 @@ class LosSystem:
 
         spotter_transform = gs.get_component(spotter_id, Transform)
 
-        full_polygon = los_system.get_los_polygon(
-            gs=gs,
-            spotter_pos=spotter_transform.position,
+        # If already exists in cache, no need to recalculate
+        if ent := gs.query(_LosCacheComponent):
+            _, cache = ent[0]
+        else:
+            gs.add_entity(cache := _LosCacheComponent({}, {}))
+
+        cache_key: tuple[Vec2, float] = (
+            spotter_transform.position,
+            spotter_transform.degrees,
         )
-        los_polygon = los_system.apply_fov_to_polygon(
-            polyline=full_polygon,
-            center_point=spotter_transform.position,
-            heading_degree=spotter_transform.degrees,
-        )
+        if cache_key in cache.fov_polygon_by_point:
+            fov_polygon = cache.fov_polygon_by_point[cache_key]
+        else:
+            los_polygon = los_system.get_los_polygon(
+                gs=gs,
+                spotter_pos=spotter_transform.position,
+            )
+            fov_polygon = los_system.apply_fov_to_polygon(
+                polyline=los_polygon,
+                center_point=spotter_transform.position,
+                heading_degree=spotter_transform.degrees,
+            )
+            cache.fov_polygon_by_point[cache_key] = fov_polygon
 
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
         if IntersectGetter.is_inside(
             point=line[0],
-            polygon=los_polygon,
+            polygon=fov_polygon,
         ):
             interrupt_pos = line[0]
 
         # The first point is outside, thus only care about intersection
         elif intersects := IntersectGetter.get_intersects(
             line=(line[0], line[1]),
-            polyline=los_polygon,
+            polyline=fov_polygon,
         ):
+            earliest_point = min(
+                intersects,
+                key=lambda point: (line[0] - point).length(),
+            )
             # Add a tiny offset to prevent coordinate from sitting
             # precisely on LOS polygon edge.
             # This reduces floating point sensitivity.
             line_direction = line[1] - line[0]
             offset = line_direction * 1e-12
-            interrupt_pos = intersects[0] + offset
+            interrupt_pos = earliest_point + offset
 
         return interrupt_pos
 
@@ -165,12 +189,20 @@ class LosSystem:
         half_angle_rad = math.radians(fov_degree / 2)
         left_ray: Vec2 = center_point + forward_ray.rotated(half_angle_rad)
         right_ray: Vec2 = center_point + forward_ray.rotated(-half_angle_rad)
-        left_point: Vec2 = IntersectGetter.get_intersects(
-            line=(center_point, left_ray), polyline=polyline
-        )[0]
-        right_point: Vec2 = IntersectGetter.get_intersects(
-            line=(center_point, right_ray), polyline=polyline
-        )[0]
+
+        # Choose the two first intersection points of this FOV cone
+        left_point = min(
+            IntersectGetter.get_intersects(
+                line=(center_point, left_ray), polyline=polyline
+            ),
+            key=lambda point: (center_point - point).length(),
+        )
+        right_point = min(
+            IntersectGetter.get_intersects(
+                line=(center_point, right_ray), polyline=polyline
+            ),
+            key=lambda point: (center_point - point).length(),
+        )
 
         # Filter LOS polygon of any points outside of FOV
         threshold_rad: float = math.cos(half_angle_rad)
@@ -207,6 +239,15 @@ class LosSystem:
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
         los_system = gs.get(LosSystem)
+
+        # If already exists in cache, no need to recalculate
+        if ent := gs.query(_LosCacheComponent):
+            _, cache = ent[0]
+        else:
+            gs.add_entity(cache := _LosCacheComponent({}, {}))
+        if spotter_pos in cache.los_polygon_by_point:
+            return cache.los_polygon_by_point[spotter_pos]
+
         terrains = list(
             los_system._get_terrain_vertices(
                 gs,
@@ -216,7 +257,7 @@ class LosSystem:
         )
         terrain_verts = [vert for t in terrains for vert in t.vertices]
         verts = los_system._sort_verts_by_angle(spotter_pos, terrain_verts)
-        visible_points: list[Vec2] = []
+        los_polygon: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
             ray = direction * radius
@@ -226,18 +267,16 @@ class LosSystem:
             left_point = spotter_pos - jitter
             right_point = spotter_pos + jitter
             for point in [left_point, right_point]:
-                intersects = list(
+                intersects = sorted(
                     los_system._get_terrain_intersects(
                         line=(point, point + ray),
                         terrains=terrains,
-                    )
+                    ),
+                    key=lambda i: (i.point - spotter_pos).length(),
                 )
                 # Choose which point from the intersects to append
                 if intersects:
-                    intersects = los_system._sort_intersects_by_distance(
-                        intersects, spotter_pos
-                    )
-                    # Use the second intersection point to allow see-into terrain
+                    # Selects the second point to allow see-into terrain
                     if len(intersects) > 1:
                         new_point = intersects[1].point
                     else:
@@ -250,16 +289,17 @@ class LosSystem:
                 if (new_point - vert).length() < 1e-3:
                     new_point = vert
                 # If points are colocated, don't append
-                if visible_points and visible_points[-1] == new_point:
+                if los_polygon and los_polygon[-1] == new_point:
                     continue
                 # If points are colinear, replace instead of append
-                if los_system._is_colinear(visible_points, new_point):
-                    visible_points[-1] = new_point
+                if los_system._is_colinear(los_polygon, new_point):
+                    los_polygon[-1] = new_point
                     continue
-                visible_points.append(new_point)
+                los_polygon.append(new_point)
 
-        visible_points.append(visible_points[0])
-        return visible_points
+        los_polygon.append(los_polygon[0])
+        cache.los_polygon_by_point[spotter_pos] = los_polygon
+        return los_polygon
 
     @staticmethod
     def _sort_verts_by_angle(
@@ -312,7 +352,7 @@ class LosSystem:
         line: tuple[Vec2, Vec2],
         terrains: list[_Terrain],
     ) -> Iterable[_TerrainIntersection]:
-        """Yields intersections between the line segment and terrain."""
+        """Yields unsorted intersections between the line segment and terrain."""
         for terrain in terrains:
             points = IntersectGetter.get_intersects(
                 line=line,

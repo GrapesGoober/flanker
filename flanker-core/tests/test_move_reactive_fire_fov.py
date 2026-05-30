@@ -40,7 +40,7 @@ def fixture() -> Fixture:
         CombatUnit(faction=InitiativeState.Faction.RED),
         FireControls(override=FireOutcomes.PIN),
         Transform(
-            position=Vec2(20, 10),
+            position=Vec2(-20, 10),
             degrees=-90,
         ),
     )
@@ -69,20 +69,20 @@ def fixture() -> Fixture:
 
 def test_reactive_fire_at_fov(fixture: Fixture) -> None:
     move_system = fixture.gs.get(MoveSystem)
-    move_system.move(fixture.gs, fixture.unit_move, Vec2(20, 0))
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(-50, 0))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
-        10, 0
-    ), "Expects to be interrupted at FOV border (10, 0)."
+        -10, 0
+    ), "Expects to be interrupted at FOV border (-10, 0)."
 
 
 def test_reactive_fire_after_rotated(fixture: Fixture) -> None:
     # Rotate the RED unit slightly to the left so that FOV is 56.31 degrees
     move_system = fixture.gs.get(MoveSystem)
     red_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
-    red_transform.degrees = -101.31
-    move_system.move(fixture.gs, fixture.unit_move, Vec2(20, 0))
+    red_transform.degrees = -78.69
+    move_system.move(fixture.gs, fixture.unit_move, Vec2(-50, 0))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert (
-        transform.position - Vec2(5, 0)
-    ).length() < 1e-2, "Expects to be interrupted at FOV border (5, 0)."
+        transform.position - Vec2(-5, 0)
+    ).length() < 1e-2, "Expects to be interrupted at FOV border (-5, 0)."

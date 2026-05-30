@@ -37,14 +37,15 @@ class IntersectGetter:
     def get_intersects(
         line: tuple[Vec2, Vec2],
         polyline: list[Vec2],
-    ) -> list[Vec2]:
+    ) -> set[Vec2]:
         """
         Returns intersection points between a line and a polyline.
         For a closed loop, the vertices must repeat `polyline[-1] == polyline[0]`.
+        The intersections are not sorted.
         """
 
         if len(polyline) < 2:
-            return []
+            return set()
 
         # Convert to np arrays and let the compiled function compute
         intersections = IntersectGetter._njit_get_intersect(
@@ -54,9 +55,7 @@ class IntersectGetter:
         )
         # Convert to Vec2
         points = [Vec2(float(x), float(y)) for x, y in intersections]
-        # Filter out colocated intersection points if exists
-        unique_points = [p for i, p in enumerate(points) if p not in points[:i]]
-        return list(unique_points)
+        return set(points)
 
     @staticmethod
     @njit(cache=True)  # type: ignore
@@ -70,6 +69,7 @@ class IntersectGetter:
         Takes line_start, line_end, and polyline (Nx2 array of vertices).
         Computes all line segment intersections between the line and polyline edges.
         Note: might return duplicate points if edges share a vertex.
+        Note: returns an unsorted array of intersect points.
         Returns NDArray (M x 2) of intersection points.
         """
 

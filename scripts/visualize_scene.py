@@ -46,7 +46,7 @@ def visualize_polygon(
     plot_alpha: float = 1,
 ) -> None:
     xs = [v.x for v in verts]
-    ys = [-v.y for v in verts]
+    ys = [v.y for v in verts]
 
     # plt.scatter(xs, ys, color=color)  # type: ignore
     plt.fill(xs, ys, color=color, alpha=fill_alpha)  # type: ignore
@@ -141,26 +141,26 @@ def draw_waypoints(
         if draw_ids:
             plt.text(  # type: ignore
                 point.position.x,
-                -point.position.y,
+                point.position.y,
                 str(id),
             )
 
         if id in accented_ids:
             accented_points_x.append(point.position.x)
-            accented_points_y.append(-point.position.y)
+            accented_points_y.append(point.position.y)
 
             for visible_node_id in point.visible_nodes:
                 visible_node = waypoints[visible_node_id]
 
                 accented_segments.append(
                     [
-                        (point.position.x, -point.position.y),
-                        (visible_node.position.x, -visible_node.position.y),
+                        (point.position.x, point.position.y),
+                        (visible_node.position.x, visible_node.position.y),
                     ]
                 )
             continue
         points_x.append(point.position.x)
-        points_y.append(-point.position.y)
+        points_y.append(point.position.y)
         ids.append(id)
 
         for visible_node_id in point.visible_nodes:
@@ -168,8 +168,8 @@ def draw_waypoints(
 
             segments.append(
                 [
-                    (point.position.x, -point.position.y),
-                    (visible_node.position.x, -visible_node.position.y),
+                    (point.position.x, point.position.y),
+                    (visible_node.position.x, visible_node.position.y),
                 ]
             )
 
@@ -202,11 +202,15 @@ if __name__ == "__main__":
 
     gs = load_state("./scenes/experiment-grid.json")
 
-    img = mpimg.imread("./scripts/experiment-s2.png")  # type: ignore
-    plt.imshow(  # type: ignore
-        img,  # type: ignore
-        extent=[0, 300, -300, 0],  # type: ignore
-    )
+    screenshot = "./scripts/experiment-s2.png"
+    if screenshot:
+        img = mpimg.imread(screenshot)  # type: ignore
+        plt.imshow(  # type: ignore
+            img,  # type: ignore
+            extent=[0, 300, 300, 0],  # type: ignore
+        )
+    else:
+        plt.gca().invert_yaxis()
 
     # draw_terrains(gs)
     draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
