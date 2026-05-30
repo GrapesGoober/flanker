@@ -1,6 +1,6 @@
 import random
 from copy import deepcopy
-from typing import Sequence, override
+from typing import Iterable, Literal, Sequence, override
 
 from flanker_ai.actions import Action
 from flanker_ai.components import AiStallCountComponent
@@ -24,28 +24,47 @@ from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
 _MAX_STALL_LIMIT = 5
+_MOVE_SAMPLE_SIZE = 10
 
 
 class UnabstractedState(IRepresentationState[Action]):
-    def __init__(self, gs: GameState) -> None:
+    def __init__(
+        self,
+        gs: GameState,
+        move_candidates: list[Vec2] | Literal["Random"] = "Random",
+    ) -> None:
         self._gs = gs
-        self.boundary_vertices: list[Vec2] = []
+        if move_candidates == "Random":
+            self.move_candidates = list(self.get_random_coordinates())
+        else:
+            self.move_candidates = move_candidates
+
+    def get_random_coordinates(self) -> Iterable[Vec2]:
+        boundary_vertices: list[Vec2] = []
         mask = TerrainFeature.Flag.BOUNDARY
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+        for _, terrain, transform in self._gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 self.boundary_vertices = LinearTransform.apply(
                     terrain.vertices,
                     transform,
                 )
                 if terrain.is_closed_loop:
-                    self.boundary_vertices.append(self.boundary_vertices[0])
-        self.min_x = int(min(v.x for v in self.boundary_vertices))
-        self.max_x = int(max(v.x for v in self.boundary_vertices))
-        self.min_y = int(min(v.y for v in self.boundary_vertices))
-        self.max_y = int(max(v.y for v in self.boundary_vertices))
+                    self.boundary_vertices.append(boundary_vertices[0])
+        min_x = int(min(v.x for v in self.boundary_vertices))
+        max_x = int(max(v.x for v in self.boundary_vertices))
+        min_y = int(min(v.y for v in self.boundary_vertices))
+        max_y = int(max(v.y for v in self.boundary_vertices))
 
-    @staticmethod
-    def _generate_sample_coordinates(): ...
+        for _ in range(_MOVE_SAMPLE_SIZE):
+            rand_x = random.randrange(min_x, max_x)
+            rand_y = random.randrange(min_y, max_y)
+            move_candidate = Vec2(rand_x, rand_y)
+            if not IntersectGetter.is_inside(
+                point=move_candidate,
+                polygon=self.boundary_vertices,
+            ):
+                continue
+            yield move_candidate
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -75,22 +94,10 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> Sequence[Action]:
-        MOVE_SAMPLE_SIZE = 10
-        move_candidates: list[Vec2] = []
-        for _ in range(MOVE_SAMPLE_SIZE):
-            rand_x = random.randrange(self.min_x, self.max_x)
-            rand_y = random.randrange(self.min_y, self.max_y)
-            move_candidate = Vec2(rand_x, rand_y)
-            if not IntersectGetter.is_inside(
-                point=move_candidate,
-                polygon=self.boundary_vertices,
-            ):
-                continue
-            move_candidates.append(move_candidate)
         return AiActionService.get_actions(
             gs=self._gs,
             initiative=self.get_initiative(),
-            move_candidates=move_candidates,
+            move_candidates=self.move_candidates,
         )
 
     @override
