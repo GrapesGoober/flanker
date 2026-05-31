@@ -5,7 +5,11 @@ import pytest
 from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import SearchPolicyConfig, WaypointsStateConfig
+from flanker_ai.config_models import (
+    PointsConfig,
+    SearchPolicyConfig,
+    WaypointsStateConfig,
+)
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -117,11 +121,13 @@ def fixture() -> Fixture:
                 policy_type="Minimax",
                 state=WaypointsStateConfig(
                     type="WaypointsStateConfig",
-                    points=WaypointsStateConfig.HandDrawnConfig(
-                        type="WaypointsCoordinatesHandDrawnConfig",
-                        waypoint_coordinates=waypoint_coordinates,
+                    waypoints=PointsConfig(
+                        initial_points=PointsConfig.HandDrawnConfig(
+                            type="HandDrawnConfig",
+                            waypoint_coordinates=waypoint_coordinates,
+                        ),
+                        expansion=None,
                     ),
-                    expansion=None,
                     path_tolerance=3,
                 ),
             ),
