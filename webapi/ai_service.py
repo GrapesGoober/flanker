@@ -69,7 +69,7 @@ class AiService:
             points_config = config_component.config.state.waypoints
             if not isinstance(points_config, PointsConfig.HandDrawnConfig):
                 continue
-            points_config.waypoint_coordinates = request.points
+            points_config.points = request.points
 
     @staticmethod
     def _log_ai_action_results(

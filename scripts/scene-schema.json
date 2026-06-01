@@ -335,17 +335,17 @@
           "title": "Type",
           "type": "string"
         },
-        "waypoint_coordinates": {
+        "points": {
           "items": {
             "$ref": "#/$defs/Vec2"
           },
-          "title": "Waypoint Coordinates",
+          "title": "Points",
           "type": "array"
         }
       },
       "required": [
         "type",
-        "waypoint_coordinates"
+        "points"
       ],
       "title": "HandDrawnConfig",
       "type": "object"

@@ -27,7 +27,7 @@ class UnabstractedStateFactory:
                 initial_points_config = config.move_candidates.initial_points
                 match initial_points_config:
                     case PointsConfig.HandDrawnConfig():
-                        move_candidates = initial_points_config.waypoint_coordinates
+                        move_candidates = initial_points_config.points
                     case PointsConfig.GridConfig():
                         move_candidates = AiPointsExpansionService.get_grid_coordinates(
                             gs=gs,

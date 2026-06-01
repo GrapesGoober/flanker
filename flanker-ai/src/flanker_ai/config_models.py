@@ -19,7 +19,7 @@ class PointsConfig:
     @dataclass
     class HandDrawnConfig:
         type: Literal["HandDrawnConfig"]
-        waypoint_coordinates: list[Vec2]
+        points: list[Vec2]
 
     @dataclass
     class VoronoiConfig:

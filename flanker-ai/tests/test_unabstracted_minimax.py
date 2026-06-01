@@ -123,7 +123,7 @@ def fixture() -> Fixture:
                     move_candidates=PointsConfig(
                         initial_points=PointsConfig.HandDrawnConfig(
                             type="HandDrawnConfig",
-                            waypoint_coordinates=move_candidate_points,
+                            points=move_candidate_points,
                         ),
                         expansion=None,
                     ),

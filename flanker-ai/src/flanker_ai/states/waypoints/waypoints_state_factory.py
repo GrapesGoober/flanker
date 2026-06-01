@@ -25,7 +25,7 @@ class WaypointsStateFactory:
         initial_points_config = config.waypoints.initial_points
         match initial_points_config:
             case PointsConfig.HandDrawnConfig():
-                points = initial_points_config.waypoint_coordinates
+                points = initial_points_config.points
             case PointsConfig.GridConfig():
                 points = AiPointsExpansionService.get_grid_coordinates(
                     gs=gs,

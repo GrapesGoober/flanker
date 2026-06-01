@@ -124,7 +124,7 @@ def fixture() -> Fixture:
                     waypoints=PointsConfig(
                         initial_points=PointsConfig.HandDrawnConfig(
                             type="HandDrawnConfig",
-                            waypoint_coordinates=waypoint_coordinates,
+                            points=waypoint_coordinates,
                         ),
                         expansion=None,
                     ),
