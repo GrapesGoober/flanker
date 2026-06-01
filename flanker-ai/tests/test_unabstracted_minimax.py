@@ -1,0 +1,174 @@
+from dataclasses import dataclass
+from uuid import UUID
+
+import pytest
+from flanker_ai.actions import MoveAction
+from flanker_ai.ai_agent import AiAgent
+from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import (
+    PointsConfig,
+    SearchPolicyConfig,
+    UnabstractedStateConfig,
+)
+from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
+from flanker_core.gamestate import GameState
+from flanker_core.models.components import (
+    AssaultControls,
+    CombatUnit,
+    FireControls,
+    MoveControls,
+    TerrainFeature,
+    Transform,
+)
+from flanker_core.models.outcomes import FireOutcomes
+from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.initiative_system import InitiativeState
+from flanker_core.systems.register_systems import register_systems
+
+
+@dataclass
+class Fixture:
+    gs: GameState
+    blue_agent: AiAgent
+    friendly_1: UUID
+    friendly_2: UUID
+    enemy_1: UUID
+    enemy_2: UUID
+    waypoint_coordinates: list[Vec2]
+
+
+@pytest.fixture
+def fixture() -> Fixture:
+
+    gs = GameState()
+    register_systems(gs)
+    gs.add_entity(
+        InitiativeState(
+            faction=InitiativeState.Faction.BLUE,
+        )
+    )
+    friendly_1 = gs.add_entity(
+        MoveControls(),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        Transform(position=Vec2(-1, 12), degrees=-90),
+        FireControls(override=FireOutcomes.PIN),
+        AssaultControls(),
+    )
+    friendly_2 = gs.add_entity(
+        MoveControls(),
+        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        Transform(position=Vec2(1, 12), degrees=-90),
+        FireControls(override=FireOutcomes.PIN),
+        AssaultControls(),
+    )
+    enemy_1 = gs.add_entity(
+        MoveControls(),
+        CombatUnit(faction=InitiativeState.Faction.RED),
+        FireControls(override=FireOutcomes.PIN),
+        Transform(position=Vec2(0, -15), degrees=70),
+        AssaultControls(),
+    )
+    enemy_2 = gs.add_entity(
+        MoveControls(),
+        CombatUnit(faction=InitiativeState.Faction.RED),
+        FireControls(override=FireOutcomes.PIN),
+        Transform(position=Vec2(0, -18), degrees=100),
+        AssaultControls(),
+    )
+
+    # 10x10 opaque box
+    gs.add_entity(
+        Transform(position=Vec2(0, 0), degrees=0),
+        TerrainFeature(
+            vertices=[
+                Vec2(-5, -5),
+                Vec2(5, -5),
+                Vec2(5, 5),
+                Vec2(-5, 5),
+                Vec2(-5, -5),
+            ],
+            flag=TerrainFeature.Flag.OPAQUE,
+        ),
+    )
+    # 40x40 boundary
+    gs.add_entity(
+        Transform(position=Vec2(0, 0), degrees=0),
+        TerrainFeature(
+            vertices=[
+                Vec2(-20, -20),
+                Vec2(20, -20),
+                Vec2(20, 20),
+                Vec2(-20, 20),
+                Vec2(-20, -20),
+            ],
+            flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
+        ),
+    )
+
+    move_candidate_points = [
+        Vec2(0, 0),  # 0
+        Vec2(10, 1),  # 1
+        Vec2(-10, 1),  # 2
+        Vec2(-10, 10),  # 3
+        Vec2(10, 10),  # 4
+    ]
+
+    gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.BLUE,
+            config=SearchPolicyConfig(
+                policy_type="Minimax",
+                state=UnabstractedStateConfig(
+                    type="UnabstractedStateConfig",
+                    move_candidates=PointsConfig(
+                        initial_points=PointsConfig.HandDrawnConfig(
+                            type="HandDrawnConfig",
+                            waypoint_coordinates=move_candidate_points,
+                        ),
+                        expansion=None,
+                    ),
+                ),
+            ),
+        )
+    )
+
+    blue_agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+
+    return Fixture(
+        gs=gs,
+        blue_agent=blue_agent,
+        friendly_1=friendly_1,
+        friendly_2=friendly_2,
+        enemy_1=enemy_1,
+        enemy_2=enemy_2,
+        waypoint_coordinates=move_candidate_points,
+    )
+
+
+def test_stall(fixture: Fixture) -> None:
+    agent = fixture.blue_agent
+    rs = agent.rs
+    assert isinstance(
+        rs, UnabstractedState
+    ), "Configured agent's state representation must be unabstracted state."
+    rs.update_state(fixture.gs)
+    for _ in range(5):
+        action = MoveAction(
+            unit_id=fixture.friendly_1,
+            to=fixture.waypoint_coordinates[3],
+        )
+        _, new_state = rs.get_branches(action)[0]
+        assert new_state != None, "Actions are not invalid"
+        rs = new_state
+    assert rs.get_winner() == None, "BLUE must not stall yet."
+
+    action = MoveAction(
+        unit_id=fixture.friendly_1,
+        to=fixture.waypoint_coordinates[3],
+    )
+    _, new_state = rs.get_branches(action)[0]
+    assert new_state != None, "Actions are not invalid"
+    rs = new_state
+    assert (
+        rs.get_winner() == InitiativeState.Faction.RED
+    ), "BLUE must be considered stall."
