@@ -32,7 +32,7 @@ class PointsConfig:
         prune_iterations: int
 
     initial_points: GridConfig | HandDrawnConfig | VoronoiConfig
-    expansion: ExpansionConfig | None
+    expansion: ExpansionConfig | None = None
 
 
 @dataclass

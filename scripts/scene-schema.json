@@ -415,12 +415,12 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "default": null
         }
       },
       "required": [
-        "initial_points",
-        "expansion"
+        "initial_points"
       ],
       "title": "PointsConfig",
       "type": "object"
