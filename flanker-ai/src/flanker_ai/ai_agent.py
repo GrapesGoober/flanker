@@ -141,8 +141,14 @@ class AiAgent:
         state: IRepresentationState[Action]
         match config_component.config:
             case HeuristicPolicyConfig():
+                # TODO: need a better framework for rule-based policies.
+                # It should not take the same states as search based, since
+                # its use case is different.
                 policy = RandomHeuristicPolicy(gs)
-                state = UnabstractedState(gs)
+                move_candidates = list(
+                    UnabstractedStateFactory.get_random_coordinates(gs)
+                )
+                state = UnabstractedState(gs, move_candidates)
             case SearchPolicyConfig():
                 match config_component.config.policy_type:
                     case "Expectimax":

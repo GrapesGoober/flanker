@@ -9,13 +9,6 @@ from flanker_core.models.components import Vec2
 
 
 @dataclass
-class WaypointsStateConfig:
-    type: Literal["WaypointsStateConfig"]
-    waypoints: "PointsConfig"
-    path_tolerance: float
-
-
-@dataclass
 class PointsConfig:
     @dataclass
     class GridConfig:
@@ -43,8 +36,16 @@ class PointsConfig:
 
 
 @dataclass
+class WaypointsStateConfig:
+    type: Literal["WaypointsStateConfig"]
+    waypoints: PointsConfig
+    path_tolerance: float
+
+
+@dataclass
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
+    move_candidates: PointsConfig | Literal["RandomMoves"]
 
 
 @dataclass
