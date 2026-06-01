@@ -105,12 +105,16 @@ def fixture() -> Fixture:
         ),
     )
 
+    # TODO the test should consider non-sorting points.
+    # It should converge on equilibrium regardless of points ordering.
+    # This allows the test to be more comprehensive and less finicky
+    # on having lucky move candidates ordering
     move_candidate_points = [
         Vec2(0, 0),  # 0
         Vec2(10, 1),  # 1
+        Vec2(10, 10),  # 4 (swapped)
         Vec2(-10, 1),  # 2
         Vec2(-10, 10),  # 3
-        Vec2(10, 10),  # 4
     ]
 
     gs.add_entity(
