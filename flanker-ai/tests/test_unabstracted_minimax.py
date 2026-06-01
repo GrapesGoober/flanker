@@ -172,3 +172,23 @@ def test_stall(fixture: Fixture) -> None:
     assert (
         rs.get_winner() == InitiativeState.Faction.RED
     ), "BLUE must be considered stall."
+
+
+def test_optimal_actions(fixture: Fixture) -> None:
+    actions = fixture.blue_agent.play_initiative()
+    assert actions != [], "The minimax must find optimal action sequence."
+    assert isinstance(
+        actions[0], MoveActionResult
+    ), "AI must start first with Move Action"
+    assert isinstance(
+        actions[1], MoveActionResult
+    ), "AI must continue with Move Actions"
+    assert actions[0].action.to == Vec2(
+        -10, 10
+    ), "AI must try to peek to the left at Vec2(-10, 10)"
+    assert actions[1].action.to == Vec2(
+        -10, 1
+    ), "AI must try to peek to the left at Vec2(-10, 1)"
+    assert isinstance(
+        actions[2], FireActionResult
+    ), "AI must perform Fire Action after peeking"
