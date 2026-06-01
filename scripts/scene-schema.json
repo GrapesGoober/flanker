@@ -117,7 +117,7 @@
             }
           ],
           "default": null,
-          "description": "AiConfigComponent(config: flanker_ai.config_models.SearchPolicyConfig | flanker_ai.config_models.HeuristicPolicyConfig, faction: flanker_core.models.components.InitiativeState.Faction)"
+          "description": "Configures AI agent of either BLUE or RED with search policy and state.\nSupports search-based policy or heuristic rule-based policy."
         },
         "Vec2": {
           "anyOf": [
@@ -307,7 +307,7 @@
     "GridConfig": {
       "properties": {
         "type": {
-          "const": "WaypointsCoordinatesGridConfig",
+          "const": "GridConfig",
           "title": "Type",
           "type": "string"
         },
@@ -331,7 +331,7 @@
     "HandDrawnConfig": {
       "properties": {
         "type": {
-          "const": "WaypointsCoordinatesHandDrawnConfig",
+          "const": "HandDrawnConfig",
           "title": "Type",
           "type": "string"
         },
@@ -390,6 +390,40 @@
       ],
       "title": "MoveType",
       "type": "string"
+    },
+    "PointsConfig": {
+      "properties": {
+        "initial_points": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GridConfig"
+            },
+            {
+              "$ref": "#/$defs/HandDrawnConfig"
+            },
+            {
+              "$ref": "#/$defs/VoronoiConfig"
+            }
+          ],
+          "title": "Initial Points"
+        },
+        "expansion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExpansionConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "initial_points",
+        "expansion"
+      ],
+      "title": "PointsConfig",
+      "type": "object"
     },
     "SearchPolicyConfig": {
       "properties": {
@@ -483,10 +517,23 @@
           "const": "UnabstractedStateConfig",
           "title": "Type",
           "type": "string"
+        },
+        "move_candidates": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PointsConfig"
+            },
+            {
+              "const": "RandomMoves",
+              "type": "string"
+            }
+          ],
+          "title": "Move Candidates"
         }
       },
       "required": [
-        "type"
+        "type",
+        "move_candidates"
       ],
       "title": "UnabstractedStateConfig",
       "type": "object"
@@ -512,7 +559,7 @@
     "VoronoiConfig": {
       "properties": {
         "type": {
-          "const": "WaypointsCoordinatesVoronoiConfig",
+          "const": "VoronoiConfig",
           "title": "Type",
           "type": "string"
         }
@@ -530,29 +577,8 @@
           "title": "Type",
           "type": "string"
         },
-        "points": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/GridConfig"
-            },
-            {
-              "$ref": "#/$defs/HandDrawnConfig"
-            },
-            {
-              "$ref": "#/$defs/VoronoiConfig"
-            }
-          ],
-          "title": "Points"
-        },
-        "expansion": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ExpansionConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
+        "waypoints": {
+          "$ref": "#/$defs/PointsConfig"
         },
         "path_tolerance": {
           "title": "Path Tolerance",
@@ -561,8 +587,7 @@
       },
       "required": [
         "type",
-        "points",
-        "expansion",
+        "waypoints",
         "path_tolerance"
       ],
       "title": "WaypointsStateConfig",
