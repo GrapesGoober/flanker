@@ -34,7 +34,6 @@ class Fixture:
     friendly_2: UUID
     enemy_1: UUID
     enemy_2: UUID
-    waypoint_coordinates: list[Vec2]
 
 
 @pytest.fixture
@@ -145,7 +144,6 @@ def fixture() -> Fixture:
         friendly_2=friendly_2,
         enemy_1=enemy_1,
         enemy_2=enemy_2,
-        waypoint_coordinates=move_candidate_points,
     )
 
 
@@ -156,10 +154,13 @@ def test_stall(fixture: Fixture) -> None:
         rs, UnabstractedState
     ), "Configured agent's state representation must be unabstracted state."
     rs.update_state(fixture.gs)
+
+    # Have it move repeatedly to the same coordinates
+    transform = fixture.gs.get_component(fixture.friendly_1, Transform)
     for _ in range(5):
         action = MoveAction(
             unit_id=fixture.friendly_1,
-            to=fixture.waypoint_coordinates[3],
+            to=transform.position,
         )
         _, new_state = rs.get_branches(action)[0]
         assert new_state != None, "Actions are not invalid"
@@ -168,7 +169,7 @@ def test_stall(fixture: Fixture) -> None:
 
     action = MoveAction(
         unit_id=fixture.friendly_1,
-        to=fixture.waypoint_coordinates[3],
+        to=transform.position,
     )
     _, new_state = rs.get_branches(action)[0]
     assert new_state != None, "Actions are not invalid"
