@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import MoveAction
+from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
