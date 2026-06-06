@@ -403,6 +403,9 @@
             },
             {
               "$ref": "#/$defs/VoronoiConfig"
+            },
+            {
+              "$ref": "#/$defs/RandomConfig"
             }
           ],
           "title": "Initial Points"
@@ -423,6 +426,25 @@
         "initial_points"
       ],
       "title": "PointsConfig",
+      "type": "object"
+    },
+    "RandomConfig": {
+      "properties": {
+        "type": {
+          "const": "Random",
+          "title": "Type",
+          "type": "string"
+        },
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "count"
+      ],
+      "title": "RandomConfig",
       "type": "object"
     },
     "SearchPolicyConfig": {
@@ -519,16 +541,7 @@
           "type": "string"
         },
         "move_candidates": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PointsConfig"
-            },
-            {
-              "const": "RandomMoves",
-              "type": "string"
-            }
-          ],
-          "title": "Move Candidates"
+          "$ref": "#/$defs/PointsConfig"
         }
       },
       "required": [

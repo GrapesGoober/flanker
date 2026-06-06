@@ -22,6 +22,11 @@ class PointsConfig:
         points: list[Vec2]
 
     @dataclass
+    class RandomConfig:
+        type: Literal["Random"]
+        count: int
+
+    @dataclass
     class VoronoiConfig:
         type: Literal["VoronoiConfig"]
 
@@ -31,7 +36,7 @@ class PointsConfig:
         iterations: int
         prune_iterations: int
 
-    initial_points: GridConfig | HandDrawnConfig | VoronoiConfig
+    initial_points: GridConfig | HandDrawnConfig | VoronoiConfig | RandomConfig
     expansion: ExpansionConfig | None = None
 
 
@@ -45,7 +50,7 @@ class WaypointsStateConfig:
 @dataclass
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
-    move_candidates: PointsConfig | Literal["RandomMoves"]
+    move_candidates: PointsConfig
 
 
 @dataclass

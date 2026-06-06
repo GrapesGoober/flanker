@@ -16,6 +16,7 @@ from flanker_ai.actions import (
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.config_models import (
     HeuristicPolicyConfig,
+    PointsConfig,
     SearchPolicyConfig,
     UnabstractedStateConfig,
     WaypointsStateConfig,
@@ -142,7 +143,16 @@ class AiAgent:
                 # It should not take the same states as search based, since
                 # its use case is different.
                 policy = RandomHeuristicPolicy(gs)
-                state = UnabstractedState(gs, move_candidates_config="RandomMoves")
+                state = UnabstractedState(
+                    gs=gs,
+                    move_candidates_config=PointsConfig(
+                        initial_points=PointsConfig.RandomConfig(
+                            type="Random",
+                            count=10,
+                        ),
+                        expansion=None,
+                    ),
+                )
             case SearchPolicyConfig():
                 match config_component.config.policy_type:
                     case "Expectimax":

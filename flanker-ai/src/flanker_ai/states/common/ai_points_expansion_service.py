@@ -61,7 +61,7 @@ class AiPointsExpansionService:
     @staticmethod
     def get_random_coordinates(
         gs: GameState,
-        count: int = 10,
+        count: int,
     ) -> list[Vec2]:
         boundary_vertices: list[Vec2] = []
         mask = TerrainFeature.Flag.BOUNDARY
@@ -190,6 +190,11 @@ class AiPointsExpansionService:
                     gs=gs,
                     spacing=initial_points_config.spacing,
                     offset=initial_points_config.offset,
+                )
+            case PointsConfig.RandomConfig():
+                move_candidates = AiPointsExpansionService.get_random_coordinates(
+                    gs=gs,
+                    count=initial_points_config.count,
                 )
             case PointsConfig.VoronoiConfig():
                 raise NotImplementedError()

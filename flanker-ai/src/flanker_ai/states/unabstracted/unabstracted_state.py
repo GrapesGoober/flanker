@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Literal, Sequence, override
+from typing import Sequence, override
 
 from flanker_ai.actions import Action
 from flanker_ai.components import AiStallCountComponent
@@ -29,12 +29,10 @@ class UnabstractedState(IRepresentationState[Action]):
     def __init__(
         self,
         gs: GameState,
-        move_candidates_config: Literal["RandomMoves"] | PointsConfig,
+        move_candidates_config: PointsConfig,
     ) -> None:
         self._gs = gs
-        self._move_candidates_config: Literal["RandomMoves"] | PointsConfig = (
-            move_candidates_config
-        )
+        self._move_candidates_config = move_candidates_config
         self._move_candidates: list[Vec2] = []
 
     @override
@@ -133,12 +131,6 @@ class UnabstractedState(IRepresentationState[Action]):
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
 
-        match self._move_candidates_config:
-            case "RandomMoves":
-                self._move_candidates = AiPointsExpansionService.get_random_coordinates(
-                    gs
-                )
-            case _:
-                self._move_candidates = AiPointsExpansionService.get_points(
-                    gs, self._move_candidates_config
-                )
+        self._move_candidates = AiPointsExpansionService.get_points(
+            gs, self._move_candidates_config
+        )
