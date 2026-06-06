@@ -131,6 +131,7 @@ class UnabstractedState(IRepresentationState[Action]):
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
 
+        # Regenerate the move candidate for each update
         self._move_candidates = AiPointsExpansionService.get_points(
             gs, self._move_candidates_config
         )
