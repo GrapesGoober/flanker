@@ -6,6 +6,7 @@ from uuid import UUID
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -198,6 +199,25 @@ def draw_waypoints(
     # )
 
 
+def draw_move_candidates(
+    gs: GameState,
+    faction: InitiativeState.Faction,
+) -> None:
+    agent = AiAgent.get_agent(gs, faction)
+
+    assert isinstance(
+        agent.rs, UnabstractedState
+    ), "Method draw_move_candidates can only be used with unabstracted state"
+
+    agent.rs.update_state(gs)
+
+    move_candidates = agent.rs.move_candidates
+    points_x = [coords.x for coords in move_candidates]
+    points_y = [coords.y for coords in move_candidates]
+
+    plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+
+
 if __name__ == "__main__":
 
     gs = load_state("./scenes/experiment-unabstracted.json")
@@ -214,6 +234,7 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
+    draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):

@@ -33,7 +33,7 @@ class UnabstractedState(IRepresentationState[Action]):
     ) -> None:
         self._gs = gs
         self._move_candidates_config = move_candidates_config
-        self._move_candidates: list[Vec2] = []
+        self.move_candidates: list[Vec2] = []
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -66,7 +66,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return AiActionService.get_actions(
             gs=self._gs,
             initiative=self.get_initiative(),
-            move_candidates=self._move_candidates,
+            move_candidates=self.move_candidates,
         )
 
     @override
@@ -81,7 +81,7 @@ class UnabstractedState(IRepresentationState[Action]):
                 gs=branch,
                 move_candidates_config=self._move_candidates_config,
             )
-            new_state._move_candidates = self._move_candidates
+            new_state.move_candidates = self.move_candidates
             state_branches.append((prob, new_state))
         return state_branches
 
@@ -98,7 +98,7 @@ class UnabstractedState(IRepresentationState[Action]):
             gs=branch,
             move_candidates_config=self._move_candidates_config,
         )
-        new_state._move_candidates = self._move_candidates
+        new_state.move_candidates = self.move_candidates
         return new_state
 
     @override
@@ -132,6 +132,6 @@ class UnabstractedState(IRepresentationState[Action]):
             self._gs.add_entity(AiStallCountComponent())
 
         # Regenerate the move candidate for each update
-        self._move_candidates = AiPointsExpansionService.get_points(
+        self.move_candidates = AiPointsExpansionService.get_points(
             gs, self._move_candidates_config
         )
