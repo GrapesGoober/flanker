@@ -14,10 +14,7 @@ from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import (
-    CombatUnit,
-    InitiativeState,
-)
+from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -131,7 +128,14 @@ class UnabstractedState(IRepresentationState[Action]):
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
 
+        # Use combat units as initial points
+        initial_points: list[Vec2] = []
+        for _, _, transform in gs.query(CombatUnit, Transform):
+            initial_points.append(transform.position)
+
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
-            gs, self._move_candidates_config
+            gs=gs,
+            config=self._move_candidates_config,
+            initial_points=initial_points,
         )
