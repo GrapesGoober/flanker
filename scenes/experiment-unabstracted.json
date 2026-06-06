@@ -136,7 +136,19 @@
         "config": {
           "policy_type": "Minimax",
           "state": {
-            "type": "UnabstractedStateConfig"
+            "type": "UnabstractedStateConfig",
+            "move_candidates": {
+              "initial_points": {
+                "type": "GridConfig",
+                "spacing": 290,
+                "offset": 10
+              },
+              "expansion": {
+                "type": "LineBased",
+                "iterations": 1,
+                "prune_iterations": 1
+              }
+            }
           }
         }
       }

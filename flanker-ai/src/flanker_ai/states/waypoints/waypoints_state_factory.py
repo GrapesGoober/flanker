@@ -1,6 +1,6 @@
-from flanker_ai.config_models import WaypointsStateConfig
-from flanker_ai.states.waypoints.waypoints_generator_service import (
-    WaypointsGeneratorService,
+from flanker_ai.config_models import PointsConfig, WaypointsStateConfig
+from flanker_ai.states.common.ai_points_expansion_service import (
+    AiPointsExpansionService,
 )
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -22,26 +22,28 @@ class WaypointsStateFactory:
         """
 
         points: list[Vec2]
-        match config.points:
-            case WaypointsStateConfig.HandDrawnConfig():
-                points = config.points.waypoint_coordinates
-            case WaypointsStateConfig.GridConfig():
-                points = WaypointsGeneratorService.get_grid_coordinates(
+        initial_points_config = config.waypoints.initial_points
+        match initial_points_config:
+            case PointsConfig.HandDrawnConfig():
+                points = initial_points_config.points
+            case PointsConfig.GridConfig():
+                points = AiPointsExpansionService.get_grid_coordinates(
                     gs=gs,
-                    spacing=config.points.spacing,
-                    offset=config.points.offset,
+                    spacing=initial_points_config.spacing,
+                    offset=initial_points_config.offset,
                 )
-            case WaypointsStateConfig.VoronoiConfig():
+            case PointsConfig.VoronoiConfig():
                 raise NotImplementedError()
 
-        if config.expansion != None:
-            match config.expansion.type:
+        expansion_config = config.waypoints.expansion
+        if expansion_config != None:
+            match expansion_config.type:
                 case "LineBased":
-                    points = WaypointsGeneratorService.expand_waypoints_interrupt(
+                    points = AiPointsExpansionService.expand_waypoints_interrupt(
                         gs=gs,
                         initial_waypoints=points,
-                        iterations=config.expansion.iterations,
-                        prune_iterations=config.expansion.prune_iterations,
+                        iterations=expansion_config.iterations,
+                        prune_iterations=expansion_config.prune_iterations,
                     )
                 case "Polygonal":
                     raise NotImplementedError()

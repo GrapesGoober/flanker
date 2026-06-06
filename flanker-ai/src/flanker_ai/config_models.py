@@ -4,26 +4,26 @@ from typing import Literal
 from flanker_core.models.components import Vec2
 
 # TODO: this is using string literal type discriminator
-# Is this needed? Should it be removed? What cleaner options is available?
+# Is this needed? Should it be removed? What cleaner options are available?
+# Yo, check this out https://pydantic.dev/docs/validation/latest/concepts/unions/.
 
 
 @dataclass
-class WaypointsStateConfig:
-
+class PointsConfig:
     @dataclass
     class GridConfig:
-        type: Literal["WaypointsCoordinatesGridConfig"]
+        type: Literal["GridConfig"]
         spacing: float
         offset: float
 
     @dataclass
     class HandDrawnConfig:
-        type: Literal["WaypointsCoordinatesHandDrawnConfig"]
-        waypoint_coordinates: list[Vec2]
+        type: Literal["HandDrawnConfig"]
+        points: list[Vec2]
 
     @dataclass
     class VoronoiConfig:
-        type: Literal["WaypointsCoordinatesVoronoiConfig"]
+        type: Literal["VoronoiConfig"]
 
     @dataclass
     class ExpansionConfig:
@@ -31,15 +31,21 @@ class WaypointsStateConfig:
         iterations: int
         prune_iterations: int
 
+    initial_points: GridConfig | HandDrawnConfig | VoronoiConfig
+    expansion: ExpansionConfig | None = None
+
+
+@dataclass
+class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
-    points: GridConfig | HandDrawnConfig | VoronoiConfig
-    expansion: ExpansionConfig | None
+    waypoints: PointsConfig
     path_tolerance: float
 
 
 @dataclass
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
+    move_candidates: PointsConfig | Literal["RandomMoves"]
 
 
 @dataclass

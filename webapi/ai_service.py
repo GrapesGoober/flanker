@@ -8,7 +8,11 @@ from flanker_ai.actions import (
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_trial import AiTrial
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import SearchPolicyConfig, WaypointsStateConfig
+from flanker_ai.config_models import (
+    PointsConfig,
+    SearchPolicyConfig,
+    WaypointsStateConfig,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -62,13 +66,10 @@ class AiService:
                 continue
             if not isinstance(config_component.config.state, WaypointsStateConfig):
                 continue
-            if not isinstance(
-                config_component.config.state.points,
-                WaypointsStateConfig.HandDrawnConfig,
-            ):
+            points_config = config_component.config.state.waypoints
+            if not isinstance(points_config, PointsConfig.HandDrawnConfig):
                 continue
-            points_config = config_component.config.state.points
-            points_config.waypoint_coordinates = request.points
+            points_config.points = request.points
 
     @staticmethod
     def _log_ai_action_results(

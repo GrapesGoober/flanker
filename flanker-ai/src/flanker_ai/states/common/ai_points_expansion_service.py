@@ -9,11 +9,11 @@ from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
 
-class WaypointsGeneratorService:
+class AiPointsExpansionService:
     """
-    Waypoints-Graph service that generates a set of waypoint positions
-    using in-game terrain. This is used by waypoints-state constructor
-    to generate a waypoints graph.
+    AI state-agnositic service that generates a set of point positions
+    using in-game terrain. These points can be used as a discrete finite
+    set of game-relavant coordinates.
     """
 
     @staticmethod

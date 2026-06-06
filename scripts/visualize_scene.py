@@ -200,9 +200,9 @@ def draw_waypoints(
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-grid.json")
+    gs = load_state("./scenes/experiment-unabstracted.json")
 
-    screenshot = "./scripts/experiment-s2.png"
+    screenshot = "./scripts/experiment-template.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         plt.gca().invert_yaxis()
 
     # draw_terrains(gs)
-    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
+    # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
