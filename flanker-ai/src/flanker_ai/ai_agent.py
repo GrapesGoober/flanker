@@ -26,9 +26,6 @@ from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
-from flanker_ai.states.unabstracted.unabstracted_state_factory import (
-    UnabstractedStateFactory,
-)
 from flanker_ai.states.waypoints.waypoints_state_factory import WaypointsStateFactory
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -145,10 +142,7 @@ class AiAgent:
                 # It should not take the same states as search based, since
                 # its use case is different.
                 policy = RandomHeuristicPolicy(gs)
-                move_candidates = list(
-                    UnabstractedStateFactory.get_random_coordinates(gs)
-                )
-                state = UnabstractedState(gs, move_candidates)
+                state = UnabstractedState(gs, move_candidates_config="RandomMoves")
             case SearchPolicyConfig():
                 match config_component.config.policy_type:
                     case "Expectimax":
@@ -157,8 +151,10 @@ class AiAgent:
                         policy = MinimaxPolicy[Action](depth=4)
                 match config_component.config.state:
                     case UnabstractedStateConfig():
-                        state = UnabstractedStateFactory.create_state(
-                            gs, config_component.config.state
+                        move_config = config_component.config.state.move_candidates
+                        state = UnabstractedState(
+                            gs,
+                            move_candidates_config=move_config,
                         )
                     case WaypointsStateConfig():
                         state = WaypointsStateFactory.create_state(

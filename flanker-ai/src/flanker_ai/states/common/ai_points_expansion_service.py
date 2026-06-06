@@ -1,3 +1,4 @@
+import random
 from itertools import pairwise
 
 from flanker_ai.config_models import PointsConfig
@@ -56,6 +57,39 @@ class AiPointsExpansionService:
                 x += spacing
             y += spacing
         return points
+
+    @staticmethod
+    def get_random_coordinates(
+        gs: GameState,
+        count: int = 10,
+    ) -> list[Vec2]:
+        boundary_vertices: list[Vec2] = []
+        mask = TerrainFeature.Flag.BOUNDARY
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            if terrain.flag & mask:
+                boundary_vertices = LinearTransform.apply(
+                    terrain.vertices,
+                    transform,
+                )
+                if terrain.is_closed_loop:
+                    boundary_vertices.append(boundary_vertices[0])
+        min_x = int(min(v.x for v in boundary_vertices))
+        max_x = int(max(v.x for v in boundary_vertices))
+        min_y = int(min(v.y for v in boundary_vertices))
+        max_y = int(max(v.y for v in boundary_vertices))
+
+        move_candidates: list[Vec2] = []
+        for _ in range(count):
+            rand_x = random.randrange(min_x, max_x)
+            rand_y = random.randrange(min_y, max_y)
+            move_candidate = Vec2(rand_x, rand_y)
+            if not IntersectGetter.is_inside(
+                point=move_candidate,
+                polygon=boundary_vertices,
+            ):
+                continue
+            move_candidates.append(move_candidate)
+        return move_candidates
 
     @staticmethod
     def expand_waypoints_line_based(

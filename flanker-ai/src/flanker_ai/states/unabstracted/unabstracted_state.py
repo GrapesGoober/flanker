@@ -1,14 +1,18 @@
 from copy import deepcopy
-from typing import Sequence, override
+from typing import Literal, Sequence, override
 
 from flanker_ai.actions import Action
 from flanker_ai.components import AiStallCountComponent
+from flanker_ai.config_models import PointsConfig
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_points_expansion_service import (
+    AiPointsExpansionService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -25,10 +29,13 @@ class UnabstractedState(IRepresentationState[Action]):
     def __init__(
         self,
         gs: GameState,
-        move_candidates: list[Vec2],
+        move_candidates_config: Literal["RandomMoves"] | PointsConfig,
     ) -> None:
         self._gs = gs
-        self.move_candidates = move_candidates
+        self._move_candidates_config: Literal["RandomMoves"] | PointsConfig = (
+            move_candidates_config
+        )
+        self._move_candidates: list[Vec2] = []
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -61,7 +68,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return AiActionService.get_actions(
             gs=self._gs,
             initiative=self.get_initiative(),
-            move_candidates=self.move_candidates,
+            move_candidates=self._move_candidates,
         )
 
     @override
@@ -71,16 +78,13 @@ class UnabstractedState(IRepresentationState[Action]):
     ) -> list[tuple[float, "UnabstractedState"]]:
         branches = AiBranchingService.get_action_branches(self._gs, action)
         state_branches: list[tuple[float, UnabstractedState]] = []
-        for probability, new_state in branches:
-            state_branches.append(
-                (
-                    probability,
-                    UnabstractedState(
-                        gs=new_state,
-                        move_candidates=self.move_candidates,
-                    ),
-                )
+        for prob, branch in branches:
+            new_state = UnabstractedState(
+                gs=branch,
+                move_candidates_config=self._move_candidates_config,
             )
+            new_state._move_candidates = self._move_candidates
+            state_branches.append((prob, new_state))
         return state_branches
 
     @override
@@ -94,8 +98,9 @@ class UnabstractedState(IRepresentationState[Action]):
         branch = AiBranchAbstractionService.pick_branch(branches, action)
         new_state = UnabstractedState(
             gs=branch,
-            move_candidates=self.move_candidates,
+            move_candidates_config=self._move_candidates_config,
         )
+        new_state._move_candidates = self._move_candidates
         return new_state
 
     @override
@@ -127,3 +132,13 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
+
+        match self._move_candidates_config:
+            case "RandomMoves":
+                self._move_candidates = AiPointsExpansionService.get_random_coordinates(
+                    gs
+                )
+            case _:
+                self._move_candidates = AiPointsExpansionService.get_points(
+                    gs, self._move_candidates_config
+                )
