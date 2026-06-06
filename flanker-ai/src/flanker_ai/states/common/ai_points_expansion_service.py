@@ -4,7 +4,7 @@ from itertools import pairwise
 from flanker_ai.config_models import PointsConfig
 from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
@@ -180,37 +180,42 @@ class AiPointsExpansionService:
     @staticmethod
     def get_points(gs: GameState, config: PointsConfig) -> list[Vec2]:
 
-        move_candidates: list[Vec2] = []
+        waypoints: list[Vec2] = []
+
+        # Use combat units as initial points
+        for _, _, transform in gs.query(CombatUnit, Transform):
+            waypoints.append(transform.position)
+
+        # Creates initial points given the config
         initial_points_config = config.initial_points
         match initial_points_config:
             case PointsConfig.HandDrawnConfig():
-                move_candidates = initial_points_config.points
+                waypoints += initial_points_config.points
             case PointsConfig.GridConfig():
-                move_candidates = AiPointsExpansionService.get_grid_coordinates(
+                waypoints += AiPointsExpansionService.get_grid_coordinates(
                     gs=gs,
                     spacing=initial_points_config.spacing,
                     offset=initial_points_config.offset,
                 )
             case PointsConfig.RandomConfig():
-                move_candidates = AiPointsExpansionService.get_random_coordinates(
+                waypoints += AiPointsExpansionService.get_random_coordinates(
                     gs=gs,
                     count=initial_points_config.count,
                 )
             case PointsConfig.VoronoiConfig():
                 raise NotImplementedError()
 
+        # Expands the points given the config
         expansion_config = config.expansion
         if expansion_config != None:
             match expansion_config.type:
                 case "LineBased":
-                    move_candidates = (
-                        AiPointsExpansionService.expand_waypoints_line_based(
-                            gs=gs,
-                            initial_waypoints=move_candidates,
-                            iterations=expansion_config.iterations,
-                            prune_iterations=expansion_config.prune_iterations,
-                        )
+                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+                        gs=gs,
+                        initial_waypoints=waypoints,
+                        iterations=expansion_config.iterations,
+                        prune_iterations=expansion_config.prune_iterations,
                     )
                 case "Polygonal":
                     raise NotImplementedError()
-        return move_candidates
+        return waypoints
