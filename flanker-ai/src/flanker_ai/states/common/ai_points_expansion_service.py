@@ -1,5 +1,6 @@
 from itertools import pairwise
 
+from flanker_ai.config_models import PointsConfig
 from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
@@ -57,7 +58,7 @@ class AiPointsExpansionService:
         return points
 
     @staticmethod
-    def expand_waypoints_interrupt(
+    def expand_waypoints_line_based(
         gs: GameState,
         initial_waypoints: list[Vec2],
         iterations: int,
@@ -141,3 +142,36 @@ class AiPointsExpansionService:
             for _ in range(prune_iterations):
                 waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
         return list(waypoints)
+
+    @staticmethod
+    def get_points(gs: GameState, config: PointsConfig) -> list[Vec2]:
+
+        move_candidates: list[Vec2] = []
+        initial_points_config = config.initial_points
+        match initial_points_config:
+            case PointsConfig.HandDrawnConfig():
+                move_candidates = initial_points_config.points
+            case PointsConfig.GridConfig():
+                move_candidates = AiPointsExpansionService.get_grid_coordinates(
+                    gs=gs,
+                    spacing=initial_points_config.spacing,
+                    offset=initial_points_config.offset,
+                )
+            case PointsConfig.VoronoiConfig():
+                raise NotImplementedError()
+
+        expansion_config = config.expansion
+        if expansion_config != None:
+            match expansion_config.type:
+                case "LineBased":
+                    move_candidates = (
+                        AiPointsExpansionService.expand_waypoints_line_based(
+                            gs=gs,
+                            initial_waypoints=move_candidates,
+                            iterations=expansion_config.iterations,
+                            prune_iterations=expansion_config.prune_iterations,
+                        )
+                    )
+                case "Polygonal":
+                    raise NotImplementedError()
+        return move_candidates

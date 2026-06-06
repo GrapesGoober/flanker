@@ -24,33 +24,10 @@ class UnabstractedStateFactory:
         move_candidates: list[Vec2] = []
         match config.move_candidates:
             case PointsConfig():
-                initial_points_config = config.move_candidates.initial_points
-                match initial_points_config:
-                    case PointsConfig.HandDrawnConfig():
-                        move_candidates = initial_points_config.points
-                    case PointsConfig.GridConfig():
-                        move_candidates = AiPointsExpansionService.get_grid_coordinates(
-                            gs=gs,
-                            spacing=initial_points_config.spacing,
-                            offset=initial_points_config.offset,
-                        )
-                    case PointsConfig.VoronoiConfig():
-                        raise NotImplementedError()
-
-                expansion_config = config.move_candidates.expansion
-                if expansion_config != None:
-                    match expansion_config.type:
-                        case "LineBased":
-                            move_candidates = (
-                                AiPointsExpansionService.expand_waypoints_interrupt(
-                                    gs=gs,
-                                    initial_waypoints=move_candidates,
-                                    iterations=expansion_config.iterations,
-                                    prune_iterations=expansion_config.prune_iterations,
-                                )
-                            )
-                        case "Polygonal":
-                            raise NotImplementedError()
+                move_candidates = AiPointsExpansionService.get_points(
+                    gs=gs,
+                    config=config.move_candidates,
+                )
 
             case "RandomMoves":
                 move_candidates = list(
