@@ -33,6 +33,7 @@ class PointsConfig:
     @dataclass
     class ExpansionConfig:
         type: Literal["LineBased"] | Literal["Polygonal"]
+        use_combat_unit_positions: bool
         iterations: int
         prune_iterations: int
 

@@ -246,6 +246,10 @@
           ],
           "title": "Type"
         },
+        "use_combat_unit_positions": {
+          "title": "Use Combat Unit Positions",
+          "type": "boolean"
+        },
         "iterations": {
           "title": "Iterations",
           "type": "integer"
@@ -257,6 +261,7 @@
       },
       "required": [
         "type",
+        "use_combat_unit_positions",
         "iterations",
         "prune_iterations"
       ],

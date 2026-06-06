@@ -182,10 +182,6 @@ class AiPointsExpansionService:
 
         waypoints: list[Vec2] = []
 
-        # Use combat units as initial points
-        for _, _, transform in gs.query(CombatUnit, Transform):
-            waypoints.append(transform.position)
-
         # Creates initial points given the config
         initial_points_config = config.initial_points
         match initial_points_config:
@@ -208,6 +204,11 @@ class AiPointsExpansionService:
         # Expands the points given the config
         expansion_config = config.expansion
         if expansion_config != None:
+
+            if expansion_config.use_combat_unit_positions:
+                for _, _, transform in gs.query(CombatUnit, Transform):
+                    waypoints.append(transform.position)
+
             match expansion_config.type:
                 case "LineBased":
                     waypoints = AiPointsExpansionService.expand_waypoints_line_based(
@@ -218,4 +219,5 @@ class AiPointsExpansionService:
                     )
                 case "Polygonal":
                     raise NotImplementedError()
+
         return waypoints

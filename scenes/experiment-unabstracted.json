@@ -145,6 +145,7 @@
               },
               "expansion": {
                 "type": "LineBased",
+                "use_combat_unit_positions": true,
                 "iterations": 1,
                 "prune_iterations": 1
               }
