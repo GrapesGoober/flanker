@@ -4,7 +4,7 @@ from itertools import pairwise
 from flanker_ai.config_models import PointsConfig
 from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
@@ -178,13 +178,13 @@ class AiPointsExpansionService:
         return list(waypoints)
 
     @staticmethod
-    def get_points(
-        gs: GameState,
-        config: PointsConfig,
-        initial_points: list[Vec2] = [],
-    ) -> list[Vec2]:
+    def get_points(gs: GameState, config: PointsConfig) -> list[Vec2]:
 
-        waypoints: list[Vec2] = list(initial_points)
+        waypoints: list[Vec2] = []
+
+        # Use combat units as initial points
+        for _, _, transform in gs.query(CombatUnit, Transform):
+            waypoints.append(transform.position)
 
         # Creates initial points given the config
         initial_points_config = config.initial_points
