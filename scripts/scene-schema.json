@@ -231,43 +231,6 @@
       "title": "Entity",
       "type": "object"
     },
-    "ExpansionConfig": {
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "const": "LineBased",
-              "type": "string"
-            },
-            {
-              "const": "Polygonal",
-              "type": "string"
-            }
-          ],
-          "title": "Type"
-        },
-        "use_combat_unit_positions": {
-          "title": "Use Combat Unit Positions",
-          "type": "boolean"
-        },
-        "iterations": {
-          "title": "Iterations",
-          "type": "integer"
-        },
-        "prune_iterations": {
-          "title": "Prune Iterations",
-          "type": "integer"
-        }
-      },
-      "required": [
-        "type",
-        "use_combat_unit_positions",
-        "iterations",
-        "prune_iterations"
-      ],
-      "title": "ExpansionConfig",
-      "type": "object"
-    },
     "Faction": {
       "enum": [
         "BLUE",
@@ -308,6 +271,20 @@
       ],
       "title": "FireOutcomes",
       "type": "string"
+    },
+    "FlagPruneConfig": {
+      "properties": {
+        "type": {
+          "const": "FlagPrune",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "FlagPruneConfig",
+      "type": "object"
     },
     "GridConfig": {
       "properties": {
@@ -379,6 +356,20 @@
       "title": "InitiativeState",
       "type": "object"
     },
+    "LineBasedExpansionConfig": {
+      "properties": {
+        "type": {
+          "const": "LineBased",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "LineBasedExpansionConfig",
+      "type": "object"
+    },
     "MoveControls": {
       "properties": {
         "move_type": {
@@ -415,22 +406,51 @@
           ],
           "title": "Initial Points"
         },
-        "expansion": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ExpansionConfig"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
+        "use_combat_unit_positions": {
+          "title": "Use Combat Unit Positions",
+          "type": "boolean"
+        },
+        "expansions": {
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/LineBasedExpansionConfig"
+              },
+              {
+                "$ref": "#/$defs/PolygonalExpansionConfig"
+              },
+              {
+                "$ref": "#/$defs/FlagPruneConfig"
+              },
+              {
+                "$ref": "#/$defs/WeightsPruneConfig"
+              }
+            ]
+          },
+          "title": "Expansions",
+          "type": "array"
         }
       },
       "required": [
-        "initial_points"
+        "initial_points",
+        "use_combat_unit_positions",
+        "expansions"
       ],
       "title": "PointsConfig",
+      "type": "object"
+    },
+    "PolygonalExpansionConfig": {
+      "properties": {
+        "type": {
+          "const": "Polygonal",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "PolygonalExpansionConfig",
       "type": "object"
     },
     "RandomConfig": {
@@ -609,6 +629,25 @@
         "path_tolerance"
       ],
       "title": "WaypointsStateConfig",
+      "type": "object"
+    },
+    "WeightsPruneConfig": {
+      "properties": {
+        "type": {
+          "const": "WeightsPrune",
+          "title": "Type",
+          "type": "string"
+        },
+        "remaining_size": {
+          "title": "Remaining Size",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "remaining_size"
+      ],
+      "title": "WeightsPruneConfig",
       "type": "object"
     }
   },

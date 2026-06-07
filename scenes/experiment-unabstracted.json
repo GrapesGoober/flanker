@@ -143,12 +143,29 @@
                 "spacing": 280,
                 "offset": 10
               },
-              "expansion": {
-                "type": "LineBased",
-                "use_combat_unit_positions": true,
-                "iterations": 2,
-                "prune_iterations": 1
-              }
+              "use_combat_unit_positions": true,
+              "expansions": [
+                {
+                  "type": "LineBased"
+                },
+                {
+                  "type": "WeightsPrune",
+                  "remaining_size": 30
+                },
+                {
+                  "type": "FlagPrune"
+                },
+                {
+                  "type": "LineBased"
+                },
+                {
+                  "type": "WeightsPrune",
+                  "remaining_size": 30
+                },
+                {
+                  "type": "FlagPrune"
+                }
+              ]
             }
           }
         }
