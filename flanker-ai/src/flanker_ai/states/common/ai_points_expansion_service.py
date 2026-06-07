@@ -140,9 +140,12 @@ class AiPointsExpansionService:
                 case PointsConfig.PolygonalExpansionConfig():
                     raise NotImplementedError()
                 case PointsConfig.FlagPruneConfig():
-                    waypoints = AiPointsExpansionService.prune_waypoints(
-                        gs=gs,
+                    flag_waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
                         waypoints=waypoints,
+                        remaining_size=expansion_config.flag_size,
+                    )
+                    waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
+                        gs=gs, waypoints=waypoints, flag_waypoints=flag_waypoints
                     )
                 case PointsConfig.WeightsPruneConfig():
                     waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
@@ -169,15 +172,19 @@ class AiPointsExpansionService:
         }
 
     @staticmethod
-    def prune_waypoints(
+    def prune_waypoints_by_flags(
         gs: GameState,
         waypoints: list[Vec2],
+        flag_waypoints: list[Vec2],
     ) -> list[Vec2]:
-        """Removes waypoints that has duplicate flag values."""
+        """
+        Removes waypoints that has duplicate flag values. The current flags
+        used are intervisibility with other waypoints.
+        """
         unique_waypoints: set[Vec2] = set()
         seen_flags: set[int] = set()
         for waypoint in waypoints:
-            flags = AiPointsExpansionService.get_flags(gs, waypoint, waypoints)
+            flags = AiPointsExpansionService.get_flags(gs, waypoint, flag_waypoints)
             # Flags are not hashable by default, so hash this in a dedicated step
             hashed_flags: int = hash(frozenset(flags.items()))
             if hashed_flags not in seen_flags:
@@ -191,7 +198,8 @@ class AiPointsExpansionService:
         remaining_size: int,
     ) -> list[Vec2]:
         """
-        Returns a new set of waypoints where the lower weights are pruned.
+        Removes waypoints with the lowest weight values. The weights
+        currently used is the distance to nearest neighbour.
         """
 
         def get_weight(waypoint: Vec2) -> float:

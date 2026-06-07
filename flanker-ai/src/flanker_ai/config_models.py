@@ -41,6 +41,7 @@ class PointsConfig:
     @dataclass
     class FlagPruneConfig:
         type: Literal["FlagPrune"]
+        flag_size: int
 
     @dataclass
     class WeightsPruneConfig:

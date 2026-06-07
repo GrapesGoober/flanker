@@ -149,21 +149,23 @@
                   "type": "LineBased"
                 },
                 {
-                  "type": "WeightsPrune",
-                  "remaining_size": 30
+                  "type": "FlagPrune",
+                  "flag_size": 10
                 },
                 {
-                  "type": "FlagPrune"
+                  "type": "WeightsPrune",
+                  "remaining_size": 10
                 },
                 {
                   "type": "LineBased"
                 },
                 {
-                  "type": "WeightsPrune",
-                  "remaining_size": 30
+                  "type": "FlagPrune",
+                  "flag_size": 10
                 },
                 {
-                  "type": "FlagPrune"
+                  "type": "WeightsPrune",
+                  "remaining_size": 15
                 }
               ]
             }

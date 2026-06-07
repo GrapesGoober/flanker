@@ -278,10 +278,15 @@
           "const": "FlagPrune",
           "title": "Type",
           "type": "string"
+        },
+        "flag_size": {
+          "title": "Flag Size",
+          "type": "integer"
         }
       },
       "required": [
-        "type"
+        "type",
+        "flag_size"
       ],
       "title": "FlagPruneConfig",
       "type": "object"
