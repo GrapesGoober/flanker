@@ -15,8 +15,10 @@ class AiWaypointsInitializeService:
 
     @staticmethod
     def get_grid_coordinates(
-        gs: GameState, spacing: float, offset: float
-    ) -> list[Vec2]:
+        gs: GameState,
+        spacing: float,
+        offset: float,
+    ) -> set[Vec2]:
 
         # Grab the map boundary
         mask = TerrainFeature.Flag.BOUNDARY
@@ -51,13 +53,13 @@ class AiWaypointsInitializeService:
 
                 x += spacing
             y += spacing
-        return points
+        return set(points)
 
     @staticmethod
     def get_random_coordinates(
         gs: GameState,
         count: int,
-    ) -> list[Vec2]:
+    ) -> set[Vec2]:
         boundary_vertices: list[Vec2] = []
         mask = TerrainFeature.Flag.BOUNDARY
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
@@ -84,4 +86,4 @@ class AiWaypointsInitializeService:
             ):
                 continue
             move_candidates.append(move_candidate)
-        return move_candidates
+        return set(move_candidates)

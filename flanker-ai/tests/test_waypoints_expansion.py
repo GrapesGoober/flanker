@@ -38,7 +38,7 @@ class MockLosSystem(LosSystem):
 @dataclass
 class Fixture:
     gs: GameState
-    waypoints_coodinates: list[Vec2]
+    waypoints_coodinates: set[Vec2]
 
 
 @pytest.fixture
@@ -49,12 +49,6 @@ def fixture() -> Fixture:
         existing=LosSystem,
         replacement=MockLosSystem,
     )
-
-    waypoints_coodinates = [
-        Vec2(10, 10),
-        Vec2(0, 10),
-        Vec2(10, 0),
-    ]
 
     # Terrain passes between wappoints (0, 10) and (10, 10).
     # Intersect at (6, 10)
@@ -86,7 +80,11 @@ def fixture() -> Fixture:
     )
     return Fixture(
         gs=gs,
-        waypoints_coodinates=waypoints_coodinates,
+        waypoints_coodinates={
+            Vec2(10, 10),
+            Vec2(0, 10),
+            Vec2(10, 0),
+        },
     )
 
 
@@ -94,9 +92,6 @@ def test_one_iteration(fixture: Fixture) -> None:
     new_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
         gs=fixture.gs,
         initial_waypoints=fixture.waypoints_coodinates,
-        iterations=1,
-        # There can't be any pruning since LOS is mocked.
-        prune_iterations=0,
     )
     assert set(fixture.waypoints_coodinates).issubset(
         new_waypoints

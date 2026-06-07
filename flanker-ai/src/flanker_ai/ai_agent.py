@@ -153,7 +153,8 @@ class AiAgent:
                             type="Random",
                             count=10,
                         ),
-                        expansion=None,
+                        use_combat_unit_positions=False,
+                        expansions=[],
                     ),
                 )
             case SearchPolicyConfig():
