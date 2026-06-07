@@ -4,6 +4,7 @@ from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 
 
+# TODO: move this into shared common
 class WaypointsFlagService:
     @staticmethod
     def get_flags(
@@ -37,3 +38,19 @@ class WaypointsFlagService:
                 seen_flags.add(hashed_flags)
                 unique_waypoints.add(waypoint)
         return unique_waypoints
+
+    @staticmethod
+    def prune_waypoints_by_weight(
+        waypoints: set[Vec2],
+        remaining_size: int,
+    ) -> set[Vec2]:
+        """
+        Returns a new set of waypoints where the lower weights are pruned.
+        """
+
+        def get_weight(waypoint: Vec2) -> float:
+            distances = ((other - waypoint).length() for other in waypoints)
+            return min(distances)
+
+        sorted_waypoints = sorted(waypoints, key=get_weight, reverse=True)
+        return set(sorted_waypoints[:remaining_size])

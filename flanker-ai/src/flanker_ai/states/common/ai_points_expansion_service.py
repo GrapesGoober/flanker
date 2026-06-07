@@ -175,6 +175,9 @@ class AiPointsExpansionService:
             # Prune some waypoints to reduce combinatorial explosion
             for _ in range(prune_iterations):
                 waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
+                waypoints = WaypointsFlagService.prune_waypoints_by_weight(
+                    waypoints=waypoints, remaining_size=10
+                )
         return list(waypoints)
 
     @staticmethod
