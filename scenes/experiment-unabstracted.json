@@ -152,6 +152,10 @@
                 {
                   "type": "FlagPrune",
                   "flag_size": 10
+                },
+                {
+                  "type": "WeightsPrune",
+                  "remaining_size": 20
                 }
               ]
             }

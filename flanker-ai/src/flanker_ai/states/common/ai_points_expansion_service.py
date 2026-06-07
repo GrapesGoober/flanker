@@ -215,9 +215,27 @@ class AiPointsExpansionService:
         currently used is the distance to nearest neighbour.
         """
 
-        def get_weight(waypoint: Vec2) -> float:
-            distances = ((other - waypoint).length() for other in waypoints)
-            return min(distances)
+        # Early exit if we don't need to prune anything
+        if len(waypoints) <= remaining_size or not waypoints:
+            return list(waypoints)
 
-        sorted_waypoints = sorted(waypoints, key=get_weight, reverse=True)
-        return sorted_waypoints[:remaining_size]
+        # Work on a copy so we don't mutate the input list
+        current_waypoints = list(waypoints)
+
+        def get_weight(waypoint: Vec2, pool: list[Vec2]) -> float:
+            distances = (
+                (other_waypoint - waypoint).length()
+                for other_waypoint in pool
+                if other_waypoint is not waypoint
+            )
+            return min(distances, default=float("inf"))
+
+        # Keep removing the worst waypoint until we hit the target size
+        while len(current_waypoints) > remaining_size:
+            # Find the waypoint with the absolute minimum distance to any neighbor
+            worst_waypoint = min(
+                current_waypoints, key=lambda wp: get_weight(wp, current_waypoints)
+            )
+            current_waypoints.remove(worst_waypoint)
+
+        return current_waypoints
