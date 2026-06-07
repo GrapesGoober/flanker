@@ -157,8 +157,14 @@ class AiPointsExpansionService:
                         waypoints=waypoints,
                         remaining_size=expansion_config.flag_size,
                     )
+                    # Include combat unit positions to help with smarter pruning
+                    if config.use_combat_unit_positions == True:
+                        for _, _, transform in gs.query(CombatUnit, Transform):
+                            flag_waypoints.append(transform.position)
                     waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
-                        gs=gs, waypoints=waypoints, flag_waypoints=flag_waypoints
+                        gs=gs,
+                        waypoints=waypoints,
+                        flag_waypoints=flag_waypoints,
                     )
                 case PointsConfig.WeightsPruneConfig():
                     waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
