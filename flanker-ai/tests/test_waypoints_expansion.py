@@ -38,7 +38,7 @@ class MockLosSystem(LosSystem):
 @dataclass
 class Fixture:
     gs: GameState
-    waypoints_coodinates: set[Vec2]
+    waypoints_coodinates: list[Vec2]
 
 
 @pytest.fixture
@@ -80,11 +80,11 @@ def fixture() -> Fixture:
     )
     return Fixture(
         gs=gs,
-        waypoints_coodinates={
+        waypoints_coodinates=[
             Vec2(10, 10),
             Vec2(0, 10),
             Vec2(10, 0),
-        },
+        ],
     )
 
 

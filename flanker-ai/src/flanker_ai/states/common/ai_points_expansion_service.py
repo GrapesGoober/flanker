@@ -22,8 +22,8 @@ class AiPointsExpansionService:
     @staticmethod
     def expand_waypoints_line_based(
         gs: GameState,
-        initial_waypoints: set[Vec2],
-    ) -> set[Vec2]:
+        initial_waypoints: list[Vec2],
+    ) -> list[Vec2]:
         """
         Given a list of waypoints, expand and create more waypoints
         representing move interrupt candidates.
@@ -96,7 +96,7 @@ class AiPointsExpansionService:
 
         # The 'or' operator |= is set concat
         waypoints |= new_waypoints
-        return waypoints
+        return list(waypoints)
 
     @staticmethod
     def get_points(
@@ -105,11 +105,11 @@ class AiPointsExpansionService:
     ) -> list[Vec2]:
 
         # Creates initial points given the config
-        waypoints: set[Vec2]
+        waypoints: list[Vec2]
         initial_points_config = config.initial_points
         match initial_points_config:
             case PointsConfig.HandDrawnConfig():
-                waypoints = set(initial_points_config.points)
+                waypoints = initial_points_config.points
             case PointsConfig.GridConfig():
                 waypoints = AiWaypointsInitializeService.get_grid_coordinates(
                     gs=gs,
@@ -127,7 +127,7 @@ class AiPointsExpansionService:
         # Include combat unit to help with expansion
         if config.use_combat_unit_positions == True:
             for _, _, transform in gs.query(CombatUnit, Transform):
-                waypoints.add(transform.position)
+                waypoints.append(transform.position)
 
         # Expands the points given the config
         for expansion_config in config.expansions:
@@ -156,7 +156,7 @@ class AiPointsExpansionService:
     def get_flags(
         gs: GameState,
         waypoint: Vec2,
-        all_waypoints: set[Vec2],
+        all_waypoints: list[Vec2],
     ) -> dict[Vec2, bool]:
         """Return visibility flags of this waypoint against all other waypoints."""
         los_system = gs.get(LosSystem)
@@ -171,8 +171,8 @@ class AiPointsExpansionService:
     @staticmethod
     def prune_waypoints(
         gs: GameState,
-        waypoints: set[Vec2],
-    ) -> set[Vec2]:
+        waypoints: list[Vec2],
+    ) -> list[Vec2]:
         """Removes waypoints that has duplicate flag values."""
         unique_waypoints: set[Vec2] = set()
         seen_flags: set[int] = set()
@@ -183,13 +183,13 @@ class AiPointsExpansionService:
             if hashed_flags not in seen_flags:
                 seen_flags.add(hashed_flags)
                 unique_waypoints.add(waypoint)
-        return unique_waypoints
+        return list(unique_waypoints)
 
     @staticmethod
     def prune_waypoints_by_weight(
-        waypoints: set[Vec2],
+        waypoints: list[Vec2],
         remaining_size: int,
-    ) -> set[Vec2]:
+    ) -> list[Vec2]:
         """
         Returns a new set of waypoints where the lower weights are pruned.
         """
@@ -199,4 +199,4 @@ class AiPointsExpansionService:
             return min(distances)
 
         sorted_waypoints = sorted(waypoints, key=get_weight, reverse=True)
-        return set(sorted_waypoints[:remaining_size])
+        return sorted_waypoints[:remaining_size]
