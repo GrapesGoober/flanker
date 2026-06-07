@@ -214,21 +214,33 @@ class AiPointsExpansionService:
         Removes waypoints with the lowest weight values. The weights
         currently used is the distance to nearest neighbour.
         """
-
-        # Early exit if we don't need to prune anything
-        if len(waypoints) <= remaining_size or not waypoints:
-            return list(waypoints)
-
-        # Work on a copy so we don't mutate the input list
         current_waypoints = list(waypoints)
 
+        waypoint_weights: dict[Vec2, float] = {}
+        nearest_to: dict[Vec2, list[Vec2]] = {}
+
         def get_weight(waypoint: Vec2, pool: list[Vec2]) -> float:
-            distances = (
-                (other_waypoint - waypoint).length()
-                for other_waypoint in pool
-                if other_waypoint is not waypoint
-            )
-            return min(distances, default=float("inf"))
+            if waypoint in waypoint_weights:
+                return waypoint_weights[waypoint]
+
+            # Cache miss, loop through pool to recalculate
+            # min dist and update nearest neighbors
+            min_dist = float("inf")
+            closest_neighbor = None
+            for other in pool:
+                if other is waypoint:
+                    continue
+                dist = (other - waypoint).length()
+                if dist < min_dist:
+                    min_dist = dist
+                    closest_neighbor = other
+
+            waypoint_weights[waypoint] = min_dist
+            if closest_neighbor is not None:
+                if closest_neighbor not in nearest_to:
+                    nearest_to[closest_neighbor] = []
+                nearest_to[closest_neighbor].append(waypoint)
+            return min_dist
 
         # Keep removing the worst waypoint until we hit the target size
         while len(current_waypoints) > remaining_size:
@@ -237,5 +249,11 @@ class AiPointsExpansionService:
                 current_waypoints, key=lambda wp: get_weight(wp, current_waypoints)
             )
             current_waypoints.remove(worst_waypoint)
+
+            # Clear the cache of the affected waypoints
+            waypoint_weights.pop(worst_waypoint)
+            for affected in nearest_to.pop(worst_waypoint, []):
+                if affected in waypoint_weights:
+                    waypoint_weights.pop(affected)
 
         return current_waypoints
