@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import override
 
+import pytest
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
-import pytest
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -91,7 +91,7 @@ def fixture() -> Fixture:
 
 
 def test_one_iteration(fixture: Fixture) -> None:
-    new_waypoints = AiPointsExpansionService.expand_waypoints_interrupt(
+    new_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
         gs=fixture.gs,
         initial_waypoints=fixture.waypoints_coodinates,
         iterations=1,

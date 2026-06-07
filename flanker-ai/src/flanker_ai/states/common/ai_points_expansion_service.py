@@ -1,8 +1,10 @@
+import random
 from itertools import pairwise
 
+from flanker_ai.config_models import PointsConfig
 from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
@@ -57,7 +59,40 @@ class AiPointsExpansionService:
         return points
 
     @staticmethod
-    def expand_waypoints_interrupt(
+    def get_random_coordinates(
+        gs: GameState,
+        count: int,
+    ) -> list[Vec2]:
+        boundary_vertices: list[Vec2] = []
+        mask = TerrainFeature.Flag.BOUNDARY
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
+            if terrain.flag & mask:
+                boundary_vertices = LinearTransform.apply(
+                    terrain.vertices,
+                    transform,
+                )
+                if terrain.is_closed_loop:
+                    boundary_vertices.append(boundary_vertices[0])
+        min_x = int(min(v.x for v in boundary_vertices))
+        max_x = int(max(v.x for v in boundary_vertices))
+        min_y = int(min(v.y for v in boundary_vertices))
+        max_y = int(max(v.y for v in boundary_vertices))
+
+        move_candidates: list[Vec2] = []
+        for _ in range(count):
+            rand_x = random.randrange(min_x, max_x)
+            rand_y = random.randrange(min_y, max_y)
+            move_candidate = Vec2(rand_x, rand_y)
+            if not IntersectGetter.is_inside(
+                point=move_candidate,
+                polygon=boundary_vertices,
+            ):
+                continue
+            move_candidates.append(move_candidate)
+        return move_candidates
+
+    @staticmethod
+    def expand_waypoints_line_based(
         gs: GameState,
         initial_waypoints: list[Vec2],
         iterations: int,
@@ -141,3 +176,48 @@ class AiPointsExpansionService:
             for _ in range(prune_iterations):
                 waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
         return list(waypoints)
+
+    @staticmethod
+    def get_points(gs: GameState, config: PointsConfig) -> list[Vec2]:
+
+        waypoints: list[Vec2] = []
+
+        # Creates initial points given the config
+        initial_points_config = config.initial_points
+        match initial_points_config:
+            case PointsConfig.HandDrawnConfig():
+                waypoints += initial_points_config.points
+            case PointsConfig.GridConfig():
+                waypoints += AiPointsExpansionService.get_grid_coordinates(
+                    gs=gs,
+                    spacing=initial_points_config.spacing,
+                    offset=initial_points_config.offset,
+                )
+            case PointsConfig.RandomConfig():
+                waypoints += AiPointsExpansionService.get_random_coordinates(
+                    gs=gs,
+                    count=initial_points_config.count,
+                )
+            case PointsConfig.VoronoiConfig():
+                raise NotImplementedError()
+
+        # Expands the points given the config
+        expansion_config = config.expansion
+        if expansion_config != None:
+
+            if expansion_config.use_combat_unit_positions:
+                for _, _, transform in gs.query(CombatUnit, Transform):
+                    waypoints.append(transform.position)
+
+            match expansion_config.type:
+                case "LineBased":
+                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+                        gs=gs,
+                        initial_waypoints=waypoints,
+                        iterations=expansion_config.iterations,
+                        prune_iterations=expansion_config.prune_iterations,
+                    )
+                case "Polygonal":
+                    raise NotImplementedError()
+
+        return waypoints

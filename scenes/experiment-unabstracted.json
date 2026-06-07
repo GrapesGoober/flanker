@@ -140,11 +140,12 @@
             "move_candidates": {
               "initial_points": {
                 "type": "GridConfig",
-                "spacing": 290,
+                "spacing": 280,
                 "offset": 10
               },
               "expansion": {
                 "type": "LineBased",
+                "use_combat_unit_positions": true,
                 "iterations": 1,
                 "prune_iterations": 1
               }

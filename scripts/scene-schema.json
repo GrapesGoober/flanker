@@ -246,6 +246,10 @@
           ],
           "title": "Type"
         },
+        "use_combat_unit_positions": {
+          "title": "Use Combat Unit Positions",
+          "type": "boolean"
+        },
         "iterations": {
           "title": "Iterations",
           "type": "integer"
@@ -257,6 +261,7 @@
       },
       "required": [
         "type",
+        "use_combat_unit_positions",
         "iterations",
         "prune_iterations"
       ],
@@ -403,6 +408,9 @@
             },
             {
               "$ref": "#/$defs/VoronoiConfig"
+            },
+            {
+              "$ref": "#/$defs/RandomConfig"
             }
           ],
           "title": "Initial Points"
@@ -423,6 +431,25 @@
         "initial_points"
       ],
       "title": "PointsConfig",
+      "type": "object"
+    },
+    "RandomConfig": {
+      "properties": {
+        "type": {
+          "const": "Random",
+          "title": "Type",
+          "type": "string"
+        },
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "count"
+      ],
+      "title": "RandomConfig",
       "type": "object"
     },
     "SearchPolicyConfig": {
@@ -519,16 +546,7 @@
           "type": "string"
         },
         "move_candidates": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PointsConfig"
-            },
-            {
-              "const": "RandomMoves",
-              "type": "string"
-            }
-          ],
-          "title": "Move Candidates"
+          "$ref": "#/$defs/PointsConfig"
         }
       },
       "required": [

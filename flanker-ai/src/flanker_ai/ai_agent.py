@@ -16,6 +16,7 @@ from flanker_ai.actions import (
 from flanker_ai.components import AiConfigComponent, AiStallCountComponent
 from flanker_ai.config_models import (
     HeuristicPolicyConfig,
+    PointsConfig,
     SearchPolicyConfig,
     UnabstractedStateConfig,
     WaypointsStateConfig,
@@ -25,11 +26,11 @@ from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
-from flanker_ai.states.unabstracted.unabstracted_state_factory import (
-    UnabstractedStateFactory,
+from flanker_ai.states.common.ai_points_expansion_service import (
+    AiPointsExpansionService,
 )
-from flanker_ai.states.waypoints.waypoints_state_factory import WaypointsStateFactory
+from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
+from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
@@ -145,10 +146,16 @@ class AiAgent:
                 # It should not take the same states as search based, since
                 # its use case is different.
                 policy = RandomHeuristicPolicy(gs)
-                move_candidates = list(
-                    UnabstractedStateFactory.get_random_coordinates(gs)
+                state = UnabstractedState(
+                    gs=gs,
+                    move_candidates_config=PointsConfig(
+                        initial_points=PointsConfig.RandomConfig(
+                            type="Random",
+                            count=10,
+                        ),
+                        expansion=None,
+                    ),
                 )
-                state = UnabstractedState(gs, move_candidates)
             case SearchPolicyConfig():
                 match config_component.config.policy_type:
                     case "Expectimax":
@@ -157,12 +164,23 @@ class AiAgent:
                         policy = MinimaxPolicy[Action](depth=4)
                 match config_component.config.state:
                     case UnabstractedStateConfig():
-                        state = UnabstractedStateFactory.create_state(
-                            gs, config_component.config.state
+                        # The unabstracted state uses lazy waypoint expansion
+                        move_config = config_component.config.state.move_candidates
+                        state = UnabstractedState(
+                            gs,
+                            move_candidates_config=move_config,
                         )
                     case WaypointsStateConfig():
-                        state = WaypointsStateFactory.create_state(
-                            gs, config_component.config.state
+                        state_config = config_component.config.state
+                        # TODO Waypoints state doesn't yet have lazy
+                        # waypoint expansion, so it just takes waypoints
+                        waypoints = AiPointsExpansionService.get_points(
+                            gs=gs,
+                            config=state_config.waypoints,
+                        )
+                        state = WaypointsState(
+                            points=waypoints,
+                            path_tolerance=state_config.path_tolerance,
                         )
 
         agent = AiAgent(gs, faction, state, policy)
