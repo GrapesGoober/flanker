@@ -33,6 +33,7 @@ class PointsConfig:
     @dataclass
     class LineBasedExpansionConfig:
         type: Literal["LineBased"]
+        tolerance: float
 
     @dataclass
     class PolygonalExpansionConfig:

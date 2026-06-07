@@ -92,6 +92,7 @@ def test_one_iteration(fixture: Fixture) -> None:
     new_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
         gs=fixture.gs,
         initial_waypoints=fixture.waypoints_coodinates,
+        tolerance=0,
     )
     assert set(fixture.waypoints_coodinates).issubset(
         new_waypoints

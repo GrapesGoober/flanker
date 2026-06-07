@@ -23,6 +23,7 @@ class AiPointsExpansionService:
     def expand_waypoints_line_based(
         gs: GameState,
         initial_waypoints: list[Vec2],
+        tolerance: float,
     ) -> list[Vec2]:
         """
         Given a list of waypoints, expand and create more waypoints
@@ -85,9 +86,20 @@ class AiPointsExpansionService:
                         polyline=los_polygon,
                     )
 
+                # Remove some intersects that are too closely packed
+                unique_intersects: list[Vec2] = []
+                for p in intersects:
+                    if any(
+                        (p - unique_p).length() <= tolerance
+                        for unique_p in unique_intersects
+                    ):
+                        continue  # Skip this point, it's a duplicate/too close
+
+                    unique_intersects.append(p)
+
                 # Loop through each subsegment on this waypoint line pair
                 # and add a new waypoint on the midpoint of subsegment.
-                points_on_line: list[Vec2] = list(set(intersects))
+                points_on_line: list[Vec2] = list(set(unique_intersects))
                 points_on_line.append(waypoint_a)
                 points_on_line.append(waypoint_b)
                 points_on_line.sort(key=lambda p: (waypoint_a - p).length())
@@ -136,6 +148,7 @@ class AiPointsExpansionService:
                     waypoints = AiPointsExpansionService.expand_waypoints_line_based(
                         gs=gs,
                         initial_waypoints=waypoints,
+                        tolerance=expansion_config.tolerance,
                     )
                 case PointsConfig.PolygonalExpansionConfig():
                     raise NotImplementedError()

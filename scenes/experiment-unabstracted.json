@@ -140,32 +140,18 @@
             "move_candidates": {
               "initial_points": {
                 "type": "GridConfig",
-                "spacing": 280,
+                "spacing": 140,
                 "offset": 10
               },
               "use_combat_unit_positions": true,
               "expansions": [
                 {
-                  "type": "LineBased"
+                  "type": "LineBased",
+                  "tolerance": 10
                 },
                 {
                   "type": "FlagPrune",
                   "flag_size": 10
-                },
-                {
-                  "type": "WeightsPrune",
-                  "remaining_size": 10
-                },
-                {
-                  "type": "LineBased"
-                },
-                {
-                  "type": "FlagPrune",
-                  "flag_size": 10
-                },
-                {
-                  "type": "WeightsPrune",
-                  "remaining_size": 15
                 }
               ]
             }

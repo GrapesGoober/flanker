@@ -367,10 +367,15 @@
           "const": "LineBased",
           "title": "Type",
           "type": "string"
+        },
+        "tolerance": {
+          "title": "Tolerance",
+          "type": "number"
         }
       },
       "required": [
-        "type"
+        "type",
+        "tolerance"
       ],
       "title": "LineBasedExpansionConfig",
       "type": "object"
