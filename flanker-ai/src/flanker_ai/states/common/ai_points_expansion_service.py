@@ -1,8 +1,9 @@
-import random
 from itertools import pairwise
 
 from flanker_ai.config_models import PointsConfig
-from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
+from flanker_ai.states.common.ai_waypoints_initialize_service import (
+    AiWaypointsInitializeService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -17,79 +18,6 @@ class AiPointsExpansionService:
     using in-game terrain. These points can be used as a discrete finite
     set of game-relavant coordinates.
     """
-
-    @staticmethod
-    def get_grid_coordinates(
-        gs: GameState, spacing: float, offset: float
-    ) -> list[Vec2]:
-
-        # Grab the map boundary
-        mask = TerrainFeature.Flag.BOUNDARY
-        boundary_vertices: list[Vec2] = []
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-
-        if len(boundary_vertices) < 3:
-            raise ValueError("Can't generate coordinates; boundary terrain missing!")
-
-        # Generates waypoints at spacing within boundary
-        min_x = min(v.x for v in boundary_vertices) + offset
-        max_x = max(v.x for v in boundary_vertices)
-        min_y = min(v.y for v in boundary_vertices) + offset
-        max_y = max(v.y for v in boundary_vertices)
-        points: list[Vec2] = []
-        y = min_y
-        while y <= max_y:
-            x = min_x
-            while x <= max_x:
-                p = Vec2(x, y)
-
-                # Keep only points inside polygon
-                if IntersectGetter.is_inside(p, boundary_vertices):
-                    points.append(p)
-
-                x += spacing
-            y += spacing
-        return points
-
-    @staticmethod
-    def get_random_coordinates(
-        gs: GameState,
-        count: int,
-    ) -> list[Vec2]:
-        boundary_vertices: list[Vec2] = []
-        mask = TerrainFeature.Flag.BOUNDARY
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-        min_x = int(min(v.x for v in boundary_vertices))
-        max_x = int(max(v.x for v in boundary_vertices))
-        min_y = int(min(v.y for v in boundary_vertices))
-        max_y = int(max(v.y for v in boundary_vertices))
-
-        move_candidates: list[Vec2] = []
-        for _ in range(count):
-            rand_x = random.randrange(min_x, max_x)
-            rand_y = random.randrange(min_y, max_y)
-            move_candidate = Vec2(rand_x, rand_y)
-            if not IntersectGetter.is_inside(
-                point=move_candidate,
-                polygon=boundary_vertices,
-            ):
-                continue
-            move_candidates.append(move_candidate)
-        return move_candidates
 
     @staticmethod
     def expand_waypoints_line_based(
@@ -174,8 +102,8 @@ class AiPointsExpansionService:
 
             # Prune some waypoints to reduce combinatorial explosion
             for _ in range(prune_iterations):
-                waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
-                waypoints = WaypointsFlagService.prune_waypoints_by_weight(
+                waypoints = AiPointsExpansionService.prune_waypoints(gs, waypoints)
+                waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
                     waypoints=waypoints, remaining_size=10
                 )
         return list(waypoints)
@@ -191,13 +119,13 @@ class AiPointsExpansionService:
             case PointsConfig.HandDrawnConfig():
                 waypoints += initial_points_config.points
             case PointsConfig.GridConfig():
-                waypoints += AiPointsExpansionService.get_grid_coordinates(
+                waypoints += AiWaypointsInitializeService.get_grid_coordinates(
                     gs=gs,
                     spacing=initial_points_config.spacing,
                     offset=initial_points_config.offset,
                 )
             case PointsConfig.RandomConfig():
-                waypoints += AiPointsExpansionService.get_random_coordinates(
+                waypoints += AiWaypointsInitializeService.get_random_coordinates(
                     gs=gs,
                     count=initial_points_config.count,
                 )
@@ -224,3 +152,52 @@ class AiPointsExpansionService:
                     raise NotImplementedError()
 
         return waypoints
+
+    @staticmethod
+    def get_flags(
+        gs: GameState,
+        waypoint: Vec2,
+        all_waypoints: set[Vec2],
+    ) -> dict[Vec2, bool]:
+        """Return visibility flags of this waypoint against all other waypoints."""
+        los_system = gs.get(LosSystem)
+        waypoint_los_polygon = los_system.get_los_polygon(gs, waypoint)
+        return {
+            other_waypoint: IntersectGetter.is_inside(
+                other_waypoint, waypoint_los_polygon
+            )
+            for other_waypoint in all_waypoints
+        }
+
+    @staticmethod
+    def prune_waypoints(
+        gs: GameState,
+        waypoints: set[Vec2],
+    ) -> set[Vec2]:
+        """Removes waypoints that has duplicate flag values."""
+        unique_waypoints: set[Vec2] = set()
+        seen_flags: set[int] = set()
+        for waypoint in waypoints:
+            flags = AiPointsExpansionService.get_flags(gs, waypoint, waypoints)
+            # Flags are not hashable by default, so hash this in a dedicated step
+            hashed_flags: int = hash(frozenset(flags.items()))
+            if hashed_flags not in seen_flags:
+                seen_flags.add(hashed_flags)
+                unique_waypoints.add(waypoint)
+        return unique_waypoints
+
+    @staticmethod
+    def prune_waypoints_by_weight(
+        waypoints: set[Vec2],
+        remaining_size: int,
+    ) -> set[Vec2]:
+        """
+        Returns a new set of waypoints where the lower weights are pruned.
+        """
+
+        def get_weight(waypoint: Vec2) -> float:
+            distances = ((other - waypoint).length() for other in waypoints)
+            return min(distances)
+
+        sorted_waypoints = sorted(waypoints, key=get_weight, reverse=True)
+        return set(sorted_waypoints[:remaining_size])
