@@ -1,3 +1,5 @@
+from math import isclose
+
 import numpy as np
 from flanker_core.models.vec2 import Vec2
 from numba import njit  # type: ignore
@@ -51,9 +53,44 @@ class IntersectGetter:
             line_end=np.array([line[1].x, line[1].y], dtype=np.float64),
             polyline=np.array([[v.x, v.y] for v in polyline], dtype=np.float64),
         )
-        # Convert to Vec2
-        points = [Vec2(float(x), float(y)) for x, y in intersections]
-        return set(points)
+        # Convert it back to Vec2
+        intersections = {Vec2(float(x), float(y)) for x, y in intersections}
+
+        # Filter intersections for vertex clipping
+        line_vector = line[1] - line[0]
+        for intersection in list(intersections):  # Loop on separate list
+            # Find neighboring points of this vertex
+            neighbors: list[Vec2] = []
+            for i, vertex in enumerate(polyline):
+                if intersection.is_close(vertex):
+                    if i > 0:
+                        neighbors.append(polyline[i - 1])
+                    if i < len(polyline) - 1:
+                        neighbors.append(polyline[i + 1])
+            if len(neighbors) == 0:
+                continue
+
+            # Find whether the neighbors lie on what side of the line segment
+            has_positive = False
+            has_negative = False
+            for point in neighbors:
+                target_vector = point - line[0]
+                cross_product = line_vector.cross(target_vector)
+                # Collinear points belong neither side
+                if isclose(cross_product, 0.0, abs_tol=1e-9):
+                    continue
+                if cross_product > 0:
+                    has_positive = True
+                elif cross_product < 0:
+                    has_negative = True
+                if has_positive and has_negative:
+                    break
+            # If all of the neighboring points of this vertex are
+            # all on one side, consider this vertex clipping.
+            if has_positive != has_negative:
+                intersections.remove(intersection)
+
+        return set(intersections)
 
     @staticmethod
     @njit(cache=True)  # type: ignore

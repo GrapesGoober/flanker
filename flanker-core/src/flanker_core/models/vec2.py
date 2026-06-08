@@ -51,9 +51,12 @@ class Vec2:
             self.x * sin_a + self.y * cos_a,
         )
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Vec2):
-            return NotImplemented
+    def is_close(self, other: "Vec2") -> bool:
         x_close = isclose(self.x, other.x, abs_tol=1e-9)
         y_close = isclose(self.y, other.y, abs_tol=1e-9)
         return x_close and y_close
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vec2):
+            return NotImplemented
+        return self.is_close(other)
