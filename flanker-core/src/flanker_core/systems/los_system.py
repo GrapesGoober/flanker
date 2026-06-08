@@ -18,8 +18,7 @@ class _TerrainIntersection:
     """Represents intersection between line and terrain feature."""
 
     point: Vec2
-    terrain: TerrainFeature
-    terrain_id: UUID
+    is_vertex_clipping: bool
 
 
 @dataclass
@@ -235,7 +234,6 @@ class LosSystem:
         gs: GameState,
         spotter_pos: Vec2,
         radius: float = 1000,
-        jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
         los_system = gs.get(LosSystem)
@@ -261,29 +259,34 @@ class LosSystem:
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
             ray = direction * radius
-            # Instead of casting one ray, casts two rays slightly to the left and right.
-            # This prevents boundary sensitivity when casting rays at the vertices.
-            jitter = direction.rotated(1.5708) * jitter_size
-            left_point = spotter_pos - jitter
-            right_point = spotter_pos + jitter
-            for point in [left_point, right_point]:
-                intersects = sorted(
-                    los_system._get_terrain_intersects(
-                        line=(point, point + ray),
-                        terrains=terrains,
-                    ),
-                    key=lambda i: (i.point - spotter_pos).length(),
-                )
-                # Choose which point from the intersects to append
-                if intersects:
-                    # Selects the second point to allow see-into terrain
-                    if len(intersects) > 1:
-                        new_point = intersects[1].point
-                    else:
-                        new_point = intersects[0].point
-                else:  # No intersects, use fallback point using the ray
-                    new_point = spotter_pos + ray
+            intersects = sorted(
+                los_system._get_terrain_intersects(
+                    line=(spotter_pos, spotter_pos + ray),
+                    terrains=terrains,
+                    filter_vertex_clipping=False,
+                ),
+                key=lambda i: (i.point - spotter_pos).length(),
+            )
 
+            # Choose points from the intersects to concat
+            new_points: list[Vec2] = []
+            if len(intersects) != 0:
+                intersection_count = 0
+                for intersect in intersects:
+                    # FIXME the ordering whether to add vertex
+                    # before or after the terrain intersect point
+                    # actually matters.
+                    if intersect.is_vertex_clipping:
+                        new_points.append(intersect.point)
+                    elif intersection_count == 0:
+                        intersection_count += 1
+                    elif intersection_count == 1:
+                        new_points.append(intersect.point)
+                        break
+            else:  # No intersects, use fallback point using the ray
+                new_points.append(spotter_pos + ray)
+
+            for new_point in new_points:
                 # If the new point is close enough to the target vertex,
                 # assume that the point is aimed there and lands close enough
                 if (new_point - vert).length() < 1e-3:
@@ -351,18 +354,24 @@ class LosSystem:
     def _get_terrain_intersects(
         line: tuple[Vec2, Vec2],
         terrains: list[_Terrain],
+        filter_vertex_clipping: bool,
     ) -> Iterable[_TerrainIntersection]:
         """Yields unsorted intersections between the line segment and terrain."""
         for terrain in terrains:
             points = IntersectGetter.get_intersects(
                 line=line,
                 polyline=terrain.vertices,
+                filter_vertex_clipping=filter_vertex_clipping,
             )
             for point in points:
                 yield _TerrainIntersection(
-                    point,
-                    terrain.terrain_feature,
-                    terrain.terrain_id,
+                    point=point,
+                    is_vertex_clipping=IntersectGetter.is_vertex_clipping(
+                        line_start=line[0],
+                        line_vector=line[1] - line[0],
+                        intersection=point,
+                        polyline=terrain.vertices,
+                    ),
                 )
 
     @staticmethod

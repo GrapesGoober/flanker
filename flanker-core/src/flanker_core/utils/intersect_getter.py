@@ -37,6 +37,7 @@ class IntersectGetter:
     def get_intersects(
         line: tuple[Vec2, Vec2],
         polyline: list[Vec2],
+        filter_vertex_clipping: bool = True,
     ) -> set[Vec2]:
         """
         Returns intersection points between a line and a polyline.
@@ -57,15 +58,16 @@ class IntersectGetter:
         intersections = {Vec2(float(x), float(y)) for x, y in intersections}
 
         # Filter intersections for vertex clipping.
-        line_vector = line[1] - line[0]
-        for intersection in list(intersections):  # Loop on separate list
-            if IntersectGetter.is_vertex_clipping(
-                line_start=line[0],
-                line_vector=line_vector,
-                intersection=intersection,
-                polyline=polyline,
-            ):
-                intersections.remove(intersection)
+        if filter_vertex_clipping:
+            line_vector = line[1] - line[0]
+            for intersection in list(intersections):  # Loop on separate list
+                if IntersectGetter.is_vertex_clipping(
+                    line_start=line[0],
+                    line_vector=line_vector,
+                    intersection=intersection,
+                    polyline=polyline,
+                ):
+                    intersections.remove(intersection)
 
         return intersections
 
