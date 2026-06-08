@@ -18,6 +18,9 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
 
+# This is a bandaid fix for LOS polygon imprecision
+_MOVE_INTERRUPT_ATOL = 10
+
 
 @dataclass
 class _MoveActionResult:
@@ -45,7 +48,9 @@ class MoveSystem:
 
     @staticmethod
     def _validate_move(
-        gs: GameState, unit_id: UUID, to: Vec2
+        gs: GameState,
+        unit_id: UUID,
+        to: Vec2,
     ) -> Literal[True] | InvalidAction:
         """Returns `True` if move action can be performed."""
 
@@ -101,7 +106,9 @@ class MoveSystem:
             if interrupt_pos is not None:
                 # If this position already exists, add a the spotter
                 for existing_pos, spotters in interrupt_candidates:
-                    if existing_pos == interrupt_pos:
+                    if existing_pos.is_close(
+                        interrupt_pos, abs_tol=_MOVE_INTERRUPT_ATOL
+                    ):
                         spotters.append(spotter_id)
                         break
                 else:  # Otherwise add a new candidate entry

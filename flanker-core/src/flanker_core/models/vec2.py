@@ -51,9 +51,17 @@ class Vec2:
             self.x * sin_a + self.y * cos_a,
         )
 
+    def is_close(
+        self,
+        other: "Vec2",
+        abs_tol: float = 1e-9,
+        rel_tol: float = 1e-9,
+    ) -> bool:
+        x_close = isclose(self.x, other.x, abs_tol=abs_tol, rel_tol=rel_tol)
+        y_close = isclose(self.y, other.y, abs_tol=abs_tol, rel_tol=rel_tol)
+        return x_close and y_close
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Vec2):
             return NotImplemented
-        x_close = isclose(self.x, other.x, abs_tol=1e-9)
-        y_close = isclose(self.y, other.y, abs_tol=1e-9)
-        return x_close and y_close
+        return self.is_close(other)
