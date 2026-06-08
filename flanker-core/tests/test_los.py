@@ -30,7 +30,7 @@ def fixture() -> Fixture:
     gs = GameState()
     register_systems(gs)
     gs.add_entity(InitiativeState())
-    # Two entities
+    # Two combat units
     target_id = gs.add_entity(
         target_transform := Transform(position=Vec2(0, -10)),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
@@ -67,6 +67,19 @@ def fixture() -> Fixture:
                 Vec2(-5, 5),
             ],
             flag=flag,
+        ),
+    )
+    # 40x40 boundary box
+    gs.add_entity(
+        Transform(position=Vec2(0, 0), degrees=0),
+        TerrainFeature(
+            vertices=[
+                Vec2(40, 40),
+                Vec2(40, -40),
+                Vec2(-40, -40),
+                Vec2(-40, 40),
+            ],
+            flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
         ),
     )
 
@@ -136,3 +149,21 @@ def test_los_both_inside_terrain(fixture: Fixture) -> None:
         fixture.target_transform.position,
     )
     assert has_los == True, "Expects LOS as both are in terrain"
+
+
+def test_los_polygon(fixture: Fixture) -> None:
+    los_system = fixture.gs.get(LosSystem)
+    spotter_transform = fixture.gs.get_component(fixture.spotter_id, Transform)
+    los_polygon = los_system.get_los_polygon(fixture.gs, spotter_transform.position)
+    # TODO floating points imprecision would be cleared up by removing jitter
+    assert los_polygon == [
+        Vec2(40, 40),
+        Vec2(-40, 40),
+        Vec2(-40, 10.000001),
+        Vec2(0, 10),
+        Vec2(0, 0),
+        Vec2(10, 0),
+        Vec2(-9.999998881966011, -40),
+        Vec2(40, -40),
+        Vec2(40, 40),
+    ]
