@@ -223,6 +223,9 @@ class AiPointsExpansionService:
         Removes waypoints with the lowest weight values. The weights
         currently used is the distance to nearest neighbour.
         """
+        if remaining_size == 0:
+            return []
+
         current_waypoints = list(waypoints)
 
         # Maintain a cache of weights and a lookup of nearest neighbor.
