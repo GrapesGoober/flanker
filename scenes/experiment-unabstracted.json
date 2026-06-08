@@ -150,8 +150,7 @@
                   "tolerance": 10
                 },
                 {
-                  "type": "FlagPrune",
-                  "flag_size": 0
+                  "type": "FlagPrune"
                 }
               ]
             }
