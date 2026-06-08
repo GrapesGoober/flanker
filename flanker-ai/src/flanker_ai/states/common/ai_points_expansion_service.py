@@ -1,8 +1,9 @@
-import random
 from itertools import pairwise
 
 from flanker_ai.config_models import PointsConfig
-from flanker_ai.states.waypoints.waypoints_flag_service import WaypointsFlagService
+from flanker_ai.states.common.ai_waypoints_initialize_service import (
+    AiWaypointsInitializeService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -19,84 +20,76 @@ class AiPointsExpansionService:
     """
 
     @staticmethod
-    def get_grid_coordinates(
-        gs: GameState, spacing: float, offset: float
-    ) -> list[Vec2]:
-
-        # Grab the map boundary
-        mask = TerrainFeature.Flag.BOUNDARY
-        boundary_vertices: list[Vec2] = []
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-
-        if len(boundary_vertices) < 3:
-            raise ValueError("Can't generate coordinates; boundary terrain missing!")
-
-        # Generates waypoints at spacing within boundary
-        min_x = min(v.x for v in boundary_vertices) + offset
-        max_x = max(v.x for v in boundary_vertices)
-        min_y = min(v.y for v in boundary_vertices) + offset
-        max_y = max(v.y for v in boundary_vertices)
-        points: list[Vec2] = []
-        y = min_y
-        while y <= max_y:
-            x = min_x
-            while x <= max_x:
-                p = Vec2(x, y)
-
-                # Keep only points inside polygon
-                if IntersectGetter.is_inside(p, boundary_vertices):
-                    points.append(p)
-
-                x += spacing
-            y += spacing
-        return points
-
-    @staticmethod
-    def get_random_coordinates(
+    def get_points(
         gs: GameState,
-        count: int,
+        config: PointsConfig,
     ) -> list[Vec2]:
-        boundary_vertices: list[Vec2] = []
-        mask = TerrainFeature.Flag.BOUNDARY
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-        min_x = int(min(v.x for v in boundary_vertices))
-        max_x = int(max(v.x for v in boundary_vertices))
-        min_y = int(min(v.y for v in boundary_vertices))
-        max_y = int(max(v.y for v in boundary_vertices))
 
-        move_candidates: list[Vec2] = []
-        for _ in range(count):
-            rand_x = random.randrange(min_x, max_x)
-            rand_y = random.randrange(min_y, max_y)
-            move_candidate = Vec2(rand_x, rand_y)
-            if not IntersectGetter.is_inside(
-                point=move_candidate,
-                polygon=boundary_vertices,
-            ):
-                continue
-            move_candidates.append(move_candidate)
-        return move_candidates
+        # Creates initial points given the config
+        waypoints: list[Vec2]
+        initial_points_config = config.initial_points
+        match initial_points_config:
+            case PointsConfig.HandDrawnConfig():
+                waypoints = initial_points_config.points
+            case PointsConfig.GridConfig():
+                waypoints = AiWaypointsInitializeService.get_grid_coordinates(
+                    gs=gs,
+                    spacing=initial_points_config.spacing,
+                    offset=initial_points_config.offset,
+                )
+            case PointsConfig.RandomConfig():
+                waypoints = AiWaypointsInitializeService.get_random_coordinates(
+                    gs=gs,
+                    count=initial_points_config.count,
+                )
+            case PointsConfig.VoronoiConfig():
+                raise NotImplementedError()
+
+        # Include combat unit to help with expansion
+        if config.use_combat_unit_positions == True:
+            for _, _, transform in gs.query(CombatUnit, Transform):
+                waypoints.append(transform.position)
+
+        # Expands the points given the config
+        for expansion_config in config.expansions:
+            match expansion_config:
+                case PointsConfig.LineBasedExpansionConfig():
+                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+                        gs=gs,
+                        initial_waypoints=waypoints,
+                        tolerance=expansion_config.tolerance,
+                    )
+                case PointsConfig.PolygonalExpansionConfig():
+                    raise NotImplementedError()
+                case PointsConfig.FlagPruneConfig():
+                    flag_waypoints = (
+                        AiPointsExpansionService._prune_waypoints_by_weight(
+                            waypoints=waypoints,
+                            remaining_size=expansion_config.flag_size,
+                        )
+                    )
+                    # Include combat unit positions to help with smarter pruning
+                    if config.use_combat_unit_positions == True:
+                        for _, _, transform in gs.query(CombatUnit, Transform):
+                            flag_waypoints.append(transform.position)
+                    waypoints = AiPointsExpansionService._prune_waypoints_by_flags(
+                        gs=gs,
+                        waypoints=waypoints,
+                        flag_waypoints=flag_waypoints,
+                    )
+                case PointsConfig.WeightsPruneConfig():
+                    waypoints = AiPointsExpansionService._prune_waypoints_by_weight(
+                        waypoints=waypoints,
+                        remaining_size=expansion_config.remaining_size,
+                    )
+
+        return list(waypoints)
 
     @staticmethod
     def expand_waypoints_line_based(
         gs: GameState,
         initial_waypoints: list[Vec2],
-        iterations: int,
-        prune_iterations: int,
+        tolerance: float,
     ) -> list[Vec2]:
         """
         Given a list of waypoints, expand and create more waypoints
@@ -114,110 +107,158 @@ class AiPointsExpansionService:
                 vertices.append(vertices[0])
             terrain_vertices.append(vertices)
 
-        for _ in range(iterations):
-            processed_pair: list[tuple[Vec2, Vec2]] = []
+        processed_pair: list[tuple[Vec2, Vec2]] = []
 
-            # Loop through each waypoint pair to consider new
-            # waypoint candidates to add. Note that this loop
-            # can't add (mutate) directly to the waypoints set
-            # while looping.
-            new_waypoints: set[Vec2] = set()
-            for waypoint_a in waypoints:
-                for waypoint_b in waypoints:
-                    intersects: list[Vec2] = []
+        # Loop through each waypoint pair to consider new
+        # waypoint candidates to add. Note that this loop
+        # can't add (mutate) directly to the waypoints set
+        # while looping.
+        new_waypoints: set[Vec2] = set()
+        for waypoint_a in waypoints:
+            for waypoint_b in waypoints:
+                intersects: list[Vec2] = []
 
-                    # Ignore redundant pairs.
-                    if waypoint_a == waypoint_b:
-                        continue
-                    if (waypoint_a, waypoint_b) in processed_pair:
-                        continue
-                    if (waypoint_b, waypoint_a) in processed_pair:
-                        continue
-                    processed_pair.append((waypoint_a, waypoint_b))
+                # Ignore redundant pairs.
+                if waypoint_a == waypoint_b:
+                    continue
+                if (waypoint_a, waypoint_b) in processed_pair:
+                    continue
+                if (waypoint_b, waypoint_a) in processed_pair:
+                    continue
+                processed_pair.append((waypoint_a, waypoint_b))
 
-                    # Check against all terrain for intersections.
-                    for terrain in terrain_vertices:
-                        intersects += IntersectGetter.get_intersects(
-                            line=(waypoint_a, waypoint_b),
-                            polyline=terrain,
+                # Check against all terrain for intersections.
+                for terrain in terrain_vertices:
+                    intersects += IntersectGetter.get_intersects(
+                        line=(waypoint_a, waypoint_b),
+                        polyline=terrain,
+                    )
+
+                # Check against all other waypoints for interrupts.
+                for other_waypoint in waypoints:
+                    if other_waypoint in [waypoint_a, waypoint_b]:
+                        continue
+
+                    if other_waypoint not in waypoints_los_polygon:
+                        waypoints_los_polygon[other_waypoint] = (
+                            los_system.get_los_polygon(gs, other_waypoint)
                         )
+                    los_polygon = waypoints_los_polygon[other_waypoint]
 
-                    # Check against all other waypoints for interrupts.
-                    for other_waypoint in waypoints:
-                        if other_waypoint in [waypoint_a, waypoint_b]:
-                            continue
+                    # For now, consider polygon-edge as interrupts.
+                    # Let's ignore FOV constraints for now.
+                    intersects += IntersectGetter.get_intersects(
+                        line=(waypoint_a, waypoint_b),
+                        polyline=los_polygon,
+                    )
 
-                        if other_waypoint not in waypoints_los_polygon:
-                            waypoints_los_polygon[other_waypoint] = (
-                                los_system.get_los_polygon(gs, other_waypoint)
-                            )
-                        los_polygon = waypoints_los_polygon[other_waypoint]
+                # Remove some intersects that are too closely packed
+                unique_intersects: list[Vec2] = []
+                for p in intersects:
+                    if any(
+                        (p - unique_p).length() <= tolerance
+                        for unique_p in unique_intersects
+                    ):
+                        continue
+                    unique_intersects.append(p)
 
-                        # For now, consider polygon-edge as interrupts.
-                        # Let's ignore FOV constraints for now.
-                        intersects += IntersectGetter.get_intersects(
-                            line=(waypoint_a, waypoint_b),
-                            polyline=los_polygon,
-                        )
+                # Loop through each subsegment on this waypoint line pair
+                # and add a new waypoint on the midpoint of subsegment.
+                points_on_line: list[Vec2] = list(set(unique_intersects))
+                points_on_line.append(waypoint_a)
+                points_on_line.append(waypoint_b)
+                points_on_line.sort(key=lambda p: (waypoint_a - p).length())
+                for left_point, right_point in pairwise(points_on_line):
+                    new_waypoints.add((left_point + right_point) / 2)
 
-                    # Loop through each subsegment on this waypoint line pair
-                    # and add a new waypoint on the midpoint of subsegment.
-                    points_on_line: list[Vec2] = list(set(intersects))
-                    points_on_line.append(waypoint_a)
-                    points_on_line.append(waypoint_b)
-                    points_on_line.sort(key=lambda p: (waypoint_a - p).length())
-                    for left_point, right_point in pairwise(points_on_line):
-                        new_waypoints.add((left_point + right_point) / 2)
-
-            # The 'or' operator |= is set concat
-            waypoints |= new_waypoints
-
-            # Prune some waypoints to reduce combinatorial explosion
-            for _ in range(prune_iterations):
-                waypoints = WaypointsFlagService.prune_waypoints(gs, waypoints)
+        # The 'or' operator |= is set concat
+        waypoints |= new_waypoints
         return list(waypoints)
 
     @staticmethod
-    def get_points(gs: GameState, config: PointsConfig) -> list[Vec2]:
+    def _get_flags(
+        gs: GameState,
+        waypoint: Vec2,
+        flag_waypoints: list[Vec2],
+    ) -> dict[Vec2, bool]:
+        """
+        Return visibility mapping of this waypoint against other flag waypoints.
+        """
+        los_system = gs.get(LosSystem)
+        waypoint_los_polygon = los_system.get_los_polygon(gs, waypoint)
+        return {
+            other_waypoint: IntersectGetter.is_inside(
+                other_waypoint, waypoint_los_polygon
+            )
+            for other_waypoint in flag_waypoints
+        }
 
-        waypoints: list[Vec2] = []
+    @staticmethod
+    def _prune_waypoints_by_flags(
+        gs: GameState,
+        waypoints: list[Vec2],
+        flag_waypoints: list[Vec2],
+    ) -> list[Vec2]:
+        """
+        Removes waypoints that has duplicate flag values. The current flags
+        used are intervisibility with other waypoints.
+        """
+        unique_waypoints: set[Vec2] = set()
+        seen_flags: set[int] = set()
+        for waypoint in waypoints:
+            flags = AiPointsExpansionService._get_flags(gs, waypoint, flag_waypoints)
+            # Flags are not hashable by default, so hash this in a dedicated step
+            hashed_flags: int = hash(frozenset(flags.items()))
+            if hashed_flags not in seen_flags:
+                seen_flags.add(hashed_flags)
+                unique_waypoints.add(waypoint)
+        return list(unique_waypoints)
 
-        # Creates initial points given the config
-        initial_points_config = config.initial_points
-        match initial_points_config:
-            case PointsConfig.HandDrawnConfig():
-                waypoints += initial_points_config.points
-            case PointsConfig.GridConfig():
-                waypoints += AiPointsExpansionService.get_grid_coordinates(
-                    gs=gs,
-                    spacing=initial_points_config.spacing,
-                    offset=initial_points_config.offset,
-                )
-            case PointsConfig.RandomConfig():
-                waypoints += AiPointsExpansionService.get_random_coordinates(
-                    gs=gs,
-                    count=initial_points_config.count,
-                )
-            case PointsConfig.VoronoiConfig():
-                raise NotImplementedError()
+    @staticmethod
+    def _prune_waypoints_by_weight(
+        waypoints: list[Vec2],
+        remaining_size: int,
+    ) -> list[Vec2]:
+        """
+        Removes waypoints with the lowest weight values. The weights
+        currently used is the distance to nearest neighbour.
+        """
+        current_waypoints = list(waypoints)
 
-        # Expands the points given the config
-        expansion_config = config.expansion
-        if expansion_config != None:
+        # Maintain a cache of weights and a lookup of nearest neighbor.
+        # The nearest_to helps determine which cache to reset when pruned.
+        waypoint_weights: dict[Vec2, float] = {}
+        nearest_to: dict[Vec2, list[Vec2]] = {}
 
-            if expansion_config.use_combat_unit_positions:
-                for _, _, transform in gs.query(CombatUnit, Transform):
-                    waypoints.append(transform.position)
+        def _get_weight(waypoint: Vec2, pool: list[Vec2]) -> float:
+            if waypoint in waypoint_weights:  # Return from cache if exist
+                return waypoint_weights[waypoint]
 
-            match expansion_config.type:
-                case "LineBased":
-                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
-                        gs=gs,
-                        initial_waypoints=waypoints,
-                        iterations=expansion_config.iterations,
-                        prune_iterations=expansion_config.prune_iterations,
-                    )
-                case "Polygonal":
-                    raise NotImplementedError()
+            # Cache miss, loop through pool to recalculate
+            distance_to_each_waypoint = (
+                ((other - waypoint).length(), other)
+                for other in pool
+                if other is not waypoint
+            )
+            min_dist, closest_neighbor = min(
+                distance_to_each_waypoint,
+                key=lambda i: i[0],
+            )
+            waypoint_weights[waypoint] = min_dist
+            nearest_to.setdefault(closest_neighbor, []).append(waypoint)
+            return min_dist
 
-        return waypoints
+        # Keep removing the worst waypoint until we hit the target size
+        while len(current_waypoints) > remaining_size:
+            worst_waypoint = min(
+                current_waypoints,
+                key=lambda wp: _get_weight(wp, current_waypoints),
+            )
+            current_waypoints.remove(worst_waypoint)
+
+            # Clear the cache of the affected waypoints
+            waypoint_weights.pop(worst_waypoint)
+            for affected in nearest_to.pop(worst_waypoint, []):
+                waypoint_weights.pop(affected, None)
+
+        return current_waypoints
