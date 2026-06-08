@@ -56,41 +56,60 @@ class IntersectGetter:
         # Convert it back to Vec2
         intersections = {Vec2(float(x), float(y)) for x, y in intersections}
 
-        # Filter intersections for vertex clipping
+        # Filter intersections for vertex clipping.
         line_vector = line[1] - line[0]
         for intersection in list(intersections):  # Loop on separate list
-            # Find neighboring points of this vertex
-            neighbors: list[Vec2] = []
-            for i, vertex in enumerate(polyline):
-                if intersection.is_close(vertex):
-                    if i > 0:
-                        neighbors.append(polyline[i - 1])
-                    if i < len(polyline) - 1:
-                        neighbors.append(polyline[i + 1])
-            if len(neighbors) == 0:
-                continue
-
-            # Find whether the neighbors lie on what side of the line segment
-            has_positive = False
-            has_negative = False
-            for point in neighbors:
-                target_vector = point - line[0]
-                cross_product = line_vector.cross(target_vector)
-                # Collinear points belong neither side
-                if isclose(cross_product, 0.0, abs_tol=1e-9):
-                    continue
-                if cross_product > 0:
-                    has_positive = True
-                elif cross_product < 0:
-                    has_negative = True
-                if has_positive and has_negative:
-                    break
-            # If all of the neighboring points of this vertex are
-            # all on one side, consider this vertex clipping.
-            if has_positive != has_negative:
+            if IntersectGetter.is_vertex_clipping(
+                line_start=line[0],
+                line_vector=line_vector,
+                intersection=intersection,
+                polyline=polyline,
+            ):
                 intersections.remove(intersection)
 
-        return set(intersections)
+        return intersections
+
+    @staticmethod
+    def is_vertex_clipping(
+        line_start: Vec2,
+        line_vector: Vec2,
+        intersection: Vec2,
+        polyline: list[Vec2],
+    ) -> bool:
+        """
+        Returns `True` if the given intersection point is a vertex clipping
+        point. Vertex clipping is when an intersect line passes through
+        a polyline vertex exactly but does not enter through the polyline.
+        """
+        # Find neighboring points of this vertex
+        neighbors: list[Vec2] = []
+        for i, vertex in enumerate(polyline):
+            if intersection.is_close(vertex):
+                if i > 0:
+                    neighbors.append(polyline[i - 1])
+                if i < len(polyline) - 1:
+                    neighbors.append(polyline[i + 1])
+        if len(neighbors) == 0:
+            return False
+
+        # Find whether the neighbors lie on what side of the line segment
+        has_positive = False
+        has_negative = False
+        for point in neighbors:
+            target_vector = point - line_start
+            cross_product = line_vector.cross(target_vector)
+            # Collinear points belong neither side
+            if isclose(cross_product, 0.0, abs_tol=1e-9):
+                continue
+            if cross_product > 0:
+                has_positive = True
+            elif cross_product < 0:
+                has_negative = True
+            if has_positive and has_negative:
+                break
+        # If all of the neighboring points of this vertex are
+        # all on one side, consider this vertex clipping.
+        return has_positive != has_negative
 
     @staticmethod
     @njit(cache=True)  # type: ignore
