@@ -159,8 +159,7 @@ class AiPointsExpansionService:
                         (p - unique_p).length() <= tolerance
                         for unique_p in unique_intersects
                     ):
-                        continue  # Skip this point, it's a duplicate/too close
-
+                        continue
                     unique_intersects.append(p)
 
                 # Loop through each subsegment on this waypoint line pair
