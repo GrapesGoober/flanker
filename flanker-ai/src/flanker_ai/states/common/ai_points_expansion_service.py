@@ -20,6 +20,72 @@ class AiPointsExpansionService:
     """
 
     @staticmethod
+    def get_points(
+        gs: GameState,
+        config: PointsConfig,
+    ) -> list[Vec2]:
+
+        # Creates initial points given the config
+        waypoints: list[Vec2]
+        initial_points_config = config.initial_points
+        match initial_points_config:
+            case PointsConfig.HandDrawnConfig():
+                waypoints = initial_points_config.points
+            case PointsConfig.GridConfig():
+                waypoints = AiWaypointsInitializeService.get_grid_coordinates(
+                    gs=gs,
+                    spacing=initial_points_config.spacing,
+                    offset=initial_points_config.offset,
+                )
+            case PointsConfig.RandomConfig():
+                waypoints = AiWaypointsInitializeService.get_random_coordinates(
+                    gs=gs,
+                    count=initial_points_config.count,
+                )
+            case PointsConfig.VoronoiConfig():
+                raise NotImplementedError()
+
+        # Include combat unit to help with expansion
+        if config.use_combat_unit_positions == True:
+            for _, _, transform in gs.query(CombatUnit, Transform):
+                waypoints.append(transform.position)
+
+        # Expands the points given the config
+        for expansion_config in config.expansions:
+            match expansion_config:
+                case PointsConfig.LineBasedExpansionConfig():
+                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+                        gs=gs,
+                        initial_waypoints=waypoints,
+                        tolerance=expansion_config.tolerance,
+                    )
+                case PointsConfig.PolygonalExpansionConfig():
+                    raise NotImplementedError()
+                case PointsConfig.FlagPruneConfig():
+                    flag_waypoints = (
+                        AiPointsExpansionService._prune_waypoints_by_weight(
+                            waypoints=waypoints,
+                            remaining_size=expansion_config.flag_size,
+                        )
+                    )
+                    # Include combat unit positions to help with smarter pruning
+                    if config.use_combat_unit_positions == True:
+                        for _, _, transform in gs.query(CombatUnit, Transform):
+                            flag_waypoints.append(transform.position)
+                    waypoints = AiPointsExpansionService._prune_waypoints_by_flags(
+                        gs=gs,
+                        waypoints=waypoints,
+                        flag_waypoints=flag_waypoints,
+                    )
+                case PointsConfig.WeightsPruneConfig():
+                    waypoints = AiPointsExpansionService._prune_waypoints_by_weight(
+                        waypoints=waypoints,
+                        remaining_size=expansion_config.remaining_size,
+                    )
+
+        return list(waypoints)
+
+    @staticmethod
     def expand_waypoints_line_based(
         gs: GameState,
         initial_waypoints: list[Vec2],
@@ -111,87 +177,25 @@ class AiPointsExpansionService:
         return list(waypoints)
 
     @staticmethod
-    def get_points(
-        gs: GameState,
-        config: PointsConfig,
-    ) -> list[Vec2]:
-
-        # Creates initial points given the config
-        waypoints: list[Vec2]
-        initial_points_config = config.initial_points
-        match initial_points_config:
-            case PointsConfig.HandDrawnConfig():
-                waypoints = initial_points_config.points
-            case PointsConfig.GridConfig():
-                waypoints = AiWaypointsInitializeService.get_grid_coordinates(
-                    gs=gs,
-                    spacing=initial_points_config.spacing,
-                    offset=initial_points_config.offset,
-                )
-            case PointsConfig.RandomConfig():
-                waypoints = AiWaypointsInitializeService.get_random_coordinates(
-                    gs=gs,
-                    count=initial_points_config.count,
-                )
-            case PointsConfig.VoronoiConfig():
-                raise NotImplementedError()
-
-        # Include combat unit to help with expansion
-        if config.use_combat_unit_positions == True:
-            for _, _, transform in gs.query(CombatUnit, Transform):
-                waypoints.append(transform.position)
-
-        # Expands the points given the config
-        for expansion_config in config.expansions:
-            match expansion_config:
-                case PointsConfig.LineBasedExpansionConfig():
-                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
-                        gs=gs,
-                        initial_waypoints=waypoints,
-                        tolerance=expansion_config.tolerance,
-                    )
-                case PointsConfig.PolygonalExpansionConfig():
-                    raise NotImplementedError()
-                case PointsConfig.FlagPruneConfig():
-                    flag_waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
-                        waypoints=waypoints,
-                        remaining_size=expansion_config.flag_size,
-                    )
-                    # Include combat unit positions to help with smarter pruning
-                    if config.use_combat_unit_positions == True:
-                        for _, _, transform in gs.query(CombatUnit, Transform):
-                            flag_waypoints.append(transform.position)
-                    waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
-                        gs=gs,
-                        waypoints=waypoints,
-                        flag_waypoints=flag_waypoints,
-                    )
-                case PointsConfig.WeightsPruneConfig():
-                    waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
-                        waypoints=waypoints,
-                        remaining_size=expansion_config.remaining_size,
-                    )
-
-        return list(waypoints)
-
-    @staticmethod
-    def get_flags(
+    def _get_flags(
         gs: GameState,
         waypoint: Vec2,
-        all_waypoints: list[Vec2],
+        flag_waypoints: list[Vec2],
     ) -> dict[Vec2, bool]:
-        """Return visibility flags of this waypoint against all other waypoints."""
+        """
+        Return visibility mapping of this waypoint against other flag waypoints.
+        """
         los_system = gs.get(LosSystem)
         waypoint_los_polygon = los_system.get_los_polygon(gs, waypoint)
         return {
             other_waypoint: IntersectGetter.is_inside(
                 other_waypoint, waypoint_los_polygon
             )
-            for other_waypoint in all_waypoints
+            for other_waypoint in flag_waypoints
         }
 
     @staticmethod
-    def prune_waypoints_by_flags(
+    def _prune_waypoints_by_flags(
         gs: GameState,
         waypoints: list[Vec2],
         flag_waypoints: list[Vec2],
@@ -203,7 +207,7 @@ class AiPointsExpansionService:
         unique_waypoints: set[Vec2] = set()
         seen_flags: set[int] = set()
         for waypoint in waypoints:
-            flags = AiPointsExpansionService.get_flags(gs, waypoint, flag_waypoints)
+            flags = AiPointsExpansionService._get_flags(gs, waypoint, flag_waypoints)
             # Flags are not hashable by default, so hash this in a dedicated step
             hashed_flags: int = hash(frozenset(flags.items()))
             if hashed_flags not in seen_flags:
@@ -212,7 +216,7 @@ class AiPointsExpansionService:
         return list(unique_waypoints)
 
     @staticmethod
-    def prune_waypoints_by_weight(
+    def _prune_waypoints_by_weight(
         waypoints: list[Vec2],
         remaining_size: int,
     ) -> list[Vec2]:
@@ -227,7 +231,7 @@ class AiPointsExpansionService:
         waypoint_weights: dict[Vec2, float] = {}
         nearest_to: dict[Vec2, list[Vec2]] = {}
 
-        def get_weight(waypoint: Vec2, pool: list[Vec2]) -> float:
+        def _get_weight(waypoint: Vec2, pool: list[Vec2]) -> float:
             if waypoint in waypoint_weights:  # Return from cache if exist
                 return waypoint_weights[waypoint]
 
@@ -249,7 +253,7 @@ class AiPointsExpansionService:
         while len(current_waypoints) > remaining_size:
             worst_waypoint = min(
                 current_waypoints,
-                key=lambda wp: get_weight(wp, current_waypoints),
+                key=lambda wp: _get_weight(wp, current_waypoints),
             )
             current_waypoints.remove(worst_waypoint)
 
