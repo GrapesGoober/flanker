@@ -64,7 +64,12 @@ def draw_terrains(gs: GameState) -> None:
         vertices = LinearTransform.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
-        visualize_polygon(vertices, color="C1")
+        visualize_polygon(
+            vertices,
+            color="forestgreen",
+            fill_alpha=0,
+            plot_alpha=0.2,
+        )
 
 
 def draw_combat_unit_los_cone(
@@ -229,9 +234,9 @@ def draw_move_candidates(
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-analysis.json")
+    gs = load_state("./scenes/experiment-grid-1.json")
 
-    screenshot = "./scripts/experiment-template.png"
+    screenshot = None  # "./scripts/experiment-template.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -241,7 +246,7 @@ if __name__ == "__main__":
     else:
         plt.gca().invert_yaxis()
 
-    # draw_terrains(gs)
+    draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
     draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 
