@@ -92,6 +92,8 @@ def run_trial(
         result = AiTrial.run_trial(new_gs)
         tally = get_current_tally(record_file)  # Resync a new tally
         tally.trials += 1
+        if tally.trials > n:
+            break
         match result.winner:
             case None:
                 tally.draws += 1
