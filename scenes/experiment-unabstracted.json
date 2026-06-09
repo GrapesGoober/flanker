@@ -150,16 +150,7 @@
                   "tolerance": 10
                 },
                 {
-                  "type": "FlagPrune",
-                  "flag_size": 5
-                },
-                {
-                  "type": "WeightsPrune",
-                  "remaining_size": 20
-                },
-                {
-                  "type": "FlagPrune",
-                  "flag_size": 1
+                  "type": "FlagPrune"
                 }
               ]
             }

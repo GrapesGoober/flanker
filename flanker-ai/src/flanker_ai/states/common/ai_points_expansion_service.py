@@ -62,13 +62,8 @@ class AiPointsExpansionService:
                 case PointsConfig.PolygonalExpansionConfig():
                     raise NotImplementedError()
                 case PointsConfig.FlagPruneConfig():
-                    flag_waypoints = (
-                        AiPointsExpansionService._prune_waypoints_by_weight(
-                            waypoints=waypoints,
-                            remaining_size=expansion_config.flag_size,
-                        )
-                    )
-                    # Include combat unit positions to help with smarter pruning
+                    # Use combat unit positions as flags
+                    flag_waypoints: list[Vec2] = []
                     if config.use_combat_unit_positions == True:
                         for _, _, transform in gs.query(CombatUnit, Transform):
                             flag_waypoints.append(transform.position)
@@ -223,6 +218,9 @@ class AiPointsExpansionService:
         Removes waypoints with the lowest weight values. The weights
         currently used is the distance to nearest neighbour.
         """
+        if remaining_size == 0:
+            return []
+
         current_waypoints = list(waypoints)
 
         # Maintain a cache of weights and a lookup of nearest neighbor.
