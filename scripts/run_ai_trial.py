@@ -82,11 +82,15 @@ def run_trial(
     n: int = 1,
 ) -> None:
 
-    for i in range(n):
-        print(f"Running Trial {i=}...")
+    # Initialize the file if not exist
+    tally = get_current_tally(record_file)
+    save_tally(record_file, tally)
+
+    while tally.trials < n:
+        print(f"Running new trial")
         new_gs = deepcopy(gs)
         result = AiTrial.run_trial(new_gs)
-        tally = get_current_tally(record_file)
+        tally = get_current_tally(record_file)  # Resync a new tally
         tally.trials += 1
         match result.winner:
             case None:
@@ -96,7 +100,7 @@ def run_trial(
             case InitiativeState.Faction.RED:
                 tally.red_wins += 1
         save_tally(record_file, tally)
-        print(f"Trial finished with winner {result.winner}")
+        print(f"Trial {tally.trials} finished with winner {result.winner}")
 
 
 if __name__ == "__main__":
