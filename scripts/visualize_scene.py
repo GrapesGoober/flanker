@@ -67,7 +67,11 @@ def draw_terrains(gs: GameState) -> None:
         visualize_polygon(vertices, color="C1")
 
 
-def draw_combat_unit_los_cone(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
+def draw_combat_unit_los_cone(
+    gs: GameState,
+    unit_id: UUID,
+    color: str = "C0",
+) -> None:
     los_system = gs.get(LosSystem)
 
     spotter_transform = gs.get_component(unit_id, components.Transform)
@@ -81,7 +85,12 @@ def draw_combat_unit_los_cone(gs: GameState, unit_id: UUID, color: str = "C0") -
         heading_degree=spotter_transform.degrees,
     )
 
-    visualize_polygon(los_polygon, color=color, fill_alpha=0.06, plot_alpha=0.04)
+    visualize_polygon(
+        los_polygon,
+        color=color,
+        fill_alpha=0.2,
+        plot_alpha=0.1,
+    )
 
 
 def draw_graph(
