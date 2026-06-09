@@ -1,8 +1,8 @@
 {
-  "trials": 7,
-  "blue_wins": 4,
-  "red_wins": 3,
-  "draws": 0,
+  "trials": 10,
+  "blue_wins": 1,
+  "red_wins": 7,
+  "draws": 2,
   "blue_config": {
     "config": {
       "policy_type": "Minimax",
@@ -15,15 +15,7 @@
             "offset": 10.0
           },
           "use_combat_unit_positions": true,
-          "expansions": [
-            {
-              "type": "LineBased",
-              "tolerance": 10.0
-            },
-            {
-              "type": "FlagPrune"
-            }
-          ]
+          "expansions": []
         }
       }
     },
