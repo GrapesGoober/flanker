@@ -1,0 +1,30 @@
+{
+  "trials": 100,
+  "blue_wins": 40,
+  "red_wins": 55,
+  "draws": 5,
+  "blue_config": {
+    "config": {
+      "policy_type": "Minimax",
+      "state": {
+        "type": "UnabstractedStateConfig",
+        "move_candidates": {
+          "initial_points": {
+            "type": "GridConfig",
+            "spacing": 140.0,
+            "offset": 10.0
+          },
+          "use_combat_unit_positions": true,
+          "expansions": []
+        }
+      }
+    },
+    "faction": "BLUE"
+  },
+  "red_config": {
+    "config": {
+      "policy_type": "RandomHeuristic"
+    },
+    "faction": "RED"
+  }
+}
