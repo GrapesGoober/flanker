@@ -35,7 +35,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         """
 
         global count
-        if count % 50000 == 0:
+        if count % 5000 == 0:
             print(count)
         count += 1
 
