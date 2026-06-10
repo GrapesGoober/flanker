@@ -10,6 +10,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -21,8 +22,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-
-_MAX_STALL_LIMIT = 5
 
 
 class UnabstractedState(IRepresentationState[Action]):
@@ -111,23 +110,8 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-        for faction, counter in self._get_stall_counter().items():
-            if counter > _MAX_STALL_LIMIT:
-                # mark faction as losing
-                if faction == InitiativeState.Faction.BLUE:
-                    return InitiativeState.Faction.RED
-                elif faction == InitiativeState.Faction.RED:
-                    return InitiativeState.Faction.BLUE
-
         objective_system = self._gs.get(ObjectiveSystem)
         return objective_system.get_winning_faction(self._gs)
-
-    def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
-        if result := self._gs.query(AiStallCountComponent):
-            _, stall_comp = result[0]
-            return stall_comp.stall_counter
-        else:
-            raise ValueError(f"{AiStallCountComponent} missing for {self._gs}")
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
@@ -138,7 +122,10 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
-
+        self._gs.replace(
+            existing=ObjectiveSystem,
+            replacement=AiObjectiveSystem,
+        )
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config
