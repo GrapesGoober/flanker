@@ -136,5 +136,5 @@ class UnabstractedState(IRepresentationState[Action]):
 
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
-            gs, self._move_candidates_config
+            self._gs, self._move_candidates_config
         )
