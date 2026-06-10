@@ -32,7 +32,7 @@ def load_state(path: str) -> GameState:
 
 
 if __name__ == "__main__":
-    PATH = "./scenes/experiment-unabstracted.json"
+    PATH = "./scenes/experiment-analysis.json"
     gs = load_state(PATH)
 
     # Ensures that each run is consistent in search size
