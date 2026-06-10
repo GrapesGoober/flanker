@@ -79,9 +79,18 @@ class UnabstractedState(IRepresentationState[Action]):
         branches = AiBranchingService.get_action_branches(self._gs, action)
         if branches == []:
             return []
-        merged_branches = AiBranchAbstractionService.merge_branches(branches, action)
+        branches = AiBranchAbstractionService.merge_branches(branches, action)
+        # Remove the unlikeliest branch to curb branching factor
+        if len(branches) >= 3:
+            unlikeliest_branch = min(branches, key=lambda i: i[0])
+            branches.remove(unlikeliest_branch)
+            leftover_prob, _ = unlikeliest_branch
+            prob_to_adjust = leftover_prob / len(branches)
+            for i, (prob, branch) in enumerate(branches):
+                branches[i] = (prob + prob_to_adjust, branch)
+
         state_branches: list[tuple[float, UnabstractedState]] = []
-        for prob, branch in merged_branches:
+        for prob, branch in branches:
             new_state = UnabstractedState(
                 gs=branch,
                 move_candidates_config=self._move_candidates_config,

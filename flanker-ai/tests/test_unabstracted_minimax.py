@@ -175,6 +175,18 @@ def test_stall(fixture: Fixture) -> None:
     ), "BLUE must be considered stall."
 
 
+def test_branching_total_prob(fixture: Fixture) -> None:
+    action = MoveAction(
+        unit_id=fixture.friendly_1,
+        to=Vec2(-10, 1),
+    )
+    branches = fixture.blue_agent.rs.get_branches(action)
+    total_prob = 0
+    for prob, _ in branches:
+        total_prob += prob
+    assert total_prob == 1, "Total probability must equal 1"
+
+
 def test_optimal_actions(fixture: Fixture) -> None:
     actions = fixture.blue_agent.play_initiative()
     assert actions != [], "The minimax must find optimal action sequence."
