@@ -45,19 +45,10 @@ class AiActionService:
             friendly_ids=friendly_ids,
             target_ids=target_ids,
         )
-
-        for friendly_id, unit in gs.query(CombatUnit):
-            if unit.faction != initiative:
-                continue
-
-            # Adds move actions last, for best alpha-beta pruning.
-            for move_position in move_candidates:
-                actions.append(
-                    MoveAction(
-                        unit_id=friendly_id,
-                        to=move_position,
-                    )
-                )
+        actions += AiActionService.get_move_actions(
+            friendly_ids=friendly_ids,
+            move_candidates=move_candidates,
+        )
 
         return actions
 
@@ -121,4 +112,20 @@ class AiActionService:
                     )
                 )
 
+        return actions
+
+    @staticmethod
+    def get_move_actions(
+        friendly_ids: list[UUID],
+        move_candidates: list[Vec2],
+    ) -> list[MoveAction]:
+        actions: list[MoveAction] = []
+        for friendly_id in friendly_ids:
+            for move_position in move_candidates:
+                actions.append(
+                    MoveAction(
+                        unit_id=friendly_id,
+                        to=move_position,
+                    )
+                )
         return actions
