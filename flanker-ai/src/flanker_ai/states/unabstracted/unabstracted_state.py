@@ -75,8 +75,11 @@ class UnabstractedState(IRepresentationState[Action]):
         action: Action,
     ) -> list[tuple[float, "UnabstractedState"]]:
         branches = AiBranchingService.get_action_branches(self._gs, action)
+        if branches == []:
+            return []
+        merged_branches = AiBranchAbstractionService.merge_branches(branches, action)
         state_branches: list[tuple[float, UnabstractedState]] = []
-        for prob, branch in branches:
+        for prob, branch in merged_branches:
             new_state = UnabstractedState(
                 gs=branch,
                 move_candidates_config=self._move_candidates_config,
