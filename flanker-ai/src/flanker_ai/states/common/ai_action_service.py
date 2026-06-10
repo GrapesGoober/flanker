@@ -1,4 +1,5 @@
 from typing import Sequence
+from uuid import UUID
 
 from flanker_ai.actions import (
     Action,
@@ -25,28 +26,24 @@ class AiActionService:
     ) -> Sequence[Action]:
         los_system = gs.get(LosSystem)
 
-        # Generate an action for each combat unit
+        # Build a list of combat units
+        friendly_ids: list[UUID] = []
+        target_ids: list[UUID] = []
+        for unit_id, unit in gs.query(CombatUnit):
+            if unit.faction == initiative:
+                friendly_ids.append(unit_id)
+            elif unit.faction != initiative:
+                target_ids.append(unit_id)
+
+        # Build a list of actions for each action type
         actions: list[Action] = []
+        actions += AiActionService.get_attack_actions(
+            friendly_units=friendly_ids, target_units=target_ids
+        )
+
         for friendly_id, unit in gs.query(CombatUnit):
             if unit.faction != initiative:
                 continue
-
-            # Adds assault & fire actions for each friendly-enemy pair
-            for target_id, target in gs.query(CombatUnit):
-                if target.faction == initiative:
-                    continue
-                actions.append(
-                    FireAction(
-                        unit_id=friendly_id,
-                        target_id=target_id,
-                    )
-                )
-                actions.append(
-                    AssaultAction(
-                        unit_id=friendly_id,
-                        target_id=target_id,
-                    )
-                )
 
             # Add move and pivot actions.
             # Have it pivot only towards enemies to reduce branching factor.
@@ -82,6 +79,30 @@ class AiActionService:
                     MoveAction(
                         unit_id=friendly_id,
                         to=move_position,
+                    )
+                )
+
+        return actions
+
+    @staticmethod
+    def get_attack_actions(
+        friendly_units: list[UUID],
+        target_units: list[UUID],
+    ) -> list[Action]:
+        actions: list[Action] = []
+        for friendly_id in friendly_units:
+            # Adds assault & fire actions for each friendly-enemy pair
+            for target_id in target_units:
+                actions.append(
+                    FireAction(
+                        unit_id=friendly_id,
+                        target_id=target_id,
+                    )
+                )
+                actions.append(
+                    AssaultAction(
+                        unit_id=friendly_id,
+                        target_id=target_id,
                     )
                 )
 
