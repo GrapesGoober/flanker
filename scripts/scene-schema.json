@@ -572,11 +572,16 @@
         },
         "move_candidates": {
           "$ref": "#/$defs/PointsConfig"
+        },
+        "divide_moves_per_unit": {
+          "title": "Divide Moves Per Unit",
+          "type": "boolean"
         }
       },
       "required": [
         "type",
-        "move_candidates"
+        "move_candidates",
+        "divide_moves_per_unit"
       ],
       "title": "UnabstractedStateConfig",
       "type": "object"

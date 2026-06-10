@@ -71,6 +71,7 @@ class WaypointsStateConfig:
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
     move_candidates: PointsConfig
+    divide_moves_per_unit: bool
 
 
 @dataclass

@@ -145,7 +145,8 @@
               },
               "use_combat_unit_positions": true,
               "expansions": []
-            }
+            },
+            "divide_moves_per_unit": false
           }
         }
       }

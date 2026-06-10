@@ -156,6 +156,7 @@ class AiAgent:
                         use_combat_unit_positions=False,
                         expansions=[],
                     ),
+                    divide_moves_per_unit=False,
                 )
             case SearchPolicyConfig():
                 match config_component.config.policy_type:
@@ -166,10 +167,11 @@ class AiAgent:
                 match config_component.config.state:
                     case UnabstractedStateConfig():
                         # The unabstracted state uses lazy waypoint expansion
-                        move_config = config_component.config.state.move_candidates
+                        state_config = config_component.config.state
                         state = UnabstractedState(
                             gs,
-                            move_candidates_config=move_config,
+                            move_candidates_config=state_config.move_candidates,
+                            divide_moves_per_unit=state_config.divide_moves_per_unit,
                         )
                     case WaypointsStateConfig():
                         state_config = config_component.config.state

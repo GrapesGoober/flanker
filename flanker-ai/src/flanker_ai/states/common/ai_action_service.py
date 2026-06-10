@@ -21,6 +21,7 @@ class AiActionService:
         gs: GameState,
         initiative: InitiativeState.Faction,
         move_candidates: list[Vec2],
+        divide_moves_per_unit: bool,
     ) -> Sequence[Action]:
         los_system = gs.get(LosSystem)
 
