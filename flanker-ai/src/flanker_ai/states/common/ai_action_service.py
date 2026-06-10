@@ -1,3 +1,4 @@
+from itertools import batched
 from typing import Sequence
 from uuid import UUID
 
@@ -48,6 +49,7 @@ class AiActionService:
         actions += AiActionService.get_move_actions(
             friendly_ids=friendly_ids,
             move_candidates=move_candidates,
+            divide_moves_per_unit=divide_moves_per_unit,
         )
 
         return actions
@@ -118,14 +120,26 @@ class AiActionService:
     def get_move_actions(
         friendly_ids: list[UUID],
         move_candidates: list[Vec2],
+        divide_moves_per_unit: bool,
     ) -> list[MoveAction]:
         actions: list[MoveAction] = []
-        for friendly_id in friendly_ids:
-            for move_position in move_candidates:
-                actions.append(
-                    MoveAction(
-                        unit_id=friendly_id,
-                        to=move_position,
+        if divide_moves_per_unit == True:
+            divided_moves = batched(move_candidates, len(friendly_ids))
+            for friendly_id, move_batch in zip(friendly_ids, divided_moves):
+                for move_position in move_batch:
+                    actions.append(
+                        MoveAction(
+                            unit_id=friendly_id,
+                            to=move_position,
+                        )
                     )
-                )
+        else:
+            for friendly_id in friendly_ids:
+                for move_position in move_candidates:
+                    actions.append(
+                        MoveAction(
+                            unit_id=friendly_id,
+                            to=move_position,
+                        )
+                    )
         return actions
