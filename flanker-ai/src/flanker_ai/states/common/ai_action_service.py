@@ -24,7 +24,6 @@ class AiActionService:
         move_candidates: list[Vec2],
         divide_moves_per_unit: bool,
     ) -> Sequence[Action]:
-        los_system = gs.get(LosSystem)
 
         # Build a list of combat units
         friendly_ids: list[UUID] = []
@@ -38,40 +37,18 @@ class AiActionService:
         # Build a list of actions for each action type
         actions: list[Action] = []
         actions += AiActionService.get_attack_actions(
-            friendly_units=friendly_ids, target_units=target_ids
+            friendly_ids=friendly_ids,
+            target_ids=target_ids,
+        )
+        actions += AiActionService.get_pivot_actions(
+            gs=gs,
+            friendly_ids=friendly_ids,
+            target_ids=target_ids,
         )
 
         for friendly_id, unit in gs.query(CombatUnit):
             if unit.faction != initiative:
                 continue
-
-            # Add move and pivot actions.
-            # Have it pivot only towards enemies to reduce branching factor.
-            friendly_transform = gs.get_component(friendly_id, Transform)
-            for target_id, target in gs.query(CombatUnit):
-                if target.faction == initiative:
-                    continue
-
-                # Only pivot if not already looking there.
-                enemy_transform = gs.get_component(target_id, Transform)
-                if los_system.in_fov(
-                    spotter_transform=friendly_transform,
-                    target_pos=enemy_transform.position,
-                ):
-                    continue
-                if not los_system.has_los(
-                    gs,
-                    spotter_pos=friendly_transform.position,
-                    target_pos=enemy_transform.position,
-                ):
-                    continue
-
-                actions.append(
-                    PivotAction(
-                        unit_id=friendly_id,
-                        to=enemy_transform.position,
-                    )
-                )
 
             # Adds move actions last, for best alpha-beta pruning.
             for move_position in move_candidates:
@@ -86,13 +63,13 @@ class AiActionService:
 
     @staticmethod
     def get_attack_actions(
-        friendly_units: list[UUID],
-        target_units: list[UUID],
-    ) -> list[Action]:
-        actions: list[Action] = []
-        for friendly_id in friendly_units:
+        friendly_ids: list[UUID],
+        target_ids: list[UUID],
+    ) -> list[FireAction | AssaultAction]:
+        actions: list[FireAction | AssaultAction] = []
+        for friendly_id in friendly_ids:
             # Adds assault & fire actions for each friendly-enemy pair
-            for target_id in target_units:
+            for target_id in target_ids:
                 actions.append(
                     FireAction(
                         unit_id=friendly_id,
@@ -103,6 +80,44 @@ class AiActionService:
                     AssaultAction(
                         unit_id=friendly_id,
                         target_id=target_id,
+                    )
+                )
+
+        return actions
+
+    @staticmethod
+    def get_pivot_actions(
+        gs: GameState,
+        friendly_ids: list[UUID],
+        target_ids: list[UUID],
+    ) -> list[PivotAction]:
+
+        los_system = gs.get(LosSystem)
+
+        # Have it pivot only towards enemies to reduce branching factor.
+        actions: list[PivotAction] = []
+        for friendly_id in friendly_ids:
+            friendly_transform = gs.get_component(friendly_id, Transform)
+            for target_id in target_ids:
+                target_transform = gs.get_component(target_id, Transform)
+
+                # Only pivot if not already looking there.
+                if los_system.in_fov(
+                    spotter_transform=friendly_transform,
+                    target_pos=target_transform.position,
+                ):
+                    continue
+                if not los_system.has_los(
+                    gs,
+                    spotter_pos=friendly_transform.position,
+                    target_pos=target_transform.position,
+                ):
+                    continue
+
+                actions.append(
+                    PivotAction(
+                        unit_id=friendly_id,
+                        to=target_transform.position,
                     )
                 )
 
