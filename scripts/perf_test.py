@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # import cProfile
     # import pstats
 
-    # cProfile.run("move_many_times()", sort="tottime", filename="perftest.txt")
-    # p = pstats.Stats("./scripts/perftest.txt")
+    # cProfile.run("calculate_visibility()", sort="tottime", filename="perftest.prof")
+    # p = pstats.Stats("./scripts/perftest.prof")
     # p.sort_stats("tottime")
     # p.print_stats(20)
