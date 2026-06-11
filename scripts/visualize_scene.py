@@ -1,5 +1,6 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from itertools import product
 from typing import Any
 from uuid import UUID
 
@@ -187,8 +188,7 @@ def draw_waypoints(
 
 
 def draw_move_candidates(
-    gs: GameState,
-    faction: InitiativeState.Faction,
+    gs: GameState, faction: InitiativeState.Faction, draw_lines: bool
 ) -> None:
     agent = AiAgent.get_agent(gs, faction)
 
@@ -201,8 +201,15 @@ def draw_move_candidates(
     move_candidates = agent.rs.move_candidates
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
-
     plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+
+    if draw_lines:
+        segments = [
+            ((p1.x, p1.y), (p2.x, p2.y))
+            for p1, p2 in product(move_candidates, repeat=2)
+        ]
+        lc = LineCollection(segments, colors="C0", linewidths=1, alpha=0.1)
+        plt.gca().add_collection(lc)
 
 
 if __name__ == "__main__":
@@ -221,7 +228,7 @@ if __name__ == "__main__":
 
     draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(gs, InitiativeState.Faction.BLUE)
+    draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=True)
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
