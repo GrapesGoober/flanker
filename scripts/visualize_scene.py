@@ -144,11 +144,6 @@ def draw_waypoints(
     points_y: list[float] = []
     ids: list[int] = []
 
-    accented_segments: list[list[tuple[float, float]]] = []
-    accented_points_x: list[float] = []
-    accented_points_y: list[float] = []
-    accented_ids: list[int] = []
-
     waypoints = waypoints_system.get_waypoints(waypoints_state.gs)
 
     for id, point in waypoints.items():
@@ -160,20 +155,6 @@ def draw_waypoints(
                 str(id),
             )
 
-        if id in accented_ids:
-            accented_points_x.append(point.position.x)
-            accented_points_y.append(point.position.y)
-
-            for visible_node_id in point.visible_nodes:
-                visible_node = waypoints[visible_node_id]
-
-                accented_segments.append(
-                    [
-                        (point.position.x, point.position.y),
-                        (visible_node.position.x, visible_node.position.y),
-                    ]
-                )
-            continue
         points_x.append(point.position.x)
         points_y.append(point.position.y)
         ids.append(id)
@@ -203,14 +184,6 @@ def draw_waypoints(
     #     linewidth=1,
     #     alpha=0.05,
     # )
-    # draw_graph(
-    #     accented_points_x,
-    #     accented_points_y,
-    #     accented_segments,
-    #     color="C1",
-    #     linewidth=2,
-    #     alpha=0.3,
-    # )
 
 
 def draw_move_candidates(
@@ -234,7 +207,7 @@ def draw_move_candidates(
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-analysis.json")
+    gs = load_state("./scenes/experiment-grid.json")
 
     screenshot = None  # "./scripts/experiment-template.png"
     if screenshot:
