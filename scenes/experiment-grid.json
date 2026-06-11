@@ -1,5 +1,34 @@
 {
   "entities": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "config": {
+          "policy_type": "Minimax",
+          "state": {
+            "type": "UnabstractedStateConfig",
+            "move_candidates": {
+              "initial_points": {
+                "type": "GridConfig",
+                "spacing": 140,
+                "offset": 10
+              },
+              "use_combat_unit_positions": true,
+              "expansions": []
+            },
+            "divide_moves_per_unit": false
+          }
+        }
+      }
+    },
+    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "config": {
+          "policy_type": "RandomHeuristic"
+        }
+      }
+    },
     "066d81b5-2e25-4175-8ea5-0b1f71f73c1d": {
       "InitiativeState": {
         "faction": "BLUE"
@@ -17,37 +46,6 @@
         "winning_faction": "RED",
         "units_to_destroy": 2,
         "units_destroyed_counter": 0
-      }
-    },
-    "b139e1d9-7df9-4148-a8db-137df1c0fa7c": {
-      "Transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "degrees": 0.0
-      },
-      "TerrainFeature": {
-        "vertices": [
-          {
-            "x": 0.0,
-            "y": 0.0
-          },
-          {
-            "x": 300.0,
-            "y": 0.0
-          },
-          {
-            "x": 300.0,
-            "y": 300.0
-          },
-          {
-            "x": 0.0,
-            "y": 300.0
-          }
-        ],
-        "is_closed_loop": true,
-        "flag": 33
       }
     },
     "843fadf4-9645-44ec-9d42-9ac658e964ca": {
@@ -130,32 +128,35 @@
       },
       "AssaultControls": {}
     },
-    "722332cc-99c2-41f0-9b60-96916cb9a726": {
-      "AiConfigComponent": {
-        "faction": "BLUE",
-        "config": {
-          "policy_type": "Minimax",
-          "state": {
-            "type": "UnabstractedStateConfig",
-            "move_candidates": {
-              "initial_points": {
-                "type": "GridConfig",
-                "spacing": 140,
-                "offset": 10
-              },
-              "use_combat_unit_positions": true,
-              "expansions": []
-            }
+    "b139e1d9-7df9-4148-a8db-137df1c0fa7c": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 300.0
+          },
+          {
+            "x": 0.0,
+            "y": 300.0
           }
-        }
-      }
-    },
-    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
-      "AiConfigComponent": {
-        "faction": "RED",
-        "config": {
-          "policy_type": "RandomHeuristic"
-        }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
       }
     },
     "c08e1c9e-d67c-4bd7-bb00-38c423ecc7cf": {

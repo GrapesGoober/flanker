@@ -5,9 +5,8 @@ from typing import Any
 from flanker_ai.components import InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
-from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.register_systems import register_systems
 
 
@@ -33,32 +32,28 @@ if __name__ == "__main__":
     PATH = "./scenes/demo.json"
     gs = load_state(PATH)
 
-    # for id, unit in gs.query(components.CombatUnit):
-    #     if unit.faction == InitiativeState.Faction.RED:
-    #         continue
-    #     # Run one move action to precache
-    #     MoveSystem.move(gs, id, Vec2(-50, -200))
-    #     break
+    los_system = gs.get(LosSystem)
 
-    move_system = gs.get(MoveSystem)
+    def calculate_visibility() -> None:
 
-    def move_many_times() -> None:
-
-        for id, unit in gs.query(components.CombatUnit):
+        for _, unit, transform in gs.query(
+            components.CombatUnit,
+            components.Transform,
+        ):
             if unit.faction == InitiativeState.Faction.RED:
                 continue
 
-            move_system.move(gs, id, Vec2(-50, -200))
+            los_system.get_los_polygon(gs, transform.position)
 
     from timeit import timeit
 
-    exec_time = timeit(move_many_times, number=1)
+    exec_time = timeit(calculate_visibility, number=1)
     print(f"Execution time: {exec_time:.6f} seconds")
 
     # import cProfile
     # import pstats
 
-    # cProfile.run("move_many_times()", sort="tottime", filename="perftest.txt")
-    # p = pstats.Stats("./scripts/perftest.txt")
+    # cProfile.run("calculate_visibility()", sort="tottime", filename="perftest.prof")
+    # p = pstats.Stats("./scripts/perftest.prof")
     # p.sort_stats("tottime")
     # p.print_stats(20)

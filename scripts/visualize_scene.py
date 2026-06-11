@@ -64,10 +64,19 @@ def draw_terrains(gs: GameState) -> None:
         vertices = LinearTransform.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
-        visualize_polygon(vertices, color="C1")
+        visualize_polygon(
+            vertices,
+            color="forestgreen",
+            fill_alpha=0,
+            plot_alpha=0.2,
+        )
 
 
-def draw_combat_unit_los_cone(gs: GameState, unit_id: UUID, color: str = "C0") -> None:
+def draw_combat_unit_los_cone(
+    gs: GameState,
+    unit_id: UUID,
+    color: str = "C0",
+) -> None:
     los_system = gs.get(LosSystem)
 
     spotter_transform = gs.get_component(unit_id, components.Transform)
@@ -81,7 +90,12 @@ def draw_combat_unit_los_cone(gs: GameState, unit_id: UUID, color: str = "C0") -
         heading_degree=spotter_transform.degrees,
     )
 
-    visualize_polygon(los_polygon, color=color, fill_alpha=0.06, plot_alpha=0.04)
+    visualize_polygon(
+        los_polygon,
+        color=color,
+        fill_alpha=0.2,
+        plot_alpha=0.1,
+    )
 
 
 def draw_graph(
@@ -222,7 +236,7 @@ if __name__ == "__main__":
 
     gs = load_state("./scenes/experiment-analysis.json")
 
-    screenshot = "./scripts/experiment-template.png"
+    screenshot = None  # "./scripts/experiment-template.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -232,7 +246,7 @@ if __name__ == "__main__":
     else:
         plt.gca().invert_yaxis()
 
-    # draw_terrains(gs)
+    draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
     draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 

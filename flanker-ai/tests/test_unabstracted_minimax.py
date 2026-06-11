@@ -125,6 +125,7 @@ def fixture() -> Fixture:
                         use_combat_unit_positions=False,
                         expansions=[],
                     ),
+                    divide_moves_per_unit=False,
                 ),
             ),
         )
@@ -172,6 +173,18 @@ def test_stall(fixture: Fixture) -> None:
     assert (
         rs.get_winner() == InitiativeState.Faction.RED
     ), "BLUE must be considered stall."
+
+
+def test_branching_total_prob(fixture: Fixture) -> None:
+    action = MoveAction(
+        unit_id=fixture.friendly_1,
+        to=Vec2(-10, 1),
+    )
+    branches = fixture.blue_agent.rs.get_branches(action)
+    total_prob = 0
+    for prob, _ in branches:
+        total_prob += prob
+    assert total_prob == 1, "Total probability must equal 1"
 
 
 def test_optimal_actions(fixture: Fixture) -> None:

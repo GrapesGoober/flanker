@@ -19,7 +19,7 @@ from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
 
 # This is a bandaid fix for LOS polygon imprecision
-_MOVE_INTERRUPT_ATOL = 10
+_MOVE_INTERRUPT_ATOL = 5
 
 
 @dataclass

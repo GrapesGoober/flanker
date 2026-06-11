@@ -2,9 +2,11 @@ import {
 	AddTerrainData,
 	DeleteTerrainData,
 	GetTerrainData,
+	GetUnitStatesData,
 	UpdateTerrainData,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
+	type CombatUnitsViewState,
 	type TerrainModel,
 	type TerrainType,
 	type Vec2
@@ -24,12 +26,20 @@ type EditorControllerState =
  */
 export class EditorController {
 	terrainData: TerrainModel[] = $state([]);
+	combatUnitsData: CombatUnitsViewState = $state({
+		objectiveState: 'INCOMPLETE',
+		hasInitiative: false,
+		squads: []
+	});
 	state: EditorControllerState = $state({ type: 'default' });
 
 	/** Refreshes terrain data from the API. */
-	refreshTerrain() {
+	refreshData() {
 		GetTerrainData().then((data) => {
 			this.terrainData = data;
+		});
+		GetUnitStatesData().then((data) => {
+			this.combatUnitsData = data;
 		});
 	}
 
@@ -67,7 +77,7 @@ export class EditorController {
 			terrainType: this.state.terrainType
 		};
 		await AddTerrainData(terrain);
-		this.refreshTerrain();
+		this.refreshData();
 		this.reset();
 	}
 

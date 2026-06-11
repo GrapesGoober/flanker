@@ -10,6 +10,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -22,18 +23,18 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-_MAX_STALL_LIMIT = 5
-
 
 class UnabstractedState(IRepresentationState[Action]):
     def __init__(
         self,
         gs: GameState,
         move_candidates_config: PointsConfig,
+        divide_moves_per_unit: bool,
     ) -> None:
         self._gs = gs
         self._move_candidates_config = move_candidates_config
         self.move_candidates: list[Vec2] = []
+        self._divide_moves_per_unit = divide_moves_per_unit
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -67,6 +68,7 @@ class UnabstractedState(IRepresentationState[Action]):
             gs=self._gs,
             initiative=self.get_initiative(),
             move_candidates=self.move_candidates,
+            divide_moves_per_unit=self._divide_moves_per_unit,
         )
 
     @override
@@ -75,11 +77,24 @@ class UnabstractedState(IRepresentationState[Action]):
         action: Action,
     ) -> list[tuple[float, "UnabstractedState"]]:
         branches = AiBranchingService.get_action_branches(self._gs, action)
+        if branches == []:
+            return []
+        branches = AiBranchAbstractionService.merge_branches(branches, action)
+        # Remove the unlikeliest branch to curb branching factor
+        if len(branches) >= 3:
+            unlikeliest_branch = min(branches, key=lambda i: i[0])
+            branches.remove(unlikeliest_branch)
+            leftover_prob, _ = unlikeliest_branch
+            prob_to_adjust = leftover_prob / len(branches)
+            for i, (prob, branch) in enumerate(branches):
+                branches[i] = (prob + prob_to_adjust, branch)
+
         state_branches: list[tuple[float, UnabstractedState]] = []
         for prob, branch in branches:
             new_state = UnabstractedState(
                 gs=branch,
                 move_candidates_config=self._move_candidates_config,
+                divide_moves_per_unit=self._divide_moves_per_unit,
             )
             new_state.move_candidates = self.move_candidates
             state_branches.append((prob, new_state))
@@ -97,29 +112,15 @@ class UnabstractedState(IRepresentationState[Action]):
         new_state = UnabstractedState(
             gs=branch,
             move_candidates_config=self._move_candidates_config,
+            divide_moves_per_unit=self._divide_moves_per_unit,
         )
         new_state.move_candidates = self.move_candidates
         return new_state
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-        for faction, counter in self._get_stall_counter().items():
-            if counter > _MAX_STALL_LIMIT:
-                # mark faction as losing
-                if faction == InitiativeState.Faction.BLUE:
-                    return InitiativeState.Faction.RED
-                elif faction == InitiativeState.Faction.RED:
-                    return InitiativeState.Faction.BLUE
-
         objective_system = self._gs.get(ObjectiveSystem)
         return objective_system.get_winning_faction(self._gs)
-
-    def _get_stall_counter(self) -> dict[InitiativeState.Faction, int]:
-        if result := self._gs.query(AiStallCountComponent):
-            _, stall_comp = result[0]
-            return stall_comp.stall_counter
-        else:
-            raise ValueError(f"{AiStallCountComponent} missing for {self._gs}")
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
@@ -130,8 +131,11 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = deepcopy(gs)
         if self._gs.query(AiStallCountComponent) == []:
             self._gs.add_entity(AiStallCountComponent())
-
+        self._gs.replace(
+            existing=ObjectiveSystem,
+            replacement=AiObjectiveSystem,
+        )
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
-            gs, self._move_candidates_config
+            self._gs, self._move_candidates_config
         )

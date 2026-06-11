@@ -3,7 +3,7 @@
 	 * Editor page for terrain and polygon drawing in the map scene.
 	 * Handles terrain editing, drawing polygons, and UI state management.
 	 */
-	import { SvgMap } from '$lib/components';
+	import { RifleSquad, SvgMap } from '$lib/components';
 	import TerrainLayer from '$lib/components/terrain-layer.svelte';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 	import { onMount } from 'svelte';
@@ -16,7 +16,7 @@
 
 	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
-		controller.refreshTerrain();
+		controller.refreshData();
 	});
 
 	/** Handles click as adding a vertex or waypoint, depending on state. */
@@ -33,7 +33,7 @@
 
 	/** Resets the editor mode and refreshes terrain. */
 	function resetMode() {
-		controller.refreshTerrain();
+		controller.refreshData();
 		controller.reset();
 	}
 
@@ -65,6 +65,9 @@
 
 {#snippet mapSvgSnippet()}
 	<TerrainLayer terrainData={controller.terrainData} />
+	{#each controller.combatUnitsData.squads as squad}
+		<RifleSquad rifleSquadData={squad} />
+	{/each}
 	<EditorTerrainLayer {controller} />
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
