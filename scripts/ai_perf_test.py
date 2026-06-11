@@ -57,7 +57,8 @@ if __name__ == "__main__":
     import cProfile
     import pstats
 
-    cProfile.run("run_ai_trial()", sort="cumtime", filename="./scripts/ai-perftest.txt")
-    p = pstats.Stats("./scripts/ai-perftest.txt")
+    prof_file = "./scripts/ai-perftest.prof"
+    cProfile.run("run_ai_trial()", sort="cumtime", filename=prof_file)
+    p = pstats.Stats("./scripts/ai-perftest.prof")
     p.sort_stats("cumtime")
     p.print_stats(20)
