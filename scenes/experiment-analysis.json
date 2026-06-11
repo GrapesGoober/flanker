@@ -1,5 +1,42 @@
 {
   "entities": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
+      "AiConfigComponent": {
+        "faction": "BLUE",
+        "config": {
+          "policy_type": "Minimax",
+          "state": {
+            "type": "UnabstractedStateConfig",
+            "move_candidates": {
+              "initial_points": {
+                "type": "GridConfig",
+                "spacing": 140,
+                "offset": 10
+              },
+              "use_combat_unit_positions": true,
+              "expansions": [
+                {
+                  "type": "LineBased",
+                  "tolerance": 10
+                },
+                {
+                  "type": "FlagPrune"
+                }
+              ]
+            },
+            "divide_moves_per_unit": false
+          }
+        }
+      }
+    },
+    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "config": {
+          "policy_type": "RandomHeuristic"
+        }
+      }
+    },
     "066d81b5-2e25-4175-8ea5-0b1f71f73c1d": {
       "InitiativeState": {
         "faction": "BLUE"
@@ -129,43 +166,6 @@
         "can_reactive_fire": true
       },
       "AssaultControls": {}
-    },
-    "722332cc-99c2-41f0-9b60-96916cb9a726": {
-      "AiConfigComponent": {
-        "faction": "BLUE",
-        "config": {
-          "policy_type": "Minimax",
-          "state": {
-            "type": "UnabstractedStateConfig",
-            "move_candidates": {
-              "initial_points": {
-                "type": "GridConfig",
-                "spacing": 140,
-                "offset": 10
-              },
-              "use_combat_unit_positions": true,
-              "expansions": [
-                {
-                  "type": "LineBased",
-                  "tolerance": 10
-                },
-                {
-                  "type": "FlagPrune"
-                }
-              ]
-            },
-            "divide_moves_per_unit": false
-          }
-        }
-      }
-    },
-    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
-      "AiConfigComponent": {
-        "faction": "RED",
-        "config": {
-          "policy_type": "RandomHeuristic"
-        }
-      }
     },
     "c08e1c9e-d67c-4bd7-bb00-38c423ecc7cf": {
       "Transform": {
