@@ -232,8 +232,8 @@ if __name__ == "__main__":
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
-        if unit.faction == InitiativeState.Faction.BLUE:
-            draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
+        # if unit.faction == InitiativeState.Faction.BLUE:
+        #     draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
 
         if unit.faction == InitiativeState.Faction.RED:
             draw_combat_unit_los_cone(gs, unit_id=id, color="C1")
