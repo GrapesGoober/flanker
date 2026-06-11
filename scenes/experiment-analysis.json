@@ -56,37 +56,6 @@
         "units_destroyed_counter": 0
       }
     },
-    "b139e1d9-7df9-4148-a8db-137df1c0fa7c": {
-      "Transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "degrees": 0.0
-      },
-      "TerrainFeature": {
-        "vertices": [
-          {
-            "x": 0.0,
-            "y": 0.0
-          },
-          {
-            "x": 300.0,
-            "y": 0.0
-          },
-          {
-            "x": 300.0,
-            "y": 300.0
-          },
-          {
-            "x": 0.0,
-            "y": 300.0
-          }
-        ],
-        "is_closed_loop": true,
-        "flag": 33
-      }
-    },
     "843fadf4-9645-44ec-9d42-9ac658e964ca": {
       "Transform": {
         "position": {
@@ -166,6 +135,37 @@
         "can_reactive_fire": true
       },
       "AssaultControls": {}
+    },
+    "b139e1d9-7df9-4148-a8db-137df1c0fa7c": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 300.0
+          },
+          {
+            "x": 0.0,
+            "y": 300.0
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
+      }
     },
     "c08e1c9e-d67c-4bd7-bb00-38c423ecc7cf": {
       "Transform": {
