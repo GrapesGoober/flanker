@@ -152,6 +152,10 @@ class MoveSystem:
         else:
             objective_system.reset_stall(gs, unit.faction)
 
+        # Reset fire effect if exist
+        fire_controls = gs.get_component(unit_id, FireControls)
+        fire_controls.firing_at = None
+
         # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
         transform.degrees = math.degrees(angle_rad)
