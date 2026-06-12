@@ -16,7 +16,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
-    EliminationObjective,
+    EliminationWinCondition,
     FireControls,
     Transform,
 )
@@ -72,7 +72,7 @@ class AiBranchingService:
             AssaultControls,
             # Copy the singletons
             InitiativeState,
-            EliminationObjective,
+            EliminationWinCondition,
             copy_method=replace,
         )
 

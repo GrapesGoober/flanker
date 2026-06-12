@@ -107,12 +107,14 @@ class TerrainFeature:
 
 
 @dataclass
-class EliminationObjective:
+class EliminationWinCondition:
     """
-    Represents the enemy elimination objective for a given faction.
+    Represents the elimination winning condition for a given faction.
+    Once the provided faction eliminates enough of the target faction,
+    the provided winning faction is considered winner.
     """
 
     target_faction: InitiativeState.Faction
     winning_faction: InitiativeState.Faction
-    units_to_destroy: int
-    units_destroyed_counter: int
+    units_to_eliminate: int
+    units_eliminated_counter: int

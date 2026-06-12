@@ -5,7 +5,7 @@ import pytest
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
-    EliminationObjective,
+    EliminationWinCondition,
     FireControls,
     InitiativeState,
     Transform,
@@ -32,11 +32,11 @@ def fixture() -> Fixture:
     # Rifle Squads
     gs.add_entity(
         InitiativeState(),
-        EliminationObjective(
+        EliminationWinCondition(
             target_faction=InitiativeState.Faction.RED,
             winning_faction=InitiativeState.Faction.BLUE,
-            units_to_destroy=2,
-            units_destroyed_counter=0,
+            units_to_eliminate=2,
+            units_eliminated_counter=0,
         ),
     )
     attacker_id = gs.add_entity(

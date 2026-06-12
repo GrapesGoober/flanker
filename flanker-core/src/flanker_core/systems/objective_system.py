@@ -3,7 +3,7 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
-    EliminationObjective,
+    EliminationWinCondition,
     InitiativeState,
 )
 
@@ -15,14 +15,14 @@ class ObjectiveSystem:
     def count_kill(gs: GameState, unit_destroyed_id: UUID) -> None:
         """Count a killed unit towards Elimination Objective."""
         unit = gs.get_component(unit_destroyed_id, CombatUnit)
-        for _, objective in gs.query(EliminationObjective):
+        for _, objective in gs.query(EliminationWinCondition):
             if objective.target_faction != unit.faction:
                 continue
-            objective.units_destroyed_counter += 1
+            objective.units_eliminated_counter += 1
 
     @staticmethod
     def get_winning_faction(gs: GameState) -> InitiativeState.Faction | None:
         """Get the faction that completed its objectives, if any."""
-        for _, objective in gs.query(EliminationObjective):
-            if objective.units_destroyed_counter >= objective.units_to_destroy:
+        for _, objective in gs.query(EliminationWinCondition):
+            if objective.units_eliminated_counter >= objective.units_to_eliminate:
                 return objective.winning_faction

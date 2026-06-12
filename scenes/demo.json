@@ -4,11 +4,11 @@
       "InitiativeState": {
         "faction": "BLUE"
       },
-      "EliminationObjective": {
+      "EliminationWinCondition": {
         "target_faction": "RED",
         "winning_faction": "BLUE",
-        "units_to_destroy": 1,
-        "units_destroyed_counter": 0
+        "units_to_eliminate": 1,
+        "units_eliminated_counter": 0
       },
       "Transform": {
         "position": {

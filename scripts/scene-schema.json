@@ -79,7 +79,7 @@
       "title": "CombatUnit",
       "type": "object"
     },
-    "EliminationObjective": {
+    "EliminationWinCondition": {
       "properties": {
         "target_faction": {
           "$ref": "#/$defs/Faction"
@@ -87,22 +87,22 @@
         "winning_faction": {
           "$ref": "#/$defs/Faction"
         },
-        "units_to_destroy": {
-          "title": "Units To Destroy",
+        "units_to_eliminate": {
+          "title": "Units To Eliminate",
           "type": "integer"
         },
-        "units_destroyed_counter": {
-          "title": "Units Destroyed Counter",
+        "units_eliminated_counter": {
+          "title": "Units Eliminated Counter",
           "type": "integer"
         }
       },
       "required": [
         "target_faction",
         "winning_faction",
-        "units_to_destroy",
-        "units_destroyed_counter"
+        "units_to_eliminate",
+        "units_eliminated_counter"
       ],
-      "title": "EliminationObjective",
+      "title": "EliminationWinCondition",
       "type": "object"
     },
     "Entity": {
@@ -215,17 +215,17 @@
           "default": null,
           "description": "Represents a polygonal terrain feature with terrain type bit flags.\nBit flags are used to determine LOS, movement, and fire types."
         },
-        "EliminationObjective": {
+        "EliminationWinCondition": {
           "anyOf": [
             {
-              "$ref": "#/$defs/EliminationObjective"
+              "$ref": "#/$defs/EliminationWinCondition"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Represents the enemy elimination objective for a given faction."
+          "description": "Represents the elimination winning condition for a given faction.\nOnce the provided faction eliminates enough of the target faction,\nthe provided winning faction is considered winner."
         }
       },
       "title": "Entity",
