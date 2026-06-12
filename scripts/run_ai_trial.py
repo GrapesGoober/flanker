@@ -105,9 +105,8 @@ def run_trial(
         print(f"Trial {tally.trials} finished with winner {result.winner}")
 
 
-# I started on 09:50, and this finishes on roughly 11:00.
-# 95% CPU utilization. Also, experiment-2-analysis finishes first
-# so the paralellization is not full (few processes went idle).
+# I started on 19:52, with 7(x2) processes, 95% CPU utilization.
+# This finishes some time before 20:51, so about 1 full hour.
 if __name__ == "__main__":
     SCENE_NAME = "experiment-2-grid"
     SCENE_FILE = f"./scenes/{SCENE_NAME}.json"

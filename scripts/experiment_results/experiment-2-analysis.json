@@ -1,8 +1,8 @@
 {
   "trials": 100,
-  "blue_wins": 29,
-  "red_wins": 63,
-  "draws": 8,
+  "blue_wins": 50,
+  "red_wins": 50,
+  "draws": 0,
   "blue_config": {
     "config": {
       "policy_type": "Minimax",
