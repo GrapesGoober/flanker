@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Vec2 } from '$lib/api';
 	/*
 	CombatUnitsLayer Svelte component
 	Renders combat units and overlays for gameplay, including selection and action markers.
@@ -25,10 +26,27 @@
 		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);
 	}
+
+	function GetUnitPosition(unitId: string): Vec2 | null {
+		for (let squad of controller.unitData.squads) {
+			if (squad.unitId == unitId) {
+				return squad.position;
+			}
+		}
+		return null;
+	}
 </script>
 
-<!-- Defines overlay for gameplay icons -->
+<!-- Draw overlay for gameplay icons -->
 <svg overflow="visible" class="transparent-icons">
+	{#each controller.unitData.squads as unit}
+		{#if unit.firingAt != null}
+			{@const unitPos = GetUnitPosition(unit.firingAt[0])}
+			{#if unitPos != null}
+				<Arrow start={unit.position} end={unitPos} offset={10} />
+			{/if}
+		{/if}
+	{/each}
 	{#if controller.state.type !== 'default'}
 		{@const selectedUnit = controller.state.selectedUnit}
 		{@const position = controller.state.selectedUnit.position}
@@ -50,6 +68,7 @@
 	{/if}
 </svg>
 
+<!-- Draw the combat units -->
 <svg overflow="visible">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
