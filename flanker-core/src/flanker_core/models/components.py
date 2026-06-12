@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 from uuid import UUID
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 
 
@@ -71,7 +71,7 @@ class FireControls:
 
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
-    firing_at: tuple[UUID, FireOutcomes] | None = None
+    firing_at: tuple[UUID, FireEffect] | None = None
 
 
 @dataclass

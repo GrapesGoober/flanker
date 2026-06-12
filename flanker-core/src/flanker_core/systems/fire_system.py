@@ -5,7 +5,7 @@ from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, FireControls, Transform
-from flanker_core.models.outcomes import FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
@@ -39,33 +39,28 @@ class FireSystem:
 
         unit = gs.get_component(unit_id, CombatUnit)
 
+        # If overriden, return the override value
         if unit.status_override != None:
             return unit.status_override
 
-        # TODO add a new enum FireEffect, only PINNING or SUPPRESSING
-        worst_fire_effect: FireOutcomes | None = None
+        # Record each fire effects of each firer
+        fire_effects: set[FireEffect] = set()
         for _, fire_controls in gs.query(FireControls):
             if fire_controls.firing_at == None:
                 continue
             fire_at_id, fire_effect = fire_controls.firing_at
             if fire_at_id != unit_id:
                 continue
-            match worst_fire_effect:
-                case None:
-                    worst_fire_effect = fire_effect
-                case FireOutcomes.PIN:
-                    if fire_effect == FireOutcomes.SUPPRESS:
-                        worst_fire_effect = fire_effect
-                case _:
-                    ...
+            fire_effects.add(fire_effect)
 
-        match worst_fire_effect:
-            case FireOutcomes.PIN:
-                return CombatUnit.Status.PINNED
-            case FireOutcomes.SUPPRESS:
-                return CombatUnit.Status.SUPPRESSED
-            case _:
-                return CombatUnit.Status.ACTIVE
+        # Apply each fire effect; SUPPRESSING surpass PINNING
+        if FireEffect.SUPPRESSING in fire_effects:
+            return CombatUnit.Status.SUPPRESSED
+        elif fire_effects == {FireEffect.PINNING}:
+            return CombatUnit.Status.PINNED
+
+        # No fire effect => return active status
+        return CombatUnit.Status.ACTIVE
 
     @staticmethod
     def validate_fire_actors(
@@ -141,12 +136,12 @@ class FireSystem:
                 pass
             case FireOutcomes.PIN:
                 # If firing at the same suppressed target, don't reset the effect
-                if fire_controls.firing_at != (target_id, FireOutcomes.SUPPRESS):
-                    fire_controls.firing_at = (target_id, FireOutcomes.PIN)
+                if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
+                    fire_controls.firing_at = (target_id, FireEffect.PINNING)
             case FireOutcomes.SUPPRESS:
                 target_status = fire_system.get_status(gs, target_id)
                 if target_status != CombatUnit.Status.SUPPRESSED:
-                    fire_controls.firing_at = (target_id, FireOutcomes.SUPPRESS)
+                    fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
                 else:  # Kills the unit if it is already suppressed
                     command_system.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
