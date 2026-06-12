@@ -214,7 +214,7 @@ def draw_move_candidates(
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-2-grid.json")
+    gs = load_state("./scenes/experiment-2-analysis.json")
 
     screenshot = None  # "./scripts/experiment-template.png"
     if screenshot:
