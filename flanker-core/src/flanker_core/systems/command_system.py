@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import CombatUnit
+from flanker_core.models.components import CombatUnit, FireControls
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -13,9 +13,18 @@ class CommandSystem:
         """Mutator method kills a combat unit while transferring chain of command."""
 
         unit = gs.get_component(unit_id, CombatUnit)
-        current_command = unit.command_id
 
-        # Finds the next chain of command
+        # Reset fire controls if firing at this unit
+        for _, fire_controls in gs.query(FireControls):
+            if fire_controls.firing_at == None:
+                continue
+            firing_id, _ = fire_controls.firing_at
+            if firing_id != unit_id:
+                continue
+            fire_controls.firing_at = None
+
+        # Finds the next chain of command to reassign current command
+        current_command = unit.command_id
         next_command: UUID | None = None
         for id, child_unit in gs.query(CombatUnit):
             if child_unit.command_id != unit_id:
