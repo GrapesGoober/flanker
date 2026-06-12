@@ -25,6 +25,12 @@
         "winning_faction": "BLUE",
         "units_to_eliminate": 2,
         "units_eliminated_counter": 0
+      },
+      "StallLoseCondition": {
+        "counting_faction": "RED",
+        "winning_faction": "BLUE",
+        "stall_count": 0,
+        "stall_limit": 5
       }
     },
     "1859782c-bf0d-417c-959f-445375719293": {
@@ -33,6 +39,12 @@
         "winning_faction": "RED",
         "units_to_eliminate": 2,
         "units_eliminated_counter": 0
+      },
+      "StallLoseCondition": {
+        "counting_faction": "BLUE",
+        "winning_faction": "RED",
+        "stall_count": 0,
+        "stall_limit": 5
       }
     },
     "843fadf4-9645-44ec-9d42-9ac658e964ca": {

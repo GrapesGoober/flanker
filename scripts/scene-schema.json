@@ -226,6 +226,18 @@
           ],
           "default": null,
           "description": "Represents the elimination winning condition for a given faction.\nOnce the provided faction eliminates enough of the target faction,\nthe provided winning faction is considered winner."
+        },
+        "StallLoseCondition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StallLoseCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Represents stall losing condition for a given faction.\nOnce the faction performs enough stalling moves, the provided\nwinning faction is considered winner."
         }
       },
       "title": "Entity",
@@ -509,6 +521,32 @@
         "state"
       ],
       "title": "SearchPolicyConfig",
+      "type": "object"
+    },
+    "StallLoseCondition": {
+      "properties": {
+        "counting_faction": {
+          "$ref": "#/$defs/Faction"
+        },
+        "winning_faction": {
+          "$ref": "#/$defs/Faction"
+        },
+        "stall_count": {
+          "title": "Stall Count",
+          "type": "integer"
+        },
+        "stall_limit": {
+          "title": "Stall Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "counting_faction",
+        "winning_faction",
+        "stall_count",
+        "stall_limit"
+      ],
+      "title": "StallLoseCondition",
       "type": "object"
     },
     "Status": {
