@@ -1,5 +1,6 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from itertools import product
 from typing import Any
 from uuid import UUID
 
@@ -144,11 +145,6 @@ def draw_waypoints(
     points_y: list[float] = []
     ids: list[int] = []
 
-    accented_segments: list[list[tuple[float, float]]] = []
-    accented_points_x: list[float] = []
-    accented_points_y: list[float] = []
-    accented_ids: list[int] = []
-
     waypoints = waypoints_system.get_waypoints(waypoints_state.gs)
 
     for id, point in waypoints.items():
@@ -160,20 +156,6 @@ def draw_waypoints(
                 str(id),
             )
 
-        if id in accented_ids:
-            accented_points_x.append(point.position.x)
-            accented_points_y.append(point.position.y)
-
-            for visible_node_id in point.visible_nodes:
-                visible_node = waypoints[visible_node_id]
-
-                accented_segments.append(
-                    [
-                        (point.position.x, point.position.y),
-                        (visible_node.position.x, visible_node.position.y),
-                    ]
-                )
-            continue
         points_x.append(point.position.x)
         points_y.append(point.position.y)
         ids.append(id)
@@ -203,19 +185,10 @@ def draw_waypoints(
     #     linewidth=1,
     #     alpha=0.05,
     # )
-    # draw_graph(
-    #     accented_points_x,
-    #     accented_points_y,
-    #     accented_segments,
-    #     color="C1",
-    #     linewidth=2,
-    #     alpha=0.3,
-    # )
 
 
 def draw_move_candidates(
-    gs: GameState,
-    faction: InitiativeState.Faction,
+    gs: GameState, faction: InitiativeState.Faction, draw_lines: bool
 ) -> None:
     agent = AiAgent.get_agent(gs, faction)
 
@@ -228,13 +201,20 @@ def draw_move_candidates(
     move_candidates = agent.rs.move_candidates
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
-
     plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+
+    if draw_lines:
+        segments = [
+            ((p1.x, p1.y), (p2.x, p2.y))
+            for p1, p2 in product(move_candidates, repeat=2)
+        ]
+        lc = LineCollection(segments, colors="C0", linewidths=1, alpha=0.1)
+        plt.gca().add_collection(lc)
 
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-analysis.json")
+    gs = load_state("./scenes/experiment-2-analysis.json")
 
     screenshot = None  # "./scripts/experiment-template.png"
     if screenshot:
@@ -248,12 +228,12 @@ if __name__ == "__main__":
 
     draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(gs, InitiativeState.Faction.BLUE)
+    draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=True)
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
-        if unit.faction == InitiativeState.Faction.BLUE:
-            draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
+        # if unit.faction == InitiativeState.Faction.BLUE:
+        #     draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
 
         if unit.faction == InitiativeState.Faction.RED:
             draw_combat_unit_los_cone(gs, unit_id=id, color="C1")
