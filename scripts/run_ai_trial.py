@@ -105,10 +105,9 @@ def run_trial(
         print(f"Trial {tally.trials} finished with winner {result.winner}")
 
 
-# I started on 14:00, n=100, let's see how long it takes
-# Checked on 15:21 and is done. Could have been done some time earlier
+# I started on 09:50
 if __name__ == "__main__":
-    SCENE_NAME = "experiment-grid"
+    SCENE_NAME = "experiment-2-grid"
     SCENE_FILE = f"./scenes/{SCENE_NAME}.json"
     RECORD_FILE = f"./scripts/experiment_results/{SCENE_NAME}.json"
     gs = initialize_game_state(path=SCENE_FILE)
