@@ -150,8 +150,9 @@ class AiBranchingService:
         unit_id: UUID,
         target_id: UUID,
     ) -> list[tuple[float, GameState]]:
+        fire_system = gs.get(FireSystem)
+
         target_transform = gs.get_component(target_id, Transform)
-        target_unit = gs.get_component(target_id, CombatUnit)
         branches = AiBranchingService.get_reactive_fire_branches(
             gs=gs,
             unit_id=unit_id,
@@ -159,7 +160,7 @@ class AiBranchingService:
         )
         for _, new_state in branches:
             assault_controls = new_state.get_component(unit_id, AssaultControls)
-            if target_unit.status == CombatUnit.Status.SUPPRESSED:
+            if fire_system.get_status(gs, target_id) == CombatUnit.Status.SUPPRESSED:
                 assault_controls.override = AssaultOutcomes.SUCCESS
             else:
                 assault_controls.override = AssaultOutcomes.FAIL

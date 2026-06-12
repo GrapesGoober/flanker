@@ -13,6 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.register_systems import register_systems
@@ -124,6 +125,7 @@ def test_interrupt_miss(fixture: Fixture) -> None:
 def test_interrupt_pin(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
     move_system = fixture.gs.get(MoveSystem)
+    fire_system = fixture.gs.get(FireSystem)
 
     fixture.fire_controls.override = FireOutcomes.PIN
     move_system.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
@@ -131,8 +133,8 @@ def test_interrupt_pin(fixture: Fixture) -> None:
     assert transform.position == Vec2(
         7.5, -10
     ), "Move action expects to be interrupted at Vec2(7.5, -10)"
-    unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
-    assert unit.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
+    unit_status = fire_system.get_status(fixture.gs, fixture.unit_move)
+    assert unit_status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
         initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "PINNED reactive fire must maintain initiative."
@@ -144,6 +146,7 @@ def test_interrupt_pin(fixture: Fixture) -> None:
 def test_interrupt_suppress(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
     move_system = fixture.gs.get(MoveSystem)
+    fire_system = fixture.gs.get(FireSystem)
 
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
     move_system.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
@@ -151,9 +154,9 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
     assert transform.position == Vec2(
         7.5, -10
     ), "Move action expects to be interrupted at Vec2(8, -10)"
-    unit = fixture.gs.get_component(fixture.unit_move, CombatUnit)
+    unit_status = fire_system.get_status(fixture.gs, fixture.unit_move)
     assert (
-        unit.status == CombatUnit.Status.SUPPRESSED
+        unit_status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
         initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == True

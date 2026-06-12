@@ -20,6 +20,7 @@ from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -40,6 +41,8 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
+        fire_system = self.gs.get(FireSystem)
+
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -48,9 +51,9 @@ class WaypointsState(IRepresentationState[Action]):
                 return -10000
 
         score = 0.0
-        for _, unit in self.gs.query(CombatUnit):
+        for unit_id, unit in self.gs.query(CombatUnit):
             value = 0
-            match unit.status:
+            match fire_system.get_status(self.gs, unit_id):
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:

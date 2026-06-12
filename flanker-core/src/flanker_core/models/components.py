@@ -46,7 +46,7 @@ class CombatUnit:
     faction: InitiativeState.Faction
     fired_by: set[UUID] = field(default_factory=set[UUID])
     command_id: UUID | None = None
-    status: Status = Status.ACTIVE
+    temp_status: Status = Status.ACTIVE
 
 
 @dataclass

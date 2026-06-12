@@ -54,15 +54,15 @@ class MoveSystem:
         to: Vec2,
     ) -> Literal[True] | InvalidAction:
         """Returns `True` if move action can be performed."""
-
-        transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
-        move_controls = gs.get_component(unit_id, MoveControls)
         intersect_system = gs.get(IntersectSystem)
         initiative_system = gs.get(InitiativeSystem)
+        fire_system = gs.get(FireSystem)
+
+        transform = gs.get_component(unit_id, Transform)
+        move_controls = gs.get_component(unit_id, MoveControls)
 
         # Check game state is valid for move action
-        if unit.status != CombatUnit.Status.ACTIVE:
+        if fire_system.get_status(gs, unit_id) != CombatUnit.Status.ACTIVE:
             return InvalidAction.INACTIVE_UNIT
         if not initiative_system.has_initiative(gs, unit_id):
             return InvalidAction.NO_INITIATIVE

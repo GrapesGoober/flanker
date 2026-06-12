@@ -6,6 +6,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import AssaultControls, CombatUnit, Transform
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -36,10 +37,12 @@ class AssaultSystem:
     ) -> InvalidAction | None:
         """Check whether assault action valid."""
         initiative_system = gs.get(InitiativeSystem)
+        fire_system = gs.get(FireSystem)
+
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         target_unit = gs.get_component(target_id, CombatUnit)
 
-        if attacker_unit.status != CombatUnit.Status.ACTIVE:
+        if fire_system.get_status(gs, attacker_id) != CombatUnit.Status.ACTIVE:
             return InvalidAction.NO_INITIATIVE
         if not initiative_system.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
@@ -53,9 +56,9 @@ class AssaultSystem:
         target_id: UUID,
     ) -> AssaultOutcomes:
         """Rolls a randomized assault outcome, or overriden if provided."""
+        fire_system = gs.get(FireSystem)
 
         attacker_assault = gs.get_component(attacker_id, AssaultControls)
-        target_unit = gs.get_component(target_id, CombatUnit)
 
         # Once at location, do dice roll; only one can survive
         if attacker_assault.override == None:
@@ -63,7 +66,8 @@ class AssaultSystem:
         else:
             return attacker_assault.override
 
-        threshold = _ASSAULT_SUCCESS_PROBABILITIES[target_unit.status]
+        target_status = fire_system.get_status(gs, target_id)
+        threshold = _ASSAULT_SUCCESS_PROBABILITIES[target_status]
 
         if attacker_roll <= threshold:
             return AssaultOutcomes.SUCCESS

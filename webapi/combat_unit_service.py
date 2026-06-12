@@ -9,6 +9,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -39,20 +40,22 @@ class CombatUnitService:
     @staticmethod
     def get_units_view_state(gs: GameState) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
+        fire_system = gs.get(FireSystem)
+
         # Assume player faction is BLUE
         faction = InitiativeState.Faction.BLUE
         squads: list[SquadModel] = []
-        for ent, unit, transform, fire in gs.query(
+        for unit_id, unit, transform, fire in gs.query(
             CombatUnit,
             Transform,
             FireControls,
         ):
             squads.append(
                 SquadModel(
-                    unit_id=ent,
+                    unit_id=unit_id,
                     position=transform.position,
                     degree=transform.degrees,
-                    status=unit.status,
+                    status=fire_system.get_status(gs, unit_id),
                     is_friendly=(unit.faction == faction),
                     no_fire=not fire.can_reactive_fire,
                 )

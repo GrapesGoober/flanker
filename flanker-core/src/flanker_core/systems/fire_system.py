@@ -31,12 +31,24 @@ class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
+    def get_status(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> CombatUnit.Status:
+        """Gets the current unit status of a combat unit."""
+
+        unit = gs.get_component(unit_id, CombatUnit)
+        return unit.temp_status
+
+    @staticmethod
     def validate_fire_actors(
         gs: GameState,
         attacker_id: UUID,
         target_id: UUID,
     ) -> InvalidAction | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
+        los_system = gs.get(LosSystem)
+        fire_system = gs.get(FireSystem)
 
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         attacker_transform = gs.get_component(attacker_id, Transform)
@@ -44,7 +56,7 @@ class FireSystem:
         target_transform = gs.get_component(target_id, Transform)
 
         # Check if attacker can attack
-        if attacker_unit.status not in (
+        if fire_system.get_status(gs, attacker_id) not in (
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
@@ -55,7 +67,6 @@ class FireSystem:
             return InvalidAction.BAD_ENTITY
 
         # Check if attacker has LOS to target and within FOV
-        los_system = gs.get(LosSystem)
         if not los_system.has_los(
             gs,
             attacker_transform.position,
@@ -93,18 +104,18 @@ class FireSystem:
         fire_outcome: FireOutcomes,
     ) -> None:
         """Applies the fire outcome to the target combat unit."""
+        command_system = gs.get(CommandSystem)
 
         target_unit = gs.get_component(target_id, CombatUnit)
-        command_system = gs.get(CommandSystem)
         match fire_outcome:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                if target_unit.status == CombatUnit.Status.ACTIVE:
-                    target_unit.status = CombatUnit.Status.PINNED
+                if target_unit.temp_status == CombatUnit.Status.ACTIVE:
+                    target_unit.temp_status = CombatUnit.Status.PINNED
             case FireOutcomes.SUPPRESS:
-                if target_unit.status != CombatUnit.Status.SUPPRESSED:
-                    target_unit.status = CombatUnit.Status.SUPPRESSED
+                if target_unit.temp_status != CombatUnit.Status.SUPPRESSED:
+                    target_unit.temp_status = CombatUnit.Status.SUPPRESSED
                 else:  # Kills the unit if it is already suppressed
                     command_system.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
@@ -145,13 +156,14 @@ class FireSystem:
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
         """Returns a list of valid spotters for reactive fire. Doesn't check LOS."""
+        fire_system = gs.get(FireSystem)
 
         unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
             # Check that spotter is a valid spotter for reactive fire
-            if spotter_unit.status == CombatUnit.Status.SUPPRESSED:
+            if fire_system.get_status(gs, spotter_id) == CombatUnit.Status.SUPPRESSED:
                 continue
             if spotter_id == target_id:
                 continue

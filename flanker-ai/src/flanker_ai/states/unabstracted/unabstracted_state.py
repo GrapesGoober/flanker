@@ -18,6 +18,7 @@ from flanker_core.models.components import (
     InitiativeState,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -36,6 +37,8 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
+        fire_system = self._gs.get(FireSystem)
+
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -44,9 +47,9 @@ class UnabstractedState(IRepresentationState[Action]):
                 return -10000
 
         score = 0.0
-        for _, combat_unit in self._gs.query(CombatUnit):
+        for unit_id, combat_unit in self._gs.query(CombatUnit):
             value = 0
-            match combat_unit.status:
+            match fire_system.get_status(self._gs, unit_id):
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:
