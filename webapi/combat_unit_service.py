@@ -45,7 +45,7 @@ class CombatUnitService:
         # Assume player faction is BLUE
         faction = InitiativeState.Faction.BLUE
         squads: list[SquadModel] = []
-        for unit_id, unit, transform, fire in gs.query(
+        for unit_id, unit, transform, fire_controls in gs.query(
             CombatUnit,
             Transform,
             FireControls,
@@ -57,7 +57,8 @@ class CombatUnitService:
                     degree=transform.degrees,
                     status=fire_system.get_status(gs, unit_id),
                     is_friendly=(unit.faction == faction),
-                    no_fire=not fire.can_reactive_fire,
+                    no_fire=not fire_controls.can_reactive_fire,
+                    firing_at=fire_controls.firing_at,
                 )
             )
 

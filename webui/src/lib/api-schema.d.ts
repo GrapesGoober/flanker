@@ -311,6 +311,12 @@ export interface components {
             targetId: string;
         };
         /**
+         * FireEffect
+         * @description Defines all fire effects.
+         * @enum {string}
+         */
+        FireEffect: "PINNING" | "SUPPRESSING";
+        /**
          * FireOutcomes
          * @description Defines all fire outcomes.
          * @enum {string}
@@ -390,6 +396,11 @@ export interface components {
             isFriendly: boolean;
             /** Nofire */
             noFire: boolean;
+            /** Firingat */
+            firingAt: [
+                string,
+                components["schemas"]["FireEffect"]
+            ] | null;
         };
         /**
          * Status
