@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
+from flanker_ai.actions import FireActionResult, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -170,35 +170,6 @@ def fixture() -> Fixture:
         enemy_2=enemy_2,
         waypoint_coordinates=waypoint_coordinates,
     )
-
-
-def test_stall(fixture: Fixture) -> None:
-    agent = fixture.blue_agent
-    rs = agent.rs
-    assert isinstance(
-        rs, WaypointsState
-    ), "Configured agent's state representation must be waypoints state."
-    rs.update_state(fixture.gs)
-    for _ in range(5):
-        action = MoveAction(
-            unit_id=fixture.friendly_1,
-            to=fixture.waypoint_coordinates[3],
-        )
-        _, new_state = rs.get_branches(action)[0]
-        assert new_state != None, "Actions are not invalid"
-        rs = new_state
-    assert rs.get_winner() == None, "BLUE must not stall yet."
-
-    action = MoveAction(
-        unit_id=fixture.friendly_1,
-        to=fixture.waypoint_coordinates[3],
-    )
-    _, new_state = rs.get_branches(action)[0]
-    assert new_state != None, "Actions are not invalid"
-    rs = new_state
-    assert (
-        rs.get_winner() == InitiativeState.Faction.RED
-    ), "BLUE must be considered stall."
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:

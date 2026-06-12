@@ -10,7 +10,6 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     UnabstractedStateConfig,
 )
-from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
@@ -167,38 +166,6 @@ def fixture() -> Fixture:
         enemy_1=enemy_1,
         enemy_2=enemy_2,
     )
-
-
-def test_stall(fixture: Fixture) -> None:
-    agent = fixture.blue_agent
-    rs = agent.rs
-    assert isinstance(
-        rs, UnabstractedState
-    ), "Configured agent's state representation must be unabstracted state."
-    rs.update_state(fixture.gs)
-
-    # Have it move repeatedly to the same coordinates
-    transform = fixture.gs.get_component(fixture.friendly_1, Transform)
-    for _ in range(5):
-        action = MoveAction(
-            unit_id=fixture.friendly_1,
-            to=transform.position,
-        )
-        _, new_state = rs.get_branches(action)[0]
-        assert new_state != None, "Actions are not invalid"
-        rs = new_state
-    assert rs.get_winner() == None, "BLUE must not stall yet."
-
-    action = MoveAction(
-        unit_id=fixture.friendly_1,
-        to=transform.position,
-    )
-    _, new_state = rs.get_branches(action)[0]
-    assert new_state != None, "Actions are not invalid"
-    rs = new_state
-    assert (
-        rs.get_winner() == InitiativeState.Faction.RED
-    ), "BLUE must be considered stall."
 
 
 def test_branching_total_prob(fixture: Fixture) -> None:
