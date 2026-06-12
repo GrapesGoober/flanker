@@ -2,7 +2,6 @@ from copy import deepcopy
 from typing import Sequence, override
 
 from flanker_ai.actions import Action
-from flanker_ai.components import AiStallCountComponent
 from flanker_ai.config_models import PointsConfig
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_action_service import AiActionService
@@ -10,7 +9,6 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -129,12 +127,6 @@ class UnabstractedState(IRepresentationState[Action]):
 
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
-        if self._gs.query(AiStallCountComponent) == []:
-            self._gs.add_entity(AiStallCountComponent())
-        self._gs.replace(
-            existing=ObjectiveSystem,
-            replacement=AiObjectiveSystem,
-        )
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config

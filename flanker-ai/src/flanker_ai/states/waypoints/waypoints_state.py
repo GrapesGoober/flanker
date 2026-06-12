@@ -10,13 +10,11 @@ from flanker_ai.actions import (
     MoveAction,
     PivotAction,
 )
-from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
@@ -200,17 +198,10 @@ class WaypointsState(IRepresentationState[Action]):
         self.gs = deepcopy(gs)
 
         self.gs.replace(
-            existing=ObjectiveSystem,
-            replacement=AiObjectiveSystem,
-        )
-        self.gs.replace(
             existing=LosSystem,
             replacement=WaypointsLosSystem,
         )
         self.gs.register(WaypointsGraphSystem)
-
-        if self.gs.query(AiStallCountComponent) == []:
-            self.gs.add_entity(AiStallCountComponent())
 
         waypoints_system = self.gs.get(WaypointsGraphSystem)
 

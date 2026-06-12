@@ -1,8 +1,7 @@
-from copy import deepcopy
 from dataclasses import replace
 from itertools import product
 from math import prod
-from typing import Any, Literal
+from typing import Any
 from uuid import UUID
 
 from flanker_ai.actions import (
@@ -12,7 +11,7 @@ from flanker_ai.actions import (
     MoveAction,
     PivotAction,
 )
-from flanker_ai.components import AiStallCountComponent, InitiativeState
+from flanker_ai.components import InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
@@ -25,7 +24,6 @@ from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidA
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
@@ -63,25 +61,6 @@ class AiBranchingService:
         return permutations
 
     @staticmethod
-    def _count_stall(
-        gs: GameState,
-        count: Literal["up"] | Literal["reset"],
-    ) -> None:
-
-        if entities := gs.query(AiStallCountComponent):
-            _, stall_component = entities[0]
-        else:
-            gs.add_entity(stall_component := AiStallCountComponent())
-
-        initiative_system = gs.get(InitiativeSystem)
-        initiative = initiative_system.get_initiative(gs)
-        match count:
-            case "up":
-                stall_component.stall_counter[initiative] += 1
-            case "reset":
-                stall_component.stall_counter[initiative] = 0
-
-    @staticmethod
     def copy(gs: GameState) -> GameState:
         """Selectively copy the game state for mutating entities."""
 
@@ -95,10 +74,6 @@ class AiBranchingService:
             InitiativeState,
             EliminationObjective,
             copy_method=replace,
-        ).selective_copy(
-            # AI stall count component has a mutable dict
-            AiStallCountComponent,
-            copy_method=deepcopy,
         )
 
     @staticmethod
@@ -117,10 +92,8 @@ class AiBranchingService:
             uid for _, uuid_list in reactive_fire_candidates for uid in uuid_list
         }
 
-        # No reactive fire found; this is garantee outcome
         if len(reactive_fire_ids) == 0:
             new_state = AiBranchingService.copy(gs)
-            AiBranchingService._count_stall(new_state, "up")
             return [(1, new_state)]
 
         # Reactive fire found; configure all permutations
@@ -139,7 +112,6 @@ class AiBranchingService:
         branching_states: list[tuple[float, GameState]] = []
         for probability, unit_fire_outcomes in permutations:
             new_state = AiBranchingService.copy(gs)
-            AiBranchingService._count_stall(new_state, count="reset")
             for firer_id, firer_outcome in unit_fire_outcomes.items():
                 fire_controls = new_state.get_component(firer_id, FireControls)
                 fire_controls.override = firer_outcome
@@ -166,7 +138,6 @@ class AiBranchingService:
         branching_states: list[tuple[float, GameState]] = []
         for probability, outcomes in permutations:
             new_state = AiBranchingService.copy(gs)
-            AiBranchingService._count_stall(new_state, count="reset")
             for id_to_override, outcome in outcomes.items():
                 fire_controls = new_state.get_component(id_to_override, FireControls)
                 fire_controls.override = outcome
