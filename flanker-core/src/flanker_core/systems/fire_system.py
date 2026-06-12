@@ -38,7 +38,34 @@ class FireSystem:
         """Gets the current unit status of a combat unit."""
 
         unit = gs.get_component(unit_id, CombatUnit)
-        return unit.temp_status
+
+        if unit.status_override != None:
+            return unit.status_override
+
+        # TODO add a new enum FireEffect, only PINNING or SUPPRESSING
+        worst_fire_effect: FireOutcomes | None = None
+        for _, fire_controls in gs.query(FireControls):
+            if fire_controls.firing_at == None:
+                continue
+            fire_at_id, fire_effect = fire_controls.firing_at
+            if fire_at_id != unit_id:
+                continue
+            match worst_fire_effect:
+                case None:
+                    worst_fire_effect = fire_effect
+                case FireOutcomes.PIN:
+                    if fire_effect == FireOutcomes.SUPPRESS:
+                        worst_fire_effect = fire_effect
+                case _:
+                    ...
+
+        match worst_fire_effect:
+            case FireOutcomes.PIN:
+                return CombatUnit.Status.PINNED
+            case FireOutcomes.SUPPRESS:
+                return CombatUnit.Status.SUPPRESSED
+            case _:
+                return CombatUnit.Status.ACTIVE
 
     @staticmethod
     def validate_fire_actors(
@@ -100,22 +127,26 @@ class FireSystem:
     @staticmethod
     def apply_fire_outcome(
         gs: GameState,
+        attacker_id: UUID,
         target_id: UUID,
         fire_outcome: FireOutcomes,
     ) -> None:
         """Applies the fire outcome to the target combat unit."""
         command_system = gs.get(CommandSystem)
+        fire_system = gs.get(FireSystem)
 
-        target_unit = gs.get_component(target_id, CombatUnit)
+        fire_controls = gs.get_component(attacker_id, FireControls)
         match fire_outcome:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                if target_unit.temp_status == CombatUnit.Status.ACTIVE:
-                    target_unit.temp_status = CombatUnit.Status.PINNED
+                # If firing at the same suppressed target, don't reset the effect
+                if fire_controls.firing_at != (target_id, FireOutcomes.SUPPRESS):
+                    fire_controls.firing_at = (target_id, FireOutcomes.PIN)
             case FireOutcomes.SUPPRESS:
-                if target_unit.temp_status != CombatUnit.Status.SUPPRESSED:
-                    target_unit.temp_status = CombatUnit.Status.SUPPRESSED
+                target_status = fire_system.get_status(gs, target_id)
+                if target_status != CombatUnit.Status.SUPPRESSED:
+                    fire_controls.firing_at = (target_id, FireOutcomes.SUPPRESS)
                 else:  # Kills the unit if it is already suppressed
                     command_system.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
@@ -145,7 +176,12 @@ class FireSystem:
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
         fire_outcome = fire_system.get_fire_outcome(gs, attacker_id)
-        fire_system.apply_fire_outcome(gs, target_id, fire_outcome)
+        fire_system.apply_fire_outcome(
+            gs,
+            attacker_id=attacker_id,
+            target_id=target_id,
+            fire_outcome=fire_outcome,
+        )
         match fire_outcome:
             case FireOutcomes.MISS | FireOutcomes.PIN:
                 initiative_system.set_initiative(gs, target_unit.faction)

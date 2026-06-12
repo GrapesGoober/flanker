@@ -155,7 +155,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id,
     )
-    assert fire_result != None, "Fire action must occur"
+    assert not isinstance(fire_result, InvalidAction), "Fire action must occur"
     target_status = fire_system.get_status(fixture.gs, fixture.target_id)
     assert (
         target_status == CombatUnit.Status.SUPPRESSED
@@ -184,8 +184,7 @@ def test_kill_fire(fixture: Fixture) -> None:
 
 def test_status_pinned(fixture: Fixture) -> None:
     fire_system = fixture.gs.get(FireSystem)
-    fixture.attacker_unit.temp_status = CombatUnit.Status.PINNED
-    fixture.fire_controls.override = FireOutcomes.KILL
+    fixture.attacker_unit.status_override = CombatUnit.Status.PINNED
     fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,
@@ -196,8 +195,7 @@ def test_status_pinned(fixture: Fixture) -> None:
 
 def test_status_supppressed(fixture: Fixture) -> None:
     fire_system = fixture.gs.get(FireSystem)
-    fixture.attacker_unit.temp_status = CombatUnit.Status.SUPPRESSED
-    fixture.fire_controls.override = FireOutcomes.KILL
+    fixture.attacker_unit.status_override = CombatUnit.Status.SUPPRESSED
     fire_result = fire_system.fire(
         fixture.gs,
         fixture.attacker_id,

@@ -177,7 +177,12 @@ class MoveSystem:
 
                 # Apply reactive fire outcome
                 outcome = fire_system.get_fire_outcome(gs, spotter_id)
-                fire_system.apply_fire_outcome(gs, unit_id, outcome)
+                fire_system.apply_fire_outcome(
+                    gs,
+                    attacker_id=spotter_id,
+                    target_id=unit_id,
+                    fire_outcome=outcome,
+                )
                 match outcome:
                     case FireOutcomes.MISS:
                         fire_controls = gs.get_component(spotter_id, FireControls)

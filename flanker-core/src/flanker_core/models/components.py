@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 from uuid import UUID
 
@@ -44,9 +44,8 @@ class CombatUnit:
         SUPPRESSED = "SUPPRESSED"
 
     faction: InitiativeState.Faction
-    fired_by: set[UUID] = field(default_factory=set[UUID])
     command_id: UUID | None = None
-    temp_status: Status = Status.ACTIVE
+    status_override: Status | None = None
 
 
 @dataclass
