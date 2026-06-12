@@ -17,6 +17,7 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 # This is a bandaid fix for LOS polygon imprecision
 _MOVE_INTERRUPT_ATOL = 5
@@ -134,6 +135,7 @@ class MoveSystem:
         """
         move_system = gs.get(MoveSystem)
         fire_system = gs.get(FireSystem)
+        objective_system = gs.get(ObjectiveSystem)
 
         if (reason := move_system._validate_move(gs, unit_id, to)) != True:
             return reason
@@ -142,6 +144,13 @@ class MoveSystem:
         move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = move_system.get_interrupt_candidates(gs, unit_id, to)
+
+        # Count stall if no possibility of reactive fires
+        unit = gs.get_component(unit_id, CombatUnit)
+        if len(interrupt_candidates) == 0:
+            objective_system.count_stall(gs, unit.faction)
+        else:
+            objective_system.reset_stall(gs, unit.faction)
 
         # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
@@ -225,6 +234,7 @@ class MoveSystem:
         results: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
+        # TODO: group move stall counting
         for unit_id, to in moves:
             result = move_system._singular_move(gs, unit_id, to)
             if not isinstance(result, _MoveActionResult):

@@ -118,3 +118,17 @@ class EliminationWinCondition:
     winning_faction: InitiativeState.Faction
     units_to_eliminate: int
     units_eliminated_counter: int
+
+
+@dataclass
+class StallLoseCondition:
+    """
+    Represents stall losing condition for a given faction.
+    Once the faction performs enough stalling moves, the provided
+    winning faction is considered winner.
+    """
+
+    counting_faction: InitiativeState.Faction
+    winning_faction: InitiativeState.Faction
+    stall_count: int
+    stall_limit: int

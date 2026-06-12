@@ -9,6 +9,7 @@ from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
@@ -117,6 +118,7 @@ class FireSystem:
     ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
         initiative_system = gs.get(InitiativeSystem)
+        objective_system = gs.get(ObjectiveSystem)
 
         # Validate fire actors
         fire_system = gs.get(FireSystem)
@@ -124,6 +126,10 @@ class FireSystem:
             return reason
         if not initiative_system.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
+
+        # Reset stall count after validity checks
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        objective_system.reset_stall(gs, attacker_unit.faction)
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)

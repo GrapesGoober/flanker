@@ -8,6 +8,7 @@ from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidA
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 _ASSAULT_SUCCESS_PROBABILITIES = {
     CombatUnit.Status.ACTIVE: 0.5,
@@ -78,6 +79,7 @@ class AssaultSystem:
         """Mutator method performs assault action with reactive fire."""
         assault_system = gs.get(AssaultSystem)
         move_system = gs.get(MoveSystem)
+        objective_system = gs.get(ObjectiveSystem)
 
         # Check assault action valid
         if invalid_reason := assault_system._validate_assault_action(
@@ -94,6 +96,10 @@ class AssaultSystem:
             return _AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome
             )
+
+        # Reset stall count after validity checks
+        attacker_unit = gs.get_component(attacker_id, CombatUnit)
+        objective_system.reset_stall(gs, attacker_unit.faction)
 
         # Once at location, do dice roll; only one can survive
         outcome = assault_system._get_assault_outcome(
