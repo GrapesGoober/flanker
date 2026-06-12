@@ -131,6 +131,8 @@ class FireSystem:
         fire_system = gs.get(FireSystem)
 
         fire_controls = gs.get_component(attacker_id, FireControls)
+        target_fire_controls = gs.get_component(target_id, FireControls)
+
         match fire_outcome:
             case FireOutcomes.MISS:
                 pass
@@ -142,6 +144,8 @@ class FireSystem:
                 target_status = fire_system.get_status(gs, target_id)
                 if target_status != CombatUnit.Status.SUPPRESSED:
                     fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
+                    # Reset fire effect because SUPPRESSED unit can't fire.
+                    target_fire_controls.firing_at = None
                 else:  # Kills the unit if it is already suppressed
                     command_system.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
