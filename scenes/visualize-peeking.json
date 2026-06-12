@@ -51,8 +51,7 @@
         "degrees": -59.03624346792648
       },
       "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE"
+        "faction": "BLUE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -72,8 +71,7 @@
         "degrees": 128.33924890336343
       },
       "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE"
+        "faction": "RED"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -93,8 +91,7 @@
         "degrees": 78.33924890336343
       },
       "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE"
+        "faction": "RED"
       },
       "MoveControls": {
         "move_type": "FOOT"

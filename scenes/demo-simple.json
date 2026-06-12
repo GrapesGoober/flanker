@@ -51,8 +51,7 @@
         "degrees": 20
       },
       "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE"
+        "faction": "BLUE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -72,8 +71,7 @@
         "degrees": 80
       },
       "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE"
+        "faction": "BLUE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -92,9 +90,7 @@
         "degrees": -80
       },
       "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE",
-        "los_polygon": null
+        "faction": "RED"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -113,8 +109,7 @@
         "degrees": -90
       },
       "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE"
+        "faction": "RED"
       },
       "MoveControls": {
         "move_type": "FOOT"

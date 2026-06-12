@@ -68,9 +68,16 @@
           "default": null,
           "title": "Command Id"
         },
-        "status": {
-          "$ref": "#/$defs/Status",
-          "default": "ACTIVE"
+        "status_override": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Status"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -268,10 +275,42 @@
           "default": true,
           "title": "Can Reactive Fire",
           "type": "boolean"
+        },
+        "firing_at": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/FireEffect"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Firing At"
         }
       },
       "title": "FireControls",
       "type": "object"
+    },
+    "FireEffect": {
+      "description": "Defines all fire effects.",
+      "enum": [
+        "PINNING",
+        "SUPPRESSING"
+      ],
+      "title": "FireEffect",
+      "type": "string"
     },
     "FireOutcomes": {
       "description": "Defines all fire outcomes.",
