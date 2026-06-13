@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import FireActionResult, MoveAction, MoveActionResult
+from flanker_ai.actions import FireActionResult, MoveActionResult
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -16,8 +16,10 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
+    EliminationWinCondition,
     FireControls,
     MoveControls,
+    StallLoseCondition,
     TerrainFeature,
     Transform,
 )
@@ -132,6 +134,30 @@ def fixture() -> Fixture:
             ),
         )
     )
+    gs.add_entity(
+        EliminationWinCondition(
+            target_faction=InitiativeState.Faction.RED,
+            winning_faction=InitiativeState.Faction.BLUE,
+            units_to_eliminate=2,
+            units_eliminated_counter=0,
+        )
+    )
+    gs.add_entity(
+        StallLoseCondition(
+            counting_faction=InitiativeState.Faction.BLUE,
+            winning_faction=InitiativeState.Faction.RED,
+            stall_count=0,
+            stall_limit=5,
+        )
+    )
+    gs.add_entity(
+        StallLoseCondition(
+            counting_faction=InitiativeState.Faction.RED,
+            winning_faction=InitiativeState.Faction.BLUE,
+            stall_count=0,
+            stall_limit=5,
+        )
+    )
 
     blue_agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
 
@@ -144,35 +170,6 @@ def fixture() -> Fixture:
         enemy_2=enemy_2,
         waypoint_coordinates=waypoint_coordinates,
     )
-
-
-def test_stall(fixture: Fixture) -> None:
-    agent = fixture.blue_agent
-    rs = agent.rs
-    assert isinstance(
-        rs, WaypointsState
-    ), "Configured agent's state representation must be waypoints state."
-    rs.update_state(fixture.gs)
-    for _ in range(5):
-        action = MoveAction(
-            unit_id=fixture.friendly_1,
-            to=fixture.waypoint_coordinates[3],
-        )
-        _, new_state = rs.get_branches(action)[0]
-        assert new_state != None, "Actions are not invalid"
-        rs = new_state
-    assert rs.get_winner() == None, "BLUE must not stall yet."
-
-    action = MoveAction(
-        unit_id=fixture.friendly_1,
-        to=fixture.waypoint_coordinates[3],
-    )
-    _, new_state = rs.get_branches(action)[0]
-    assert new_state != None, "Actions are not invalid"
-    rs = new_state
-    assert (
-        rs.get_winner() == InitiativeState.Faction.RED
-    ), "BLUE must be considered stall."
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
@@ -207,21 +204,31 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
-def test_optimal_waypoint(fixture: Fixture) -> None:
-    actions = fixture.blue_agent.play_initiative()
-    assert actions != [], "The minimax must find optimal action sequence."
+def test_optimal_waypoints(fixture: Fixture) -> None:
+    action_results = fixture.blue_agent.play_initiative()
+    assert action_results != [], "The minimax must find optimal action sequence."
+
+    staging_units: list[UUID] = []
+    for result in action_results:
+        if not isinstance(result, MoveActionResult):
+            continue
+        if result.action.to == Vec2(-10, 10):
+            staging_units.append(result.action.unit_id)
+    assert len(staging_units) != 0, "AI must try staging to Vec2(-10, 10)."
+
+    peeking_units: list[UUID] = []
+    for result in action_results:
+        if not isinstance(result, MoveActionResult):
+            continue
+        if result.action.to == Vec2(-10, 1):
+            peeking_units.append(result.action.unit_id)
+    assert len(peeking_units) != 0, "AI must try peeking to Vec2(-10, 1)."
+
+    assert set(peeking_units).issubset(
+        set(staging_units)
+    ), "Peeking units must be staged first."
+
+    last_action_result = action_results[-1]
     assert isinstance(
-        actions[0], MoveActionResult
-    ), "AI must start first with Move Action"
-    assert isinstance(
-        actions[1], MoveActionResult
-    ), "AI must continue with Move Actions"
-    assert actions[0].action.to == Vec2(
-        -10, 10
-    ), "AI must try to peek to the left at Vec2(-10, 10)"
-    assert actions[1].action.to == Vec2(
-        -10, 1
-    ), "AI must try to peek to the left at Vec2(-10, 1)"
-    assert isinstance(
-        actions[2], FireActionResult
-    ), "AI must perform Fire Action after peeking"
+        last_action_result, FireActionResult
+    ), "AI must fire at the enemy once."

@@ -7,11 +7,13 @@ from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
     MoveControls,
+    StallLoseCondition,
     TerrainFeature,
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.systems.register_systems import register_systems
 
 
@@ -38,6 +40,17 @@ def fixture() -> Fixture:
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(5, -10)),
     )
+
+    # Test the stall
+    gs.add_entity(
+        StallLoseCondition(
+            counting_faction=InitiativeState.Faction.BLUE,
+            winning_faction=InitiativeState.Faction.RED,
+            stall_count=0,
+            stall_limit=5,
+        )
+    )
+
     # 10x10 opaque box (not walkable)
     gs.add_entity(
         Transform(position=Vec2(0, 0), degrees=0),
@@ -80,6 +93,20 @@ def test_move(fixture: Fixture) -> None:
     move_system.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
     assert transform.position == Vec2(5, -15), "Pivot action shouldn't move unit"
     assert transform.degrees == 90, "Unit #1 expects to pivot towards direction."
+
+
+def test_move_stall(fixture: Fixture) -> None:
+    move_system = fixture.gs.get(MoveSystem)
+    objective_system = fixture.gs.get(ObjectiveSystem)
+
+    for _ in range(5):
+        move_system.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    winner = objective_system.get_winning_faction(fixture.gs)
+    assert winner == None, "Expects to be able to stall 5 times before losing."
+
+    move_system.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    winner = objective_system.get_winning_faction(fixture.gs)
+    assert winner == InitiativeState.Faction.RED, "Expects the 6th stall to lose."
 
 
 def test_move_invalid(fixture: Fixture) -> None:

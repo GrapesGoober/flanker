@@ -17,6 +17,13 @@ class FireOutcomes(str, Enum):
     KILL = "KILL"
 
 
+class FireEffect(str, Enum):
+    """Defines all fire effects."""
+
+    PINNING = "PINNING"
+    SUPPRESSING = "SUPPRESSING"
+
+
 class InvalidAction(str, Enum):
     """Defines reasons of invalid (not error) actions."""
 

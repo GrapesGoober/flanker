@@ -2,7 +2,6 @@ from copy import deepcopy
 from typing import Sequence, override
 
 from flanker_ai.actions import Action
-from flanker_ai.components import AiStallCountComponent
 from flanker_ai.config_models import PointsConfig
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_action_service import AiActionService
@@ -10,7 +9,6 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -20,6 +18,7 @@ from flanker_core.models.components import (
     InitiativeState,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -38,6 +37,8 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
+        fire_system = self._gs.get(FireSystem)
+
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -46,9 +47,9 @@ class UnabstractedState(IRepresentationState[Action]):
                 return -10000
 
         score = 0.0
-        for _, combat_unit in self._gs.query(CombatUnit):
+        for unit_id, combat_unit in self._gs.query(CombatUnit):
             value = 0
-            match combat_unit.status:
+            match fire_system.get_status(self._gs, unit_id):
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:
@@ -129,12 +130,6 @@ class UnabstractedState(IRepresentationState[Action]):
 
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
-        if self._gs.query(AiStallCountComponent) == []:
-            self._gs.add_entity(AiStallCountComponent())
-        self._gs.replace(
-            existing=ObjectiveSystem,
-            replacement=AiObjectiveSystem,
-        )
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config

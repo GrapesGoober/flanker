@@ -10,13 +10,14 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     UnabstractedStateConfig,
 )
-from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
+    EliminationWinCondition,
     FireControls,
     MoveControls,
+    StallLoseCondition,
     TerrainFeature,
     Transform,
 )
@@ -128,6 +129,30 @@ def fixture() -> Fixture:
                     divide_moves_per_unit=False,
                 ),
             ),
+        ),
+    )
+    gs.add_entity(
+        EliminationWinCondition(
+            target_faction=InitiativeState.Faction.RED,
+            winning_faction=InitiativeState.Faction.BLUE,
+            units_to_eliminate=2,
+            units_eliminated_counter=0,
+        )
+    )
+    gs.add_entity(
+        StallLoseCondition(
+            counting_faction=InitiativeState.Faction.BLUE,
+            winning_faction=InitiativeState.Faction.RED,
+            stall_count=0,
+            stall_limit=5,
+        )
+    )
+    gs.add_entity(
+        StallLoseCondition(
+            counting_faction=InitiativeState.Faction.RED,
+            winning_faction=InitiativeState.Faction.BLUE,
+            stall_count=0,
+            stall_limit=5,
         )
     )
 
@@ -143,38 +168,6 @@ def fixture() -> Fixture:
     )
 
 
-def test_stall(fixture: Fixture) -> None:
-    agent = fixture.blue_agent
-    rs = agent.rs
-    assert isinstance(
-        rs, UnabstractedState
-    ), "Configured agent's state representation must be unabstracted state."
-    rs.update_state(fixture.gs)
-
-    # Have it move repeatedly to the same coordinates
-    transform = fixture.gs.get_component(fixture.friendly_1, Transform)
-    for _ in range(5):
-        action = MoveAction(
-            unit_id=fixture.friendly_1,
-            to=transform.position,
-        )
-        _, new_state = rs.get_branches(action)[0]
-        assert new_state != None, "Actions are not invalid"
-        rs = new_state
-    assert rs.get_winner() == None, "BLUE must not stall yet."
-
-    action = MoveAction(
-        unit_id=fixture.friendly_1,
-        to=transform.position,
-    )
-    _, new_state = rs.get_branches(action)[0]
-    assert new_state != None, "Actions are not invalid"
-    rs = new_state
-    assert (
-        rs.get_winner() == InitiativeState.Faction.RED
-    ), "BLUE must be considered stall."
-
-
 def test_branching_total_prob(fixture: Fixture) -> None:
     action = MoveAction(
         unit_id=fixture.friendly_1,
@@ -188,20 +181,30 @@ def test_branching_total_prob(fixture: Fixture) -> None:
 
 
 def test_optimal_actions(fixture: Fixture) -> None:
-    actions = fixture.blue_agent.play_initiative()
-    assert actions != [], "The minimax must find optimal action sequence."
+    action_results = fixture.blue_agent.play_initiative()
+    assert action_results != [], "The minimax must find optimal action sequence."
+
+    staging_units: list[UUID] = []
+    for result in action_results:
+        if not isinstance(result, MoveActionResult):
+            continue
+        if result.action.to == Vec2(-10, 10):
+            staging_units.append(result.action.unit_id)
+    assert len(staging_units) != 0, "AI must try staging to Vec2(-10, 10)."
+
+    peeking_units: list[UUID] = []
+    for result in action_results:
+        if not isinstance(result, MoveActionResult):
+            continue
+        if result.action.to == Vec2(-10, 1):
+            peeking_units.append(result.action.unit_id)
+    assert len(peeking_units) != 0, "AI must try peeking to Vec2(-10, 1)."
+
+    assert set(peeking_units).issubset(
+        set(staging_units)
+    ), "Peeking units must be staged first."
+
+    last_action_result = action_results[-1]
     assert isinstance(
-        actions[0], MoveActionResult
-    ), "AI must start first with Move Action"
-    assert isinstance(
-        actions[1], MoveActionResult
-    ), "AI must continue with Move Actions"
-    assert actions[0].action.to == Vec2(
-        -10, 10
-    ), "AI must try to peek to the left at Vec2(-10, 10)"
-    assert actions[1].action.to == Vec2(
-        -10, 1
-    ), "AI must try to peek to the left at Vec2(-10, 1)"
-    assert isinstance(
-        actions[2], FireActionResult
-    ), "AI must perform Fire Action after peeking"
+        last_action_result, FireActionResult
+    ), "AI must fire at the enemy once."

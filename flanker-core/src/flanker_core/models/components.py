@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
 from uuid import UUID
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 
 
@@ -45,7 +45,7 @@ class CombatUnit:
 
     faction: InitiativeState.Faction
     command_id: UUID | None = None
-    status: Status = Status.ACTIVE
+    status_override: Status | None = None
 
 
 @dataclass
@@ -71,6 +71,7 @@ class FireControls:
 
     override: FireOutcomes | None = None
     can_reactive_fire: bool = True
+    firing_at: tuple[UUID, FireEffect] | None = None
 
 
 @dataclass
@@ -107,12 +108,28 @@ class TerrainFeature:
 
 
 @dataclass
-class EliminationObjective:
+class EliminationWinCondition:
     """
-    Represents the enemy elimination objective for a given faction.
+    Represents the elimination winning condition for a given faction.
+    Once the provided faction eliminates enough of the target faction,
+    the provided winning faction is considered winner.
     """
 
     target_faction: InitiativeState.Faction
     winning_faction: InitiativeState.Faction
-    units_to_destroy: int
-    units_destroyed_counter: int
+    units_to_eliminate: int
+    units_eliminated_counter: int
+
+
+@dataclass
+class StallLoseCondition:
+    """
+    Represents stall losing condition for a given faction.
+    Once the faction performs enough stalling moves, the provided
+    winning faction is considered winner.
+    """
+
+    counting_faction: InitiativeState.Faction
+    winning_faction: InitiativeState.Faction
+    stall_count: int
+    stall_limit: int

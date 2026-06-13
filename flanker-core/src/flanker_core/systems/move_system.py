@@ -17,6 +17,7 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 # This is a bandaid fix for LOS polygon imprecision
 _MOVE_INTERRUPT_ATOL = 5
@@ -53,15 +54,15 @@ class MoveSystem:
         to: Vec2,
     ) -> Literal[True] | InvalidAction:
         """Returns `True` if move action can be performed."""
-
-        transform = gs.get_component(unit_id, Transform)
-        unit = gs.get_component(unit_id, CombatUnit)
-        move_controls = gs.get_component(unit_id, MoveControls)
         intersect_system = gs.get(IntersectSystem)
         initiative_system = gs.get(InitiativeSystem)
+        fire_system = gs.get(FireSystem)
+
+        transform = gs.get_component(unit_id, Transform)
+        move_controls = gs.get_component(unit_id, MoveControls)
 
         # Check game state is valid for move action
-        if unit.status != CombatUnit.Status.ACTIVE:
+        if fire_system.get_status(gs, unit_id) != CombatUnit.Status.ACTIVE:
             return InvalidAction.INACTIVE_UNIT
         if not initiative_system.has_initiative(gs, unit_id):
             return InvalidAction.NO_INITIATIVE
@@ -134,6 +135,7 @@ class MoveSystem:
         """
         move_system = gs.get(MoveSystem)
         fire_system = gs.get(FireSystem)
+        objective_system = gs.get(ObjectiveSystem)
 
         if (reason := move_system._validate_move(gs, unit_id, to)) != True:
             return reason
@@ -142,6 +144,18 @@ class MoveSystem:
         move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = move_system.get_interrupt_candidates(gs, unit_id, to)
+
+        # Count stall if no possibility of reactive fires
+        unit = gs.get_component(unit_id, CombatUnit)
+        if len(interrupt_candidates) == 0:
+            objective_system.count_stall(gs, unit.faction)
+        else:
+            objective_system.reset_stall(gs, unit.faction)
+
+        # Reset fire effect if exist
+        fire_controls = gs.try_component(unit_id, FireControls)
+        if fire_controls != None:
+            fire_controls.firing_at = None
 
         # Set orientation towards move direction
         angle_rad = math.atan2(move_direction.y, move_direction.x)
@@ -168,7 +182,12 @@ class MoveSystem:
 
                 # Apply reactive fire outcome
                 outcome = fire_system.get_fire_outcome(gs, spotter_id)
-                fire_system.apply_fire_outcome(gs, unit_id, outcome)
+                fire_system.apply_fire_outcome(
+                    gs,
+                    attacker_id=spotter_id,
+                    target_id=unit_id,
+                    fire_outcome=outcome,
+                )
                 match outcome:
                     case FireOutcomes.MISS:
                         fire_controls = gs.get_component(spotter_id, FireControls)
@@ -225,6 +244,7 @@ class MoveSystem:
         results: list[_MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
+        # TODO: group move stall counting
         for unit_id, to in moves:
             result = move_system._singular_move(gs, unit_id, to)
             if not isinstance(result, _MoveActionResult):

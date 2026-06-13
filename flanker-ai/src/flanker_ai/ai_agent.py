@@ -13,7 +13,7 @@ from flanker_ai.actions import (
     PivotAction,
     PivotActionResult,
 )
-from flanker_ai.components import AiConfigComponent, AiStallCountComponent
+from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     HeuristicPolicyConfig,
     PointsConfig,
@@ -76,12 +76,6 @@ class AiAgent:
             # If win/lose condition is already met, pass
             objective_system = self.gs.get(ObjectiveSystem)
             if objective_system.get_winning_faction(self.gs) != None:
-                break
-            if result := self.gs.query(AiStallCountComponent):
-                _, stall_comp = result[0]
-            else:
-                self.gs.add_entity(stall_comp := AiStallCountComponent())
-            if stall_comp.stall_counter[self.faction] > _MAX_STALL_LIMIT:
                 break
 
             # Check redundant moves (stop search)
@@ -210,12 +204,6 @@ class AiAgent:
                     action.to,
                 )
                 if not isinstance(result, InvalidAction):
-                    stall_counter_ent = self.gs.query(AiStallCountComponent)
-                    _, counter = stall_counter_ent[0]
-                    if result.reactive_fire_outcome == None:
-                        counter.stall_counter[self.faction] += 1
-                    else:
-                        counter.stall_counter[self.faction] = 0
                     return MoveActionResult(
                         action=action,
                         result_gs=self.gs,
@@ -228,21 +216,12 @@ class AiAgent:
                     action.to,
                 )
                 if not isinstance(result, InvalidAction):
-                    stall_counter_ent = self.gs.query(AiStallCountComponent)
-                    _, counter = stall_counter_ent[0]
-                    if result.reactive_fire_outcome == None:
-                        counter.stall_counter[self.faction] += 1
-                    else:
-                        counter.stall_counter[self.faction] = 0
                     return PivotActionResult(
                         action=action,
                         result_gs=self.gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
-                stall_counter_ent = self.gs.query(AiStallCountComponent)
-                _, counter = stall_counter_ent[0]
-                counter.stall_counter[self.faction] = 0
                 result = fire_system.fire(
                     self.gs,
                     action.unit_id,
@@ -255,9 +234,6 @@ class AiAgent:
                         outcome=result.outcome,
                     )
             case AssaultAction():
-                stall_counter_ent = self.gs.query(AiStallCountComponent)
-                _, counter = stall_counter_ent[0]
-                counter.stall_counter[self.faction] = 0
                 result = assault_system.assault(
                     self.gs,
                     action.unit_id,

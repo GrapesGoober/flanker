@@ -3,7 +3,7 @@ from typing import Annotated, Literal, Union
 from uuid import UUID
 
 from flanker_core.models.components import CombatUnit, InitiativeState
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -26,6 +26,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
     status: CombatUnit.Status
     is_friendly: bool
     no_fire: bool
+    firing_at: tuple[UUID, FireEffect] | None
 
 
 class CombatUnitsViewState(BaseModel, CamelCaseConfig):

@@ -4,11 +4,11 @@
       "InitiativeState": {
         "faction": "BLUE"
       },
-      "EliminationObjective": {
+      "EliminationWinCondition": {
         "target_faction": "RED",
         "winning_faction": "BLUE",
-        "units_to_destroy": 1,
-        "units_destroyed_counter": 0
+        "units_to_eliminate": 1,
+        "units_eliminated_counter": 0
       }
     },
     "cc1b3b14-d3df-42bc-9437-2edd234440b8": {
@@ -51,8 +51,7 @@
         "degrees": 20
       },
       "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE"
+        "faction": "BLUE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -72,8 +71,7 @@
         "degrees": 80
       },
       "CombatUnit": {
-        "faction": "BLUE",
-        "status": "ACTIVE"
+        "faction": "BLUE"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -92,9 +90,7 @@
         "degrees": -80
       },
       "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE",
-        "los_polygon": null
+        "faction": "RED"
       },
       "MoveControls": {
         "move_type": "FOOT"
@@ -113,8 +109,7 @@
         "degrees": -90
       },
       "CombatUnit": {
-        "faction": "RED",
-        "status": "ACTIVE"
+        "faction": "RED"
       },
       "MoveControls": {
         "move_type": "FOOT"

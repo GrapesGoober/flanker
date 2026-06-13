@@ -10,18 +10,17 @@ from flanker_ai.actions import (
     MoveAction,
     PivotAction,
 )
-from flanker_ai.components import AiStallCountComponent
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_objective_system import AiObjectiveSystem
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -42,6 +41,8 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
+        fire_system = self.gs.get(FireSystem)
+
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -50,9 +51,9 @@ class WaypointsState(IRepresentationState[Action]):
                 return -10000
 
         score = 0.0
-        for _, unit in self.gs.query(CombatUnit):
+        for unit_id, unit in self.gs.query(CombatUnit):
             value = 0
-            match unit.status:
+            match fire_system.get_status(self.gs, unit_id):
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:
@@ -200,17 +201,10 @@ class WaypointsState(IRepresentationState[Action]):
         self.gs = deepcopy(gs)
 
         self.gs.replace(
-            existing=ObjectiveSystem,
-            replacement=AiObjectiveSystem,
-        )
-        self.gs.replace(
             existing=LosSystem,
             replacement=WaypointsLosSystem,
         )
         self.gs.register(WaypointsGraphSystem)
-
-        if self.gs.query(AiStallCountComponent) == []:
-            self.gs.add_entity(AiStallCountComponent())
 
         waypoints_system = self.gs.get(WaypointsGraphSystem)
 
