@@ -3,7 +3,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from pathlib import Path
 from typing import Any
-
+from uuid import UUID
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
 from flanker_ai.ai_trial import AiTrial
 from flanker_core.gamestate import GameState
@@ -14,19 +14,24 @@ from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
 
 
-def initialize_game_state(path: str) -> GameState:
+def initialize_game_state(paths: list[str]) -> GameState:
     component_types: list[type[Any]] = []
     component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    with open(path, "r") as f:
-        entities = Serializer.deserialize(
-            json_data=f.read(),
-            component_types=component_types,
-        )
-        gs = GameState.load(entities)
+    entities: dict[UUID, Any] = {}
+    for path in paths:
+        with open(path, "r") as f:
+            entities.update(
+                Serializer.deserialize(
+                    json_data=f.read(),
+                    component_types=component_types,
+                )
+            )
+
+    gs = GameState.load(entities)
     register_systems(gs)
     print("Creating BLUE agent...")
     AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
@@ -110,5 +115,5 @@ if __name__ == "__main__":
     SCENE_NAME = "experiment-2-grid"
     SCENE_FILE = f"./scenes/{SCENE_NAME}.json"
     RECORD_FILE = f"./scripts/experiment_results/{SCENE_NAME}.json"
-    gs = initialize_game_state(path=SCENE_FILE)
+    gs = initialize_game_state(paths=[SCENE_FILE])
     run_trial(gs, RECORD_FILE, n=100)
