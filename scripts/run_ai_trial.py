@@ -105,8 +105,7 @@ def run_trial(
         print(f"Trial {tally.trials} finished with winner {result.winner}")
 
 
-# I started on 19:52, with 7(x2) processes, 95% CPU utilization.
-# This finishes some time before 20:51, so about 1 full hour.
+# Started 09:35, 8(x2) processes, 100% CPU, finished 10:20
 if __name__ == "__main__":
     SCENE_NAME = "experiment-2-grid"
     SCENE_FILE = f"./scenes/{SCENE_NAME}.json"

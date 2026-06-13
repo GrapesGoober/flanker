@@ -1,7 +1,7 @@
 {
   "trials": 100,
-  "blue_wins": 26,
-  "red_wins": 74,
+  "blue_wins": 32,
+  "red_wins": 68,
   "draws": 0,
   "blue_config": {
     "config": {
