@@ -18,6 +18,7 @@ from flanker_core.models.components import (
     CombatUnit,
     EliminationWinCondition,
     FireControls,
+    StallLoseCondition,
     Transform,
 )
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
@@ -70,9 +71,10 @@ class AiBranchingService:
             CombatUnit,
             FireControls,
             AssaultControls,
-            # Copy the singletons
+            # Copy the match-level data
             InitiativeState,
             EliminationWinCondition,
+            StallLoseCondition,
             copy_method=replace,
         )
 
