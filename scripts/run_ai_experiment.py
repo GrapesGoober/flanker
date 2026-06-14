@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
+from itertools import product
 from multiprocessing import Process
 from pathlib import Path
 from typing import Any
@@ -32,51 +33,28 @@ class ExperimentConfig(BaseModel):
 
 
 class ExperimentSetConfig(BaseModel):
-    experiments: list[ExperimentConfig]
+    scene_configs: list[str]
+    agents_config: list[str]
+    settings_config: list[str]
+    n_matches: int
     parallelization: int
 
 
 def main() -> None:
     my_run = ExperimentSetConfig(
-        experiments=[
-            ExperimentConfig(
-                n_matches=100,
-                scenes=[
-                    "experiment-scene-2",
-                    "experiment-blue-analysis",
-                    "experiment-settings",
-                ],
-                parallelization=3,
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=[
-                    "experiment-scene-2",
-                    "experiment-blue-grid",
-                    "experiment-settings",
-                ],
-                parallelization=3,
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=[
-                    "experiment-scene-1",
-                    "experiment-blue-analysis",
-                    "experiment-settings",
-                ],
-                parallelization=3,
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=[
-                    "experiment-scene-1",
-                    "experiment-blue-grid",
-                    "experiment-settings",
-                ],
-                parallelization=3,
-            ),
+        scene_configs=[
+            "experiment-scene-1",
+            "experiment-scene-2",
         ],
-        parallelization=14,
+        agents_config=[
+            "experiment-blue-analysis",
+            "experiment-blue-grid",
+        ],
+        settings_config=[
+            "experiment-settings",
+        ],
+        n_matches=100,
+        parallelization=3,
     )
     run_experiment_set(my_run)
 
@@ -85,9 +63,18 @@ def run_experiment_set(
     experiment_set: ExperimentSetConfig,
 ) -> None:
 
-    for experiment in experiment_set.experiments:
-        print(f"Running experiment {experiment.scenes}")
+    for combination in product(
+        experiment_set.scene_configs,
+        experiment_set.agents_config,
+        experiment_set.settings_config,
+    ):
+        experiment = ExperimentConfig(
+            scenes=list(combination),
+            n_matches=experiment_set.n_matches,
+            parallelization=experiment_set.parallelization,
+        )
         for _ in range(experiment.parallelization):
+            print(f"Running experiment {experiment.scenes}")
             p = Process(
                 target=run_experiment,
                 args=(experiment,),
