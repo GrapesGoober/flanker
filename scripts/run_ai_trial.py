@@ -15,13 +15,18 @@ from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
 
 
-class BatchTally(BaseModel):
+class BatchResults(BaseModel):
     trials: int
     blue_wins: int
     red_wins: int
     draws: int
     blue_config: AiConfigComponent
     red_config: AiConfigComponent
+
+
+class BatchConfig(BaseModel):
+    trials: int
+    scenes: list[str]
 
 
 def initialize_game_state(paths: list[str]) -> GameState:
@@ -50,7 +55,10 @@ def initialize_game_state(paths: list[str]) -> GameState:
     return gs
 
 
-def get_current_tally(record_file: str) -> BatchTally:
+def get_current_tally(
+    gs: GameState,
+    record_file: str,
+) -> BatchResults:
     if not Path(record_file).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
@@ -64,7 +72,7 @@ def get_current_tally(record_file: str) -> BatchTally:
         if red_config == None:
             raise Exception("AI config is missing for RED.")
 
-        return BatchTally(
+        return BatchResults(
             trials=0,
             blue_wins=0,
             red_wins=0,
@@ -74,31 +82,38 @@ def get_current_tally(record_file: str) -> BatchTally:
         )
 
     with open(record_file, "r") as f:
-        return BatchTally.model_validate_json(f.read())
+        return BatchResults.model_validate_json(f.read())
 
 
-def save_tally(record_file: str, tally: BatchTally) -> None:
+def save_tally(
+    record_file: str,
+    tally: BatchResults,
+) -> None:
     with open(record_file, "w") as f:
         f.write(tally.model_dump_json(indent=2))
 
 
-def run_trial(
-    gs: GameState,
-    record_file: str,
-    n: int = 1,
+def run_batch(
+    batch: BatchConfig,
 ) -> None:
 
+    paths = [f"./scenes/{scene}.json" for scene in batch.scenes]
+    gs = initialize_game_state(paths=paths)
+
+    batch_name = "-".join(batch.scenes)
+    record_file = f"./scripts/experiment_results/{batch_name}.json"
+
     # Initialize the file if not exist
-    tally = get_current_tally(record_file)
+    tally = get_current_tally(gs, record_file)
     save_tally(record_file, tally)
 
-    while tally.trials < n:
+    while tally.trials < batch.trials:
         print(f"Running new trial")
         new_gs = deepcopy(gs)
         result = AiTrial.run_trial(new_gs)
-        tally = get_current_tally(record_file)  # Resync a new tally
+        tally = get_current_tally(gs, record_file)  # Resync a new tally
         tally.trials += 1
-        if tally.trials > n:
+        if tally.trials > batch.trials:
             break
         match result.winner:
             case None:
@@ -113,8 +128,8 @@ def run_trial(
 
 # Started 09:35, 8(x2) processes, 100% CPU, finished 10:20
 if __name__ == "__main__":
-    SCENE_NAME = "experiment-2-grid"
-    SCENE_FILE = f"./scenes/{SCENE_NAME}.json"
-    RECORD_FILE = f"./scripts/experiment_results/{SCENE_NAME}.json"
-    gs = initialize_game_state(paths=[SCENE_FILE])
-    run_trial(gs, RECORD_FILE, n=100)
+    conf = BatchConfig(
+        trials=100,
+        scenes=["experiment-2-grid"],
+    )
+    run_batch(conf)
