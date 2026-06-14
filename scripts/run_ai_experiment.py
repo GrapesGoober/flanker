@@ -44,36 +44,58 @@ def main() -> None:
             ),
             ExperimentConfig(
                 n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
                 scenes=["experiment-2-analysis"],
             ),
         ],
         parallelization=14,
     )
     run_experiment_set(my_run)
+
+
+def run_experiment_set(
+    experiment_set: ExperimentSetConfig,
+) -> None:
+    for experiment in experiment_set.experiments:
+        print(f"Running experiment {experiment.scenes}")
+
+    for experiment in experiment_set.experiments:
+        p = Process(
+            target=run_experiment,
+            args=(experiment,),
+        )
+        p.start()
+
+
+def run_experiment(
+    experiment: ExperimentConfig,
+) -> None:
+
+    paths = [f"./scenes/{scene}.json" for scene in experiment.scenes]
+    gs = get_game_state(paths=paths)
+
+    experiment_name = "-".join(experiment.scenes)
+    record_file = f"./scripts/experiment_results/{experiment_name}.json"
+
+    # Initialize the file if not exist
+    tally = get_current_result(gs, record_file)
+    save_result(record_file, tally)
+
+    while tally.n_matches < experiment.n_matches:
+        new_gs = deepcopy(gs)
+        result = AiMatch.run_match(new_gs)
+        # TODO do I need parallel safe tallying operation?
+        tally = get_current_result(gs, record_file)  # Resync a new tally
+        tally.n_matches += 1
+        if tally.n_matches > experiment.n_matches:
+            break
+        match result.winner:
+            case None:
+                tally.draws += 1
+            case InitiativeState.Faction.BLUE:
+                tally.blue_wins += 1
+            case InitiativeState.Faction.RED:
+                tally.red_wins += 1
+        save_result(record_file, tally)
 
 
 def get_game_state(
@@ -138,49 +160,6 @@ def save_result(
 ) -> None:
     with open(record_file, "w") as f:
         f.write(result.model_dump_json(indent=2))
-
-
-def run_experiment(
-    experiment: ExperimentConfig,
-) -> None:
-
-    paths = [f"./scenes/{scene}.json" for scene in experiment.scenes]
-    gs = get_game_state(paths=paths)
-
-    experiment_name = "-".join(experiment.scenes)
-    record_file = f"./scripts/experiment_results/{experiment_name}.json"
-
-    # Initialize the file if not exist
-    tally = get_current_result(gs, record_file)
-    save_result(record_file, tally)
-
-    while tally.n_matches < experiment.n_matches:
-        new_gs = deepcopy(gs)
-        result = AiMatch.run_match(new_gs)
-        # TODO do I need parallel safe tallying operation?
-        tally = get_current_result(gs, record_file)  # Resync a new tally
-        tally.n_matches += 1
-        if tally.n_matches > experiment.n_matches:
-            break
-        match result.winner:
-            case None:
-                tally.draws += 1
-            case InitiativeState.Faction.BLUE:
-                tally.blue_wins += 1
-            case InitiativeState.Faction.RED:
-                tally.red_wins += 1
-        save_result(record_file, tally)
-
-
-def run_experiment_set(
-    experiment_set: ExperimentSetConfig,
-) -> None:
-    for experiment in experiment_set.experiments:
-        p = Process(
-            target=run_experiment,
-            args=(experiment,),
-        )
-        p.start()
 
 
 if __name__ == "__main__":
