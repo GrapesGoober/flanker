@@ -34,7 +34,8 @@ class ExperimentConfig(BaseModel):
 
 class ExperimentSetConfig(BaseModel):
     scene_configs: list[str]
-    agents_config: list[str]
+    blue_config: list[str]
+    red_config: list[str]
     settings_config: list[str]
     n_matches: int
     parallelization: int
@@ -46,15 +47,21 @@ def main() -> None:
             "experiment-scene-1",
             "experiment-scene-2",
         ],
-        agents_config=[
+        blue_config=[
             "experiment-blue-analysis",
             "experiment-blue-grid",
+            "experiment-blue-rh",
+        ],
+        red_config=[
+            "experiment-red-analysis",
+            "experiment-red-grid",
+            "experiment-red-rh",
         ],
         settings_config=[
             "experiment-settings",
         ],
         n_matches=100,
-        parallelization=3,
+        parallelization=1,
     )
     run_experiment_set(my_run)
 
@@ -65,7 +72,8 @@ def run_experiment_set(
 
     for combination in product(
         experiment_set.scene_configs,
-        experiment_set.agents_config,
+        experiment_set.blue_config,
+        experiment_set.red_config,
         experiment_set.settings_config,
     ):
         experiment = ExperimentConfig(
@@ -73,8 +81,11 @@ def run_experiment_set(
             n_matches=experiment_set.n_matches,
             parallelization=experiment_set.parallelization,
         )
+        print(
+            f"Running experiment {experiment.scenes}",
+            f"with {experiment.parallelization} processes",
+        )
         for _ in range(experiment.parallelization):
-            print(f"Running experiment {experiment.scenes}")
             p = Process(
                 target=run_experiment,
                 args=(experiment,),

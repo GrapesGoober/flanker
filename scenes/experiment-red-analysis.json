@@ -1,6 +1,6 @@
 {
   "entities": {
-    "722332cc-99c2-41f0-9b60-96916cb9a726": {
+    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
       "AiConfigComponent": {
         "config": {
           "policy_type": "Minimax",
@@ -13,12 +13,20 @@
                 "offset": 10.0
               },
               "use_combat_unit_positions": true,
-              "expansions": []
+              "expansions": [
+                {
+                  "type": "LineBased",
+                  "tolerance": 10
+                },
+                {
+                  "type": "FlagPrune"
+                }
+              ]
             },
             "divide_moves_per_unit": false
           }
         },
-        "faction": "BLUE"
+        "faction": "RED"
       }
     }
   }
