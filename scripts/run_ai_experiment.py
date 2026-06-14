@@ -97,9 +97,7 @@ def get_game_state(
 
     gs = GameState.load(entities)
     register_systems(gs)
-    print("Creating BLUE agent...")
     AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
-    print("Creating RED agent...")
     AiAgent.get_agent(gs, InitiativeState.Faction.RED)
     return gs
 
@@ -157,7 +155,6 @@ def run_experiment(
     save_result(record_file, tally)
 
     while tally.n_matches < experiment.n_matches:
-        print(f"Running new match")
         new_gs = deepcopy(gs)
         result = AiMatch.run_match(new_gs)
         # TODO do I need parallel safe tallying operation?
@@ -173,7 +170,6 @@ def run_experiment(
             case InitiativeState.Faction.RED:
                 tally.red_wins += 1
         save_result(record_file, tally)
-        print(f"Match {tally.n_matches} finished with winner {result.winner}")
 
 
 def run_experiment_set(
