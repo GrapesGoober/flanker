@@ -40,11 +40,19 @@ def main() -> None:
         experiments=[
             ExperimentConfig(
                 n_matches=100,
-                scenes=["experiment-2-grid"],
+                scenes=[
+                    "experiment-scene-2",
+                    "experiment-blue-analysis",
+                    "experiment-settings",
+                ],
             ),
             ExperimentConfig(
                 n_matches=100,
-                scenes=["experiment-2-analysis"],
+                scenes=[
+                    "experiment-scene-2",
+                    "experiment-blue-grid",
+                    "experiment-settings",
+                ],
             ),
         ],
         parallelization=14,
