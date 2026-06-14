@@ -35,6 +35,47 @@ class ExperimentSetConfig(BaseModel):
     parallelization: int
 
 
+def main() -> None:
+    my_run = ExperimentSetConfig(
+        experiments=[
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+        ],
+        parallelization=14,
+    )
+    run_experiment_set(my_run)
+
+
 def get_game_state(
     paths: list[str],
 ) -> GameState:
@@ -147,41 +188,4 @@ def run_experiment_set(
 
 
 if __name__ == "__main__":
-    my_run = ExperimentSetConfig(
-        experiments=[
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-grid"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-            ExperimentConfig(
-                n_matches=100,
-                scenes=["experiment-2-analysis"],
-            ),
-        ],
-        parallelization=14,
-    )
-    run_experiment_set(my_run)
+    main()
