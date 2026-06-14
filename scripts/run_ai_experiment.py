@@ -28,6 +28,7 @@ class ExperimentResults(BaseModel):
 class ExperimentConfig(BaseModel):
     n_matches: int
     scenes: list[str]
+    parallelization: int
 
 
 class ExperimentSetConfig(BaseModel):
@@ -45,6 +46,7 @@ def main() -> None:
                     "experiment-blue-analysis",
                     "experiment-settings",
                 ],
+                parallelization=3,
             ),
             ExperimentConfig(
                 n_matches=100,
@@ -53,6 +55,25 @@ def main() -> None:
                     "experiment-blue-grid",
                     "experiment-settings",
                 ],
+                parallelization=3,
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=[
+                    "experiment-scene-1",
+                    "experiment-blue-analysis",
+                    "experiment-settings",
+                ],
+                parallelization=3,
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=[
+                    "experiment-scene-1",
+                    "experiment-blue-grid",
+                    "experiment-settings",
+                ],
+                parallelization=3,
             ),
         ],
         parallelization=14,
@@ -63,15 +84,15 @@ def main() -> None:
 def run_experiment_set(
     experiment_set: ExperimentSetConfig,
 ) -> None:
-    for experiment in experiment_set.experiments:
-        print(f"Running experiment {experiment.scenes}")
 
     for experiment in experiment_set.experiments:
-        p = Process(
-            target=run_experiment,
-            args=(experiment,),
-        )
-        p.start()
+        print(f"Running experiment {experiment.scenes}")
+        for _ in range(experiment.parallelization):
+            p = Process(
+                target=run_experiment,
+                args=(experiment,),
+            )
+            p.start()
 
 
 def run_experiment(
