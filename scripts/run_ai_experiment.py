@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
+from multiprocessing import Process
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -29,7 +30,12 @@ class ExperimentConfig(BaseModel):
     scenes: list[str]
 
 
-def initialize_game_state(
+class ExperimentSetConfig(BaseModel):
+    experiments: list[ExperimentConfig]
+    parallelization: int
+
+
+def get_game_state(
     paths: list[str],
 ) -> GameState:
     component_types: list[type[Any]] = []
@@ -100,7 +106,7 @@ def run_experiment(
 ) -> None:
 
     paths = [f"./scenes/{scene}.json" for scene in experiment.scenes]
-    gs = initialize_game_state(paths=paths)
+    gs = get_game_state(paths=paths)
 
     experiment_name = "-".join(experiment.scenes)
     record_file = f"./scripts/experiment_results/{experiment_name}.json"
@@ -113,6 +119,7 @@ def run_experiment(
         print(f"Running new match")
         new_gs = deepcopy(gs)
         result = AiMatch.run_match(new_gs)
+        # TODO do I need parallel safe tallying operation?
         tally = get_current_result(gs, record_file)  # Resync a new tally
         tally.n_matches += 1
         if tally.n_matches > experiment.n_matches:
@@ -128,10 +135,53 @@ def run_experiment(
         print(f"Match {tally.n_matches} finished with winner {result.winner}")
 
 
-# Started 09:35, 8(x2) processes, 100% CPU, finished 10:20
+def run_experiment_set(
+    experiment_set: ExperimentSetConfig,
+) -> None:
+    for experiment in experiment_set.experiments:
+        p = Process(
+            target=run_experiment,
+            args=(experiment,),
+        )
+        p.start()
+
+
 if __name__ == "__main__":
-    conf = ExperimentConfig(
-        n_matches=100,
-        scenes=["experiment-2-grid"],
+    my_run = ExperimentSetConfig(
+        experiments=[
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-grid"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+            ExperimentConfig(
+                n_matches=100,
+                scenes=["experiment-2-analysis"],
+            ),
+        ],
+        parallelization=14,
     )
-    run_experiment(conf)
+    run_experiment_set(my_run)
