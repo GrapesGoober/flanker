@@ -4,6 +4,7 @@ from inspect import isclass
 from pathlib import Path
 from typing import Any
 from uuid import UUID
+
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
 from flanker_ai.ai_trial import AiTrial
 from flanker_core.gamestate import GameState
@@ -12,6 +13,15 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
 from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
+
+
+class BatchTally(BaseModel):
+    trials: int
+    blue_wins: int
+    red_wins: int
+    draws: int
+    blue_config: AiConfigComponent
+    red_config: AiConfigComponent
 
 
 def initialize_game_state(paths: list[str]) -> GameState:
@@ -38,15 +48,6 @@ def initialize_game_state(paths: list[str]) -> GameState:
     print("Creating RED agent...")
     AiAgent.get_agent(gs, InitiativeState.Faction.RED)
     return gs
-
-
-class BatchTally(BaseModel):
-    trials: int
-    blue_wins: int
-    red_wins: int
-    draws: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
 
 
 def get_current_tally(record_file: str) -> BatchTally:
