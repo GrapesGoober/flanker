@@ -13,11 +13,11 @@ class AiTrialResult:
     winner: InitiativeState.Faction | None
 
 
-class AiTrial:
-    """Utility for running game state as a 2-agent trial."""
+class AiMatch:
+    """Utility for running a match between 2 AI agents."""
 
     @staticmethod
-    def run_trial(gs: GameState) -> AiTrialResult:
+    def run_match(gs: GameState) -> AiTrialResult:
         blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
         red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
         action_results: list[ActionResult] = []

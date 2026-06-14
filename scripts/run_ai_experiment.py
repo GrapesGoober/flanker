@@ -6,7 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
-from flanker_ai.ai_trial import AiTrial
+from flanker_ai.ai_match import AiMatch
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -110,9 +110,9 @@ def run_experiment(
     save_result(record_file, tally)
 
     while tally.n_matches < experiment.n_matches:
-        print(f"Running new trial")
+        print(f"Running new match")
         new_gs = deepcopy(gs)
-        result = AiTrial.run_trial(new_gs)
+        result = AiMatch.run_match(new_gs)
         tally = get_current_result(gs, record_file)  # Resync a new tally
         tally.n_matches += 1
         if tally.n_matches > experiment.n_matches:
