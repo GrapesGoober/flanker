@@ -1,16 +1,38 @@
+import random
 import time
 
 from blessed import Terminal
 
-term = Terminal()
 
-print(term.move_down)
+def run_simple_telemetry():
+    term = Terminal()
 
-for i in range(1, 100):
-    # term.clear_eol clears any leftover characters from the previous print
-    print(term.move_up + f"Current number: {i}" + term.clear_eos)
+    experiments = [0, 0, 0, 0, 0]
 
-    # Small delay so humans can actually see it increment
-    time.sleep(0.02)
+    print(term.clear)
+    # Reserve lines in the terminal so we don't scroll
+    START_ROW = 2
+    while any(p < 100 for p in experiments):
+        for idx in range(len(experiments)):
+            if experiments[idx] < 100:
+                # Simulate progress
+                experiments[idx] = min(100, experiments[idx] + random.randint(1, 5))
 
-print("Done!")
+                # Jump directly to the row where the number lives
+                # 'Experiment X: ' is 14 characters long, so we jump to x=14
+                target_row = START_ROW + idx
+                with term.location(0, target_row):
+                    print(
+                        f"Experiment {idx}: {experiments[idx]}%{term.clear_eol}",
+                        end="",
+                        flush=True,
+                    )
+
+        time.sleep(0.1)
+
+    # Move cursor to the bottom when done
+    print(term.move_xy(0, START_ROW + len(experiments) + 1) + "Done!")
+
+
+if __name__ == "__main__":
+    run_simple_telemetry()
