@@ -80,7 +80,6 @@ class AiAgent:
 
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
-                print(f"{self.faction.value} AI made useless actions, breaking")
                 initiative_system.flip_initiative(self.gs)
                 break
 
@@ -88,10 +87,8 @@ class AiAgent:
             rs = deepcopy(self.rs)
             rs.update_state(self.gs)
             actions = self.policy.get_action_sequence(rs)
-            print(f"{self.faction.value} AI made action: {actions}")
 
             if actions == []:
-                print(f"No valid action for {self.faction.value} AI, breaking")
                 initiative_system.flip_initiative(self.gs)
                 break
 
@@ -99,7 +96,6 @@ class AiAgent:
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
-                print(f"{self.faction.value} AI made invalid action, breaking")
                 initiative_system.flip_initiative(self.gs)
                 break
             # These result objects would be used for logging

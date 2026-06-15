@@ -8,16 +8,16 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
-class AiTrialResult:
+class AiMatchResult:
     action_results: list[ActionResult]
     winner: InitiativeState.Faction | None
 
 
-class AiTrial:
-    """Utility for running game state as a 2-agent trial."""
+class AiMatch:
+    """Utility for running a match between 2 AI agents."""
 
     @staticmethod
-    def run_trial(gs: GameState) -> AiTrialResult:
+    def run_match(gs: GameState) -> AiMatchResult:
         blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
         red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
         action_results: list[ActionResult] = []
@@ -33,7 +33,7 @@ class AiTrial:
             if not red_action_results and not blue_action_results:
                 break
 
-        return AiTrialResult(
+        return AiMatchResult(
             action_results=action_results,
             winner=winner,
         )

@@ -1,0 +1,35 @@
+{
+  "entities": {
+    "066d81b5-2e25-4175-8ea5-0b1f71f73c1d": {
+      "InitiativeState": {
+        "faction": "BLUE"
+      },
+      "EliminationWinCondition": {
+        "target_faction": "RED",
+        "winning_faction": "BLUE",
+        "units_to_eliminate": 2,
+        "units_eliminated_counter": 0
+      },
+      "StallLoseCondition": {
+        "counting_faction": "RED",
+        "winning_faction": "BLUE",
+        "stall_count": 0,
+        "stall_limit": 5
+      }
+    },
+    "1859782c-bf0d-417c-959f-445375719293": {
+      "EliminationWinCondition": {
+        "target_faction": "BLUE",
+        "winning_faction": "RED",
+        "units_to_eliminate": 2,
+        "units_eliminated_counter": 0
+      },
+      "StallLoseCondition": {
+        "counting_faction": "BLUE",
+        "winning_faction": "RED",
+        "stall_count": 0,
+        "stall_limit": 5
+      }
+    }
+  }
+}

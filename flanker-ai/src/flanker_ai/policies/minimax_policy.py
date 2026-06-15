@@ -5,7 +5,6 @@ from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
-count = 0
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
@@ -29,11 +28,6 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         alpha: float,
         beta: float,
     ) -> tuple[float, TAction | None]:
-
-        global count
-        if count % 5000 == 0:
-            print(count)
-        count += 1
 
         winner = rs.get_winner()
         if winner is not None:

@@ -5,7 +5,6 @@ from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
-count = 0
 _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
@@ -33,11 +32,6 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         """
         Returns (best_score, best_action)
         """
-
-        global count
-        if count % 5000 == 0:
-            print(count)
-        count += 1
 
         # Check for early cutoff
         winner = state.get_winner()

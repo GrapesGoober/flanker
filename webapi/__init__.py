@@ -123,12 +123,12 @@ async def get_logs(
 
 
 @app.post("/api/{sceneName}/{gameId}/ai-play")
-async def ai_play(
+async def run_match(
     scene_name: str = Path(..., alias="sceneName"),
     game_id: int = Path(..., alias="gameId"),
 ) -> None:
     gs = scene_service.get_game_state(scene_name, game_id)
-    exec_time = timeit(lambda: AiService.play_trial(gs), number=1)
+    exec_time = timeit(lambda: AiService.run_match(gs), number=1)
     print(f"Execution time: {exec_time:.6f} seconds")
 
 

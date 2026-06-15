@@ -4,7 +4,7 @@ from inspect import isclass
 from typing import Any
 
 from flanker_ai.ai_agent import AiAgent
-from flanker_ai.ai_trial import AiTrial
+from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent, InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     _ = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
 
     def run_ai_trial() -> None:
-        result = AiTrial.run_trial(gs)
+        result = AiMatch.run_match(gs)
         if result.winner == None:
             print(f"No winner; draw")
         else:

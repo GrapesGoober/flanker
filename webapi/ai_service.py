@@ -6,7 +6,7 @@ from flanker_ai.actions import (
     PivotActionResult,
 )
 from flanker_ai.ai_agent import AiAgent
-from flanker_ai.ai_trial import AiTrial
+from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -45,9 +45,9 @@ class AiService:
         AiService._log_ai_action_results(gs, results)
 
     @staticmethod
-    def play_trial(gs: GameState) -> None:
-        """Runs a trial where AI plays against each other."""
-        result = AiTrial.run_trial(gs)
+    def run_match(gs: GameState) -> None:
+        """Runs a match where 2 AI agents plays against each other."""
+        result = AiMatch.run_match(gs)
         AiService._log_ai_action_results(gs, result.action_results)
         if result.winner == None:
             print(f"No winner; draw")
