@@ -137,7 +137,6 @@ def run_match(
     gs, experiment = match
     print(f"Running experiment {experiment.scenes}")
     result = AiMatch.run_match(gs)
-    sleep(0.1)
     return result, experiment
 
 
