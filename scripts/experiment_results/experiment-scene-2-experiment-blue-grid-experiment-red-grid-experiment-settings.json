@@ -1,7 +1,7 @@
 {
-  "n_matches": 67,
-  "blue_wins": 18,
-  "red_wins": 49,
+  "n_matches": 100,
+  "blue_wins": 27,
+  "red_wins": 73,
   "draws": 0,
   "blue_config": {
     "config": {
