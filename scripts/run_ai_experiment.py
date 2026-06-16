@@ -98,8 +98,8 @@ def run_experiments(
         for experiment in experiments
     }
 
+    # Create a list of matches to work on
     matches: list[tuple[GameState, ExperimentConfig]] = []
-
     for experiment in experiments:
         gs = game_states[str(experiment.scenes)]
         current_tally = get_tally(gs, experiment)
@@ -107,8 +107,11 @@ def run_experiments(
         for _ in range(remaining_matches):
             matches.append((game_states[str(experiment.scenes)], experiment))
 
+    # Randomize to run evenly across all matches
+    random.shuffle(matches)
+
+    # Run this in parallel
     with Pool(processes=max_processes) as p:
-        random.shuffle(matches)
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
             result, experiment = match_result
