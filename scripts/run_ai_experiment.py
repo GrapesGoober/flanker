@@ -109,10 +109,11 @@ def run_experiments(
         # FIXME: there is no trial size limit. This can go over-sized
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
-            result, gs, experiment = match_result
+            result, experiment = match_result
             print(f"{experiment.scenes} done, tallying")
             experiment_name = "-".join(experiment.scenes)
             record_file = f"./scripts/experiment_results/{experiment_name}.json"
+            gs = game_states[str(experiment.scenes)]
             tally = get_current_result(gs, record_file)
             tally.n_matches += 1
             match result.winner:
@@ -127,12 +128,12 @@ def run_experiments(
 
 def run_match(
     match: tuple[GameState, ExperimentConfig],
-) -> tuple[AiMatchResult, GameState, ExperimentConfig]:
+) -> tuple[AiMatchResult, ExperimentConfig]:
     gs, experiment = match
     print(f"Running experiment {experiment.scenes}")
     result = AiMatch.run_match(gs)
     sleep(0.1)
-    return result, gs, experiment
+    return result, experiment
 
 
 def get_game_state(
