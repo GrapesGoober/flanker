@@ -70,7 +70,6 @@ class FireControls:
     """
 
     override: FireOutcomes | None = None
-    can_reactive_fire: bool = True
     firing_at: tuple[UUID, FireEffect] | None = None
 
 

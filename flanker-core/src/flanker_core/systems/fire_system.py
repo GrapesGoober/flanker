@@ -195,7 +195,7 @@ class FireSystem:
         fire_system = gs.get(FireSystem)
 
         unit = gs.get_component(target_id, CombatUnit)
-        for spotter_id, spotter_unit, _, fire_controls in gs.query(
+        for spotter_id, spotter_unit, _, _ in gs.query(
             CombatUnit, Transform, FireControls
         ):
             # Check that spotter is a valid spotter for reactive fire
@@ -204,8 +204,6 @@ class FireSystem:
             if spotter_id == target_id:
                 continue
             if unit.faction == spotter_unit.faction:
-                continue
-            if fire_controls.can_reactive_fire == False:
                 continue
 
             yield spotter_id

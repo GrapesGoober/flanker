@@ -190,8 +190,7 @@ class MoveSystem:
                 )
                 match outcome:
                     case FireOutcomes.MISS:
-                        fire_controls = gs.get_component(spotter_id, FireControls)
-                        fire_controls.can_reactive_fire = False
+                        pass
                     case FireOutcomes.PIN:
                         transform.position = pos
                         if worst_fire_outcome == None:
