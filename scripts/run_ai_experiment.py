@@ -5,7 +5,6 @@ from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool
 from pathlib import Path
-from time import sleep
 from typing import Any
 from uuid import UUID
 
@@ -61,8 +60,8 @@ def main() -> None:
         settings_config=[
             "experiment-settings",
         ],
-        n_matches=20,
-        max_processes=5,
+        n_matches=100,
+        max_processes=14,
     )
     run_experiment_set(my_run)
 
