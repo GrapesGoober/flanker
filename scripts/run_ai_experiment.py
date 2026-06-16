@@ -18,7 +18,7 @@ from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
 
 
-class ExperimentResults(BaseModel):
+class ExperimentTally(BaseModel):
     n_matches: int
     blue_wins: int
     red_wins: int
@@ -114,7 +114,7 @@ def run_experiments(
             experiment_name = "-".join(experiment.scenes)
             record_file = f"./scripts/experiment_results/{experiment_name}.json"
             gs = game_states[str(experiment.scenes)]
-            tally = get_current_result(gs, record_file)
+            tally = get_tally(gs, record_file)
             tally.n_matches += 1
             match result.winner:
                 case None:
@@ -123,7 +123,7 @@ def run_experiments(
                     tally.blue_wins += 1
                 case InitiativeState.Faction.RED:
                     tally.red_wins += 1
-            save_result(record_file, tally)
+            save_tally(record_file, tally)
 
 
 def run_match(
@@ -163,10 +163,10 @@ def get_game_state(
     return gs
 
 
-def get_current_result(
+def get_tally(
     gs: GameState,
     record_file: str,
-) -> ExperimentResults:
+) -> ExperimentTally:
     if not Path(record_file).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
@@ -180,7 +180,7 @@ def get_current_result(
         if red_config == None:
             raise Exception("AI config is missing for RED.")
 
-        return ExperimentResults(
+        return ExperimentTally(
             n_matches=0,
             blue_wins=0,
             red_wins=0,
@@ -190,12 +190,12 @@ def get_current_result(
         )
 
     with open(record_file, "r") as f:
-        return ExperimentResults.model_validate_json(f.read())
+        return ExperimentTally.model_validate_json(f.read())
 
 
-def save_result(
+def save_tally(
     record_file: str,
-    result: ExperimentResults,
+    result: ExperimentTally,
 ) -> None:
     with open(record_file, "w") as f:
         f.write(result.model_dump_json(indent=2))
