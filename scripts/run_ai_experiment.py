@@ -101,10 +101,8 @@ def run_experiments(
     matches: list[tuple[GameState, ExperimentConfig]] = []
 
     for experiment in experiments:
-        experiment_name = "-".join(experiment.scenes)
-        record_file = f"./scripts/experiment_results/{experiment_name}.json"
         gs = game_states[str(experiment.scenes)]
-        current_tally = get_tally(gs, record_file)
+        current_tally = get_tally(gs, experiment)
         remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
         for _ in range(remaining_matches):
             matches.append((game_states[str(experiment.scenes)], experiment))
@@ -114,11 +112,9 @@ def run_experiments(
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
             result, experiment = match_result
-            print(f"{experiment.scenes} done, tallying")
-            experiment_name = "-".join(experiment.scenes)
-            record_file = f"./scripts/experiment_results/{experiment_name}.json"
+            print(f"    {experiment.scenes} done, tallying")
             gs = game_states[str(experiment.scenes)]
-            tally = get_tally(gs, record_file)
+            tally = get_tally(gs, experiment)
             if tally.n_matches == experiment.n_matches:
                 continue
             tally.n_matches += 1
@@ -129,7 +125,7 @@ def run_experiments(
                     tally.blue_wins += 1
                 case InitiativeState.Faction.RED:
                     tally.red_wins += 1
-            save_tally(record_file, tally)
+            save_tally(experiment, tally)
 
 
 def run_match(
@@ -169,11 +165,10 @@ def get_game_state(
     return gs
 
 
-def get_tally(
-    gs: GameState,
-    record_file: str,
-) -> ExperimentTally:
-    if not Path(record_file).is_file():
+def get_tally(gs: GameState, experiment: ExperimentConfig) -> ExperimentTally:
+    file_name = "-".join(experiment.scenes)
+    file_path = f"./scripts/experiment_results/{file_name}.json"
+    if not Path(file_path).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
         for _, config in gs.query(AiConfigComponent):
@@ -195,15 +190,17 @@ def get_tally(
             red_config=red_config,
         )
 
-    with open(record_file, "r") as f:
+    with open(file_path, "r") as f:
         return ExperimentTally.model_validate_json(f.read())
 
 
 def save_tally(
-    record_file: str,
+    experiment: ExperimentConfig,
     result: ExperimentTally,
 ) -> None:
-    with open(record_file, "w") as f:
+    file_name = "-".join(experiment.scenes)
+    file_path = f"./scripts/experiment_results/{file_name}.json"
+    with open(file_path, "w") as f:
         f.write(result.model_dump_json(indent=2))
 
 
