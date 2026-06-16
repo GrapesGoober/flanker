@@ -98,15 +98,19 @@ def run_experiments(
         for experiment in experiments
     }
 
-    matches: list[tuple[GameState, ExperimentConfig]] = [
-        (game_states[str(experiment.scenes)], experiment)
-        for experiment in experiments
-        for _ in range(experiment.n_matches)
-    ]
+    matches: list[tuple[GameState, ExperimentConfig]] = []
+
+    for experiment in experiments:
+        experiment_name = "-".join(experiment.scenes)
+        record_file = f"./scripts/experiment_results/{experiment_name}.json"
+        gs = game_states[str(experiment.scenes)]
+        current_tally = get_tally(gs, record_file)
+        remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
+        for _ in range(remaining_matches):
+            matches.append((game_states[str(experiment.scenes)], experiment))
 
     with Pool(processes=max_processes) as p:
         random.shuffle(matches)
-        # FIXME: there is no trial size limit. This can go over-sized
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
             result, experiment = match_result
@@ -115,6 +119,8 @@ def run_experiments(
             record_file = f"./scripts/experiment_results/{experiment_name}.json"
             gs = game_states[str(experiment.scenes)]
             tally = get_tally(gs, record_file)
+            if tally.n_matches == experiment.n_matches:
+                continue
             tally.n_matches += 1
             match result.winner:
                 case None:
