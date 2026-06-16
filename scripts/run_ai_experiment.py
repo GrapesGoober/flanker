@@ -101,8 +101,7 @@ def run_experiments(
     # Create a list of matches to work on
     matches: list[tuple[GameState, ExperimentConfig]] = []
     for experiment in experiments:
-        gs = game_states[str(experiment.scenes)]
-        current_tally = get_tally(gs, experiment)
+        current_tally = get_tally(experiment)
         remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
         for _ in range(remaining_matches):
             matches.append((game_states[str(experiment.scenes)], experiment))
@@ -116,8 +115,7 @@ def run_experiments(
         for match_result in results:
             result, experiment = match_result
             print(f"    {experiment.scenes} done, tallying")
-            gs = game_states[str(experiment.scenes)]
-            tally = get_tally(gs, experiment)
+            tally = get_tally(experiment)
             if tally.n_matches == experiment.n_matches:
                 continue
             tally.n_matches += 1
@@ -168,7 +166,8 @@ def get_game_state(
     return gs
 
 
-def get_tally(gs: GameState, experiment: ExperimentConfig) -> ExperimentTally:
+def get_tally(experiment: ExperimentConfig) -> ExperimentTally:
+    gs = get_game_state(experiment.scenes)
     file_name = "-".join(experiment.scenes)
     file_path = f"./scripts/experiment_results/{file_name}.json"
     if not Path(file_path).is_file():
