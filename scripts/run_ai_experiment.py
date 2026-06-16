@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
 from itertools import product
@@ -103,8 +104,9 @@ def run_experiments(
     for experiment in experiments:
         current_tally = get_tally(experiment)
         remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
+        gs = deepcopy(game_states[str(experiment.scenes)])
         for _ in range(remaining_matches):
-            matches.append((game_states[str(experiment.scenes)], experiment))
+            matches.append((gs, experiment))
 
     # Randomize to run evenly across all matches
     random.shuffle(matches)
