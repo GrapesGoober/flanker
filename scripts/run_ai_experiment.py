@@ -70,17 +70,21 @@ def run_experiment_set(
     experiment_set: ExperimentSetConfig,
 ) -> None:
 
-    for combination in product(
-        experiment_set.scene_configs,
-        experiment_set.blue_config,
-        experiment_set.red_config,
-        experiment_set.settings_config,
-    ):
-        experiment = ExperimentConfig(
+    experiments: list[ExperimentConfig] = [
+        ExperimentConfig(
             scenes=list(combination),
             n_matches=experiment_set.n_matches,
             parallelization=experiment_set.parallelization,
         )
+        for combination in product(
+            experiment_set.scene_configs,
+            experiment_set.blue_config,
+            experiment_set.red_config,
+            experiment_set.settings_config,
+        )
+    ]
+
+    for experiment in experiments:
         print(
             f"Running experiment {experiment.scenes}",
             f"with {experiment.parallelization} processes",
