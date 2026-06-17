@@ -271,11 +271,6 @@
           ],
           "default": null
         },
-        "can_reactive_fire": {
-          "default": true,
-          "title": "Can Reactive Fire",
-          "type": "boolean"
-        },
         "firing_at": {
           "anyOf": [
             {
