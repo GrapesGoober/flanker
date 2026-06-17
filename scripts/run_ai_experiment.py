@@ -58,8 +58,8 @@ def main() -> None:
         },
         red_configs={
             "red-analysis": "./scenes/experiment-red-analysis.json",
-            "red-grid-weak": "./scenes/experiment-red-grid-weak.json",
-            "red-grid-strong": "./scenes/experiment-red-grid-strong.json",
+            "red-gridweak": "./scenes/experiment-red-grid-weak.json",
+            "red-gridstrong": "./scenes/experiment-red-grid-strong.json",
             "red-rh": "./scenes/experiment-red-rh.json",
         },
         match_settings={
