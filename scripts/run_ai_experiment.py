@@ -49,12 +49,14 @@ def main() -> None:
         ],
         blue_config=[
             "experiment-blue-analysis",
-            "experiment-blue-grid",
+            "experiment-blue-grid-weak",
+            "experiment-blue-grid-strong",
             "experiment-blue-rh",
         ],
         red_config=[
             "experiment-red-analysis",
-            "experiment-red-grid",
+            "experiment-red-grid-weak",
+            "experiment-red-grid-strong",
             "experiment-red-rh",
         ],
         settings_config=[
