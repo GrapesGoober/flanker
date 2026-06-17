@@ -1,6 +1,6 @@
 import random
 from copy import deepcopy
-from dataclasses import is_dataclass
+from dataclasses import dataclass, is_dataclass
 from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool
@@ -27,13 +27,15 @@ class ExperimentTally(BaseModel):
     red_config: AiConfigComponent
 
 
-class ExperimentConfig(BaseModel):
+@dataclass
+class ExperimentConfig:
     name: str
     gs: GameState
     n_matches: int
 
 
-class ExperimentSetConfig(BaseModel):
+@dataclass
+class ExperimentSetConfig:
     scene_configs: dict[str, str]
     blue_configs: dict[str, str]
     red_configs: dict[str, str]
