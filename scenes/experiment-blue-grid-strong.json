@@ -9,7 +9,7 @@
             "move_candidates": {
               "initial_points": {
                 "type": "GridConfig",
-                "spacing": 90.0,
+                "spacing": 140.0,
                 "offset": 10.0
               },
               "use_combat_unit_positions": false,
