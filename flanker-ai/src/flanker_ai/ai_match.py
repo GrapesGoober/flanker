@@ -18,7 +18,6 @@ class AiMatchTelemetry:
 class AiMatchResult:
     action_results: list[ActionResult]
     winner: InitiativeState.Faction | None
-    total_runtime: float
     blue_telemetry: AiMatchTelemetry
     red_telemetry: AiMatchTelemetry
 
@@ -51,7 +50,6 @@ class AiMatch:
         return AiMatchResult(
             action_results=action_results,
             winner=winner,
-            total_runtime=0,
             blue_telemetry=AiMatchTelemetry(
                 policy_time=0,
                 policy_size=0,
