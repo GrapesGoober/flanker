@@ -1,5 +1,5 @@
 from math import inf
-from typing import Sequence
+from typing import Callable, Sequence
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -14,12 +14,14 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         self._depth = depth
 
     def get_action_sequence(
-        self, rs: IRepresentationState[TAction]
+        self,
+        rs: IRepresentationState[TAction],
+        callback: Callable[[], None] | None = None,
     ) -> Sequence[TAction]:
         """
         Returns the best actions sequence given a current game state.
         """
-        _, action = self._search(rs, self._depth)
+        _, action = self._search(rs, self._depth, callback)
         if action == None:
             return []
         return [action]
@@ -28,6 +30,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         self,
         state: IRepresentationState[TAction],
         depth: int,
+        callback: Callable[[], None] | None = None,
     ) -> tuple[float, TAction | None]:
         """
         Returns (best_score, best_action)
@@ -61,6 +64,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
                 score, _ = self._search(
                     branch,
                     depth - 1,
+                    callback,
                 )
                 expected_score += score * probability
             if state.get_initiative() == _MAXIMIZING_FACTION:

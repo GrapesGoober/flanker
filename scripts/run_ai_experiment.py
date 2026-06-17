@@ -10,7 +10,7 @@ from typing import Any
 from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
-from flanker_ai.ai_match import AiMatch, AiMatchResult, AiMatchTelemetry
+from flanker_ai.ai_match import AiMatch, AiMatchResult
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -22,8 +22,8 @@ from pydantic import BaseModel
 class MatchResult(BaseModel):
     winner: InitiativeState.Faction | None
     total_runtime: float
-    blue_telemetry: AiMatchTelemetry
-    red_telemetry: AiMatchTelemetry
+    blue_search_size: int
+    red_search_size: int
 
 
 class ExperimentResult(BaseModel):
@@ -57,13 +57,15 @@ def main() -> None:
             "scene-2": "./scenes/experiment-scene-2.json",
         },
         blue_configs={
-            "blue-analysis": "./scenes/experiment-blue-analysis.json",
+            "blue-analysisweak": "./scenes/experiment-blue-analysis-weak.json",
+            "blue-analysisstrong": "./scenes/experiment-blue-analysis-strong.json",
             "blue-gridweak": "./scenes/experiment-blue-grid-weak.json",
             "blue-gridstrong": "./scenes/experiment-blue-grid-strong.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
-            "red-analysis": "./scenes/experiment-red-analysis.json",
+            "red-analysisweak": "./scenes/experiment-red-analysis-weak.json",
+            "red-analysisstrong": "./scenes/experiment-red-analysis-strong.json",
             "red-gridweak": "./scenes/experiment-red-grid-weak.json",
             "red-gridstrong": "./scenes/experiment-red-grid-strong.json",
             "red-rh": "./scenes/experiment-red-rh.json",
@@ -142,8 +144,8 @@ def run_match(
         MatchResult(
             winner=result.winner,
             total_runtime=end_time - start_time,
-            blue_telemetry=result.blue_telemetry,
-            red_telemetry=result.red_telemetry,
+            blue_search_size=result.blue_search_size,
+            red_search_size=result.red_search_size,
         ),
         experiment,
     )

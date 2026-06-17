@@ -8,18 +8,11 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
-class AiMatchTelemetry:
-    policy_time: float
-    policy_size: int
-    policy_branching_factor: int
-
-
-@dataclass
 class AiMatchResult:
     action_results: list[ActionResult]
     winner: InitiativeState.Faction | None
-    blue_telemetry: AiMatchTelemetry
-    red_telemetry: AiMatchTelemetry
+    blue_search_size: int
+    red_search_size: int
 
 
 class AiMatch:
@@ -35,12 +28,27 @@ class AiMatch:
         blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
         red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
 
+        blue_search_size: int = 0
+        red_search_size: int = 0
+
+        def count_blue_search_size() -> None:
+            nonlocal blue_search_size
+            blue_search_size += 1
+
+        def count_redsearch_size() -> None:
+            nonlocal red_search_size
+            red_search_size += 1
+
         # Let two agents fight each other over and over
         action_results: list[ActionResult] = []
         objective_system = gs.get(ObjectiveSystem)
         while (winner := objective_system.get_winning_faction(gs)) == None:
-            blue_action_results = blue_agent.play_initiative()
-            red_action_results = red_agent.play_initiative()
+            blue_action_results = blue_agent.play_initiative(
+                callback=count_blue_search_size,
+            )
+            red_action_results = red_agent.play_initiative(
+                callback=count_redsearch_size,
+            )
             action_results += blue_action_results + red_action_results
 
             # If both agents have no actions, then consider it draw
@@ -50,14 +58,6 @@ class AiMatch:
         return AiMatchResult(
             action_results=action_results,
             winner=winner,
-            blue_telemetry=AiMatchTelemetry(
-                policy_time=0,
-                policy_size=0,
-                policy_branching_factor=0,
-            ),
-            red_telemetry=AiMatchTelemetry(
-                policy_time=0,
-                policy_size=0,
-                policy_branching_factor=0,
-            ),
+            blue_search_size=blue_search_size,
+            red_search_size=red_search_size,
         )

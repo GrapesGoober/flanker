@@ -1,5 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import Callable
 
 from flanker_ai.actions import (
     Action,
@@ -62,7 +63,10 @@ class AiAgent:
         self.policy: IPolicy[Action] = policy
         self.rs: IRepresentationState[Action] = rs
 
-    def play_initiative(self) -> list[ActionResult]:
+    def play_initiative(
+        self,
+        callback: Callable[[], None] | None = None,
+    ) -> list[ActionResult]:
         """Have the agent play the entire initiative."""
 
         initiative_system = self.gs.get(InitiativeSystem)
@@ -85,7 +89,7 @@ class AiAgent:
             # Prepare the representation and run the policy on it
             rs = deepcopy(self.rs)
             rs.update_state(self.gs)
-            actions = self.policy.get_action_sequence(rs)
+            actions = self.policy.get_action_sequence(rs, callback)
 
             if actions == []:
                 initiative_system.flip_initiative(self.gs)
