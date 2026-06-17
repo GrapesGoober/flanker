@@ -1,0 +1,18 @@
+{
+  "n_matches": 100,
+  "blue_wins": 36,
+  "red_wins": 64,
+  "draws": 0,
+  "blue_config": {
+    "config": {
+      "policy_type": "RandomHeuristic"
+    },
+    "faction": "BLUE"
+  },
+  "red_config": {
+    "config": {
+      "policy_type": "RandomHeuristic"
+    },
+    "faction": "RED"
+  }
+}
