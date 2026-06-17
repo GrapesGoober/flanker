@@ -29,8 +29,8 @@ class ExperimentTally(BaseModel):
 
 class ExperimentConfig(BaseModel):
     name: str
+    gs: GameState
     n_matches: int
-    scene_paths: list[str]
 
 
 class ExperimentSetConfig(BaseModel):
@@ -76,7 +76,7 @@ def run_experiment_set(
     experiments: list[ExperimentConfig] = [
         ExperimentConfig(
             name="-".join(name for name, _ in combination),
-            scene_paths=list(path for _, path in combination),
+            gs=get_game_state(list(path for _, path in combination)),
             n_matches=experiment_set.n_matches,
         )
         for combination in product(
@@ -88,26 +88,20 @@ def run_experiment_set(
     ]
     run_experiments(
         experiments,
-        max_processes=experiment_set.max_processes,
+        n_processes=experiment_set.max_processes,
     )
 
 
 def run_experiments(
     experiments: list[ExperimentConfig],
-    max_processes: int,
+    n_processes: int,
 ) -> None:
-
-    game_states: dict[str, GameState] = {
-        experiment.name: get_game_state(experiment.scene_paths)
-        for experiment in experiments
-    }
-
     # Create a list of matches to work on
     matches: list[tuple[GameState, ExperimentConfig]] = []
     for experiment in experiments:
         current_tally = get_tally(experiment)
         remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
-        gs = deepcopy(game_states[experiment.name])
+        gs = deepcopy(experiment.gs)
         for _ in range(remaining_matches):
             matches.append((gs, experiment))
 
@@ -115,7 +109,7 @@ def run_experiments(
     random.shuffle(matches)
 
     # Run this in parallel
-    with Pool(processes=max_processes) as p:
+    with Pool(processes=n_processes) as p:
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
             result, experiment = match_result
@@ -170,12 +164,11 @@ def get_game_state(
 
 
 def get_tally(experiment: ExperimentConfig) -> ExperimentTally:
-    gs = get_game_state(experiment.scene_paths)
     file_path = f"./scripts/experiment_results/{experiment.name}.json"
     if not Path(file_path).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
-        for _, config in gs.query(AiConfigComponent):
+        for _, config in experiment.gs.query(AiConfigComponent):
             if config.faction == InitiativeState.Faction.BLUE:
                 blue_config = config
             if config.faction == InitiativeState.Faction.RED:
