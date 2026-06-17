@@ -61,7 +61,7 @@ def main() -> None:
             "red-rh": "./scenes/experiment-red-rh.json",
         },
         match_settings={
-            "": "./scenes/experiment-settings.json",
+            "experiment": "./scenes/experiment-settings.json",
         },
         n_matches=100,
         max_processes=14,
