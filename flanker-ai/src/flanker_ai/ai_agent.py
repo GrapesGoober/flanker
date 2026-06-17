@@ -41,7 +41,6 @@ from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
-_MAX_STALL_LIMIT = 5
 
 
 @dataclass

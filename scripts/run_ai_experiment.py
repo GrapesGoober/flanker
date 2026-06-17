@@ -9,7 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
-from flanker_ai.ai_match import AiMatch, AiMatchResult
+from flanker_ai.ai_match import AiMatch, AiMatchResult, AiMatchTelemetry
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -20,6 +20,9 @@ from pydantic import BaseModel
 
 class MatchResult(BaseModel):
     winner: InitiativeState.Faction | None
+    total_runtime: float
+    blue_telemetry: AiMatchTelemetry
+    red_telemetry: AiMatchTelemetry
 
 
 class ExperimentResult(BaseModel):
@@ -135,6 +138,9 @@ def run_match(
     return (
         MatchResult(
             winner=result.winner,
+            total_runtime=result.total_runtime,
+            blue_telemetry=result.blue_telemetry,
+            red_telemetry=result.red_telemetry,
         ),
         experiment,
     )
