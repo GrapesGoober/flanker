@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import CombatUnit, FireControls, InitiativeState
+from flanker_core.models.components import CombatUnit, InitiativeState
 
 
 class InitiativeSystem:
@@ -16,19 +16,12 @@ class InitiativeSystem:
                     initiative.faction = InitiativeState.Faction.BLUE
                 case InitiativeState.Faction.BLUE:
                     initiative.faction = InitiativeState.Faction.RED
-        # Reset reactive fire
-        for _, fire_controls in gs.query(FireControls):
-            fire_controls.can_reactive_fire = True
 
     @staticmethod
     def set_initiative(gs: GameState, faction: InitiativeState.Faction) -> None:
         """Mutates the given faction to have the initiative."""
         for _, faction_manager in gs.query(InitiativeState):
             faction_manager.faction = faction
-        # Reset reactive fire
-        for _, unit, fire_controls in gs.query(CombatUnit, FireControls):
-            if unit.faction == faction:
-                fire_controls.can_reactive_fire = True
 
     @staticmethod
     def has_initiative(gs: GameState, unit_id: UUID) -> bool:

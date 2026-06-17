@@ -57,7 +57,6 @@ class CombatUnitService:
                     degree=transform.degrees,
                     status=fire_system.get_status(gs, unit_id),
                     is_friendly=(unit.faction == faction),
-                    no_fire=not fire_controls.can_reactive_fire,
                     firing_at=fire_controls.firing_at,
                 )
             )

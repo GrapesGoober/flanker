@@ -123,17 +123,9 @@ def test_both_miss(fixture: Fixture) -> None:
     assert transform.position == Vec2(
         20, -10
     ), "Move action expects to not be interrupted"
-    fire_controls = fixture.gs.get_component(fixture.unit_shoot_1, FireControls)
-    assert (
-        fire_controls.can_reactive_fire == False
-    ), "MISS reactive fire results in NO FIRE"
     assert (
         initiative_system.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
     ), "MISS reactive fire mustn't flip initiative"
-    initiative_system.flip_initiative(fixture.gs)
-    assert (
-        fire_controls and fire_controls.can_reactive_fire == True
-    ), "Passing initiative must reset reactive fire"
 
 
 def test_one_pin(fixture: Fixture) -> None:

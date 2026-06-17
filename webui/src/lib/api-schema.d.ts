@@ -178,8 +178,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ai Play */
-        post: operations["ai_play_api__sceneName___gameId__ai_play_post"];
+        /** Run Match */
+        post: operations["run_match_api__sceneName___gameId__ai_play_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -394,8 +394,6 @@ export interface components {
             status: components["schemas"]["Status"];
             /** Isfriendly */
             isFriendly: boolean;
-            /** Nofire */
-            noFire: boolean;
             /** Firingat */
             firingAt: [
                 string,
@@ -800,7 +798,7 @@ export interface operations {
             };
         };
     };
-    ai_play_api__sceneName___gameId__ai_play_post: {
+    run_match_api__sceneName___gameId__ai_play_post: {
         parameters: {
             query?: never;
             header?: never;

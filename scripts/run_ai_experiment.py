@@ -1,14 +1,15 @@
+import random
 from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
 from itertools import product
-from multiprocessing import Process
+from multiprocessing.pool import Pool
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent, AiConfigComponent
-from flanker_ai.ai_match import AiMatch
+from flanker_ai.ai_match import AiMatch, AiMatchResult
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -17,7 +18,7 @@ from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
 
 
-class ExperimentResults(BaseModel):
+class ExperimentTally(BaseModel):
     n_matches: int
     blue_wins: int
     red_wins: int
@@ -29,7 +30,6 @@ class ExperimentResults(BaseModel):
 class ExperimentConfig(BaseModel):
     n_matches: int
     scenes: list[str]
-    parallelization: int
 
 
 class ExperimentSetConfig(BaseModel):
@@ -38,7 +38,7 @@ class ExperimentSetConfig(BaseModel):
     red_config: list[str]
     settings_config: list[str]
     n_matches: int
-    parallelization: int
+    max_processes: int
 
 
 def main() -> None:
@@ -61,7 +61,7 @@ def main() -> None:
             "experiment-settings",
         ],
         n_matches=100,
-        parallelization=1,
+        max_processes=14,
     )
     run_experiment_set(my_run)
 
@@ -70,63 +70,77 @@ def run_experiment_set(
     experiment_set: ExperimentSetConfig,
 ) -> None:
 
-    for combination in product(
-        experiment_set.scene_configs,
-        experiment_set.blue_config,
-        experiment_set.red_config,
-        experiment_set.settings_config,
-    ):
-        experiment = ExperimentConfig(
+    experiments: list[ExperimentConfig] = [
+        ExperimentConfig(
             scenes=list(combination),
             n_matches=experiment_set.n_matches,
-            parallelization=experiment_set.parallelization,
         )
-        print(
-            f"Running experiment {experiment.scenes}",
-            f"with {experiment.parallelization} processes",
+        for combination in product(
+            experiment_set.scene_configs,
+            experiment_set.blue_config,
+            experiment_set.red_config,
+            experiment_set.settings_config,
         )
-        for _ in range(experiment.parallelization):
-            p = Process(
-                target=run_experiment,
-                args=(experiment,),
-            )
-            p.start()
+    ]
+    run_experiments(
+        experiments,
+        max_processes=experiment_set.max_processes,
+    )
 
 
-def run_experiment(
-    experiment: ExperimentConfig,
+def run_experiments(
+    experiments: list[ExperimentConfig],
+    max_processes: int,
 ) -> None:
 
-    paths = [f"./scenes/{scene}.json" for scene in experiment.scenes]
-    gs = get_game_state(paths=paths)
+    game_states: dict[str, GameState] = {
+        str(experiment.scenes): get_game_state(experiment.scenes)
+        for experiment in experiments
+    }
 
-    experiment_name = "-".join(experiment.scenes)
-    record_file = f"./scripts/experiment_results/{experiment_name}.json"
+    # Create a list of matches to work on
+    matches: list[tuple[GameState, ExperimentConfig]] = []
+    for experiment in experiments:
+        current_tally = get_tally(experiment)
+        remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
+        gs = deepcopy(game_states[str(experiment.scenes)])
+        for _ in range(remaining_matches):
+            matches.append((gs, experiment))
 
-    # Initialize the file if not exist
-    tally = get_current_result(gs, record_file)
-    save_result(record_file, tally)
+    # Randomize to run evenly across all matches
+    random.shuffle(matches)
 
-    while tally.n_matches < experiment.n_matches:
-        new_gs = deepcopy(gs)
-        result = AiMatch.run_match(new_gs)
-        # TODO do I need parallel safe tallying operation?
-        tally = get_current_result(gs, record_file)  # Resync a new tally
-        tally.n_matches += 1
-        if tally.n_matches > experiment.n_matches:
-            break
-        match result.winner:
-            case None:
-                tally.draws += 1
-            case InitiativeState.Faction.BLUE:
-                tally.blue_wins += 1
-            case InitiativeState.Faction.RED:
-                tally.red_wins += 1
-        save_result(record_file, tally)
+    # Run this in parallel
+    with Pool(processes=max_processes) as p:
+        results = p.imap_unordered(run_match, matches)
+        for match_result in results:
+            result, experiment = match_result
+            print(f"    {experiment.scenes} done, tallying")
+            tally = get_tally(experiment)
+            if tally.n_matches == experiment.n_matches:
+                continue
+            tally.n_matches += 1
+            match result.winner:
+                case None:
+                    tally.draws += 1
+                case InitiativeState.Faction.BLUE:
+                    tally.blue_wins += 1
+                case InitiativeState.Faction.RED:
+                    tally.red_wins += 1
+            save_tally(experiment, tally)
+
+
+def run_match(
+    match: tuple[GameState, ExperimentConfig],
+) -> tuple[AiMatchResult, ExperimentConfig]:
+    gs, experiment = match
+    print(f"Running experiment {experiment.scenes}")
+    result = AiMatch.run_match(gs)
+    return result, experiment
 
 
 def get_game_state(
-    paths: list[str],
+    scenes: list[str],
 ) -> GameState:
     component_types: list[type[Any]] = []
     component_types.append(AiConfigComponent)
@@ -135,6 +149,7 @@ def get_game_state(
             component_types.append(cls)
 
     entities: dict[UUID, Any] = {}
+    paths = [f"./scenes/{scene}.json" for scene in scenes]
     for path in paths:
         with open(path, "r") as f:
             entities.update(
@@ -151,11 +166,11 @@ def get_game_state(
     return gs
 
 
-def get_current_result(
-    gs: GameState,
-    record_file: str,
-) -> ExperimentResults:
-    if not Path(record_file).is_file():
+def get_tally(experiment: ExperimentConfig) -> ExperimentTally:
+    gs = get_game_state(experiment.scenes)
+    file_name = "-".join(experiment.scenes)
+    file_path = f"./scripts/experiment_results/{file_name}.json"
+    if not Path(file_path).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
         for _, config in gs.query(AiConfigComponent):
@@ -168,7 +183,7 @@ def get_current_result(
         if red_config == None:
             raise Exception("AI config is missing for RED.")
 
-        return ExperimentResults(
+        return ExperimentTally(
             n_matches=0,
             blue_wins=0,
             red_wins=0,
@@ -177,15 +192,17 @@ def get_current_result(
             red_config=red_config,
         )
 
-    with open(record_file, "r") as f:
-        return ExperimentResults.model_validate_json(f.read())
+    with open(file_path, "r") as f:
+        return ExperimentTally.model_validate_json(f.read())
 
 
-def save_result(
-    record_file: str,
-    result: ExperimentResults,
+def save_tally(
+    experiment: ExperimentConfig,
+    result: ExperimentTally,
 ) -> None:
-    with open(record_file, "w") as f:
+    file_name = "-".join(experiment.scenes)
+    file_path = f"./scripts/experiment_results/{file_name}.json"
+    with open(file_path, "w") as f:
         f.write(result.model_dump_json(indent=2))
 
 
