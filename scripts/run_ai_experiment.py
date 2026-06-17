@@ -52,8 +52,8 @@ def main() -> None:
         },
         blue_configs={
             "blue-analysis": "./scenes/experiment-blue-analysis.json",
-            "blue-grid-weak": "./scenes/experiment-blue-grid-weak.json",
-            "blue-grid-strong": "./scenes/experiment-blue-grid-strong.json",
+            "blue-gridweak": "./scenes/experiment-blue-grid-weak.json",
+            "blue-gridstrong": "./scenes/experiment-blue-grid-strong.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
