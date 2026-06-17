@@ -18,13 +18,15 @@ from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
 
 
-class ExperimentTally(BaseModel):
+class MatchResult(BaseModel):
+    winner: InitiativeState.Faction | None
+
+
+class ExperimentResult(BaseModel):
     n_matches: int
-    blue_wins: int
-    red_wins: int
-    draws: int
     blue_config: AiConfigComponent
     red_config: AiConfigComponent
+    match_results: list[MatchResult]
 
 
 @dataclass
@@ -101,7 +103,7 @@ def run_experiments(
     # Create a list of matches to work on
     matches: list[tuple[GameState, ExperimentConfig]] = []
     for experiment in experiments:
-        current_tally = get_tally(experiment)
+        current_tally = get_results(experiment)
         remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
         gs = deepcopy(experiment.gs)
         for _ in range(remaining_matches):
@@ -116,27 +118,26 @@ def run_experiments(
         for match_result in results:
             result, experiment = match_result
             print(f"    {experiment.name} done, tallying")
-            tally = get_tally(experiment)
-            if tally.n_matches == experiment.n_matches:
+            experiment_result = get_results(experiment)
+            if experiment_result.n_matches == experiment.n_matches:
                 continue
-            tally.n_matches += 1
-            match result.winner:
-                case None:
-                    tally.draws += 1
-                case InitiativeState.Faction.BLUE:
-                    tally.blue_wins += 1
-                case InitiativeState.Faction.RED:
-                    tally.red_wins += 1
-            save_tally(experiment, tally)
+            experiment_result.n_matches += 1
+            experiment_result.match_results.append(result)
+            save_results(experiment, experiment_result)
 
 
 def run_match(
     match: tuple[GameState, ExperimentConfig],
-) -> tuple[AiMatchResult, ExperimentConfig]:
+) -> tuple[MatchResult, ExperimentConfig]:
     gs, experiment = match
     print(f"Running match {experiment.name}")
-    result = AiMatch.run_match(gs)
-    return result, experiment
+    result: AiMatchResult = AiMatch.run_match(gs)
+    return (
+        MatchResult(
+            winner=result.winner,
+        ),
+        experiment,
+    )
 
 
 def get_game_state(
@@ -165,7 +166,7 @@ def get_game_state(
     return gs
 
 
-def get_tally(experiment: ExperimentConfig) -> ExperimentTally:
+def get_results(experiment: ExperimentConfig) -> ExperimentResult:
     file_path = f"./scripts/experiment_results/{experiment.name}.json"
     if not Path(file_path).is_file():
         blue_config: AiConfigComponent | None = None
@@ -180,22 +181,24 @@ def get_tally(experiment: ExperimentConfig) -> ExperimentTally:
         if red_config == None:
             raise Exception("AI config is missing for RED.")
 
-        return ExperimentTally(
+        return ExperimentResult(
             n_matches=0,
-            blue_wins=0,
-            red_wins=0,
-            draws=0,
             blue_config=blue_config,
             red_config=red_config,
+            match_results=[],
         )
 
     with open(file_path, "r") as f:
-        return ExperimentTally.model_validate_json(f.read())
+        # This file reading is unreliable... need better file IO?
+        file_data = f.read()
+        if file_data == "":
+            raise Exception(f"{file_path} file fmpty?!")
+        return ExperimentResult.model_validate_json(file_data)
 
 
-def save_tally(
+def save_results(
     experiment: ExperimentConfig,
-    result: ExperimentTally,
+    result: ExperimentResult,
 ) -> None:
     file_path = f"./scripts/experiment_results/{experiment.name}.json"
     with open(file_path, "w") as f:
