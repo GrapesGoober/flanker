@@ -52,6 +52,7 @@ class AiPointsExpansionService:
 
         # Expands the points given the config
         for expansion_config in config.expansions:
+            waypoints = AiPointsExpansionService._filter_colocated(waypoints)
             match expansion_config:
                 case PointsConfig.LineBasedExpansionConfig():
                     waypoints = AiPointsExpansionService.expand_waypoints_line_based(
@@ -59,7 +60,6 @@ class AiPointsExpansionService:
                         initial_waypoints=waypoints,
                         tolerance=expansion_config.tolerance,
                     )
-                    waypoints = AiPointsExpansionService._filter_colocated(waypoints)
                 case PointsConfig.PolygonalExpansionConfig():
                     raise NotImplementedError()
                 case PointsConfig.FlagPruneConfig():
@@ -73,7 +73,6 @@ class AiPointsExpansionService:
                         waypoints=waypoints,
                         flag_waypoints=flag_waypoints,
                     )
-                    waypoints = AiPointsExpansionService._filter_colocated(waypoints)
                 case PointsConfig.WeightsPruneConfig():
                     # Use combat unit positions as flags
                     flag_waypoints: list[Vec2] = []
@@ -92,9 +91,9 @@ class AiPointsExpansionService:
                         remaining_size=expansion_config.remaining_size,
                         flagged_waypoints=flagged_waypoints,
                     )
-                    waypoints = AiPointsExpansionService._filter_colocated(waypoints)
 
-        return list(waypoints)
+        waypoints = AiPointsExpansionService._filter_colocated(waypoints)
+        return waypoints
 
     @staticmethod
     def expand_waypoints_line_based(
