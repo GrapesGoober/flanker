@@ -231,8 +231,8 @@ if __name__ == "__main__":
     gs = get_game_state(
         paths=[
             "./scenes/experiment-settings.json",
-            "./scenes/experiment-scene-2.json",
-            "./scenes/experiment-blue-analysis-strong.json",
+            "./scenes/experiment-scene-1.json",
+            "./scenes/experiment-blue-analysis-weak.json",
         ]
     )
 
