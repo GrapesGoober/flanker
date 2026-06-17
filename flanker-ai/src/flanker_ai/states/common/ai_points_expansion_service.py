@@ -73,9 +73,22 @@ class AiPointsExpansionService:
                         flag_waypoints=flag_waypoints,
                     )
                 case PointsConfig.WeightsPruneConfig():
+                    # Use combat unit positions as flags
+                    flag_waypoints: list[Vec2] = []
+                    if config.use_combat_unit_positions == True:
+                        for _, _, transform in gs.query(CombatUnit, Transform):
+                            flag_waypoints.append(transform.position)
+                    flagged_waypoints = (
+                        AiPointsExpansionService._prune_waypoints_by_flags(
+                            gs=gs,
+                            waypoints=waypoints,
+                            flag_waypoints=flag_waypoints,
+                        )
+                    )
                     waypoints = AiPointsExpansionService._prune_waypoints_by_weight(
                         waypoints=waypoints,
                         remaining_size=expansion_config.remaining_size,
+                        flagged_waypoints=set(flagged_waypoints),
                     )
 
         return list(waypoints)
@@ -213,6 +226,7 @@ class AiPointsExpansionService:
     def _prune_waypoints_by_weight(
         waypoints: list[Vec2],
         remaining_size: int,
+        flagged_waypoints: set[Vec2],
     ) -> list[Vec2]:
         """
         Removes waypoints with the lowest weight values. The weights
@@ -242,9 +256,13 @@ class AiPointsExpansionService:
                 distance_to_each_waypoint,
                 key=lambda i: i[0],
             )
-            waypoint_weights[waypoint] = min_dist
+            weight = min_dist
+            if waypoint in flagged_waypoints:
+                weight += 1e10
+
+            waypoint_weights[waypoint] = weight
             nearest_to.setdefault(closest_neighbor, []).append(waypoint)
-            return min_dist
+            return weight
 
         # Keep removing the worst waypoint until we hit the target size
         while len(current_waypoints) > remaining_size:
