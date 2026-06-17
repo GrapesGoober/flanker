@@ -59,6 +59,7 @@ class AiPointsExpansionService:
                         initial_waypoints=waypoints,
                         tolerance=expansion_config.tolerance,
                     )
+                    waypoints = AiPointsExpansionService._filter_colocated(waypoints)
                 case PointsConfig.PolygonalExpansionConfig():
                     raise NotImplementedError()
                 case PointsConfig.FlagPruneConfig():
@@ -72,13 +73,14 @@ class AiPointsExpansionService:
                         waypoints=waypoints,
                         flag_waypoints=flag_waypoints,
                     )
+                    waypoints = AiPointsExpansionService._filter_colocated(waypoints)
                 case PointsConfig.WeightsPruneConfig():
                     # Use combat unit positions as flags
                     flag_waypoints: list[Vec2] = []
                     if config.use_combat_unit_positions == True:
                         for _, _, transform in gs.query(CombatUnit, Transform):
                             flag_waypoints.append(transform.position)
-                    flagged_waypoints = (
+                    flagged_waypoints = AiPointsExpansionService._filter_colocated(
                         AiPointsExpansionService._prune_waypoints_by_flags(
                             gs=gs,
                             waypoints=waypoints,
@@ -88,8 +90,9 @@ class AiPointsExpansionService:
                     waypoints = AiPointsExpansionService._prune_waypoints_by_weight(
                         waypoints=waypoints,
                         remaining_size=expansion_config.remaining_size,
-                        flagged_waypoints=set(flagged_waypoints),
+                        flagged_waypoints=flagged_waypoints,
                     )
+                    waypoints = AiPointsExpansionService._filter_colocated(waypoints)
 
         return list(waypoints)
 
@@ -106,6 +109,8 @@ class AiPointsExpansionService:
         los_system = gs.get(LosSystem)
 
         waypoints_los_polygon: dict[Vec2, list[Vec2]] = {}
+
+        # FIXME: set does not guarantee co-location filter
         waypoints = set(initial_waypoints)
 
         terrain_vertices: list[list[Vec2]] = []
@@ -226,7 +231,7 @@ class AiPointsExpansionService:
     def _prune_waypoints_by_weight(
         waypoints: list[Vec2],
         remaining_size: int,
-        flagged_waypoints: set[Vec2],
+        flagged_waypoints: list[Vec2],
     ) -> list[Vec2]:
         """
         Removes waypoints with the lowest weight values. The weights
@@ -257,7 +262,7 @@ class AiPointsExpansionService:
                 key=lambda i: i[0],
             )
             weight = min_dist
-            if waypoint in flagged_waypoints:
+            if any(waypoint.is_close(flag) for flag in flagged_waypoints):
                 weight += 1e10
 
             waypoint_weights[waypoint] = weight
@@ -278,3 +283,17 @@ class AiPointsExpansionService:
                 waypoint_weights.pop(affected, None)
 
         return current_waypoints
+
+    @staticmethod
+    def _filter_colocated(
+        waypoints: list[Vec2],
+        tolerance: float = 1e-5,
+    ) -> list[Vec2]:
+        filtered_waypoints: list[Vec2] = []
+        for waypoint in waypoints:
+            if not any(
+                waypoint.is_close(other, abs_tol=tolerance)
+                for other in filtered_waypoints
+            ):
+                filtered_waypoints.append(waypoint)
+        return filtered_waypoints
