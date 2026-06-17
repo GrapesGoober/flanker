@@ -207,6 +207,15 @@ def draw_move_candidates(
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
     plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+    for point in move_candidates:
+        plt.text(  # type: ignore
+            point.x,
+            point.y,
+            str(f"{point.x}, {point.y}"),
+            fontsize=8,
+            ha="left",
+            va="bottom",
+        )
 
     if draw_lines:
         segments = [
