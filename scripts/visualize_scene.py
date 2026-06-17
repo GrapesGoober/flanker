@@ -211,7 +211,7 @@ def draw_move_candidates(
         plt.text(  # type: ignore
             point.x,
             point.y,
-            str(f"{point.x}, {point.y}"),
+            str(f"({round(point.x, 2)}, {round(point.y, 2)})"),
             fontsize=8,
             ha="left",
             va="bottom",
