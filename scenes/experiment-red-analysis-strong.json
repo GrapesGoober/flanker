@@ -19,7 +19,8 @@
                   "tolerance": 10
                 },
                 {
-                  "type": "FlagPrune"
+                  "type": "WeightsPrune",
+                  "remaining_size": 13
                 }
               ]
             },

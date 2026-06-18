@@ -1,5 +1,5 @@
 from math import inf
-from typing import Sequence
+from typing import Callable, Sequence
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -14,9 +14,17 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         self._depth = depth
 
     def get_action_sequence(
-        self, rs: IRepresentationState[TAction]
+        self,
+        rs: IRepresentationState[TAction],
+        callback: Callable[[], None] | None = None,
     ) -> Sequence[TAction]:
-        _, action = self._search(rs, self._depth, -inf, inf)
+        _, action = self._search(
+            rs=rs,
+            depth=self._depth,
+            alpha=-inf,
+            beta=inf,
+            callback=callback,
+        )
         if action is None:
             return []
         return [action]
@@ -27,6 +35,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         depth: int,
         alpha: float,
         beta: float,
+        callback: Callable[[], None] | None = None,
     ) -> tuple[float, TAction | None]:
 
         winner = rs.get_winner()
@@ -43,6 +52,9 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         if not actions:
             return rs.get_score(MAXIMIZING_FACTION), None
 
+        if callback != None:
+            callback()
+
         maximizing = rs.get_initiative() == MAXIMIZING_FACTION
         best_score = -inf if maximizing else inf
         best_action: TAction | None = None
@@ -51,7 +63,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             branch = rs.get_one_branch(action)
             if branch == None:
                 continue
-            score, _ = self._search(branch, depth - 1, alpha, beta)
+            score, _ = self._search(branch, depth - 1, alpha, beta, callback)
 
             if maximizing:
                 if score > best_score:

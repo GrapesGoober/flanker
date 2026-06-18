@@ -1,5 +1,5 @@
 import random
-from typing import Sequence
+from typing import Callable, Sequence
 
 from flanker_ai.actions import (
     Action,
@@ -30,7 +30,11 @@ class RandomHeuristicPolicy(IPolicy[Action]):
     ) -> None:
         self._gs = gs
 
-    def get_action_sequence(self, rs: IRepresentationState[Action]) -> Sequence[Action]:
+    def get_action_sequence(
+        self,
+        rs: IRepresentationState[Action],
+        callback: Callable[[], None] | None = None,
+    ) -> Sequence[Action]:
 
         winner = rs.get_winner()
         if winner is not None:

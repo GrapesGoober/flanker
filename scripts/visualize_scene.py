@@ -22,21 +22,26 @@ from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
 
-def load_state(path: str) -> GameState:
-
+def get_game_state(
+    paths: list[str],
+) -> GameState:
     component_types: list[type[Any]] = []
     component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
 
-    with open(path, "r") as f:
-        entities = Serializer.deserialize(
-            json_data=f.read(),
-            component_types=component_types,
-        )
-        gs = GameState.load(entities)
+    entities: dict[UUID, Any] = {}
+    for path in paths:
+        with open(path, "r") as f:
+            entities.update(
+                Serializer.deserialize(
+                    json_data=f.read(),
+                    component_types=component_types,
+                )
+            )
 
+    gs = GameState.load(entities)
     register_systems(gs)
     return gs
 
@@ -202,6 +207,15 @@ def draw_move_candidates(
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
     plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+    for point in move_candidates:
+        plt.text(  # type: ignore
+            point.x,
+            point.y,
+            str(f"({round(point.x, 2)}, {round(point.y, 2)})"),
+            fontsize=8,
+            ha="left",
+            va="bottom",
+        )
 
     if draw_lines:
         segments = [
@@ -214,7 +228,13 @@ def draw_move_candidates(
 
 if __name__ == "__main__":
 
-    gs = load_state("./scenes/experiment-2-analysis.json")
+    gs = get_game_state(
+        paths=[
+            "./scenes/experiment-settings.json",
+            "./scenes/experiment-scene-1.json",
+            "./scenes/experiment-blue-analysis-weak.json",
+        ]
+    )
 
     screenshot = None  # "./scripts/experiment-template.png"
     if screenshot:

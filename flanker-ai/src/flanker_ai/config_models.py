@@ -48,16 +48,16 @@ class PointsConfig:
         type: Literal["WeightsPrune"]
         remaining_size: int
 
-    EXPANSION_TYPES = (
-        LineBasedExpansionConfig
-        | PolygonalExpansionConfig
-        | FlagPruneConfig
-        | WeightsPruneConfig
-    )
-
     initial_points: GridConfig | HandDrawnConfig | VoronoiConfig | RandomConfig
     use_combat_unit_positions: bool
-    expansions: list[EXPANSION_TYPES]
+    expansions: list[
+        (
+            LineBasedExpansionConfig
+            | PolygonalExpansionConfig
+            | FlagPruneConfig
+            | WeightsPruneConfig
+        )
+    ]
 
 
 @dataclass

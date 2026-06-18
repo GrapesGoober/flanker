@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
+      "AiConfigComponent": {
+        "config": {
+          "policy_type": "Minimax",
+          "state": {
+            "type": "UnabstractedStateConfig",
+            "move_candidates": {
+              "initial_points": {
+                "type": "GridConfig",
+                "spacing": 140.0,
+                "offset": 10.0
+              },
+              "use_combat_unit_positions": true,
+              "expansions": [
+                {
+                  "type": "LineBased",
+                  "tolerance": 10
+                },
+                {
+                  "type": "WeightsPrune",
+                  "remaining_size": 13
+                }
+              ]
+            },
+            "divide_moves_per_unit": false
+          }
+        },
+        "faction": "BLUE"
+      }
+    }
+  }
+}
