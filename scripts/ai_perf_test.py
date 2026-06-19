@@ -2,6 +2,7 @@ import random
 from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
+from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
@@ -12,28 +13,39 @@ from flanker_core.serializer import Serializer
 from flanker_core.systems.register_systems import register_systems
 
 
-def load_state(path: str) -> GameState:
-
+def get_game_state(
+    paths: list[str],
+) -> GameState:
     component_types: list[type[Any]] = []
+    component_types.append(AiConfigComponent)
     for _, cls in vars(components).items():
         if isclass(cls) and is_dataclass(cls):
             component_types.append(cls)
-    component_types.append(AiConfigComponent)
 
-    with open(path, "r") as f:
-        entities = Serializer.deserialize(
-            json_data=f.read(),
-            component_types=component_types,
-        )
-        gs = GameState.load(entities)
+    entities: dict[UUID, Any] = {}
+    for path in paths:
+        with open(path, "r") as f:
+            entities.update(
+                Serializer.deserialize(
+                    json_data=f.read(),
+                    component_types=component_types,
+                )
+            )
 
+    gs = GameState.load(entities)
     register_systems(gs)
     return gs
 
 
 if __name__ == "__main__":
-    PATH = "./scenes/experiment-analysis.json"
-    gs = load_state(PATH)
+    gs = get_game_state(
+        paths=[
+            "./scenes/experiment-settings.json",
+            "./scenes/experiment-scene-2.json",
+            "./scenes/experiment-blue-analysis-weak.json",
+            "./scenes/experiment-red-rh.json",
+        ]
+    )
 
     # Ensures that each run is consistent in search size
     random.seed(10)
