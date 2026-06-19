@@ -5,7 +5,6 @@ from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool
 from pathlib import Path
-from time import perf_counter
 from typing import Any
 from uuid import UUID
 
@@ -137,13 +136,11 @@ def run_match(
 ) -> tuple[MatchResult, ExperimentConfig]:
     gs, experiment = match
     print(f"Running match {experiment.name}")
-    start_time = perf_counter()
     result: AiMatchResult = AiMatch.run_match(gs)
-    end_time = perf_counter()
     return (
         MatchResult(
             winner=result.winner,
-            total_runtime=end_time - start_time,
+            total_runtime=result.runtime,
             blue_search_size=result.blue_search_size,
             red_search_size=result.red_search_size,
         ),
