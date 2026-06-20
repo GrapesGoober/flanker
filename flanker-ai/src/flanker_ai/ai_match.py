@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from math import inf
 from time import perf_counter
 
 from flanker_ai.actions import ActionResult
@@ -7,8 +6,6 @@ from flanker_ai.ai_agent import AiAgent
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
-
-MAX_RUNTIME_SECONDS = inf
 
 
 @dataclass
@@ -40,11 +37,6 @@ class AiMatch:
         start_time = perf_counter()
         objective_system = gs.get(ObjectiveSystem)
         while (winner := objective_system.get_winning_faction(gs)) == None:
-
-            # Max safety time limit per run so it doesn't consume CPU.
-            runtime = perf_counter() - start_time
-            if runtime > MAX_RUNTIME_SECONDS:
-                break
 
             # Have the AI play agianst each other.
             blue_action_results = blue_agent.play_initiative()
