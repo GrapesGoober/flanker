@@ -1,0 +1,338 @@
+{
+  "n_matches": 50,
+  "blue_config": {
+    "config": {
+      "policy_type": "Minimax",
+      "state": {
+        "type": "UnabstractedStateConfig",
+        "move_candidates": {
+          "initial_points": {
+            "type": "GridConfig",
+            "spacing": 140.0,
+            "offset": 10.0
+          },
+          "use_combat_unit_positions": true,
+          "expansions": [
+            {
+              "type": "LineBased",
+              "tolerance": 10.0
+            },
+            {
+              "type": "FlagPrune"
+            }
+          ]
+        },
+        "divide_moves_per_unit": false
+      }
+    },
+    "faction": "BLUE"
+  },
+  "red_config": {
+    "config": {
+      "policy_type": "RandomHeuristic"
+    },
+    "faction": "RED"
+  },
+  "match_results": [
+    {
+      "winner": "BLUE",
+      "total_runtime": 162.4818156999827,
+      "blue_search_size": 13057,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 214.96033199998783,
+      "blue_search_size": 17290,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 317.9326912999968,
+      "blue_search_size": 25737,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 142.4746645000123,
+      "blue_search_size": 9933,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 131.57311229998595,
+      "blue_search_size": 9846,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 124.42905590002192,
+      "blue_search_size": 8489,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 124.26481819999753,
+      "blue_search_size": 8635,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 569.2505851000024,
+      "blue_search_size": 56725,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 216.55129989999114,
+      "blue_search_size": 18610,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 125.01324870000826,
+      "blue_search_size": 8640,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 231.69104049997986,
+      "blue_search_size": 16330,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 131.32083830001648,
+      "blue_search_size": 9415,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 145.3065414999728,
+      "blue_search_size": 10233,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 173.88814300001832,
+      "blue_search_size": 13288,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 150.11653490000754,
+      "blue_search_size": 12068,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 127.61053379997611,
+      "blue_search_size": 8625,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 123.44310550001683,
+      "blue_search_size": 8493,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 121.31979740000679,
+      "blue_search_size": 8487,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 130.78727199998684,
+      "blue_search_size": 9467,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 267.90451689998736,
+      "blue_search_size": 26021,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 139.3941526999988,
+      "blue_search_size": 9958,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 149.87369949999265,
+      "blue_search_size": 11215,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 133.72501309998916,
+      "blue_search_size": 9699,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 131.10871659999248,
+      "blue_search_size": 9441,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 142.49303280000458,
+      "blue_search_size": 10464,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 224.14427210000576,
+      "blue_search_size": 17476,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 140.9089320000203,
+      "blue_search_size": 9765,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 225.32662209999398,
+      "blue_search_size": 18895,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 204.50243419999606,
+      "blue_search_size": 14515,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 196.64117630000692,
+      "blue_search_size": 13096,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 316.9349019000074,
+      "blue_search_size": 31348,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 214.00729950002278,
+      "blue_search_size": 18626,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 221.0642587999755,
+      "blue_search_size": 21629,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 169.6221315000148,
+      "blue_search_size": 14067,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 312.9413918000064,
+      "blue_search_size": 26249,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 135.20124550000764,
+      "blue_search_size": 9110,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 129.57765689998632,
+      "blue_search_size": 8493,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 283.38235240001814,
+      "blue_search_size": 28134,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 203.0901870999951,
+      "blue_search_size": 14769,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 157.89201290000346,
+      "blue_search_size": 11284,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 127.69996719999472,
+      "blue_search_size": 10029,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 178.36162270000204,
+      "blue_search_size": 16837,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 192.04187909999746,
+      "blue_search_size": 14124,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 140.9023879999877,
+      "blue_search_size": 9922,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 363.0937585000065,
+      "blue_search_size": 44186,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 449.70952549998765,
+      "blue_search_size": 45649,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 291.73573519999627,
+      "blue_search_size": 28114,
+      "red_search_size": 0
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 124.53019630000927,
+      "blue_search_size": 8601,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 356.6653171000071,
+      "blue_search_size": 27121,
+      "red_search_size": 0
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 161.30061940001906,
+      "blue_search_size": 20896,
+      "red_search_size": 0
+    }
+  ]
+}

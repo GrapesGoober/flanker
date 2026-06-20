@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import inf
 from time import perf_counter
 
 from flanker_ai.actions import ActionResult
@@ -7,7 +8,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-MAX_RUNTIME_SECONDS = 360
+MAX_RUNTIME_SECONDS = inf
 
 
 @dataclass
