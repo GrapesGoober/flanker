@@ -209,7 +209,7 @@ def test_optimal_waypoints(fixture: Fixture) -> None:
     assert action_results != [], "The minimax must find optimal action sequence."
 
     staging_units: list[UUID] = []
-    for result in action_results:
+    for result, _ in action_results:
         if not isinstance(result, MoveActionResult):
             continue
         if result.action.to == Vec2(-10, 10):
@@ -217,7 +217,7 @@ def test_optimal_waypoints(fixture: Fixture) -> None:
     assert len(staging_units) != 0, "AI must try staging to Vec2(-10, 10)."
 
     peeking_units: list[UUID] = []
-    for result in action_results:
+    for result, _ in action_results:
         if not isinstance(result, MoveActionResult):
             continue
         if result.action.to == Vec2(-10, 1):
@@ -228,7 +228,7 @@ def test_optimal_waypoints(fixture: Fixture) -> None:
         set(staging_units)
     ), "Peeking units must be staged first."
 
-    last_action_result = action_results[-1]
+    last_action_result, _ = action_results[-1]
     assert isinstance(
         last_action_result, FireActionResult
     ), "AI must fire at the enemy once."

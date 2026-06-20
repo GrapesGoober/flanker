@@ -1,5 +1,4 @@
 import random
-from typing import Callable
 
 from flanker_ai.actions import (
     Action,
@@ -33,16 +32,15 @@ class RandomHeuristicPolicy(IPolicy[Action]):
     def get_action(
         self,
         rs: IRepresentationState[Action],
-        callback: Callable[[], None] | None = None,
-    ) -> Action | None:
+    ) -> tuple[Action | None, int]:
 
         winner = rs.get_winner()
         if winner is not None:
-            return None
+            return None, 0
 
         actions = list(rs.get_actions())
         if not actions:
-            return None
+            return None, 0
 
         # Categorizes actions into candidate fire actions or move actions
         fire_actions: list[Action] = []
@@ -57,15 +55,11 @@ class RandomHeuristicPolicy(IPolicy[Action]):
         # If any fire actions are valid, perform it first
         action = self._pick_valid_action(rs, fire_actions)
         if action is not None:
-            return None
+            return None, 0
 
         # If any move actions are valid, perform it last
         action = self._pick_valid_action(rs, move_actions)
-        if action is not None:
-            return None
-
-        # No valid action
-        return None
+        return action, 0
 
     def _pick_valid_action(
         self,

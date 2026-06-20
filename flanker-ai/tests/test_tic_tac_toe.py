@@ -39,7 +39,7 @@ def test_minimax_move(fixture: TicTacToeState) -> None:
         ]
     )
     minimax = MinimaxPolicy[TicTacToeAction](depth=1)
-    action = minimax.get_action(fixture)
+    action, _ = minimax.get_action(fixture)
     assert action != None
     _, new_state = fixture.get_branches(action)[0]
     assert action == TicTacToeAction(row=1, column=2)

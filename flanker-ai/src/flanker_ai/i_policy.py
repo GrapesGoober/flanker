@@ -1,4 +1,4 @@
-from typing import Callable, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from flanker_ai.i_representation_state import IRepresentationState
 
@@ -10,5 +10,9 @@ class IPolicy[TAction](Protocol):
     def get_action(
         self,
         rs: IRepresentationState[TAction],
-        callback: Callable[[], None] | None = None,
-    ) -> TAction | None: ...
+    ) -> tuple[TAction | None, int]:
+        """
+        Returns a single best action from the search policy,
+        if any, and its search size.
+        """
+        ...

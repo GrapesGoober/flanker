@@ -37,12 +37,10 @@ class AiService:
     @staticmethod
     def play_redfor(gs: GameState) -> None:
         """Runs the default REDFOR AI."""
-
         agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-
         results = agent.play_initiative()
-
-        AiService._log_ai_action_results(gs, results)
+        action_results = [action_result for action_result, _ in results]
+        AiService._log_ai_action_results(gs, action_results)
 
     @staticmethod
     def run_match(gs: GameState) -> None:

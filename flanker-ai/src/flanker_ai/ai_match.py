@@ -16,10 +16,8 @@ class AiMatchResult:
     runtime: float
     action_results: list[ActionResult]
     winner: InitiativeState.Faction | None
-    n_blue_searches: int
-    n_red_searches: int
-    blue_search_size: int
-    red_search_size: int
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
 
 
 class AiMatch:
@@ -34,19 +32,8 @@ class AiMatch:
         # Sets up a match
         blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
         red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-
-        n_blue_searches: int = 0
-        n_red_searches: int = 0
-        blue_search_size: int = 0
-        red_search_size: int = 0
-
-        def count_blue_search_size() -> None:
-            nonlocal blue_search_size
-            blue_search_size += 1
-
-        def count_redsearch_size() -> None:
-            nonlocal red_search_size
-            red_search_size += 1
+        blue_search_sizes: list[int] = []
+        red_search_sizes: list[int] = []
 
         # Let two agents fight each other over and over
         action_results: list[ActionResult] = []
@@ -60,15 +47,15 @@ class AiMatch:
                 break
 
             # Have the AI play agianst each other.
-            blue_action_results = blue_agent.play_initiative(
-                callback=count_blue_search_size,
-            )
-            red_action_results = red_agent.play_initiative(
-                callback=count_redsearch_size,
-            )
-            n_blue_searches += len(blue_action_results)
-            n_red_searches += len(red_action_results)
-            action_results += blue_action_results + red_action_results
+            blue_action_results = blue_agent.play_initiative()
+            red_action_results = red_agent.play_initiative()
+            for action_result, search_size in blue_action_results:
+                blue_search_sizes.append(search_size)
+                action_results.append(action_result)
+
+            for action_result, search_size in red_action_results:
+                red_search_sizes.append(search_size)
+                action_results.append(action_result)
 
             # If both agents have no actions, then consider it draw
             if not red_action_results and not blue_action_results:
@@ -79,8 +66,6 @@ class AiMatch:
             runtime=runtime,
             action_results=action_results,
             winner=winner,
-            n_blue_searches=n_blue_searches,
-            n_red_searches=n_red_searches,
-            blue_search_size=blue_search_size,
-            red_search_size=red_search_size,
+            blue_search_sizes=blue_search_sizes,
+            red_search_sizes=red_search_sizes,
         )
