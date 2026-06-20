@@ -68,7 +68,7 @@ def main() -> None:
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=100,
+        n_matches=2,
         max_processes=14,
     )
     run_experiment_set(my_run)
@@ -122,8 +122,9 @@ def run_experiments(
             experiment_result = get_results(experiment)
             if experiment_result.n_matches == experiment.n_matches:
                 continue
-            experiment_result.n_matches += 1
-            experiment_result.match_results.append(result)
+            match_results = experiment_result.match_results
+            match_results.append(result)
+            experiment_result.n_matches = len(match_results)
             save_results(experiment, experiment_result)
 
 

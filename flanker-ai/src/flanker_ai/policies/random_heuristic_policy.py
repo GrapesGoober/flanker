@@ -55,11 +55,11 @@ class RandomHeuristicPolicy(IPolicy[Action]):
         # If any fire actions are valid, perform it first
         action = self._pick_valid_action(rs, fire_actions)
         if action is not None:
-            return None, 0
+            return action, len(fire_actions)
 
         # If any move actions are valid, perform it last
         action = self._pick_valid_action(rs, move_actions)
-        return action, 0
+        return action, len(move_actions)
 
     def _pick_valid_action(
         self,

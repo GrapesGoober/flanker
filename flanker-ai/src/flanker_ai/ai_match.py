@@ -58,7 +58,7 @@ class AiMatch:
                 action_results.append(action_result)
 
             # If both agents have no actions, then consider it draw
-            if not red_action_results and not blue_action_results:
+            if red_action_results == [] and blue_action_results == []:
                 break
 
         runtime = perf_counter() - start_time
