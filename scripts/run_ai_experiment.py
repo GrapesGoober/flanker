@@ -70,7 +70,7 @@ def main() -> None:
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=50,
+        n_matches=100,
         max_processes=14,
     )
     run_experiment_set(my_run)
