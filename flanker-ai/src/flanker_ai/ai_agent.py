@@ -89,13 +89,11 @@ class AiAgent:
             # Prepare the representation and run the policy on it
             rs = deepcopy(self.rs)
             rs.update_state(self.gs)
-            actions = self.policy.get_action_sequence(rs, callback)
+            action = self.policy.get_action(rs, callback)
 
-            if actions == []:
+            if action == None:
                 initiative_system.flip_initiative(self.gs)
                 break
-
-            action = actions[0]
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):

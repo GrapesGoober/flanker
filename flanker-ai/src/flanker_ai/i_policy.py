@@ -1,4 +1,4 @@
-from typing import Callable, Protocol, Sequence, runtime_checkable
+from typing import Callable, Protocol, runtime_checkable
 
 from flanker_ai.i_representation_state import IRepresentationState
 
@@ -7,8 +7,8 @@ from flanker_ai.i_representation_state import IRepresentationState
 class IPolicy[TAction](Protocol):
     """Interface for defining a decision policy for AI."""
 
-    def get_action_sequence(
+    def get_action(
         self,
         rs: IRepresentationState[TAction],
         callback: Callable[[], None] | None = None,
-    ) -> Sequence[TAction]: ...
+    ) -> TAction | None: ...
