@@ -21,6 +21,8 @@ from pydantic import BaseModel
 class MatchResult(BaseModel):
     winner: InitiativeState.Faction | None
     total_runtime: float
+    n_blue_searches: int
+    n_red_searches: int
     blue_search_size: int
     red_search_size: int
 
@@ -137,6 +139,8 @@ def run_match(
         MatchResult(
             winner=result.winner,
             total_runtime=result.runtime,
+            n_blue_searches=result.n_blue_searches,
+            n_red_searches=result.n_red_searches,
             blue_search_size=result.blue_search_size,
             red_search_size=result.red_search_size,
         ),

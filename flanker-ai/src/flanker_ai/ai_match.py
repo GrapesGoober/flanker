@@ -16,6 +16,8 @@ class AiMatchResult:
     runtime: float
     action_results: list[ActionResult]
     winner: InitiativeState.Faction | None
+    n_blue_searches: int
+    n_red_searches: int
     blue_search_size: int
     red_search_size: int
 
@@ -33,6 +35,8 @@ class AiMatch:
         blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
         red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
 
+        n_blue_searches: int = 0
+        n_red_searches: int = 0
         blue_search_size: int = 0
         red_search_size: int = 0
 
@@ -62,6 +66,8 @@ class AiMatch:
             red_action_results = red_agent.play_initiative(
                 callback=count_redsearch_size,
             )
+            n_blue_searches += len(blue_action_results)
+            n_red_searches += len(red_action_results)
             action_results += blue_action_results + red_action_results
 
             # If both agents have no actions, then consider it draw
@@ -73,6 +79,8 @@ class AiMatch:
             runtime=runtime,
             action_results=action_results,
             winner=winner,
+            n_blue_searches=n_blue_searches,
+            n_red_searches=n_red_searches,
             blue_search_size=blue_search_size,
             red_search_size=red_search_size,
         )
