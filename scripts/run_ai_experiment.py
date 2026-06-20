@@ -57,14 +57,12 @@ def main() -> None:
         },
         blue_configs={
             "blue-analysis": "./scenes/experiment-blue-analysis.json",
-            # "blue-gridweak": "./scenes/experiment-blue-grid-weak.json",
-            "blue-gridstrong": "./scenes/experiment-blue-grid-strong.json",
+            "blue-grid": "./scenes/experiment-blue-grid.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
             # "red-analysis": "./scenes/experiment-red-analysis.json",
-            # "red-gridweak": "./scenes/experiment-red-grid-weak.json",
-            # "red-gridstrong": "./scenes/experiment-red-grid-strong.json",
+            # "red-grid": "./scenes/experiment-red-grid.json",
             "red-rh": "./scenes/experiment-red-rh.json",
         },
         match_settings={
