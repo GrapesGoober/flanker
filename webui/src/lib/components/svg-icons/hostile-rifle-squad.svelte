@@ -7,7 +7,7 @@
 <style lang="less">
 	@stroke-width: 0.7;
 	.diamond {
-		fill: lightcoral;
+		fill: tomato;
 		stroke: black;
 		stroke-width: @stroke-width;
 	}
