@@ -7,16 +7,14 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-MAX_RUNTIME_SECONDS = 360
-
 
 @dataclass
 class AiMatchResult:
     runtime: float
     action_results: list[ActionResult]
     winner: InitiativeState.Faction | None
-    blue_search_size: int
-    red_search_size: int
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
 
 
 class AiMatch:
@@ -31,17 +29,8 @@ class AiMatch:
         # Sets up a match
         blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
         red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-
-        blue_search_size: int = 0
-        red_search_size: int = 0
-
-        def count_blue_search_size() -> None:
-            nonlocal blue_search_size
-            blue_search_size += 1
-
-        def count_redsearch_size() -> None:
-            nonlocal red_search_size
-            red_search_size += 1
+        blue_search_sizes: list[int] = []
+        red_search_sizes: list[int] = []
 
         # Let two agents fight each other over and over
         action_results: list[ActionResult] = []
@@ -49,22 +38,19 @@ class AiMatch:
         objective_system = gs.get(ObjectiveSystem)
         while (winner := objective_system.get_winning_faction(gs)) == None:
 
-            # Max safety time limit per run so it doesn't consume CPU.
-            runtime = perf_counter() - start_time
-            if runtime > MAX_RUNTIME_SECONDS:
-                break
-
             # Have the AI play agianst each other.
-            blue_action_results = blue_agent.play_initiative(
-                callback=count_blue_search_size,
-            )
-            red_action_results = red_agent.play_initiative(
-                callback=count_redsearch_size,
-            )
-            action_results += blue_action_results + red_action_results
+            blue_action_results = blue_agent.play_initiative()
+            red_action_results = red_agent.play_initiative()
+            for action_result, search_size in blue_action_results:
+                blue_search_sizes.append(search_size)
+                action_results.append(action_result)
+
+            for action_result, search_size in red_action_results:
+                red_search_sizes.append(search_size)
+                action_results.append(action_result)
 
             # If both agents have no actions, then consider it draw
-            if not red_action_results and not blue_action_results:
+            if red_action_results == [] and blue_action_results == []:
                 break
 
         runtime = perf_counter() - start_time
@@ -72,6 +58,6 @@ class AiMatch:
             runtime=runtime,
             action_results=action_results,
             winner=winner,
-            blue_search_size=blue_search_size,
-            red_search_size=red_search_size,
+            blue_search_sizes=blue_search_sizes,
+            red_search_sizes=red_search_sizes,
         )

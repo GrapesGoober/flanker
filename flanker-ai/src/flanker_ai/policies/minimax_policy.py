@@ -1,5 +1,5 @@
+from itertools import count
 from math import inf
-from typing import Callable, Sequence
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -13,21 +13,19 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
     def __init__(self, depth: int) -> None:
         self._depth = depth
 
-    def get_action_sequence(
+    def get_action(
         self,
         rs: IRepresentationState[TAction],
-        callback: Callable[[], None] | None = None,
-    ) -> Sequence[TAction]:
+    ) -> tuple[TAction | None, int]:
+        counter = count()
         _, action = self._search(
             rs=rs,
             depth=self._depth,
             alpha=-inf,
             beta=inf,
-            callback=callback,
+            counter=counter,
         )
-        if action is None:
-            return []
-        return [action]
+        return action, next(counter) - 1
 
     def _search(
         self,
@@ -35,8 +33,10 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         depth: int,
         alpha: float,
         beta: float,
-        callback: Callable[[], None] | None = None,
+        counter: "count[int]",
     ) -> tuple[float, TAction | None]:
+
+        next(counter)
 
         winner = rs.get_winner()
         if winner is not None:
@@ -52,9 +52,6 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         if not actions:
             return rs.get_score(MAXIMIZING_FACTION), None
 
-        if callback != None:
-            callback()
-
         maximizing = rs.get_initiative() == MAXIMIZING_FACTION
         best_score = -inf if maximizing else inf
         best_action: TAction | None = None
@@ -63,7 +60,13 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             branch = rs.get_one_branch(action)
             if branch == None:
                 continue
-            score, _ = self._search(branch, depth - 1, alpha, beta, callback)
+            score, _ = self._search(
+                rs=branch,
+                depth=depth - 1,
+                alpha=alpha,
+                beta=beta,
+                counter=counter,
+            )
 
             if maximizing:
                 if score > best_score:

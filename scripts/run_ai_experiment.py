@@ -21,8 +21,8 @@ from pydantic import BaseModel
 class MatchResult(BaseModel):
     winner: InitiativeState.Faction | None
     total_runtime: float
-    blue_search_size: int
-    red_search_size: int
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
 
 
 class ExperimentResult(BaseModel):
@@ -56,23 +56,19 @@ def main() -> None:
             "scene-2": "./scenes/experiment-scene-2.json",
         },
         blue_configs={
-            "blue-analysisweak": "./scenes/experiment-blue-analysis-weak.json",
-            "blue-analysisstrong": "./scenes/experiment-blue-analysis-strong.json",
-            "blue-gridweak": "./scenes/experiment-blue-grid-weak.json",
-            "blue-gridstrong": "./scenes/experiment-blue-grid-strong.json",
+            "blue-analysis": "./scenes/experiment-blue-analysis.json",
+            "blue-grid": "./scenes/experiment-blue-grid.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
-            "red-analysisweak": "./scenes/experiment-red-analysis-weak.json",
-            "red-analysisstrong": "./scenes/experiment-red-analysis-strong.json",
-            "red-gridweak": "./scenes/experiment-red-grid-weak.json",
-            "red-gridstrong": "./scenes/experiment-red-grid-strong.json",
+            # "red-analysis": "./scenes/experiment-red-analysis.json",
+            # "red-grid": "./scenes/experiment-red-grid.json",
             "red-rh": "./scenes/experiment-red-rh.json",
         },
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=100,
+        n_matches=200,
         max_processes=14,
     )
     run_experiment_set(my_run)
@@ -126,8 +122,9 @@ def run_experiments(
             experiment_result = get_results(experiment)
             if experiment_result.n_matches == experiment.n_matches:
                 continue
-            experiment_result.n_matches += 1
-            experiment_result.match_results.append(result)
+            match_results = experiment_result.match_results
+            match_results.append(result)
+            experiment_result.n_matches = len(match_results)
             save_results(experiment, experiment_result)
 
 
@@ -141,8 +138,8 @@ def run_match(
         MatchResult(
             winner=result.winner,
             total_runtime=result.runtime,
-            blue_search_size=result.blue_search_size,
-            red_search_size=result.red_search_size,
+            blue_search_sizes=result.blue_search_sizes,
+            red_search_sizes=result.red_search_sizes,
         ),
         experiment,
     )

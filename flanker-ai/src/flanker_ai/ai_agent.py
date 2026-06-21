@@ -1,6 +1,5 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Callable
 
 from flanker_ai.actions import (
     Action,
@@ -65,8 +64,7 @@ class AiAgent:
 
     def play_initiative(
         self,
-        callback: Callable[[], None] | None = None,
-    ) -> list[ActionResult]:
+    ) -> list[tuple[ActionResult, int]]:
         """Have the agent play the entire initiative."""
 
         initiative_system = self.gs.get(InitiativeSystem)
@@ -74,7 +72,7 @@ class AiAgent:
             return []
 
         halt_counter = 0
-        action_results: list[ActionResult] = []
+        action_results: list[tuple[ActionResult, int]] = []
         while initiative_system.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
             objective_system = self.gs.get(ObjectiveSystem)
@@ -89,13 +87,10 @@ class AiAgent:
             # Prepare the representation and run the policy on it
             rs = deepcopy(self.rs)
             rs.update_state(self.gs)
-            actions = self.policy.get_action_sequence(rs, callback)
-
-            if actions == []:
+            action, size = self.policy.get_action(rs)
+            if action == None:
                 initiative_system.flip_initiative(self.gs)
                 break
-
-            action = actions[0]
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
@@ -103,7 +98,7 @@ class AiAgent:
                 break
             # These result objects would be used for logging
             # Thus, prevent mutation by creating a copy
-            action_results.append(deepcopy(result))
+            action_results.append((deepcopy(result), size))
             halt_counter += 1
 
         return action_results
