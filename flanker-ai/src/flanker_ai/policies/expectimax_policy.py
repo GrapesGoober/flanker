@@ -33,6 +33,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         """
         Returns (best_score, best_action)
         """
+        next(counter)
 
         # Check for early cutoff
         winner = state.get_winner()
