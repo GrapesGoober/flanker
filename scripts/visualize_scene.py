@@ -51,13 +51,21 @@ def visualize_polygon(
     color: str = "C0",
     fill_alpha: float = 0,
     plot_alpha: float = 1,
+    linestyle: str = "-",
 ) -> None:
     xs = [v.x for v in verts]
     ys = [v.y for v in verts]
 
     # plt.scatter(xs, ys, color=color)  # type: ignore
     plt.fill(xs, ys, color=color, alpha=fill_alpha)  # type: ignore
-    plt.plot(xs, ys, linestyle="-", color=color, alpha=plot_alpha)  # type: ignore
+    plt.plot(  # type: ignore
+        xs,
+        ys,
+        linestyle=linestyle,
+        color=color,
+        alpha=plot_alpha,
+        linewidth=3.0,
+    )
     plt.axis("equal")  # type: ignore
 
 
@@ -82,6 +90,7 @@ def draw_combat_unit_los_cone(
     gs: GameState,
     unit_id: UUID,
     color: str = "C0",
+    linestyle: str = "-",
 ) -> None:
     los_system = gs.get(LosSystem)
 
@@ -100,7 +109,8 @@ def draw_combat_unit_los_cone(
         los_polygon,
         color=color,
         fill_alpha=0.2,
-        plot_alpha=0.1,
+        plot_alpha=0.5,
+        linestyle=linestyle,
     )
 
 
@@ -233,13 +243,14 @@ if __name__ == "__main__":
 
     gs = get_game_state(
         paths=[
-            "./scenes/experiment-settings.json",
-            "./scenes/experiment-scene-1.json",
-            "./scenes/experiment-blue-analysis.json",
+            "./scenes/visualize-interrupt.json"
+            # "./scenes/experiment-settings.json",
+            # "./scenes/experiment-scene-1.json",
+            # "./scenes/experiment-blue-analysis.json",
         ]
     )
 
-    screenshot = "./scripts/experiment-scene-1.png"
+    screenshot = "./scripts/visualize-interrupt.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -251,7 +262,7 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=False)
+    # draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=False)
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
@@ -259,7 +270,12 @@ if __name__ == "__main__":
         #     draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
 
         if unit.faction == InitiativeState.Faction.RED:
-            draw_combat_unit_los_cone(gs, unit_id=id, color="C1")
+            draw_combat_unit_los_cone(
+                gs,
+                unit_id=id,
+                color="C1",
+                linestyle="--",
+            )
 
     plt.axis("equal")  # type: ignore
     plt.show()  # type: ignore
