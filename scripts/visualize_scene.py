@@ -193,7 +193,9 @@ def draw_waypoints(
 
 
 def draw_move_candidates(
-    gs: GameState, faction: InitiativeState.Faction, draw_lines: bool
+    gs: GameState,
+    faction: InitiativeState.Faction,
+    draw_lines: bool,
 ) -> None:
     agent = AiAgent.get_agent(gs, faction)
 
@@ -207,15 +209,16 @@ def draw_move_candidates(
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
     plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
-    for point in move_candidates:
-        plt.text(  # type: ignore
-            point.x,
-            point.y,
-            str(f"({round(point.x, 2)}, {round(point.y, 2)})"),
-            fontsize=8,
-            ha="left",
-            va="bottom",
-        )
+
+    # for point in move_candidates:
+    #     plt.text(  # type: ignore
+    #         point.x,
+    #         point.y,
+    #         str(f"({round(point.x, 2)}, {round(point.y, 2)})"),
+    #         fontsize=8,
+    #         ha="left",
+    #         va="bottom",
+    #     )
 
     if draw_lines:
         segments = [
@@ -232,11 +235,11 @@ if __name__ == "__main__":
         paths=[
             "./scenes/experiment-settings.json",
             "./scenes/experiment-scene-1.json",
-            "./scenes/experiment-blue-analysis-weak.json",
+            "./scenes/experiment-blue-analysis.json",
         ]
     )
 
-    screenshot = None  # "./scripts/experiment-template.png"
+    screenshot = "./scripts/experiment-scene-1.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -246,9 +249,9 @@ if __name__ == "__main__":
     else:
         plt.gca().invert_yaxis()
 
-    draw_terrains(gs)
+    # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=True)
+    draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=False)
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
