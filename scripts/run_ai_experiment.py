@@ -62,13 +62,13 @@ def main() -> None:
         },
         red_configs={
             "red-analysis": "./scenes/experiment-red-analysis.json",
-            # "red-grid": "./scenes/experiment-red-grid.json",
+            "red-grid": "./scenes/experiment-red-grid.json",
             "red-rh": "./scenes/experiment-red-rh.json",
         },
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=200,
+        n_matches=100,
         max_processes=14,
     )
     run_experiment_set(my_run)
