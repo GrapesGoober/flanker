@@ -39,7 +39,7 @@ for i in range(len(blue_agents)):
 plt.xticks(range(len(red_agents)), red_agents)  # type: ignore
 plt.yticks(range(len(blue_agents)), blue_agents)  # type: ignore
 
-plt.title("AI Faction Matchup Win Rates (Blue vs Red)", pad=15)  # type: ignore
+plt.title("Placeholder Win Rate", pad=15)  # type: ignore
 plt.xlabel("Red Faction Agents", labelpad=10)  # type: ignore
 plt.ylabel("Blue Faction Agents", labelpad=10)  # type: ignore
 
