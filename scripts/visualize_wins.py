@@ -60,12 +60,25 @@ def main() -> None:
         red_configs=configs,
     )
 
-    plt.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
-    plt.colorbar(label="Win Rate")  # type: ignore
+    fig, ax = plt.subplots()  # type: ignore
+
+    im = ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
+
+    # Column labels (blue)
+    ax.set_xticks(range(len(configs)))  # type: ignore
+    ax.set_xticklabels(configs)  # type: ignore
+
+    # Row labels
+    ax.set_yticks(range(len(configs)))  # type: ignore
+    ax.set_yticklabels(configs)  # type: ignore
+    ax.set_xlabel("Blue")  # type: ignore
+    ax.set_ylabel("Red")  # type: ignore
+    fig.colorbar(im, ax=ax, label="Win Rate")  # type: ignore
+
     # Add numbers to each cell
     for i in range(len(win_rates)):
         for j in range(len(win_rates[i])):
-            plt.text(  # type: ignore
+            ax.text(  # type: ignore
                 j,
                 i,
                 f"{win_rates[i][j]:.2f}",
@@ -73,6 +86,7 @@ def main() -> None:
                 va="center",
                 color="white" if win_rates[i][j] < 0.5 else "black",
             )
+
     plt.show()  # type: ignore
 
 
