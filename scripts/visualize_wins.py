@@ -18,38 +18,6 @@ class ExperimentResult(BaseModel):
     match_results: list[MatchResult]
 
 
-def get_results(experiment_name: str) -> ExperimentResult:
-    file_path = f"./scripts/experiment_results/{experiment_name}.json"
-    with open(file_path, "r") as f:
-        file_data = f.read()
-        if file_data == "":
-            raise Exception(f"{file_path} file fmpty?!")
-        return ExperimentResult.model_validate_json(file_data)
-
-
-def get_win_rates(
-    blue_configs: list[str],
-    red_configs: list[str],
-    scene_name: str,
-) -> list[list[float]]:
-    win_rates: list[list[float]] = []
-
-    for red in red_configs:
-        cells: list[float] = []
-        win_rates.append(cells)
-        for blue in blue_configs:
-            match_results = get_results(
-                f"{scene_name}-blue-{blue}-red-{red}-experiment"
-            ).match_results
-            blue_wins = sum(
-                match_result.winner == InitiativeState.Faction.BLUE
-                for match_result in match_results
-            )
-            cells.append(blue_wins / len(match_results))
-
-    return win_rates
-
-
 def main() -> None:
 
     configs = ["grid", "analysis", "rh"]
@@ -89,6 +57,38 @@ def main() -> None:
 
     plt.tight_layout()
     plt.savefig("scene-1.png", bbox_inches="tight")  # type: ignore
+
+
+def get_results(experiment_name: str) -> ExperimentResult:
+    file_path = f"./scripts/experiment_results/{experiment_name}.json"
+    with open(file_path, "r") as f:
+        file_data = f.read()
+        if file_data == "":
+            raise Exception(f"{file_path} file fmpty?!")
+        return ExperimentResult.model_validate_json(file_data)
+
+
+def get_win_rates(
+    blue_configs: list[str],
+    red_configs: list[str],
+    scene_name: str,
+) -> list[list[float]]:
+    win_rates: list[list[float]] = []
+
+    for red in red_configs:
+        cells: list[float] = []
+        win_rates.append(cells)
+        for blue in blue_configs:
+            match_results = get_results(
+                f"{scene_name}-blue-{blue}-red-{red}-experiment"
+            ).match_results
+            blue_wins = sum(
+                match_result.winner == InitiativeState.Faction.BLUE
+                for match_result in match_results
+            )
+            cells.append(blue_wins / len(match_results))
+
+    return win_rates
 
 
 if __name__ == "__main__":
