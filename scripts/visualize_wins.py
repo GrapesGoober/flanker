@@ -28,36 +28,37 @@ def get_results(experiment_name: str) -> ExperimentResult:
 
 
 def get_win_rates(
-    result_names: list[list[str]],
+    blue_configs: list[str],
+    red_configs: list[str],
 ) -> list[list[float]]:
-
     win_rates: list[list[float]] = []
-    for row in result_names:
-        current_row: list[float] = []
-        win_rates.append(current_row)
-        for result_name in row:
-            match_results = get_results(result_name).match_results
+
+    for red in red_configs:
+        row: list[float] = []
+        win_rates.append(row)
+
+        for blue in blue_configs:
+            match_results = get_results(
+                f"scene-2-blue-{blue}-red-{red}-experiment"
+            ).match_results
+
             blue_wins = sum(
                 match_result.winner == InitiativeState.Faction.BLUE
                 for match_result in match_results
             )
-            total_matches = len(match_results)
-            current_row.append(round(blue_wins / total_matches, ndigits=1))
+
+            row.append(round(blue_wins / len(match_results), 1))
 
     return win_rates
 
 
 def main() -> None:
 
-    result_names = [
-        [
-            "scene-2-blue-grid-red-rh-experiment",
-            "scene-2-blue-analysis-red-rh-experiment",
-            "scene-2-blue-rh-red-rh-experiment",
-        ],
-    ]
-
-    win_rates = get_win_rates(result_names)
+    configs = ["grid", "analysis", "rh"]
+    win_rates = get_win_rates(
+        blue_configs=configs,
+        red_configs=configs,
+    )
 
     plt.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
     plt.colorbar(label="Win Rate")  # type: ignore
