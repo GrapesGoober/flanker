@@ -35,20 +35,17 @@ def get_win_rates(
     win_rates: list[list[float]] = []
 
     for red in red_configs:
-        row: list[float] = []
-        win_rates.append(row)
-
+        cells: list[float] = []
+        win_rates.append(cells)
         for blue in blue_configs:
             match_results = get_results(
                 f"{scene_name}-blue-{blue}-red-{red}-experiment"
             ).match_results
-
             blue_wins = sum(
                 match_result.winner == InitiativeState.Faction.BLUE
                 for match_result in match_results
             )
-
-            row.append(round(blue_wins / len(match_results), 1))
+            cells.append(blue_wins / len(match_results))
 
     return win_rates
 
@@ -63,7 +60,7 @@ def main() -> None:
     )
 
     fig, ax = plt.subplots()  # type: ignore
-    FONTSIZE = 14
+    FONTSIZE = 20
     im = ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
 
     ax.set_xticks(range(len(configs)))  # type: ignore
@@ -90,7 +87,8 @@ def main() -> None:
                 color="white" if win_rates[i][j] < 0.5 else "black",
             )
 
-    plt.show()  # type: ignore
+    plt.tight_layout()
+    plt.savefig("scene-1.png", bbox_inches="tight")  # type: ignore
 
 
 if __name__ == "__main__":
