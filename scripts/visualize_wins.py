@@ -63,19 +63,19 @@ def main() -> None:
     )
 
     fig, ax = plt.subplots()  # type: ignore
-
+    FONTSIZE = 14
     im = ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
 
-    # Column labels (blue)
     ax.set_xticks(range(len(configs)))  # type: ignore
-    ax.set_xticklabels(configs)  # type: ignore
-
-    # Row labels
+    ax.set_xticklabels(configs, fontsize=FONTSIZE)  # type: ignore
     ax.set_yticks(range(len(configs)))  # type: ignore
-    ax.set_yticklabels(configs)  # type: ignore
-    ax.set_xlabel("Blue")  # type: ignore
-    ax.set_ylabel("Red")  # type: ignore
-    fig.colorbar(im, ax=ax, label="Win Rate")  # type: ignore
+    ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
+    ax.set_xlabel("Blue", fontsize=FONTSIZE)  # type: ignore
+    ax.set_ylabel("Red", fontsize=FONTSIZE)  # type: ignore
+
+    cbar = fig.colorbar(im, ax=ax, label="Win Rate")  # type: ignore
+    cbar.ax.tick_params(labelsize=FONTSIZE)  # type: ignore
+    cbar.set_label("Win Rate", fontsize=16)  # type: ignore
 
     # Add numbers to each cell
     for i in range(len(win_rates)):
@@ -86,6 +86,7 @@ def main() -> None:
                 f"{win_rates[i][j]:.2f}",
                 ha="center",
                 va="center",
+                fontsize=FONTSIZE,
                 color="white" if win_rates[i][j] < 0.5 else "black",
             )
 
