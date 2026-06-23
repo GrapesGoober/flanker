@@ -59,8 +59,19 @@ def main() -> None:
 
     win_rates = get_win_rates(result_names)
 
-    plt.imshow(win_rates)  # type: ignore
+    plt.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
     plt.colorbar(label="Win Rate")  # type: ignore
+    # Add numbers to each cell
+    for i in range(len(win_rates)):
+        for j in range(len(win_rates[i])):
+            plt.text(  # type: ignore
+                j,
+                i,
+                f"{win_rates[i][j]:.2f}",
+                ha="center",
+                va="center",
+                color="white" if win_rates[i][j] < 0.5 else "black",
+            )
     plt.show()  # type: ignore
 
 
