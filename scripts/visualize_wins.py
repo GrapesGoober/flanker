@@ -30,6 +30,7 @@ def get_results(experiment_name: str) -> ExperimentResult:
 def get_win_rates(
     blue_configs: list[str],
     red_configs: list[str],
+    scene_name: str,
 ) -> list[list[float]]:
     win_rates: list[list[float]] = []
 
@@ -39,7 +40,7 @@ def get_win_rates(
 
         for blue in blue_configs:
             match_results = get_results(
-                f"scene-2-blue-{blue}-red-{red}-experiment"
+                f"{scene_name}-blue-{blue}-red-{red}-experiment"
             ).match_results
 
             blue_wins = sum(
@@ -58,6 +59,7 @@ def main() -> None:
     win_rates = get_win_rates(
         blue_configs=configs,
         red_configs=configs,
+        scene_name="scene-1",
     )
 
     fig, ax = plt.subplots()  # type: ignore
