@@ -3,7 +3,6 @@ from itertools import product
 import matplotlib.pyplot as plt
 from flanker_ai.ai_agent import AiConfigComponent
 from flanker_core.models.components import InitiativeState
-from numpy import average
 from pydantic import BaseModel
 
 
@@ -23,16 +22,27 @@ class ExperimentResult(BaseModel):
 
 def main() -> None:
 
-    size = get_search_sizes(
-        scene_name="scene-1",
-        faction=InitiativeState.Faction.BLUE,
-        blue_configs=["analysis"],
-        red_configs=["grid", "analysis", "rh"],
+    all_search_sizes: list[list[int]] = []
+    blue_configs_to_show: list[str] = ["grid", "analysis"]
+    for blue_config in blue_configs_to_show:
+        search_sizes = get_search_sizes(
+            scene_name="scene-1",
+            faction=InitiativeState.Faction.BLUE,
+            blue_configs=[blue_config],
+            red_configs=["grid", "analysis", "rh"],
+        )
+        all_search_sizes.append(search_sizes)
+    plt.hist(  # type: ignore
+        x=all_search_sizes,
+        range=(0, 200_000),
+        bins=30,
+        histtype="bar",
+        label=blue_configs_to_show,
     )
-    print(size)
-
-    # plt.tight_layout()
-    # plt.savefig("scene-1.png", bbox_inches="tight")  # type: ignore
+    plt.legend()  # type: ignore
+    plt.xlabel("Search size")  # type: ignore
+    plt.ylabel("Count")  # type: ignore
+    plt.show()  # type: ignore
 
 
 def get_results(
@@ -51,7 +61,7 @@ def get_search_sizes(
     faction: InitiativeState.Faction,
     blue_configs: list[str],
     red_configs: list[str],
-) -> float:
+) -> list[int]:
     # Just a placeholder to return the average
     search_sizes: list[int] = []
     for blue_conf, red_conf in product(blue_configs, red_configs):
@@ -63,7 +73,7 @@ def get_search_sizes(
                     search_sizes += match_result.blue_search_sizes
                 case InitiativeState.Faction.RED:
                     search_sizes += match_result.red_search_sizes
-    return float(average(search_sizes))
+    return search_sizes
 
 
 if __name__ == "__main__":
