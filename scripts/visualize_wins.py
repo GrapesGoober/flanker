@@ -26,7 +26,7 @@ def main() -> None:
 
     # Create a figure with 1 row and 2 columns
     axes: list[Axes]
-    _, axes = plt.subplots(1, 2, figsize=(10, 5))  # type: ignore
+    _, axes = plt.subplots(1, 2, figsize=(8, 4))  # type: ignore
 
     for idx, scene_name in enumerate(scenes):
         ax = axes[idx]
