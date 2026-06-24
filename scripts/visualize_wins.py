@@ -40,11 +40,11 @@ def main() -> None:
 
         ax.set_xticks(range(len(configs)))  # type: ignore
         ax.set_xticklabels(configs, fontsize=FONTSIZE)  # type: ignore
-        ax.set_xlabel("Blue", fontsize=FONTSIZE)  # type: ignore
+        ax.set_xlabel("Red", fontsize=FONTSIZE)  # type: ignore
         ax.set_title(scene_name, fontsize=FONTSIZE)  # type: ignore
 
         if idx == 0:
-            ax.set_ylabel("Red", fontsize=FONTSIZE)  # type: ignore
+            ax.set_ylabel("Blue", fontsize=FONTSIZE)  # type: ignore
             ax.set_yticks(range(len(configs)))  # type: ignore
             ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
         else:
@@ -83,10 +83,10 @@ def get_win_rates(
 ) -> list[list[float]]:
     win_rates: list[list[float]] = []
 
-    for red in red_configs:
+    for blue in blue_configs:
         cells: list[float] = []
         win_rates.append(cells)
-        for blue in blue_configs:
+        for red in red_configs:
             match_results = get_results(
                 f"{scene_name}-blue-{blue}-red-{red}-experiment"
             ).match_results
