@@ -22,27 +22,40 @@ class ExperimentResult(BaseModel):
 
 def main() -> None:
 
+    SCENE_NAME = "scene-2"
+    BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
+    FIG_SIZE = (4.5, 2)
+
     all_search_sizes: list[list[int]] = []
-    blue_configs_to_show: list[str] = ["grid", "analysis"]
-    for blue_config in blue_configs_to_show:
+    for blue_config in BLUE_CONFIGS_TO_SHOW:
         search_sizes = get_search_sizes(
-            scene_name="scene-1",
+            scene_name=SCENE_NAME,
             faction=InitiativeState.Faction.BLUE,
             blue_configs=[blue_config],
             red_configs=["grid", "analysis", "rh"],
         )
         all_search_sizes.append(search_sizes)
-    plt.hist(  # type: ignore
+
+    fig, ax = plt.subplots(figsize=FIG_SIZE)  # type: ignore
+
+    ax.hist(  # type: ignore
         x=all_search_sizes,
         range=(0, 200_000),
         bins=30,
         histtype="bar",
-        label=blue_configs_to_show,
+        label=BLUE_CONFIGS_TO_SHOW,
     )
-    plt.legend()  # type: ignore
-    plt.xlabel("Search size")  # type: ignore
-    plt.ylabel("Count")  # type: ignore
-    plt.show()  # type: ignore
+    ax.legend()  # type: ignore
+    ax.set_xlabel("Search size")  # type: ignore
+    ax.set_ylabel("Count")  # type: ignore
+
+    fig.tight_layout()
+    fig.savefig(  # type: ignore
+        f"searchsizes-{SCENE_NAME}.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
+    # fig.show()  # type: ignore
 
 
 def get_results(
