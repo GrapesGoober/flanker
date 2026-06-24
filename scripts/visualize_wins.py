@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from flanker_ai.ai_agent import AiConfigComponent
 from flanker_core.models.components import InitiativeState
+from matplotlib.axes import Axes
 from pydantic import BaseModel
 
 
@@ -19,44 +20,47 @@ class ExperimentResult(BaseModel):
 
 
 def main() -> None:
-
     configs = ["grid", "analysis", "rh"]
-    win_rates = get_win_rates(
-        blue_configs=configs,
-        red_configs=configs,
-        scene_name="scene-1",
-    )
-
-    fig, ax = plt.subplots()  # type: ignore
+    scenes = ["scene-1", "scene-2"]
     FONTSIZE = 20
-    im = ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
 
-    ax.set_xticks(range(len(configs)))  # type: ignore
-    ax.set_xticklabels(configs, fontsize=FONTSIZE)  # type: ignore
-    ax.set_yticks(range(len(configs)))  # type: ignore
-    ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
-    ax.set_xlabel("Blue", fontsize=FONTSIZE)  # type: ignore
-    ax.set_ylabel("Red", fontsize=FONTSIZE)  # type: ignore
+    # Create a figure with 1 row and 2 columns
+    axes: list[Axes]
+    _, axes = plt.subplots(1, 2, figsize=(10, 5))  # type: ignore
 
-    cbar = fig.colorbar(im, ax=ax, label="Win Rate")  # type: ignore
-    cbar.ax.tick_params(labelsize=FONTSIZE)  # type: ignore
-    cbar.set_label("Win Rate", fontsize=16)  # type: ignore
+    for idx, scene_name in enumerate(scenes):
+        ax = axes[idx]
+        win_rates = get_win_rates(
+            blue_configs=configs,
+            red_configs=configs,
+            scene_name=scene_name,
+        )
 
-    # Add numbers to each cell
-    for i in range(len(win_rates)):
-        for j in range(len(win_rates[i])):
-            ax.text(  # type: ignore
-                j,
-                i,
-                f"{win_rates[i][j]:.2f}",
-                ha="center",
-                va="center",
-                fontsize=FONTSIZE,
-                color="white" if win_rates[i][j] < 0.5 else "black",
-            )
+        ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
+
+        ax.set_xticks(range(len(configs)))  # type: ignore
+        ax.set_xticklabels(configs, fontsize=FONTSIZE)  # type: ignore
+        ax.set_yticks(range(len(configs)))  # type: ignore
+        ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
+        ax.set_xlabel("Blue", fontsize=FONTSIZE)  # type: ignore
+        ax.set_ylabel("Red", fontsize=FONTSIZE)  # type: ignore
+        ax.set_title(scene_name, fontsize=FONTSIZE)  # type: ignore
+
+        # Add numbers to each cell
+        for i in range(len(win_rates)):
+            for j in range(len(win_rates[i])):
+                ax.text(  # type: ignore
+                    j,
+                    i,
+                    f"{win_rates[i][j]:.2f}",
+                    ha="center",
+                    va="center",
+                    fontsize=FONTSIZE,
+                    color="white" if win_rates[i][j] < 0.5 else "black",
+                )
 
     plt.tight_layout()
-    plt.savefig("scene-1.png", bbox_inches="tight")  # type: ignore
+    plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
 
 
 def get_results(experiment_name: str) -> ExperimentResult:
