@@ -40,11 +40,15 @@ def main() -> None:
 
         ax.set_xticks(range(len(configs)))  # type: ignore
         ax.set_xticklabels(configs, fontsize=FONTSIZE)  # type: ignore
-        ax.set_yticks(range(len(configs)))  # type: ignore
-        ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
         ax.set_xlabel("Blue", fontsize=FONTSIZE)  # type: ignore
-        ax.set_ylabel("Red", fontsize=FONTSIZE)  # type: ignore
         ax.set_title(scene_name, fontsize=FONTSIZE)  # type: ignore
+
+        if idx == 0:
+            ax.set_ylabel("Red", fontsize=FONTSIZE)  # type: ignore
+            ax.set_yticks(range(len(configs)))  # type: ignore
+            ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
+        else:
+            ax.set_yticks([])  # type: ignore
 
         # Add numbers to each cell
         for i in range(len(win_rates)):
