@@ -3,6 +3,7 @@ from itertools import product
 import matplotlib.pyplot as plt
 from flanker_ai.ai_agent import AiConfigComponent
 from flanker_core.models.components import InitiativeState
+from matplotlib.axes import Axes
 from pydantic import BaseModel
 
 
@@ -22,36 +23,40 @@ class ExperimentResult(BaseModel):
 
 def main() -> None:
 
-    SCENE_NAME = "scene-2"
+    SCENES = ["scene-1", "scene-2"]  # Modified to support two scenes
     BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
-    FIG_SIZE = (4.5, 2)
+    FIG_SIZE = (4.5, 4)
 
-    all_search_sizes: list[list[int]] = []
-    for blue_config in BLUE_CONFIGS_TO_SHOW:
-        search_sizes = get_search_sizes(
-            scene_name=SCENE_NAME,
-            faction=InitiativeState.Faction.BLUE,
-            blue_configs=[blue_config],
-            red_configs=["grid", "analysis", "rh"],
+    # Create a 2x1 subplot layout (2 rows, 1 column)
+    axes: list[Axes]
+    fig, axes = plt.subplots(2, 1, figsize=FIG_SIZE, sharex=True)  # type: ignore
+
+    # Loop through scenes and zip them with their corresponding subplot axis
+    for ax, scene_name in zip(axes, SCENES):
+        all_search_sizes: list[list[int]] = []
+        for blue_config in BLUE_CONFIGS_TO_SHOW:
+            search_sizes = get_search_sizes(
+                scene_name=scene_name,
+                faction=InitiativeState.Faction.BLUE,
+                blue_configs=[blue_config],
+                red_configs=["grid", "analysis", "rh"],
+            )
+            all_search_sizes.append(search_sizes)
+
+        ax.hist(  # type: ignore
+            x=all_search_sizes,
+            range=(0, 200_000),
+            bins=30,
+            histtype="bar",
+            label=BLUE_CONFIGS_TO_SHOW,
         )
-        all_search_sizes.append(search_sizes)
-
-    fig, ax = plt.subplots(figsize=FIG_SIZE)  # type: ignore
-
-    ax.hist(  # type: ignore
-        x=all_search_sizes,
-        range=(0, 200_000),
-        bins=30,
-        histtype="bar",
-        label=BLUE_CONFIGS_TO_SHOW,
-    )
-    ax.legend()  # type: ignore
-    ax.set_xlabel("Search size")  # type: ignore
-    ax.set_ylabel("Count")  # type: ignore
+        ax.legend()  # type: ignore
+        ax.set_xlabel(f"BLUE search sizes ({scene_name})")  # type: ignore
+        ax.set_ylabel("Count")  # type: ignore
 
     fig.tight_layout()
     fig.savefig(  # type: ignore
-        f"searchsizes-{SCENE_NAME}.png",
+        f"searchsizes-comparison.png",
         dpi=300,
         bbox_inches="tight",
     )
