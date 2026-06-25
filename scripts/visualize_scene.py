@@ -15,11 +15,17 @@ from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSys
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
-from flanker_core.models.components import CombatUnit, InitiativeState
+from flanker_core.models.components import (
+    CombatUnit,
+    InitiativeState,
+    TerrainFeature,
+    Transform,
+)
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.register_systems import register_systems
+from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
@@ -284,6 +290,21 @@ def visualize_expansion() -> None:
     plt.scatter(segment_b.x, segment_b.y, color=f"C0", s=40)  # type: ignore
     plt.scatter(los_point.x, los_point.y, color=f"C0", s=40)  # type: ignore
 
+    intersections: list[Vec2] = []
+    all_polygons: list[list[Vec2]] = []
+    for _, transform, terrain in gs.query(Transform, TerrainFeature):
+        vertices = LinearTransform.apply(terrain.vertices, transform)
+        if terrain.is_closed_loop:
+            vertices.append(vertices[0])
+        all_polygons.append(vertices)
+    all_polygons.append(los_polygon)
+    for polygon in all_polygons:
+        intersects = IntersectGetter.get_intersects(
+            line=(segment_a, segment_b),
+            polyline=polygon,
+        )
+        intersections += list(intersects)
+
     plt.plot(  # type: ignore
         [p.x for p in (segment_a, segment_b)],
         [p.y for p in (segment_a, segment_b)],
@@ -293,22 +314,29 @@ def visualize_expansion() -> None:
         linewidth=3.0,
     )
 
-    points_to_draw = [
+    new_expanded_points = [
         waypoint
         for waypoint in waypoints
         if is_colinear([segment_a, segment_b], waypoint)
         and waypoint != segment_a
         and waypoint != segment_b
     ]
-    points_x = [coords.x for coords in points_to_draw]
-    points_y = [coords.y for coords in points_to_draw]
-    plt.scatter(  # type: ignore
-        points_x,
-        points_y,
-        color=f"C1",
-        s=40,
-        zorder=10,
-    )
+
+    points_and_their_colors: dict[str, list[Vec2]] = {
+        "C1": intersections,
+        "C2": new_expanded_points,
+    }
+
+    for color, points in points_and_their_colors.items():
+        points_x = [coords.x for coords in points]
+        points_y = [coords.y for coords in points]
+        plt.scatter(  # type: ignore
+            points_x,
+            points_y,
+            color=color,
+            s=40,
+            zorder=10,
+        )
 
 
 if __name__ == "__main__":
