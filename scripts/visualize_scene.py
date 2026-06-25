@@ -242,18 +242,32 @@ def draw_move_candidates(
         plt.gca().add_collection(lc)
 
 
-def visualize_expansion(gs: GameState) -> list[Vec2]:
-    initial_points = [
+def visualize_expansion() -> None:
+
+    waypoints = [
         Vec2(60, 120),
         Vec2(230, 200),
-        Vec2(130, 70),
+        los_point := Vec2(130, 70),
     ]
-    new_points = AiPointsExpansionService.expand_waypoints_line_based(
+    los_system = gs.get(LosSystem)
+    los_polygon = los_system.get_los_polygon(gs, los_point)
+    visualize_polygon(
+        los_polygon,
+        color=f"C0",
+        fill_alpha=0.2,
+        plot_alpha=0.3,
+        linestyle="--",
+    )
+
+    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
         gs=gs,
-        initial_waypoints=initial_points,
+        initial_waypoints=waypoints,
         tolerance=10,
     )
-    return new_points
+
+    points_x = [coords.x for coords in waypoints]
+    points_y = [coords.y for coords in waypoints]
+    plt.scatter(points_x, points_y, color=f"C0", s=40)  # type: ignore
 
 
 if __name__ == "__main__":
@@ -267,11 +281,7 @@ if __name__ == "__main__":
         ]
     )
 
-    new_points = visualize_expansion(gs)
-
-    points_x = [coords.x for coords in new_points]
-    points_y = [coords.y for coords in new_points]
-    plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+    visualize_expansion()
 
     screenshot = "./scripts/visualize-expansion.png"
     if screenshot:
