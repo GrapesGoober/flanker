@@ -51,7 +51,7 @@ def main() -> None:
             label=BLUE_CONFIGS_TO_SHOW,
         )
         ax.legend()  # type: ignore
-        ax.set_xlabel(f"BLUE search sizes ({scene_name})")  # type: ignore
+        ax.set_xlabel(f"BLUE game-tree sizes ({scene_name})")  # type: ignore
         ax.set_ylabel("Count")  # type: ignore
 
     fig.tight_layout()
