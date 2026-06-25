@@ -242,6 +242,20 @@ def draw_move_candidates(
         plt.gca().add_collection(lc)
 
 
+def is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
+    if len(previous_points) >= 2:
+        a = previous_points[-2]
+        b = previous_points[-1]
+        c = new_point
+        ab = b - a
+        ac = c - a
+        cross = ab.cross(ac)
+        if abs(cross) < 1e-9:
+            return True
+
+    return False
+
+
 def visualize_expansion() -> None:
 
     waypoints = [
@@ -274,8 +288,13 @@ def visualize_expansion() -> None:
         tolerance=10,
     )
 
-    points_x = [coords.x for coords in waypoints]
-    points_y = [coords.y for coords in waypoints]
+    expanded_points_on_line = [
+        waypoint
+        for waypoint in waypoints
+        if is_colinear([segment_a, segment_b], waypoint)
+    ]
+    points_x = [coords.x for coords in expanded_points_on_line]
+    points_y = [coords.y for coords in expanded_points_on_line]
     plt.scatter(points_x, points_y, color=f"C0", s=40)  # type: ignore
 
 
