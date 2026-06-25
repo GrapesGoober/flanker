@@ -7,6 +7,9 @@ from uuid import UUID
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.common.ai_points_expansion_service import (
+    AiPointsExpansionService,
+)
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
@@ -239,6 +242,20 @@ def draw_move_candidates(
         plt.gca().add_collection(lc)
 
 
+def visualize_expansion(gs: GameState) -> list[Vec2]:
+    initial_points = [
+        Vec2(60, 120),
+        Vec2(230, 200),
+        Vec2(130, 70),
+    ]
+    new_points = AiPointsExpansionService.expand_waypoints_line_based(
+        gs=gs,
+        initial_waypoints=initial_points,
+        tolerance=10,
+    )
+    return new_points
+
+
 if __name__ == "__main__":
 
     gs = get_game_state(
@@ -249,6 +266,12 @@ if __name__ == "__main__":
             # "./scenes/experiment-blue-analysis.json",
         ]
     )
+
+    new_points = visualize_expansion(gs)
+
+    points_x = [coords.x for coords in new_points]
+    points_y = [coords.y for coords in new_points]
+    plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
 
     screenshot = "./scripts/visualize-expansion.png"
     if screenshot:
