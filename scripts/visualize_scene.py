@@ -243,14 +243,14 @@ if __name__ == "__main__":
 
     gs = get_game_state(
         paths=[
-            "./scenes/visualize-interrupt.json"
+            "./scenes/visualize-expansion.json"
             # "./scenes/experiment-settings.json",
             # "./scenes/experiment-scene-1.json",
             # "./scenes/experiment-blue-analysis.json",
         ]
     )
 
-    screenshot = "./scripts/visualize-interrupt.png"
+    screenshot = "./scripts/visualize-expansion.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -266,8 +266,13 @@ if __name__ == "__main__":
 
     # Draw LOS for each combat unit
     for id, unit in gs.query(CombatUnit):
-        # if unit.faction == InitiativeState.Faction.BLUE:
-        #     draw_combat_unit_los_cone(gs, unit_id=id, color="C0")
+        if unit.faction == InitiativeState.Faction.BLUE:
+            draw_combat_unit_los_cone(
+                gs,
+                unit_id=id,
+                color="C0",
+                linestyle="--",
+            )
 
         if unit.faction == InitiativeState.Faction.RED:
             draw_combat_unit_los_cone(
