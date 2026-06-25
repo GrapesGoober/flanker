@@ -263,14 +263,6 @@ def visualize_expansion() -> None:
         segment_b := Vec2(230, 200),
         los_point := Vec2(130, 70),
     ]
-    plt.plot(  # type: ignore
-        [p.x for p in (segment_a, segment_b)],
-        [p.y for p in (segment_a, segment_b)],
-        linestyle="-",
-        color=f"C0",
-        alpha=1,
-        linewidth=3.0,
-    )
 
     los_system = gs.get(LosSystem)
     los_polygon = los_system.get_los_polygon(gs, los_point)
@@ -288,14 +280,34 @@ def visualize_expansion() -> None:
         tolerance=10,
     )
 
-    expanded_points_on_line = [
+    plt.scatter(segment_a.x, segment_a.y, color=f"C0", s=40)  # type: ignore
+    plt.scatter(segment_b.x, segment_b.y, color=f"C0", s=40)  # type: ignore
+    plt.scatter(los_point.x, los_point.y, color=f"C0", s=40)  # type: ignore
+
+    plt.plot(  # type: ignore
+        [p.x for p in (segment_a, segment_b)],
+        [p.y for p in (segment_a, segment_b)],
+        linestyle="-",
+        color=f"C0",
+        alpha=1,
+        linewidth=3.0,
+    )
+
+    points_to_draw = [
         waypoint
         for waypoint in waypoints
         if is_colinear([segment_a, segment_b], waypoint)
+        and waypoint != segment_a
+        and waypoint != segment_b
     ]
-    points_x = [coords.x for coords in expanded_points_on_line]
-    points_y = [coords.y for coords in expanded_points_on_line]
-    plt.scatter(points_x, points_y, color=f"C0", s=40)  # type: ignore
+    points_x = [coords.x for coords in points_to_draw]
+    points_y = [coords.y for coords in points_to_draw]
+    plt.scatter(  # type: ignore
+        points_x,
+        points_y,
+        color=f"C0",
+        s=40,
+    )
 
 
 if __name__ == "__main__":
