@@ -286,9 +286,9 @@ def visualize_expansion() -> None:
         tolerance=10,
     )
 
-    plt.scatter(segment_a.x, segment_a.y, color=f"C0", s=40)  # type: ignore
-    plt.scatter(segment_b.x, segment_b.y, color=f"C0", s=40)  # type: ignore
-    plt.scatter(los_point.x, los_point.y, color=f"C0", s=40)  # type: ignore
+    plt.scatter(segment_a.x, segment_a.y, color=f"C0", s=80)  # type: ignore
+    plt.scatter(segment_b.x, segment_b.y, color=f"C0", s=80)  # type: ignore
+    plt.scatter(los_point.x, los_point.y, color=f"C0", s=80)  # type: ignore
 
     intersections: list[Vec2] = []
     all_polygons: list[list[Vec2]] = []
@@ -322,19 +322,20 @@ def visualize_expansion() -> None:
         and waypoint != segment_b
     ]
 
-    points_and_their_colors: dict[str, list[Vec2]] = {
-        "C1": intersections,
-        "C2": new_expanded_points,
+    points_and_styles: dict[tuple[str, str], list[Vec2]] = {
+        ("C1", "X"): intersections,
+        ("C2", "s"): new_expanded_points,
     }
 
-    for color, points in points_and_their_colors.items():
+    for (color, marker), points in points_and_styles.items():
         points_x = [coords.x for coords in points]
         points_y = [coords.y for coords in points]
         plt.scatter(  # type: ignore
             points_x,
             points_y,
             color=color,
-            s=40,
+            marker=marker,
+            s=80,
             zorder=10,
         )
 
@@ -384,5 +385,9 @@ if __name__ == "__main__":
                 linestyle="--",
             )
 
-    plt.axis("equal")  # type: ignore
+    # plt.axis("equal") # type: ignore
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.axis("off")  # type: ignore
+    plt.axis((33, 266, 233, 33))  # type: ignore
+    plt.savefig("methodology-expansion-3.png", dpi=300)  # type: ignore
     plt.show()  # type: ignore
