@@ -305,8 +305,9 @@ def visualize_expansion() -> None:
     plt.scatter(  # type: ignore
         points_x,
         points_y,
-        color=f"C0",
+        color=f"C1",
         s=40,
+        zorder=10,
     )
 
 
