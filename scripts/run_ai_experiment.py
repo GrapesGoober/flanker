@@ -61,7 +61,7 @@ def main() -> None:
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
-            # "red-analysis": "./scenes/experiment-red-analysis.json",
+            "red-analysis": "./scenes/experiment-red-analysis.json",
             # "red-grid": "./scenes/experiment-red-grid.json",
             "red-rh": "./scenes/experiment-red-rh.json",
         },
