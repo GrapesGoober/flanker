@@ -323,7 +323,7 @@ def visualize_expansion() -> None:
     ]
 
     points_and_styles: dict[tuple[str, str], list[Vec2]] = {
-        ("C1", "X"): intersections,
+        ("C1", "^"): intersections,
         ("C2", "s"): new_expanded_points,
     }
 
@@ -335,7 +335,7 @@ def visualize_expansion() -> None:
             points_y,
             color=color,
             marker=marker,
-            s=80,
+            s=100,
             zorder=10,
         )
 
