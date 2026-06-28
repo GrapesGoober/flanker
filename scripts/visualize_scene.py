@@ -262,7 +262,7 @@ def is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
     return False
 
 
-def visualize_expansion() -> None:
+def visualize_expansion(gs: GameState) -> None:
 
     waypoints = [
         segment_a := Vec2(60, 120),
@@ -340,6 +340,57 @@ def visualize_expansion() -> None:
         )
 
 
+def visualize_pruning(gs: GameState) -> None:
+    waypoints = [
+        Vec2(60, 120),
+        Vec2(230, 200),
+        Vec2(130, 70),
+    ]
+
+    expanded_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+        gs=gs,
+        initial_waypoints=waypoints,
+        tolerance=10,
+    )
+    expanded_waypoints_except_initial = [
+        new_waypoint
+        for new_waypoint in expanded_waypoints
+        if new_waypoint not in waypoints
+    ]
+
+    flag_waypoints = [
+        Vec2(66, 166),
+        Vec2(100, 200),
+        Vec2(200, 66),
+        Vec2(233, 100),
+    ]
+
+    pruned_waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
+        gs=gs,
+        waypoints=expanded_waypoints,
+        flag_waypoints=flag_waypoints,
+    )
+
+    points_and_styles: dict[tuple[str, str], list[Vec2]] = {
+        # ("C0", "o"): waypoints,
+        # ("C2", "s"): expanded_waypoints,
+        # ("C2", "s"): expanded_waypoints_except_initial,
+        ("C2", "s"): pruned_waypoints,
+        ("C1", "o"): flag_waypoints,
+    }
+    for (color, marker), points in points_and_styles.items():
+        points_x = [coords.x for coords in points]
+        points_y = [coords.y for coords in points]
+        plt.scatter(  # type: ignore
+            points_x,
+            points_y,
+            color=color,
+            marker=marker,
+            s=100,
+            zorder=10,
+        )
+
+
 if __name__ == "__main__":
 
     gs = get_game_state(
@@ -351,7 +402,8 @@ if __name__ == "__main__":
         ]
     )
 
-    visualize_expansion()
+    visualize_pruning(gs)
+    # visualize_expansion(gs)
 
     screenshot = "./scripts/visualize-expansion.png"
     if screenshot:
@@ -389,5 +441,5 @@ if __name__ == "__main__":
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")  # type: ignore
     plt.axis((33, 266, 233, 33))  # type: ignore
-    plt.savefig("methodology-expansion-3.png", dpi=300)  # type: ignore
+    plt.savefig("methodology-pruning-1.png", dpi=300)  # type: ignore
     plt.show()  # type: ignore

@@ -68,7 +68,7 @@ class AiPointsExpansionService:
                     if config.use_combat_unit_positions == True:
                         for _, _, transform in gs.query(CombatUnit, Transform):
                             flag_waypoints.append(transform.position)
-                    waypoints = AiPointsExpansionService._prune_waypoints_by_flags(
+                    waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
                         gs=gs,
                         waypoints=waypoints,
                         flag_waypoints=flag_waypoints,
@@ -80,13 +80,13 @@ class AiPointsExpansionService:
                         for _, _, transform in gs.query(CombatUnit, Transform):
                             flag_waypoints.append(transform.position)
                     flagged_waypoints = AiPointsExpansionService._filter_colocated(
-                        AiPointsExpansionService._prune_waypoints_by_flags(
+                        AiPointsExpansionService.prune_waypoints_by_flags(
                             gs=gs,
                             waypoints=waypoints,
                             flag_waypoints=flag_waypoints,
                         )
                     )
-                    waypoints = AiPointsExpansionService._prune_waypoints_by_weight(
+                    waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
                         waypoints=waypoints,
                         remaining_size=expansion_config.remaining_size,
                         flagged_waypoints=flagged_waypoints,
@@ -206,7 +206,7 @@ class AiPointsExpansionService:
         }
 
     @staticmethod
-    def _prune_waypoints_by_flags(
+    def prune_waypoints_by_flags(
         gs: GameState,
         waypoints: list[Vec2],
         flag_waypoints: list[Vec2],
@@ -227,7 +227,7 @@ class AiPointsExpansionService:
         return list(unique_waypoints)
 
     @staticmethod
-    def _prune_waypoints_by_weight(
+    def prune_waypoints_by_weight(
         waypoints: list[Vec2],
         remaining_size: int,
         flagged_waypoints: list[Vec2],
