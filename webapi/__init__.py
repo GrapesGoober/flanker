@@ -31,6 +31,20 @@ async def value_error_handler(_: Request, exc: ValueError) -> NoReturn:
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc)
 
 
+@app.post("/api/debug_load_game")
+async def debug_load_game(
+    scene_names: list[str] = Body(..., alias="sceneNames"),
+    scene_key: str = Body(..., alias="sceneKey"),
+    game_id: int = Body(..., alias="gameId"),
+) -> None:
+    """Loads scenes into a game."""
+    scene_service.set_new_game_state(
+        scene_names=scene_names,
+        scene_key=scene_key,
+        game_id=game_id,
+    )
+
+
 @app.post("/api/{sceneName}/{gameId}/save/{newScene}")
 async def save_game(
     scene_name: str = Path(..., alias="sceneName"),

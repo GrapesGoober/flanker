@@ -7,16 +7,12 @@
 <style lang="less">
 	@stroke-width: 0.7;
 	.box {
-		// fill: white;
-		// stroke: black;
-
-		fill: white;
-		stroke: blue;
+		fill: lightskyblue;
+		stroke: black;
 		stroke-width: @stroke-width;
 	}
 	.cross {
-		stroke: blue;
-		// stroke: black;
+		stroke: black;
 		stroke-width: @stroke-width;
 	}
 </style>

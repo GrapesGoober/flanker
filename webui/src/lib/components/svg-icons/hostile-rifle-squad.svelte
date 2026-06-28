@@ -7,14 +7,12 @@
 <style lang="less">
 	@stroke-width: 0.7;
 	.diamond {
-		fill: white;
-		// stroke: black;
-		stroke: red;
+		fill: tomato;
+		stroke: black;
 		stroke-width: @stroke-width;
 	}
 	.cross {
-		stroke: red;
-		// stroke: black;
+		stroke: black;
 		stroke-width: @stroke-width;
 	}
 </style>
