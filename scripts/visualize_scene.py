@@ -110,7 +110,7 @@ def draw_combat_unit_los_cone(
         spotter_pos=spotter_transform.position,
     )
     if draw_as_cone:
-        los_polygon = los_system.apply_fov_to_polygon(
+        polygon = los_system.apply_fov_to_polygon(
             polyline=polygon,
             center_point=spotter_transform.position,
             heading_degree=spotter_transform.degrees,
