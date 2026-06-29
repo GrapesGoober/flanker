@@ -342,9 +342,15 @@ def visualize_expansion(gs: GameState) -> None:
 
 def visualize_pruning(gs: GameState) -> None:
     waypoints = [
-        Vec2(60, 120),
-        Vec2(230, 200),
-        Vec2(130, 70),
+        Vec2(66, 66),
+        Vec2(66, 133),
+        Vec2(66, 200),
+        Vec2(150, 66),
+        Vec2(150, 133),
+        Vec2(150, 200),
+        Vec2(233, 66),
+        Vec2(233, 133),
+        Vec2(233, 200),
     ]
 
     expanded_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
@@ -372,7 +378,7 @@ def visualize_pruning(gs: GameState) -> None:
     )
 
     points_and_styles: dict[tuple[str, str], list[Vec2]] = {
-        # ("C0", "o"): waypoints,
+        ("C0", "o"): waypoints,
         # ("C2", "s"): expanded_waypoints,
         # ("C2", "s"): expanded_waypoints_except_initial,
         ("C2", "s"): pruned_waypoints,
@@ -405,7 +411,7 @@ if __name__ == "__main__":
     visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/visualize-expansion.png"
+    screenshot = "./scripts/visualize-expansion-with-units.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -441,5 +447,5 @@ if __name__ == "__main__":
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")  # type: ignore
     plt.axis((33, 266, 233, 33))  # type: ignore
-    plt.savefig("methodology-pruning-1.png", dpi=300)  # type: ignore
+    plt.savefig("methodology-pruning.png", dpi=300)  # type: ignore
     plt.show()  # type: ignore
