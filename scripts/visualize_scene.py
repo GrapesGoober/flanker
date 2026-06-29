@@ -100,25 +100,27 @@ def draw_combat_unit_los_cone(
     unit_id: UUID,
     color: str = "C0",
     linestyle: str = "-",
+    draw_as_cone: bool = True,
 ) -> None:
     los_system = gs.get(LosSystem)
 
     spotter_transform = gs.get_component(unit_id, components.Transform)
-    full_polygon = los_system.get_los_polygon(
+    polygon = los_system.get_los_polygon(
         gs=gs,
         spotter_pos=spotter_transform.position,
     )
-    los_polygon = los_system.apply_fov_to_polygon(
-        polyline=full_polygon,
-        center_point=spotter_transform.position,
-        heading_degree=spotter_transform.degrees,
-    )
+    if draw_as_cone:
+        los_polygon = los_system.apply_fov_to_polygon(
+            polyline=polygon,
+            center_point=spotter_transform.position,
+            heading_degree=spotter_transform.degrees,
+        )
 
     visualize_polygon(
-        los_polygon,
+        polygon,
         color=color,
-        fill_alpha=0.2,
-        plot_alpha=0.5,
+        fill_alpha=0.1,
+        plot_alpha=0.3,
         linestyle=linestyle,
     )
 
@@ -378,9 +380,9 @@ def visualize_pruning(gs: GameState) -> None:
     )
 
     points_and_styles: dict[tuple[str, str], list[Vec2]] = {
-        ("C2", "s"): pruned_waypoints,
-        ("C0", "o"): waypoints,
         # ("C2", "s"): expanded_waypoints,
+        ("C1", "s"): pruned_waypoints,
+        ("C0", "o"): waypoints,
         # ("C2", "s"): expanded_waypoints_except_initial,
         # ("C1", "o"): flag_waypoints,
     }
@@ -434,6 +436,7 @@ if __name__ == "__main__":
                     unit_id=id,
                     color="C0",
                     linestyle="--",
+                    draw_as_cone=False,
                 )
 
             if unit.faction == InitiativeState.Faction.RED:
@@ -442,6 +445,7 @@ if __name__ == "__main__":
                     unit_id=id,
                     color="C1",
                     linestyle="--",
+                    draw_as_cone=False,
                 )
 
     # plt.axis("equal") # type: ignore
