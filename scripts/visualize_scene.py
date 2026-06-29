@@ -378,11 +378,11 @@ def visualize_pruning(gs: GameState) -> None:
     )
 
     points_and_styles: dict[tuple[str, str], list[Vec2]] = {
+        ("C2", "s"): pruned_waypoints,
         ("C0", "o"): waypoints,
         # ("C2", "s"): expanded_waypoints,
         # ("C2", "s"): expanded_waypoints_except_initial,
-        ("C2", "s"): pruned_waypoints,
-        ("C1", "o"): flag_waypoints,
+        # ("C1", "o"): flag_waypoints,
     }
     for (color, marker), points in points_and_styles.items():
         points_x = [coords.x for coords in points]
@@ -426,26 +426,27 @@ if __name__ == "__main__":
     # draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=False)
 
     # Draw LOS for each combat unit
-    for id, unit in gs.query(CombatUnit):
-        if unit.faction == InitiativeState.Faction.BLUE:
-            draw_combat_unit_los_cone(
-                gs,
-                unit_id=id,
-                color="C0",
-                linestyle="--",
-            )
+    if False:
+        for id, unit in gs.query(CombatUnit):
+            if unit.faction == InitiativeState.Faction.BLUE:
+                draw_combat_unit_los_cone(
+                    gs,
+                    unit_id=id,
+                    color="C0",
+                    linestyle="--",
+                )
 
-        if unit.faction == InitiativeState.Faction.RED:
-            draw_combat_unit_los_cone(
-                gs,
-                unit_id=id,
-                color="C1",
-                linestyle="--",
-            )
+            if unit.faction == InitiativeState.Faction.RED:
+                draw_combat_unit_los_cone(
+                    gs,
+                    unit_id=id,
+                    color="C1",
+                    linestyle="--",
+                )
 
     # plt.axis("equal") # type: ignore
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")  # type: ignore
     plt.axis((33, 266, 233, 33))  # type: ignore
-    plt.savefig("methodology-pruning.png", dpi=300)  # type: ignore
+    plt.savefig("methodology-full.png", dpi=300)  # type: ignore
     plt.show()  # type: ignore
