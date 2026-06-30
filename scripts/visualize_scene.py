@@ -10,6 +10,9 @@ from flanker_ai.components import AiConfigComponent
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
+from flanker_ai.states.common.ai_waypoints_initialize_service import (
+    AiWaypointsInitializeService,
+)
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
@@ -217,7 +220,37 @@ def draw_move_candidates(
     gs: GameState,
     faction: InitiativeState.Faction,
     draw_lines: bool,
+    draw_initial: bool,
 ) -> None:
+
+    if draw_initial:
+        waypoints: list[Vec2] = []
+        for _, conf in gs.query(AiConfigComponent):
+            if conf.faction != faction:
+                continue
+            if conf.config.policy_type != "Minimax":
+                continue
+            if conf.config.state.type != "UnabstractedStateConfig":
+                continue
+            points_conf = conf.config.state.move_candidates.initial_points
+            if points_conf.type != "GridConfig":
+                continue
+            waypoints = AiWaypointsInitializeService.get_grid_coordinates(
+                gs=gs,
+                spacing=points_conf.spacing,
+                offset=points_conf.offset,
+            )
+
+        points_x = [waypoint.x for waypoint in waypoints]
+        points_y = [waypoint.y for waypoint in waypoints]
+        plt.scatter(  # type: ignore
+            points_x,
+            points_y,
+            color="C0",
+            marker="o",
+            s=80,
+        )
+
     agent = AiAgent.get_agent(gs, faction)
 
     assert isinstance(
@@ -229,7 +262,13 @@ def draw_move_candidates(
     move_candidates = agent.rs.move_candidates
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
-    plt.scatter(points_x, points_y, color="C0", s=40)  # type: ignore
+    plt.scatter(  # type: ignore
+        points_x,
+        points_y,
+        color="C1",
+        marker="s",
+        s=80,
+    )
 
     # for point in move_candidates:
     #     plt.text(  # type: ignore
@@ -380,10 +419,10 @@ def visualize_pruning(gs: GameState) -> None:
     )
 
     points_and_styles: dict[tuple[str, str], list[Vec2]] = {
-        # ("C2", "s"): expanded_waypoints,
-        ("C1", "s"): pruned_waypoints,
-        ("C0", "o"): waypoints,
+        ("C2", "s"): expanded_waypoints,
         # ("C2", "s"): expanded_waypoints_except_initial,
+        ("C1", "s"): pruned_waypoints,
+        # ("C0", "o"): waypoints,
         # ("C1", "o"): flag_waypoints,
     }
     for (color, marker), points in points_and_styles.items():
@@ -403,17 +442,17 @@ if __name__ == "__main__":
 
     gs = get_game_state(
         paths=[
-            "./scenes/visualize-expansion.json"
-            # "./scenes/experiment-settings.json",
-            # "./scenes/experiment-scene-1.json",
-            # "./scenes/experiment-blue-analysis.json",
+            # "./scenes/visualize-expansion.json"
+            "./scenes/experiment-settings.json",
+            "./scenes/experiment-scene-2.json",
+            "./scenes/experiment-blue-analysis.json",
         ]
     )
 
-    visualize_pruning(gs)
+    # visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/visualize-expansion-with-units.png"
+    screenshot = "./scripts/experiment-scene-2.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -425,7 +464,12 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    # draw_move_candidates(gs, InitiativeState.Faction.BLUE, draw_lines=False)
+    draw_move_candidates(
+        gs,
+        InitiativeState.Faction.BLUE,
+        draw_lines=False,
+        draw_initial=True,
+    )
 
     # Draw LOS for each combat unit
     if False:
@@ -451,6 +495,6 @@ if __name__ == "__main__":
     # plt.axis("equal") # type: ignore
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")  # type: ignore
-    plt.axis((33, 266, 233, 33))  # type: ignore
-    plt.savefig("methodology-full.png", dpi=300)  # type: ignore
+    plt.axis((0, 300, 300, 0))  # type: ignore
+    plt.savefig("experiments-scene-2", dpi=300)  # type: ignore
     plt.show()  # type: ignore
