@@ -1,5 +1,5 @@
 {
-  "n_matches": 200,
+  "n_matches": 400,
   "blue_config": {
     "config": {
       "policy_type": "RandomHeuristic"
@@ -4942,6 +4942,4913 @@
         2,
         2,
         2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.4898214000277221,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.5872537000104785,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.6037451999727637,
+      "blue_search_sizes": [
+        22,
+        24,
+        25,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.6581507999799214,
+      "blue_search_sizes": [
+        24,
+        25,
+        25,
+        27,
+        4,
+        4,
+        25,
+        4,
+        4,
+        22,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.23967260000063106,
+      "blue_search_sizes": [
+        22,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        21,
+        23,
+        23,
+        21,
+        24,
+        23,
+        23,
+        23,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10111250000772998,
+      "blue_search_sizes": [
+        24,
+        2,
+        11,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.02882010000757873,
+      "blue_search_sizes": [
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2623860000167042,
+      "blue_search_sizes": [
+        24,
+        24,
+        13,
+        13,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        23,
+        24,
+        24,
+        24,
+        24,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.22948010003892705,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        22,
+        23,
+        22,
+        23,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.11530970002058893,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.05872530001215637,
+      "blue_search_sizes": [
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.12035580002702773,
+      "blue_search_sizes": [
+        24,
+        26,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1650142000289634,
+      "blue_search_sizes": [
+        24,
+        25,
+        25,
+        4,
+        4,
+        24,
+        2,
+        12
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.042361500032711774,
+      "blue_search_sizes": [
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09163199999602512,
+      "blue_search_sizes": [
+        24,
+        13
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.22168729995610192,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        13
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        22,
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.18020260002231225,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        25,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.11415540002053604,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.08373160002520308,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        22,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07607500004814938,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.07971249998081475,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12486079998780042,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.056747399969026446,
+      "blue_search_sizes": [
+        22,
+        24
+      ],
+      "red_search_sizes": [
+        26,
+        22,
+        22
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.11334510002052411,
+      "blue_search_sizes": [
+        24,
+        25,
+        25,
+        4,
+        4,
+        4,
+        24,
+        22,
+        23,
+        24,
+        24,
+        2,
+        23
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.31179740000516176,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        22,
+        22,
+        22,
+        23,
+        2,
+        20,
+        22,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12917600001674145,
+      "blue_search_sizes": [
+        22,
+        2,
+        2,
+        12
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        23,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10502290003933012,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        23,
+        23
+      ],
+      "red_search_sizes": [
+        13,
+        2,
+        2,
+        11
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.05546070000855252,
+      "blue_search_sizes": [
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1213997999439016,
+      "blue_search_sizes": [
+        24,
+        25,
+        25,
+        4,
+        4,
+        4,
+        4,
+        23
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.22606509999604896,
+      "blue_search_sizes": [
+        24,
+        13,
+        12,
+        13,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        21,
+        24
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.11776560003636405,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.057755199959501624,
+      "blue_search_sizes": [
+        22,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        22
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.22368719999212772,
+      "blue_search_sizes": [
+        24,
+        26,
+        26,
+        27,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        24,
+        24,
+        23,
+        24,
+        23,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.06489649997092783,
+      "blue_search_sizes": [
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.21460349997505546,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        4,
+        4,
+        4,
+        25,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1340706999762915,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        2,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        22,
+        22,
+        23,
+        23,
+        23,
+        23,
+        24,
+        23,
+        22,
+        22
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.16215419996296987,
+      "blue_search_sizes": [
+        24,
+        26,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.04666930000530556,
+      "blue_search_sizes": [
+        24,
+        25
+      ],
+      "red_search_sizes": [
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2650154000148177,
+      "blue_search_sizes": [
+        24,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        23,
+        23,
+        24,
+        23,
+        23,
+        24,
+        24,
+        24,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07438399997772649,
+      "blue_search_sizes": [
+        24,
+        11
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10275750001892447,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10185510001610965,
+      "blue_search_sizes": [
+        24,
+        4,
+        25,
+        4,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.15043749997857958,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        24,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.06126390001736581,
+      "blue_search_sizes": [
+        24,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2011043000384234,
+      "blue_search_sizes": [
+        24,
+        25,
+        27,
+        27,
+        26,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10470419999910519,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12280529999407008,
+      "blue_search_sizes": [
+        24,
+        26,
+        24,
+        14,
+        14
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        24
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.19019979995209724,
+      "blue_search_sizes": [
+        24,
+        4,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        20,
+        23,
+        24,
+        24,
+        24,
+        12,
+        11
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.09754139999859035,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.16892240004381165,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2354594999924302,
+      "blue_search_sizes": [
+        24,
+        25,
+        26,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07844150002347305,
+      "blue_search_sizes": [
+        24,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        23,
+        24,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.33119379996787757,
+      "blue_search_sizes": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1583223000052385,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1559826000011526,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.24240310001187027,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1123035000055097,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        11,
+        11,
+        11,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12717369996244088,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        20,
+        22,
+        22,
+        21,
+        21,
+        24,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.19874240003991872,
+      "blue_search_sizes": [
+        24,
+        24,
+        25,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.15691900003002957,
+      "blue_search_sizes": [
+        24,
+        4,
+        24,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08405839995248243,
+      "blue_search_sizes": [
+        22,
+        4,
+        4,
+        4,
+        25,
+        27,
+        27
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.13687709998339415,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09451259998604655,
+      "blue_search_sizes": [
+        24,
+        26,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.06568629998946562,
+      "blue_search_sizes": [
+        24,
+        25
+      ],
+      "red_search_sizes": [
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2625447000027634,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.0777138999546878,
+      "blue_search_sizes": [
+        24,
+        24,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12954709999030456,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.20596510003088042,
+      "blue_search_sizes": [
+        24,
+        23,
+        23,
+        24,
+        24,
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        14,
+        12,
+        12,
+        2,
+        12,
+        12,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.0650939000188373,
+      "blue_search_sizes": [
+        24,
+        12,
+        11,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        22,
+        23
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.21178429998690262,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10074790002545342,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.33195800002431497,
+      "blue_search_sizes": [
+        24,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        23,
+        23
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.08309279999230057,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.14160279999487102,
+      "blue_search_sizes": [
+        24,
+        25,
+        26,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.23138830001698807,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        22,
+        23,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.14502210001228377,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.14028689998667687,
+      "blue_search_sizes": [
+        24,
+        24,
+        26,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.17001719999825582,
+      "blue_search_sizes": [
+        24,
+        22,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08785260003060102,
+      "blue_search_sizes": [
+        22,
+        24,
+        4,
+        2,
+        22,
+        23
+      ],
+      "red_search_sizes": [
+        2,
+        2,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1278232000186108,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        11,
+        11
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10598220000974834,
+      "blue_search_sizes": [
+        24,
+        24,
+        25,
+        4,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        20,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09949290001532063,
+      "blue_search_sizes": [
+        22,
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.11998229997698218,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        22,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.08214770001359284,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10864969994872808,
+      "blue_search_sizes": [
+        24,
+        26,
+        14
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1677098000072874,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.19816730002639815,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.29086130001815036,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.05565970001043752,
+      "blue_search_sizes": [
+        24,
+        2,
+        11,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        22
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.06768919999012724,
+      "blue_search_sizes": [
+        24,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        23,
+        23,
+        22,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1397945000207983,
+      "blue_search_sizes": [
+        24,
+        24,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09493179997662082,
+      "blue_search_sizes": [
+        24,
+        12,
+        11,
+        11,
+        11,
+        11,
+        11
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        11,
+        12
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1954877999960445,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        13,
+        13
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        23,
+        23,
+        22,
+        22,
+        22,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.11293990002013743,
+      "blue_search_sizes": [
+        24,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        22,
+        23,
+        23,
+        23,
+        21,
+        22,
+        23,
+        22,
+        23,
+        2,
+        23,
+        22,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.0332040999783203,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09781529998872429,
+      "blue_search_sizes": [
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1193961999961175,
+      "blue_search_sizes": [
+        24,
+        25,
+        26,
+        27,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09906609996687621,
+      "blue_search_sizes": [
+        24,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        24,
+        22,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.4055503999697976,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        23,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10472100001061335,
+      "blue_search_sizes": [
+        24,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        23,
+        23,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.5552888000383973,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.6133214000146836,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.14440480002667755,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.21024080005008727,
+      "blue_search_sizes": [
+        24,
+        13,
+        13,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        12,
+        11,
+        12,
+        11
+      ],
+      "red_search_sizes": [
+        22,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.18308250000700355,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        4,
+        21,
+        23,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08058369997888803,
+      "blue_search_sizes": [
+        24,
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.25785709999036044,
+      "blue_search_sizes": [
+        24,
+        26,
+        26,
+        28,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.17727109999395907,
+      "blue_search_sizes": [
+        22,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        22,
+        22,
+        22,
+        22
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.15114049997646362,
+      "blue_search_sizes": [
+        24,
+        23,
+        26,
+        4,
+        4,
+        4,
+        4,
+        22,
+        2,
+        2,
+        22,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09978529997169971,
+      "blue_search_sizes": [
+        24,
+        24,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.053320399951189756,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2333262999309227,
+      "blue_search_sizes": [
+        24,
+        26,
+        26,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12426229997072369,
+      "blue_search_sizes": [
+        24,
+        4,
+        24,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.13957559992559254,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        25,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07763980003073812,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        22,
+        20,
+        22,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.09913159999996424,
+      "blue_search_sizes": [
+        24,
+        4,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10527990001719445,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07139620010275394,
+      "blue_search_sizes": [
+        24,
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.05647870001848787,
+      "blue_search_sizes": [
+        24,
+        25,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.3303342000581324,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        22,
+        26,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08412009989842772,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10404810006730258,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.39975300000514835,
+      "blue_search_sizes": [
+        24,
+        25,
+        27,
+        4,
+        4,
+        2,
+        22,
+        22,
+        2,
+        2,
+        2,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.13173439993988723,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        2,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        22,
+        22,
+        22,
+        19,
+        23,
+        23,
+        23,
+        23,
+        23,
+        23
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1748533999780193,
+      "blue_search_sizes": [
+        24,
+        4,
+        24,
+        4,
+        4,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2611456000013277,
+      "blue_search_sizes": [
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07266479998361319,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1269593999022618,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        23,
+        27,
+        4,
+        4,
+        4,
+        24,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.23073399998247623,
+      "blue_search_sizes": [
+        24,
+        25,
+        24,
+        4,
+        4,
+        4,
+        23,
+        24,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.21190839994233102,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        23,
+        23,
+        24,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1082956000464037,
+      "blue_search_sizes": [
+        24,
+        24,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.1273500999668613,
+      "blue_search_sizes": [
+        24,
+        13
+      ],
+      "red_search_sizes": [
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.06716030009556562,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        23,
+        24,
+        24,
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": []
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1454166000476107,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        25,
+        4,
+        4,
+        4,
+        26,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24,
+        2,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.03303829999640584,
+      "blue_search_sizes": [
+        24,
+        12
+      ],
+      "red_search_sizes": [
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.08701000001747161,
+      "blue_search_sizes": [
+        24,
+        24,
+        25,
+        25,
+        27,
+        4,
+        23,
+        24,
+        24,
+        24,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07954249996691942,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        23,
+        23,
+        24,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.13930669997353107,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09372160001657903,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        22
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12416520004626364,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.14517709997016937,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        4,
+        4,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1136695999884978,
+      "blue_search_sizes": [
+        24,
+        26,
+        4,
+        2,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.05869410000741482,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        23,
+        23,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.04691739997360855,
+      "blue_search_sizes": [
+        24,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08047369995620102,
+      "blue_search_sizes": [
+        24,
+        4,
+        13
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        22,
+        23,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.11414009996224195,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        24,
+        24,
+        24,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.11213579995092005,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        2,
+        2,
+        22,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.0386343999998644,
+      "blue_search_sizes": [
+        24,
+        26
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.06741539994254708,
+      "blue_search_sizes": [
+        24,
+        25,
+        25,
+        4,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.07225570001173764,
+      "blue_search_sizes": [
+        24,
+        13,
+        13,
+        13,
+        11,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        22,
+        22,
+        22,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.056387800024822354,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.14113070000894368,
+      "blue_search_sizes": [
+        24,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "red_search_sizes": [
+        20,
+        22,
+        23,
+        24,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10483100009150803,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        2,
+        22,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08890170010272413,
+      "blue_search_sizes": [
+        22,
+        22
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1876912999432534,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.17759920004755259,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        22,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08486599999014288,
+      "blue_search_sizes": [
+        24,
+        11
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.1289286999963224,
+      "blue_search_sizes": [
+        24,
+        4,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.22037429991178215,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.18754870002157986,
+      "blue_search_sizes": [
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07768760004546493,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        23,
+        23,
+        23,
+        23,
+        24
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.14344530005473644,
+      "blue_search_sizes": [
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09750000003259629,
+      "blue_search_sizes": [
+        24,
+        13
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        22,
+        22,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.20513300003949553,
+      "blue_search_sizes": [
+        24,
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.06993050000164658,
+      "blue_search_sizes": [
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.0883703000145033,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        22,
+        22,
+        22,
+        22,
+        22,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.060946499928832054,
+      "blue_search_sizes": [
+        24,
+        25,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.13776840001810342,
+      "blue_search_sizes": [
+        24,
+        24,
+        26,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.24294150003697723,
+      "blue_search_sizes": [
+        22,
+        13,
+        13,
+        13,
+        2
+      ],
+      "red_search_sizes": [
+        22,
+        23,
+        23,
+        22,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.4357404999900609,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        23,
+        23,
+        23,
+        22,
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.18146120000164956,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.2847152999602258,
+      "blue_search_sizes": [
+        24,
+        4,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.25939670007210225,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        22,
+        23,
+        23,
+        23,
+        24,
+        24,
+        23,
+        23,
+        24,
+        24,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.13292020000517368,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        2,
+        2,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        10,
+        11,
+        1,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.4351141999941319,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10322249995078892,
+      "blue_search_sizes": [
+        24,
+        26,
+        4,
+        4,
+        4,
+        24,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.10357200005091727,
+      "blue_search_sizes": [
+        24,
+        4,
+        2,
+        12,
+        11,
+        11,
+        11,
+        12
+      ],
+      "red_search_sizes": [
+        2,
+        11,
+        1
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.07490500004496425,
+      "blue_search_sizes": [
+        22,
+        13,
+        14
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.2686993000097573,
+      "blue_search_sizes": [
+        24,
+        22
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        23,
+        23,
+        22,
+        23,
+        23,
+        23,
+        22,
+        24,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.17270730005111545,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.08559659996535629,
+      "blue_search_sizes": [
+        24,
+        26,
+        4,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10581939993426204,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09816329996101558,
+      "blue_search_sizes": [
+        24,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        22,
+        23,
+        23,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.2181153999408707,
+      "blue_search_sizes": [
+        24,
+        26,
+        26,
+        26,
+        4,
+        4,
+        26,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.3866089000366628,
+      "blue_search_sizes": [
+        24,
+        14,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        20,
+        23,
+        24,
+        24,
+        24,
+        22,
+        24,
+        24,
+        24,
+        24,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.18558060005307198,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        4,
+        23,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.34175309992861,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        4,
+        4,
+        4,
+        24,
+        24,
+        24,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.09104670002125204,
+      "blue_search_sizes": [
+        24,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        22,
+        22,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.11243860004469752,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        20,
+        22,
+        23,
+        23,
+        20,
+        24,
+        23,
+        23,
+        24,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.12958850001450628,
+      "blue_search_sizes": [
+        24,
+        24,
+        4,
+        4,
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.13354710000567138,
+      "blue_search_sizes": [
+        24,
+        25,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.23217259999364614,
+      "blue_search_sizes": [
+        24
+      ],
+      "red_search_sizes": [
+        4,
+        22,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.10287939989939332,
+      "blue_search_sizes": [
+        24,
+        23,
+        25,
+        25,
+        4,
+        4,
+        23,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.18943149992264807,
+      "blue_search_sizes": [
+        18,
+        25,
+        4,
+        25,
+        25
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.23231049999594688,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        22,
+        22,
+        23,
+        23,
+        23,
+        23,
+        23,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.13235460000578314,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        2,
+        2,
+        1
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        22,
+        22,
+        22,
+        23,
+        24
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.20466539997141808,
+      "blue_search_sizes": [
+        24,
+        4,
+        4,
+        4,
+        24,
+        4,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.0758739000884816,
+      "blue_search_sizes": [
+        24,
+        22,
+        26,
+        4,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4
+      ]
+    },
+    {
+      "winner": "RED",
+      "total_runtime": 0.13959449995309114,
+      "blue_search_sizes": [
+        24,
+        24,
+        26,
+        27
+      ],
+      "red_search_sizes": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        2
+      ]
+    },
+    {
+      "winner": "BLUE",
+      "total_runtime": 0.18181410001125187,
+      "blue_search_sizes": [
+        24,
+        4,
+        2,
+        2,
+        12,
+        11,
+        12,
+        11,
+        11,
+        11,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "red_search_sizes": [
+        2,
+        2,
+        2,
+        11
       ]
     }
   ]
