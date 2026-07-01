@@ -1,0 +1,193 @@
+{
+  "entities": {
+    "f7cc9377-794c-439f-86fb-f619c9908266": {
+      "InitiativeState": {
+        "faction": "BLUE"
+      },
+      "EliminationWinCondition": {
+        "target_faction": "RED",
+        "winning_faction": "BLUE",
+        "units_to_eliminate": 1,
+        "units_eliminated_counter": 0
+      }
+    },
+    "47f479d4-37e4-46d0-adcd-b762e2a8f622": {
+      "Transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 0.0
+          },
+          {
+            "x": 300.0,
+            "y": 300.0
+          },
+          {
+            "x": 0.0,
+            "y": 300.0
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 33
+      }
+    },
+    "92a815de-a125-4402-99d8-09135652b5e0": {
+      "Transform": {
+        "position": {
+          "x": 66,
+          "y": 166
+        },
+        "degrees": -50
+      },
+      "CombatUnit": {
+        "faction": "BLUE"
+      },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
+      "FireControls": {
+        "override": "SUPPRESS",
+        "can_reactive_fire": true
+      },
+      "AssaultControls": {}
+    },
+    "3417bfb3-c72d-406a-b7c5-c7ff989ec70a": {
+      "AiConfigComponent": {
+        "config": {
+          "policy_type": "RandomHeuristic"
+        },
+        "faction": "BLUE"
+      }
+    },
+    "49a187dc-b48e-4d0a-b7a5-c628b5acc568": {
+      "AiConfigComponent": {
+        "config": {
+          "policy_type": "RandomHeuristic"
+        },
+        "faction": "RED"
+      }
+    },
+    "a0c62130-6e29-466f-8383-3eb6e3de0e04": {
+      "Transform": {
+        "position": {
+          "x": 93.0,
+          "y": 140.0
+        },
+        "degrees": -39.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 37.66666666666663,
+            "y": 25.333333333333314
+          },
+          {
+            "x": 73.33333333333329,
+            "y": 57.666666666666615
+          },
+          {
+            "x": 78.6666666666666,
+            "y": 70.33333333333327
+          },
+          {
+            "x": 76.6666666666666,
+            "y": 84.66666666666659
+          },
+          {
+            "x": 58.66666666666663,
+            "y": 86.33333333333324
+          },
+          {
+            "x": 24.999999999999986,
+            "y": 68.6666666666666
+          },
+          {
+            "x": -11.333333333333314,
+            "y": 36.66666666666663
+          },
+          {
+            "x": -17.666666666666643,
+            "y": 19.666666666666643
+          },
+          {
+            "x": -12.999999999999986,
+            "y": 6.333333333333329
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": {
+        "type": "FOREST"
+      }
+    },
+    "a882b29e-98f9-49dc-8402-3deb45149b66": {},
+    "6875e4d9-ae63-4617-b56c-b3e39f6bf629": {},
+    "c80c3ccc-b7fb-4271-94d3-0980870de4cb": {},
+    "0588f78c-9d93-42b5-b08a-1648307cb1fd": {
+      "Transform": {
+        "position": {
+          "x": 120.93643272287613,
+          "y": 86.79043091416244
+        },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 11.486983549970347,
+            "y": 11.486983549970333
+          },
+          {
+            "x": 9.189586839976272,
+            "y": 25.845712987433245
+          },
+          {
+            "x": 1.1486983549970375,
+            "y": 38.19422030365135
+          },
+          {
+            "x": -20.389395801197324,
+            "y": 35.60964900490802
+          },
+          {
+            "x": -35.0352998274095,
+            "y": 24.12266545493769
+          },
+          {
+            "x": -31.876379351167657,
+            "y": 4.881968008737388
+          },
+          {
+            "x": -18.379173679952515,
+            "y": -2.5845712987433274
+          }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": {
+        "type": "FOREST"
+      }
+    }
+  }
+}

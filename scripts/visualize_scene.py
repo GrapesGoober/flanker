@@ -442,17 +442,17 @@ if __name__ == "__main__":
 
     gs = get_game_state(
         paths=[
-            # "./scenes/visualize-expansion.json"
-            "./scenes/experiment-settings.json",
-            "./scenes/experiment-scene-2.json",
-            "./scenes/experiment-blue-analysis.json",
+            "./scenes/visualize-los.json"
+            # "./scenes/experiment-settings.json",
+            # "./scenes/experiment-scene-2.json",
+            # "./scenes/experiment-blue-analysis.json",
         ]
     )
 
     # visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/experiment-scene-2.png"
+    screenshot = "./scripts/visualize-los.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -464,15 +464,15 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(
-        gs,
-        InitiativeState.Faction.BLUE,
-        draw_lines=False,
-        draw_initial=True,
-    )
+    # draw_move_candidates(
+    #     gs,
+    #     InitiativeState.Faction.BLUE,
+    #     draw_lines=False,
+    #     draw_initial=True,
+    # )
 
     # Draw LOS for each combat unit
-    if False:
+    if True:
         for id, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
                 draw_combat_unit_los_cone(
@@ -480,7 +480,7 @@ if __name__ == "__main__":
                     unit_id=id,
                     color="C0",
                     linestyle="--",
-                    draw_as_cone=False,
+                    draw_as_cone=True,
                 )
 
             if unit.faction == InitiativeState.Faction.RED:
@@ -489,12 +489,12 @@ if __name__ == "__main__":
                     unit_id=id,
                     color="C1",
                     linestyle="--",
-                    draw_as_cone=False,
+                    draw_as_cone=True,
                 )
 
     # plt.axis("equal") # type: ignore
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")  # type: ignore
     plt.axis((0, 300, 300, 0))  # type: ignore
-    plt.savefig("experiments-scene-2", dpi=300)  # type: ignore
+    plt.savefig("visualize-los", dpi=300)  # type: ignore
     plt.show()  # type: ignore
