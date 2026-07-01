@@ -418,14 +418,16 @@ def visualize_pruning(gs: GameState) -> None:
         flag_waypoints=flag_waypoints,
     )
 
-    points_and_styles: dict[tuple[str, str], list[Vec2]] = {
-        ("C2", "s"): expanded_waypoints,
-        # ("C2", "s"): expanded_waypoints_except_initial,
-        ("C1", "s"): pruned_waypoints,
-        # ("C0", "o"): waypoints,
-        # ("C1", "o"): flag_waypoints,
+    points_and_styles: dict[tuple[bool, str, str], list[Vec2]] = {
+        (True, "C2", "s"): expanded_waypoints,
+        (False, "C2", "s"): expanded_waypoints_except_initial,
+        (True, "C1", "s"): pruned_waypoints,
+        (False, "C0", "o"): waypoints,
+        (False, "C1", "o"): flag_waypoints,
     }
-    for (color, marker), points in points_and_styles.items():
+    for (is_rendered, color, marker), points in points_and_styles.items():
+        if not is_rendered:
+            continue
         points_x = [coords.x for coords in points]
         points_y = [coords.y for coords in points]
         plt.scatter(  # type: ignore
