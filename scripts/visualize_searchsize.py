@@ -1,10 +1,11 @@
 from itertools import product
 
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from flanker_ai.ai_agent import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
-from numpy import average
 from pydantic import BaseModel
 
 
@@ -23,8 +24,85 @@ class ExperimentResult(BaseModel):
 
 
 def main() -> None:
+    size_grid_scene_1: list[int] = get_search_sizes(
+        scene_name="scene-1",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["grid"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+    size_grid_scene_2: list[int] = get_search_sizes(
+        scene_name="scene-2",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["grid"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+    size_analysis_scene_1: list[int] = get_search_sizes(
+        scene_name="scene-1",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["analysis"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+    size_analysis_scene_2: list[int] = get_search_sizes(
+        scene_name="scene-2",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["analysis"],
+        red_configs=["grid", "analysis", "rh"],
+    )
 
-    SCENES = ["scene-1", "scene-2"]  # Modified to support two scenes
+    print(
+        f"grid-scene-1 average {np.average(size_grid_scene_1)}",
+        f"grid-scene-2 average {np.average(size_grid_scene_2)}",
+        f"analysis-scene-1 average {np.average(size_analysis_scene_1)}",
+        f"analysis-scene-2 average {np.average(size_analysis_scene_2)}",
+        sep="\n",
+    )
+
+    print(
+        f"grid-scene-1 min {min(size_grid_scene_1)}",
+        f"grid-scene-2 min {min(size_grid_scene_2)}",
+        f"analysis-scene-1 min {min(size_analysis_scene_1)}",
+        f"analysis-scene-2 min {min(size_analysis_scene_2)}",
+        sep="\n",
+    )
+
+    print(
+        f"grid-scene-1 max {max(size_grid_scene_1)}",
+        f"grid-scene-2 max {max(size_grid_scene_2)}",
+        f"analysis-scene-1 max {max(size_analysis_scene_1)}",
+        f"analysis-scene-2 max {max(size_analysis_scene_2)}",
+        sep="\n",
+    )
+
+    scene_1_sizes: dict[str, list[int]] = {
+        "grid": size_grid_scene_1,
+        "analysis": size_analysis_scene_1,
+    }
+    scene_2_sizes: dict[str, list[int]] = {
+        "grid": size_grid_scene_2,
+        "analysis": size_analysis_scene_2,
+    }
+
+    for name, sizes in scene_2_sizes.items():
+        sns.set_style("whitegrid")
+        ax = sns.kdeplot(
+            np.array(sizes),
+            clip=(0, np.inf),
+            label=name,
+        )
+        fig = ax.get_figure()
+        fig.set_size_inches((4.5, 2))  # type: ignore
+        fig.legend()  # type: ignore
+        fig.tight_layout()  # type: ignore
+        fig.savefig(  # type: ignore
+            f"results-treesize.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
+
+
+def plot_hist() -> None:
+
+    SCENES = ["scene-1", "scene-2"]
     BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
     FIG_SIZE = (4.5, 4)
     CUTOFF = 200_000
@@ -64,7 +142,7 @@ def main() -> None:
         ax.set_ylabel("Probability Density")  # type: ignore
 
     for conf, search_sizes in search_sizes_across_scenes.items():
-        print(f"Average of {conf} = {average(search_sizes)}")
+        print(f"Average of {conf} = {np.average(search_sizes)}")
         print(f"Length of {conf} = {len(search_sizes)}")
 
     fig.tight_layout()

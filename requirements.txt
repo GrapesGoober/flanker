@@ -4,5 +4,6 @@ numpy==2.2.*
 numba==0.61.*
 matplotlib==3.11.0
 blessed==1.44.0
+seaborn==0.13.2
 -e ./flanker-ai
 -e ./flanker-core
