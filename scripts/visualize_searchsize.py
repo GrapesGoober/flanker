@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from flanker_ai.ai_agent import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
+from numpy import average
 from pydantic import BaseModel
 
 
@@ -26,12 +27,17 @@ def main() -> None:
     SCENES = ["scene-1", "scene-2"]  # Modified to support two scenes
     BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
     FIG_SIZE = (4.5, 4)
+    CUTOFF = 200_000
+    BINS_COUNT = 20
+
+    print(f"Bin width is {CUTOFF/BINS_COUNT}")
 
     # Create a 2x1 subplot layout (2 rows, 1 column)
     axes: list[Axes]
     fig, axes = plt.subplots(2, 1, figsize=FIG_SIZE, sharex=True)  # type: ignore
 
     # Loop through scenes and zip them with their corresponding subplot axis
+    search_sizes_across_scenes: dict[str, list[int]] = {}
     for ax, scene_name in zip(axes, SCENES):
         all_search_sizes: list[list[int]] = []
         for blue_config in BLUE_CONFIGS_TO_SHOW:
@@ -41,18 +47,25 @@ def main() -> None:
                 blue_configs=[blue_config],
                 red_configs=["grid", "analysis", "rh"],
             )
+            search_sizes_across_scenes.setdefault(blue_config, [])
+            search_sizes_across_scenes[blue_config] += search_sizes
             all_search_sizes.append(search_sizes)
 
         ax.hist(  # type: ignore
             x=all_search_sizes,
-            range=(0, 200_000),
-            bins=30,
+            range=(0, CUTOFF),
+            bins=BINS_COUNT,
             histtype="bar",
             label=BLUE_CONFIGS_TO_SHOW,
+            density=True,
         )
         ax.legend()  # type: ignore
         ax.set_xlabel(f"BLUE game-tree sizes ({scene_name})")  # type: ignore
-        ax.set_ylabel("Count")  # type: ignore
+        ax.set_ylabel("Probability Density")  # type: ignore
+
+    for conf, search_sizes in search_sizes_across_scenes.items():
+        print(f"Average of {conf} = {average(search_sizes)}")
+        print(f"Length of {conf} = {len(search_sizes)}")
 
     fig.tight_layout()
     fig.savefig(  # type: ignore
