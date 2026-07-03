@@ -82,22 +82,49 @@ def main() -> None:
         "analysis": size_analysis_scene_2,
     }
 
-    for name, sizes in scene_2_sizes.items():
-        sns.set_style("whitegrid")
-        ax = sns.kdeplot(
+    sns.set_style("whitegrid")
+
+    # Init the subplots
+    axes: list[Axes]
+    fig, axes = plt.subplots(  # type: ignore
+        nrows=2,
+        ncols=1,
+        figsize=(4.5, 4),
+        sharex=True,
+    )
+    CLIP_RANGE = (0, 300_000)
+
+    # Plot scene-1
+    for name, sizes in scene_1_sizes.items():
+        sns.kdeplot(
             np.array(sizes),
-            clip=(0, np.inf),
+            clip=CLIP_RANGE,
             label=name,
+            fill=True,
+            ax=axes[0],  # Put into top plot
         )
-        fig = ax.get_figure()
-        fig.set_size_inches((4.5, 2))  # type: ignore
-        fig.legend()  # type: ignore
-        fig.tight_layout()  # type: ignore
-        fig.savefig(  # type: ignore
-            f"results-treesize.png",
-            dpi=300,
-            bbox_inches="tight",
+    axes[0].set_title("scene-1")  # type: ignore
+    axes[0].legend()  # type: ignore
+
+    # Plot scene-2
+    for name, sizes in scene_2_sizes.items():
+        sns.kdeplot(
+            np.array(sizes),
+            clip=CLIP_RANGE,
+            label=name,
+            fill=True,
+            ax=axes[1],  # Put into bottom plot
         )
+    axes[1].set_title("scene-2")  # type: ignore
+    axes[1].legend()  # type: ignore
+
+    # Save to file
+    fig.tight_layout()
+    fig.savefig(  # type: ignore
+        "results-treesize.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
 
 
 def plot_hist() -> None:
