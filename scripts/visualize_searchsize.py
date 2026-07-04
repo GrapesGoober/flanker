@@ -55,6 +55,20 @@ def get_sizes() -> tuple[dict[str, list[int]], dict[str, list[int]]]:
         red_configs=["grid", "analysis", "rh"],
     )
 
+    CUTOFF = 200_000
+
+    def percent_cutoff(numbers: list[int]) -> float:
+        above_cutoff_count = sum(1 for x in numbers if x > CUTOFF)
+        return (above_cutoff_count / len(numbers)) * 100
+
+    print(
+        f"grid-scene-1 >{CUTOFF} accounts for {percent_cutoff(size_grid_scene_1):.2f}%",
+        f"grid-scene-2 >{CUTOFF} accounts for {percent_cutoff(size_grid_scene_2):.2f}%",
+        f"analysis-scene-1 >{CUTOFF} accounts for {percent_cutoff(size_analysis_scene_1):.2f}%",
+        f"analysis-scene-2 >{CUTOFF} accounts for {percent_cutoff(size_analysis_scene_2):.2f}%",
+        sep="\n",
+    )
+
     print(
         f"grid-scene-1 average {np.average(size_grid_scene_1)}",
         f"grid-scene-2 average {np.average(size_grid_scene_2)}",
