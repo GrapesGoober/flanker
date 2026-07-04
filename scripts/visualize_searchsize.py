@@ -24,10 +24,12 @@ class ExperimentResult(BaseModel):
 
 
 def main() -> None:
-    plot_hist()
+    scene_1_sizes, scene_2_sizes = get_sizes()
+    # plot_kde(scene_1_sizes, scene_2_sizes)
+    plot_hist(scene_1_sizes, scene_2_sizes)
 
 
-def plot_kde() -> None:
+def get_sizes() -> tuple[dict[str, list[int]], dict[str, list[int]]]:
     size_grid_scene_1: list[int] = get_search_sizes(
         scene_name="scene-1",
         faction=InitiativeState.Faction.BLUE,
@@ -86,6 +88,14 @@ def plot_kde() -> None:
         "analysis": size_analysis_scene_2,
     }
 
+    return scene_1_sizes, scene_2_sizes
+
+
+def plot_kde(
+    scene_1_sizes: dict[str, list[int]],
+    scene_2_sizes: dict[str, list[int]],
+) -> None:
+
     sns.set_style("whitegrid")
 
     # Init the subplots
@@ -131,12 +141,13 @@ def plot_kde() -> None:
     )
 
 
-def plot_hist() -> None:
+def plot_hist(
+    scene_1_sizes: dict[str, list[int]],
+    scene_2_sizes: dict[str, list[int]],
+) -> None:
 
-    SCENES = ["scene-1", "scene-2"]
-    BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
     FIG_SIZE = (4.5, 4)
-    CUTOFF = 300_000
+    CUTOFF = 200_000
     BINS_COUNT = 20
     Y_LIMIT = 0.5
     FILE_NAME = "searchsizes-comparison.png"
@@ -148,39 +159,27 @@ def plot_hist() -> None:
     fig, axes = plt.subplots(2, 1, figsize=FIG_SIZE, sharex=True)  # type: ignore
 
     # Loop through scenes and zip them with their corresponding subplot axis
-    search_sizes_across_scenes: dict[str, list[int]] = {}
-    for ax, scene_name in zip(axes, SCENES):
-        all_search_sizes: list[list[int]] = []
-        for blue_config in BLUE_CONFIGS_TO_SHOW:
-            search_sizes = get_search_sizes(
-                scene_name=scene_name,
-                faction=InitiativeState.Faction.BLUE,
-                blue_configs=[blue_config],
-                red_configs=["grid", "analysis", "rh"],
-            )
-            search_sizes_across_scenes.setdefault(blue_config, [])
-            search_sizes_across_scenes[blue_config] += search_sizes
-            all_search_sizes.append(search_sizes)
-
+    for ax, search_sizes, scene_name in zip(
+        axes,
+        [scene_1_sizes, scene_2_sizes],
+        ["scene-1", "scene-2"],
+    ):
         weights_list = [
-            np.ones_like(dataset) / len(dataset) for dataset in all_search_sizes
+            np.ones_like(dataset) / len(dataset)
+            for dataset in list(search_sizes.values())
         ]
         ax.hist(  # type: ignore
-            x=all_search_sizes,
+            x=list(search_sizes.values()),
             range=(0, CUTOFF),
             bins=BINS_COUNT,
             histtype="bar",
-            label=BLUE_CONFIGS_TO_SHOW,
+            label=["grid", "analysis"],
             weights=weights_list,
         )
         ax.set_ylim(0, Y_LIMIT)
         ax.legend()  # type: ignore
         ax.set_xlabel(f"BLUE game-tree sizes ({scene_name})")  # type: ignore
         ax.set_ylabel("Relative Frequency")  # type: ignore
-
-    for conf, search_sizes in search_sizes_across_scenes.items():
-        print(f"Average of {conf} = {np.average(search_sizes)}")
-        print(f"Length of {conf} = {len(search_sizes)}")
 
     fig.tight_layout()
     fig.savefig(  # type: ignore
