@@ -24,6 +24,10 @@ class ExperimentResult(BaseModel):
 
 
 def main() -> None:
+    plot_hist()
+
+
+def plot_kde() -> None:
     size_grid_scene_1: list[int] = get_search_sizes(
         scene_name="scene-1",
         faction=InitiativeState.Faction.BLUE,
@@ -132,8 +136,10 @@ def plot_hist() -> None:
     SCENES = ["scene-1", "scene-2"]
     BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
     FIG_SIZE = (4.5, 4)
-    CUTOFF = 200_000
+    CUTOFF = 300_000
     BINS_COUNT = 20
+    Y_LIMIT = 0.5
+    FILE_NAME = "searchsizes-comparison.png"
 
     print(f"Bin width is {CUTOFF/BINS_COUNT}")
 
@@ -156,17 +162,21 @@ def plot_hist() -> None:
             search_sizes_across_scenes[blue_config] += search_sizes
             all_search_sizes.append(search_sizes)
 
+        weights_list = [
+            np.ones_like(dataset) / len(dataset) for dataset in all_search_sizes
+        ]
         ax.hist(  # type: ignore
             x=all_search_sizes,
             range=(0, CUTOFF),
             bins=BINS_COUNT,
             histtype="bar",
             label=BLUE_CONFIGS_TO_SHOW,
-            density=True,
+            weights=weights_list,
         )
+        ax.set_ylim(0, Y_LIMIT)
         ax.legend()  # type: ignore
         ax.set_xlabel(f"BLUE game-tree sizes ({scene_name})")  # type: ignore
-        ax.set_ylabel("Probability Density")  # type: ignore
+        ax.set_ylabel("Relative Frequency")  # type: ignore
 
     for conf, search_sizes in search_sizes_across_scenes.items():
         print(f"Average of {conf} = {np.average(search_sizes)}")
@@ -174,7 +184,7 @@ def plot_hist() -> None:
 
     fig.tight_layout()
     fig.savefig(  # type: ignore
-        f"searchsizes-comparison.png",
+        FILE_NAME,
         dpi=300,
         bbox_inches="tight",
     )
