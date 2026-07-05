@@ -82,8 +82,7 @@ def test_no_initiative(fixture: Fixture) -> None:
 
 
 def test_chain_command(fixture: Fixture) -> None:
-    command_system = fixture.gs.get(CommandSystem)
-    command_system.kill_unit(fixture.gs, fixture.unit_id_1)
+    CommandSystem.kill_unit(fixture.gs, fixture.unit_id_1)
     unit_2 = fixture.gs.get_component(fixture.unit_id_2, CombatUnit)
     assert (
         unit_2.command_id == fixture.unit_root

@@ -125,7 +125,6 @@ class FireSystem:
         fire_outcome: FireOutcomes,
     ) -> None:
         """Applies the fire outcome to the target combat unit."""
-        command_system = gs.get(CommandSystem)
         fire_controls = gs.get_component(attacker_id, FireControls)
         target_fire_controls = gs.try_component(target_id, FireControls)
 
@@ -144,9 +143,9 @@ class FireSystem:
                     if target_fire_controls != None:
                         target_fire_controls.firing_at = None
                 else:  # Kills the unit if it is already suppressed
-                    command_system.kill_unit(gs, target_id)
+                    CommandSystem.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
-                command_system.kill_unit(gs, target_id)
+                CommandSystem.kill_unit(gs, target_id)
 
     @staticmethod
     def fire(

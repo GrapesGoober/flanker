@@ -113,7 +113,6 @@ def test_no_fire(fixture: Fixture) -> None:
 
 def test_pin_fire(fixture: Fixture) -> None:
     initiative_system = fixture.gs.get(InitiativeSystem)
-    command_system = fixture.gs.get(CommandSystem)
 
     fixture.fire_controls.override = FireOutcomes.PIN
     fire_result = FireSystem.fire(
@@ -130,7 +129,7 @@ def test_pin_fire(fixture: Fixture) -> None:
         initiative_system.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
-    command_system.kill_unit(fixture.gs, fixture.attacker_id)
+    CommandSystem.kill_unit(fixture.gs, fixture.attacker_id)
     target_status = FireSystem.get_status(fixture.gs, fixture.target_id)
     assert (
         target_status == CombatUnit.Status.ACTIVE
@@ -138,8 +137,6 @@ def test_pin_fire(fixture: Fixture) -> None:
 
 
 def test_fire_reset_on_target_killed(fixture: Fixture) -> None:
-    command_system = fixture.gs.get(CommandSystem)
-
     fixture.fire_controls.override = FireOutcomes.PIN
     _ = FireSystem.fire(
         gs=fixture.gs,
@@ -151,7 +148,7 @@ def test_fire_reset_on_target_killed(fixture: Fixture) -> None:
         FireEffect.PINNING,
     ), "Expects fire effect to point to target."
 
-    command_system.kill_unit(fixture.gs, fixture.target_id)
+    CommandSystem.kill_unit(fixture.gs, fixture.target_id)
     assert (
         fixture.fire_controls.firing_at == None
     ), "Expects fire effect to be removed once target is gone."

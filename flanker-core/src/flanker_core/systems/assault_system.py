@@ -103,10 +103,9 @@ class AssaultSystem:
             attacker_id,
             target_id,
         )
-        command_system = gs.get(CommandSystem)
         match outcome:
             case AssaultOutcomes.SUCCESS:
-                command_system.kill_unit(gs, target_id)
+                CommandSystem.kill_unit(gs, target_id)
             case AssaultOutcomes.FAIL:
-                command_system.kill_unit(gs, attacker_id)
+                CommandSystem.kill_unit(gs, attacker_id)
         return _AssaultActionResult(outcome=outcome)
