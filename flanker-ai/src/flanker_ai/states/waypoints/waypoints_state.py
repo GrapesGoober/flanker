@@ -41,8 +41,6 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
-        fire_system = self.gs.get(FireSystem)
-
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -53,7 +51,7 @@ class WaypointsState(IRepresentationState[Action]):
         score = 0.0
         for unit_id, unit in self.gs.query(CombatUnit):
             value = 0
-            match fire_system.get_status(self.gs, unit_id):
+            match FireSystem.get_status(self.gs, unit_id):
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:

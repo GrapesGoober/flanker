@@ -27,9 +27,8 @@ class AiBranchAbstractionService:
                     continue
 
                 # Filter on unit status equality
-                fire_system = branch_left.get(FireSystem)
-                left_unit_status = fire_system.get_status(branch_left, action.unit_id)
-                right_unit_status = fire_system.get_status(branch_right, action.unit_id)
+                left_unit_status = FireSystem.get_status(branch_left, action.unit_id)
+                right_unit_status = FireSystem.get_status(branch_right, action.unit_id)
                 if left_unit_status != right_unit_status:
                     continue
 

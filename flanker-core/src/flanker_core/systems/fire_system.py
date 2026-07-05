@@ -70,15 +70,13 @@ class FireSystem:
     ) -> InvalidAction | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
         los_system = gs.get(LosSystem)
-        fire_system = gs.get(FireSystem)
-
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         attacker_transform = gs.get_component(attacker_id, Transform)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
 
         # Check if attacker can attack
-        if fire_system.get_status(gs, attacker_id) not in (
+        if FireSystem.get_status(gs, attacker_id) not in (
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
@@ -128,8 +126,6 @@ class FireSystem:
     ) -> None:
         """Applies the fire outcome to the target combat unit."""
         command_system = gs.get(CommandSystem)
-        fire_system = gs.get(FireSystem)
-
         fire_controls = gs.get_component(attacker_id, FireControls)
         target_fire_controls = gs.try_component(target_id, FireControls)
 
@@ -141,7 +137,7 @@ class FireSystem:
                 if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
                     fire_controls.firing_at = (target_id, FireEffect.PINNING)
             case FireOutcomes.SUPPRESS:
-                target_status = fire_system.get_status(gs, target_id)
+                target_status = FireSystem.get_status(gs, target_id)
                 if target_status != CombatUnit.Status.SUPPRESSED:
                     fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
                     # Reset fire effect because SUPPRESSED unit can't fire.
@@ -161,8 +157,7 @@ class FireSystem:
         """Mutator method performs fire action from attacker unit to target unit."""
         initiative_system = gs.get(InitiativeSystem)
         # Validate fire actors
-        fire_system = gs.get(FireSystem)
-        if reason := fire_system.validate_fire_actors(gs, attacker_id, target_id):
+        if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
         if not initiative_system.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
@@ -173,8 +168,8 @@ class FireSystem:
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)
-        fire_outcome = fire_system.get_fire_outcome(gs, attacker_id)
-        fire_system.apply_fire_outcome(
+        fire_outcome = FireSystem.get_fire_outcome(gs, attacker_id)
+        FireSystem.apply_fire_outcome(
             gs,
             attacker_id=attacker_id,
             target_id=target_id,
@@ -190,14 +185,12 @@ class FireSystem:
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
         """Returns a list of valid spotters for reactive fire. Doesn't check LOS."""
-        fire_system = gs.get(FireSystem)
-
         unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, _ in gs.query(
             CombatUnit, Transform, FireControls
         ):
             # Check that spotter is a valid spotter for reactive fire
-            if fire_system.get_status(gs, spotter_id) == CombatUnit.Status.SUPPRESSED:
+            if FireSystem.get_status(gs, spotter_id) == CombatUnit.Status.SUPPRESSED:
                 continue
             if spotter_id == target_id:
                 continue

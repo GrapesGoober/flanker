@@ -37,12 +37,10 @@ class AssaultSystem:
     ) -> InvalidAction | None:
         """Check whether assault action valid."""
         initiative_system = gs.get(InitiativeSystem)
-        fire_system = gs.get(FireSystem)
-
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         target_unit = gs.get_component(target_id, CombatUnit)
 
-        if fire_system.get_status(gs, attacker_id) != CombatUnit.Status.ACTIVE:
+        if FireSystem.get_status(gs, attacker_id) != CombatUnit.Status.ACTIVE:
             return InvalidAction.NO_INITIATIVE
         if not initiative_system.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
@@ -56,8 +54,6 @@ class AssaultSystem:
         target_id: UUID,
     ) -> AssaultOutcomes:
         """Rolls a randomized assault outcome, or overriden if provided."""
-        fire_system = gs.get(FireSystem)
-
         attacker_assault = gs.get_component(attacker_id, AssaultControls)
 
         # Once at location, do dice roll; only one can survive
@@ -66,7 +62,7 @@ class AssaultSystem:
         else:
             return attacker_assault.override
 
-        target_status = fire_system.get_status(gs, target_id)
+        target_status = FireSystem.get_status(gs, target_id)
         threshold = _ASSAULT_SUCCESS_PROBABILITIES[target_status]
 
         if attacker_roll <= threshold:
