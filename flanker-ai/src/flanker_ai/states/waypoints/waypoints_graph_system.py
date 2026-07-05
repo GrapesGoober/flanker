@@ -132,15 +132,13 @@ class WaypointsGraphSystem:
     ) -> None:
 
         waypoints_system = gs.get(WaypointsGraphSystem)
-        los_system = gs.get(LosSystem)
-
         # Compute LOS polygon for all these waypoints.
         # The LOS polygon might be overkill for now,
         # but future cases might need it
         waypoints = waypoints_system.get_waypoints(gs)
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
         for waypoint_id, waypoint in waypoints.items():
-            waypoint_LOS_polygons[waypoint_id] = los_system.get_los_polygon(
+            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
                 gs, waypoint.position
             )
 

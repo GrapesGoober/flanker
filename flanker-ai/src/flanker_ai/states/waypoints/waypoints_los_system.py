@@ -36,7 +36,6 @@ class WaypointsLosSystemOverrides:
         has a valid LOS to the spotter.
         """
 
-        los_system = gs.get(LosSystem)
         waypoints_system = gs.get(WaypointsGraphSystem)
 
         # Coerce the positions to waypoints
@@ -54,7 +53,7 @@ class WaypointsLosSystemOverrides:
             path_waypoint = waypoints[path_id]
             if spotter_waypoint_id not in path_waypoint.visible_nodes:
                 continue
-            if not los_system.in_fov(spotter_transform, path_waypoint.position):
+            if not LosSystem.in_fov(spotter_transform, path_waypoint.position):
                 continue
             return path_waypoint.position
 

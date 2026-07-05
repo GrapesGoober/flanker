@@ -152,8 +152,6 @@ class LosSystem:
         for _, override in gs.query(GetLosFromLineOverrideComponent):
             return override.method(gs, spotter_id, line)
 
-        los_system = gs.get(LosSystem)
-
         interrupt_pos: Vec2 | None = None
 
         spotter_transform = gs.get_component(spotter_id, Transform)
@@ -171,11 +169,11 @@ class LosSystem:
         if cache_key in cache.fov_polygon_by_point:
             fov_polygon = cache.fov_polygon_by_point[cache_key]
         else:
-            los_polygon = los_system.get_los_polygon(
+            los_polygon = LosSystem.get_los_polygon(
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = los_system.apply_fov_to_polygon(
+            fov_polygon = LosSystem.apply_fov_to_polygon(
                 polyline=los_polygon,
                 center_point=spotter_transform.position,
                 heading_degree=spotter_transform.degrees,
@@ -279,8 +277,6 @@ class LosSystem:
         for _, override in gs.query(GetLosPolygonOverrideComponent):
             return override.method(gs, spotter_pos)
 
-        los_system = gs.get(LosSystem)
-
         # If already exists in cache, no need to recalculate
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
@@ -290,14 +286,14 @@ class LosSystem:
             return cache.los_polygon_by_point[spotter_pos]
 
         terrains = list(
-            los_system._get_terrain_vertices(
+            LosSystem._get_terrain_vertices(
                 gs,
                 spotter_pos,
                 mask=TerrainFeature.Flag.OPAQUE,
             )
         )
         terrain_verts = [vert for t in terrains for vert in t.vertices]
-        verts = los_system._sort_verts_by_angle(spotter_pos, terrain_verts)
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
         los_polygon: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -309,7 +305,7 @@ class LosSystem:
             right_point = spotter_pos + jitter
             for point in [left_point, right_point]:
                 intersects = sorted(
-                    los_system._get_terrain_intersects(
+                    LosSystem._get_terrain_intersects(
                         line=(point, point + ray),
                         terrains=terrains,
                     ),
@@ -333,7 +329,7 @@ class LosSystem:
                 if los_polygon and los_polygon[-1] == new_point:
                     continue
                 # If points are colinear, replace instead of append
-                if los_system._is_colinear(los_polygon, new_point):
+                if LosSystem._is_colinear(los_polygon, new_point):
                     los_polygon[-1] = new_point
                     continue
                 los_polygon.append(new_point)

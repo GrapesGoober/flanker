@@ -105,15 +105,13 @@ def draw_combat_unit_los_cone(
     linestyle: str = "-",
     draw_as_cone: bool = True,
 ) -> None:
-    los_system = gs.get(LosSystem)
-
     spotter_transform = gs.get_component(unit_id, components.Transform)
-    polygon = los_system.get_los_polygon(
+    polygon = LosSystem.get_los_polygon(
         gs=gs,
         spotter_pos=spotter_transform.position,
     )
     if draw_as_cone:
-        polygon = los_system.apply_fov_to_polygon(
+        polygon = LosSystem.apply_fov_to_polygon(
             polyline=polygon,
             center_point=spotter_transform.position,
             heading_degree=spotter_transform.degrees,
@@ -165,7 +163,6 @@ def draw_waypoints(
 
     waypoints_state.update_state(gs)
     waypoints_system = waypoints_state.gs.get(WaypointsGraphSystem)
-    los_system = gs.get(LosSystem)
 
     print("Drawing waypoints...")
 
@@ -200,7 +197,7 @@ def draw_waypoints(
             )
 
         # Draw LOS polygon for each waypoint
-        full_polygon = los_system.get_los_polygon(
+        full_polygon = LosSystem.get_los_polygon(
             gs=gs,
             spotter_pos=point.position,
         )
@@ -311,8 +308,7 @@ def visualize_expansion(gs: GameState) -> None:
         los_point := Vec2(130, 70),
     ]
 
-    los_system = gs.get(LosSystem)
-    los_polygon = los_system.get_los_polygon(gs, los_point)
+    los_polygon = LosSystem.get_los_polygon(gs, los_point)
     visualize_polygon(
         los_polygon,
         color=f"C0",

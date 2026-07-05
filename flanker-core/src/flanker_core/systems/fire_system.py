@@ -69,7 +69,6 @@ class FireSystem:
         target_id: UUID,
     ) -> InvalidAction | None:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
-        los_system = gs.get(LosSystem)
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         attacker_transform = gs.get_component(attacker_id, Transform)
         target_unit = gs.get_component(target_id, CombatUnit)
@@ -87,13 +86,13 @@ class FireSystem:
             return InvalidAction.BAD_ENTITY
 
         # Check if attacker has LOS to target and within FOV
-        if not los_system.has_los(
+        if not LosSystem.has_los(
             gs,
             attacker_transform.position,
             target_transform.position,
         ):
             return InvalidAction.BAD_COORDS
-        if not los_system.in_fov(
+        if not LosSystem.in_fov(
             attacker_transform,
             target_transform.position,
         ):

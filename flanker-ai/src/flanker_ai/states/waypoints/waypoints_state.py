@@ -71,7 +71,6 @@ class WaypointsState(IRepresentationState[Action]):
     @override
     def get_actions(self) -> list[Action]:
 
-        los_system = self.gs.get(LosSystem)
         waypoints_system = self.gs.get(WaypointsGraphSystem)
 
         actions: list[Action] = []
@@ -120,7 +119,7 @@ class WaypointsState(IRepresentationState[Action]):
                     position=enemy_transform.position,
                 )
                 # if already looking there, no need to pivot again
-                if los_system.in_fov(
+                if LosSystem.in_fov(
                     Transform(friendly_waypoint.position, friendly_transform.degrees),
                     enemy_transform.position,
                 ):

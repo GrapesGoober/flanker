@@ -1,6 +1,4 @@
 from flanker_core.gamestate import GameState
-from flanker_core.systems.los_system import LosSystem
 
 
-def register_systems(gs: GameState) -> None:
-    gs.register(LosSystem)
+def register_systems(gs: GameState) -> None: ...

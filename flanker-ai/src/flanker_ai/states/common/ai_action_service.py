@@ -85,8 +85,6 @@ class AiActionService:
         target_ids: list[UUID],
     ) -> list[PivotAction]:
 
-        los_system = gs.get(LosSystem)
-
         # Have it pivot only towards enemies to reduce branching factor.
         actions: list[PivotAction] = []
         for friendly_id in friendly_ids:
@@ -95,12 +93,12 @@ class AiActionService:
                 target_transform = gs.get_component(target_id, Transform)
 
                 # Only pivot if not already looking there.
-                if los_system.in_fov(
+                if LosSystem.in_fov(
                     spotter_transform=friendly_transform,
                     target_pos=target_transform.position,
                 ):
                     continue
-                if not los_system.has_los(
+                if not LosSystem.has_los(
                     gs,
                     spotter_pos=friendly_transform.position,
                     target_pos=target_transform.position,

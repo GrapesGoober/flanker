@@ -32,8 +32,6 @@ if __name__ == "__main__":
     PATH = "./scenes/demo.json"
     gs = load_state(PATH)
 
-    los_system = gs.get(LosSystem)
-
     def calculate_visibility() -> None:
 
         for _, unit, transform in gs.query(
@@ -43,7 +41,7 @@ if __name__ == "__main__":
             if unit.faction == InitiativeState.Faction.RED:
                 continue
 
-            los_system.get_los_polygon(gs, transform.position)
+            LosSystem.get_los_polygon(gs, transform.position)
 
     from timeit import timeit
 

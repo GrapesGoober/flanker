@@ -105,8 +105,6 @@ class AiPointsExpansionService:
         Given a list of waypoints, expand and create more waypoints
         representing move interrupt candidates.
         """
-        los_system = gs.get(LosSystem)
-
         waypoints_los_polygon: dict[Vec2, list[Vec2]] = {}
 
         # FIXME: set does not guarantee co-location filter
@@ -153,7 +151,7 @@ class AiPointsExpansionService:
 
                     if other_waypoint not in waypoints_los_polygon:
                         waypoints_los_polygon[other_waypoint] = (
-                            los_system.get_los_polygon(gs, other_waypoint)
+                            LosSystem.get_los_polygon(gs, other_waypoint)
                         )
                     los_polygon = waypoints_los_polygon[other_waypoint]
 
@@ -196,8 +194,7 @@ class AiPointsExpansionService:
         """
         Return visibility mapping of this waypoint against other flag waypoints.
         """
-        los_system = gs.get(LosSystem)
-        waypoint_los_polygon = los_system.get_los_polygon(gs, waypoint)
+        waypoint_los_polygon = LosSystem.get_los_polygon(gs, waypoint)
         return {
             other_waypoint: IntersectGetter.is_inside(
                 other_waypoint, waypoint_los_polygon

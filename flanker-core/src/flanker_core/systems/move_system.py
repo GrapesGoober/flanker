@@ -82,8 +82,6 @@ class MoveSystem:
     ) -> list[tuple[Vec2, list[UUID]]]:
         """Returns move interrupt points and attacker IDs"""
 
-        los_system = gs.get(LosSystem)
-
         spotter_candidates = list(
             FireSystem.get_spotter_candidates(gs, unit_id),
         )
@@ -92,7 +90,7 @@ class MoveSystem:
         transform = gs.get_component(unit_id, Transform)
 
         for spotter_id in spotter_candidates:
-            interrupt_pos = los_system.get_los_from_line(
+            interrupt_pos = LosSystem.get_los_from_line(
                 gs=gs,
                 spotter_id=spotter_id,
                 line=(transform.position, to),
