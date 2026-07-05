@@ -54,9 +54,8 @@ def fixture() -> Fixture:
 
 
 def test_assault_fail(fixture: Fixture) -> None:
-    assault_system = fixture.gs.get(AssaultSystem)
     fixture.assault_controls.override = AssaultOutcomes.FAIL
-    assault_system.assault(
+    AssaultSystem.assault(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -67,9 +66,8 @@ def test_assault_fail(fixture: Fixture) -> None:
 
 
 def test_assault_success(fixture: Fixture) -> None:
-    assault_system = fixture.gs.get(AssaultSystem)
     fixture.assault_controls.override = AssaultOutcomes.SUCCESS
-    assault_system.assault(
+    AssaultSystem.assault(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,

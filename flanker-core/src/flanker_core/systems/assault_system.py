@@ -77,9 +77,8 @@ class AssaultSystem:
         target_id: UUID,
     ) -> _AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
-        assault_system = gs.get(AssaultSystem)
         # Check assault action valid
-        if invalid_reason := assault_system._validate_assault_action(
+        if invalid_reason := AssaultSystem._validate_assault_action(
             gs, attacker_id, target_id
         ):
             return invalid_reason
@@ -99,7 +98,7 @@ class AssaultSystem:
         ObjectiveSystem.reset_stall(gs, attacker_unit.faction)
 
         # Once at location, do dice roll; only one can survive
-        outcome = assault_system._get_assault_outcome(
+        outcome = AssaultSystem._get_assault_outcome(
             gs,
             attacker_id,
             target_id,

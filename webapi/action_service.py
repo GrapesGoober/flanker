@@ -70,8 +70,7 @@ class ActionService:
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform an assault action."""
-        assault_system = gs.get(AssaultSystem)
-        result = assault_system.assault(gs, body.unit_id, body.target_id)
+        result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(

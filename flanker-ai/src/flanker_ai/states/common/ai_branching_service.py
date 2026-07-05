@@ -173,8 +173,6 @@ class AiBranchingService:
         Returns a list of branching states and their probabilities
         from a given action.
         """
-
-        assault_system = gs.get(AssaultSystem)
         # Prepare a list of configured branches
         branches: list[tuple[float, GameState]]
         match action:
@@ -220,7 +218,7 @@ class AiBranchingService:
                         to=action.to,
                     )
                 case AssaultAction():
-                    result = assault_system.assault(
+                    result = AssaultSystem.assault(
                         gs=new_state,
                         attacker_id=action.unit_id,
                         target_id=action.target_id,
