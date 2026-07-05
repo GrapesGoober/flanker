@@ -16,7 +16,9 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
-from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystemOverrides
+from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
+    WaypointsLosSystemOverrides,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
