@@ -75,9 +75,7 @@ class LosSystem:
         Returns `True` if position `spotter_pos` has LOS to
         position `target_pos`. Does not check for FOV.
         """
-
-        intersect_system = gs.get(IntersectSystem)
-        intersects = intersect_system.get(
+        intersects = IntersectSystem.get(
             gs=gs,
             start=spotter_pos,
             end=target_pos,
