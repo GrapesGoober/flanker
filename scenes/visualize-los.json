@@ -62,66 +62,6 @@
       },
       "AssaultControls": {}
     },
-    "826317b5-7e2b-4ca7-ae56-6176537f668f": {
-      "Transform": {
-        "position": {
-          "x": 100,
-          "y": 200
-        },
-        "degrees": -50
-      },
-      "CombatUnit": {
-        "faction": "BLUE"
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "override": "SUPPRESS",
-        "can_reactive_fire": true
-      },
-      "AssaultControls": {}
-    },
-    "1f86e27d-9161-48c4-ac2f-26db6a47106f": {
-      "Transform": {
-        "position": {
-          "x": 200,
-          "y": 66
-        },
-        "degrees": 140
-      },
-      "CombatUnit": {
-        "faction": "RED"
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "override": "PIN",
-        "can_reactive_fire": false
-      },
-      "AssaultControls": {}
-    },
-    "49d609a8-7cfb-431d-be37-31031c20559c": {
-      "Transform": {
-        "position": {
-          "x": 233,
-          "y": 100
-        },
-        "degrees": 140
-      },
-      "CombatUnit": {
-        "faction": "RED"
-      },
-      "MoveControls": {
-        "move_type": "FOOT"
-      },
-      "FireControls": {
-        "override": "PIN",
-        "can_reactive_fire": false
-      },
-      "AssaultControls": {}
-    },
     "3417bfb3-c72d-406a-b7c5-c7ff989ec70a": {
       "AiConfigComponent": {
         "config": {
