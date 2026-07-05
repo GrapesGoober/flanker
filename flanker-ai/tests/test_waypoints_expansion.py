@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import override
 
 import pytest
 from flanker_ai.states.common.ai_points_expansion_service import (
@@ -8,31 +7,26 @@ from flanker_ai.states.common.ai_points_expansion_service import (
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.los_system import GetLosPolygonOverrideComponent
 from flanker_core.systems.register_systems import register_systems
 
 
-class MockLosSystem(LosSystem):
+def mock_get_los_polygon(
+    gs: GameState,
+    spotter_pos: Vec2,
+    radius: float = 1000,
+    jitter_size: float = 0.000001,
+) -> list[Vec2]:
     """
-    LOS System override to create mock LOS polygon.
-    This polygon sits between waypoint (0, 10) and (10, 10).
+    Mock LOS polygon sits between waypoint (0, 10) and (10, 10).
     """
-
-    @staticmethod
-    @override
-    def get_los_polygon(
-        gs: GameState,
-        spotter_pos: Vec2,
-        radius: float = 1000,
-        jitter_size: float = 0.000001,
-    ) -> list[Vec2]:
-        return [
-            Vec2(12, 12),
-            Vec2(4, 12),
-            Vec2(4, 8),
-            Vec2(12, 8),
-            Vec2(12, 12),
-        ]
+    return [
+        Vec2(12, 12),
+        Vec2(4, 12),
+        Vec2(4, 8),
+        Vec2(12, 8),
+        Vec2(12, 12),
+    ]
 
 
 @dataclass
@@ -45,10 +39,6 @@ class Fixture:
 def fixture() -> Fixture:
     gs = GameState()
     register_systems(gs)
-    gs.replace(
-        existing=LosSystem,
-        replacement=MockLosSystem,
-    )
 
     # Terrain passes between wappoints (0, 10) and (10, 10).
     # Intersect at (6, 10)
@@ -63,6 +53,7 @@ def fixture() -> Fixture:
             ],
             flag=TerrainFeature.Flag.OPAQUE,
         ),
+        GetLosPolygonOverrideComponent(method=mock_get_los_polygon),
     )
 
     # Boundary box terrain

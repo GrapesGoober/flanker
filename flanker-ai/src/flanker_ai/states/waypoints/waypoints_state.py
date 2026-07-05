@@ -16,13 +16,17 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
-from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
+from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystemOverrides
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.los_system import (
+    GetLosFromLineOverrideComponent,
+    HasLosOverrideComponent,
+    LosSystem,
+)
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.systems.register_systems import register_systems
 
@@ -195,11 +199,15 @@ class WaypointsState(IRepresentationState[Action]):
     ) -> None:
 
         self.gs = deepcopy(gs)
-
-        self.gs.replace(
-            existing=LosSystem,
-            replacement=WaypointsLosSystem,
+        self.gs.add_entity(
+            GetLosFromLineOverrideComponent(
+                method=WaypointsLosSystemOverrides.get_los_from_line,
+            ),
+            HasLosOverrideComponent(
+                method=WaypointsLosSystemOverrides.has_los,
+            ),
         )
+
         self.gs.register(WaypointsGraphSystem)
 
         waypoints_system = self.gs.get(WaypointsGraphSystem)

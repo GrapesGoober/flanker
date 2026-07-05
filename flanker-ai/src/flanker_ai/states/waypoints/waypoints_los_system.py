@@ -1,4 +1,3 @@
-from typing import override
 from uuid import UUID
 
 from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
@@ -8,26 +7,34 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 
 
-class WaypointsLosSystem(LosSystem):
+class WaypointsLosSystemOverrides:
 
     @staticmethod
-    @override
-    def has_los(gs: GameState, spotter_pos: Vec2, target_pos: Vec2) -> bool:
+    def has_los(
+        gs: GameState,
+        spotter_pos: Vec2,
+        target_pos: Vec2,
+    ) -> bool:
+        """
+        Override using precomputed waypoint visibility.
+        """
+
         waypoints_system = gs.get(WaypointsGraphSystem)
         spotter_waypoint = waypoints_system.get_waypoint(gs, spotter_pos)
         target_waypoint_id = waypoints_system.get_waypoint_id(gs, target_pos)
         return target_waypoint_id in spotter_waypoint.visible_nodes
 
     @staticmethod
-    @override
     def get_los_from_line(
         gs: GameState,
         spotter_id: UUID,
         line: tuple[Vec2, Vec2],
     ) -> Vec2 | None:
-        # This override is intended for the move interrupt logic.
-        # This returns the earliest waypoint along the move path that
-        # has a valid LOS to the spotter
+        """
+        Override using cheaper waypoint-based move interrupt.
+        This returns the earliest waypoint along the move path that
+        has a valid LOS to the spotter.
+        """
 
         los_system = gs.get(LosSystem)
         waypoints_system = gs.get(WaypointsGraphSystem)

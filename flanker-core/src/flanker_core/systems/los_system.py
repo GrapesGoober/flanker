@@ -38,7 +38,7 @@ class _LosCacheComponent:
 
 
 @dataclass
-class _HasLosOverrideComponent:
+class HasLosOverrideComponent:
     method: Callable[
         [GameState, Vec2, Vec2],
         bool,
@@ -46,7 +46,7 @@ class _HasLosOverrideComponent:
 
 
 @dataclass
-class _GetLosFromLineOverrideComponent:
+class GetLosFromLineOverrideComponent:
     method: Callable[
         [GameState, UUID, tuple[Vec2, Vec2]],
         Vec2 | None,
@@ -54,7 +54,7 @@ class _GetLosFromLineOverrideComponent:
 
 
 @dataclass
-class _GetLosPolygonOverrideComponent:
+class GetLosPolygonOverrideComponent:
     method: Callable[
         [GameState, Vec2],
         list[Vec2],
@@ -101,7 +101,7 @@ class LosSystem:
         """
 
         # Use the override if exists
-        for _, override in gs.query(_HasLosOverrideComponent):
+        for _, override in gs.query(HasLosOverrideComponent):
             return override.method(gs, spotter_pos, target_pos)
 
         # Count each intersects to not see through terrain
@@ -149,7 +149,7 @@ class LosSystem:
         """
 
         # Use the override if exists
-        for _, override in gs.query(_GetLosFromLineOverrideComponent):
+        for _, override in gs.query(GetLosFromLineOverrideComponent):
             return override.method(gs, spotter_id, line)
 
         los_system = gs.get(LosSystem)
@@ -276,7 +276,7 @@ class LosSystem:
         """Returns a polygon representing the LOS from a spotter position."""
 
         # Use the override if exists
-        for _, override in gs.query(_GetLosPolygonOverrideComponent):
+        for _, override in gs.query(GetLosPolygonOverrideComponent):
             return override.method(gs, spotter_pos)
 
         los_system = gs.get(LosSystem)
