@@ -160,8 +160,6 @@ class FireSystem:
     ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
         initiative_system = gs.get(InitiativeSystem)
-        objective_system = gs.get(ObjectiveSystem)
-
         # Validate fire actors
         fire_system = gs.get(FireSystem)
         if reason := fire_system.validate_fire_actors(gs, attacker_id, target_id):
@@ -171,7 +169,7 @@ class FireSystem:
 
         # Reset stall count after validity checks
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
-        objective_system.reset_stall(gs, attacker_unit.faction)
+        ObjectiveSystem.reset_stall(gs, attacker_unit.faction)
 
         # Apply outcome
         target_unit = gs.get_component(target_id, CombatUnit)

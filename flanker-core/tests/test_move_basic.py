@@ -95,15 +95,13 @@ def test_move(fixture: Fixture) -> None:
 
 
 def test_move_stall(fixture: Fixture) -> None:
-    objective_system = fixture.gs.get(ObjectiveSystem)
-
     for _ in range(5):
         MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
-    winner = objective_system.get_winning_faction(fixture.gs)
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects to be able to stall 5 times before losing."
 
     MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
-    winner = objective_system.get_winning_faction(fixture.gs)
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == InitiativeState.Faction.RED, "Expects the 6th stall to lose."
 
 

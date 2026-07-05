@@ -189,8 +189,7 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-        objective_system = self.gs.get(ObjectiveSystem)
-        return objective_system.get_winning_faction(self.gs)
+        return ObjectiveSystem.get_winning_faction(self.gs)
 
     @override
     def update_state(

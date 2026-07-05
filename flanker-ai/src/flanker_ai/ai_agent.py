@@ -75,8 +75,7 @@ class AiAgent:
         action_results: list[tuple[ActionResult, int]] = []
         while initiative_system.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
-            objective_system = self.gs.get(ObjectiveSystem)
-            if objective_system.get_winning_faction(self.gs) != None:
+            if ObjectiveSystem.get_winning_faction(self.gs) != None:
                 break
 
             # Check redundant moves (stop search)

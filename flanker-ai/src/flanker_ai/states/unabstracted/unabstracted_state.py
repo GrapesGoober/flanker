@@ -120,8 +120,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-        objective_system = self._gs.get(ObjectiveSystem)
-        return objective_system.get_winning_faction(self._gs)
+        return ObjectiveSystem.get_winning_faction(self._gs)
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:

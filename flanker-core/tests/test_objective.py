@@ -68,8 +68,7 @@ def test_kill_one(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id_1,
     )
-    objective_system = fixture.gs.get(ObjectiveSystem)
-    winner = objective_system.get_winning_faction(fixture.gs)
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as objective not met"
 
 
@@ -85,8 +84,7 @@ def test_kill_two(fixture: Fixture) -> None:
         fixture.attacker_id,
         fixture.target_id_2,
     )
-    objective_system = fixture.gs.get(ObjectiveSystem)
-    winner = objective_system.get_winning_faction(fixture.gs)
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert (
         winner == InitiativeState.Faction.BLUE
     ), "Expects attacker faction as winner as objective is met"
