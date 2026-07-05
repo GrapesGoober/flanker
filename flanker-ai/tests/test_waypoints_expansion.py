@@ -7,7 +7,7 @@ from flanker_ai.states.common.ai_points_expansion_service import (
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.los_system import GetLosPolygonOverrideComponent
+from flanker_core.systems.los_system import LosSystemOverrides
 
 
 def mock_get_los_polygon(
@@ -51,7 +51,7 @@ def fixture() -> Fixture:
             ],
             flag=TerrainFeature.Flag.OPAQUE,
         ),
-        GetLosPolygonOverrideComponent(method=mock_get_los_polygon),
+        LosSystemOverrides.GetLosPolygon(method=mock_get_los_polygon),
     )
 
     # Boundary box terrain

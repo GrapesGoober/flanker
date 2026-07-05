@@ -23,9 +23,8 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import (
-    GetLosFromLineOverrideComponent,
-    HasLosOverrideComponent,
     LosSystem,
+    LosSystemOverrides,
 )
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -195,10 +194,10 @@ class WaypointsState(IRepresentationState[Action]):
 
         self.gs = deepcopy(gs)
         self.gs.add_entity(
-            GetLosFromLineOverrideComponent(
+            LosSystemOverrides.GetLosFromLine(
                 method=WaypointsLosSystemOverrides.get_los_from_line,
             ),
-            HasLosOverrideComponent(
+            LosSystemOverrides.HasLos(
                 method=WaypointsLosSystemOverrides.has_los,
             ),
         )

@@ -37,28 +37,31 @@ class _LosCacheComponent:
     fov_polygon_by_point: dict[tuple[Vec2, float], list[Vec2]]
 
 
-@dataclass
-class HasLosOverrideComponent:
-    method: Callable[
-        [GameState, Vec2, Vec2],
-        bool,
-    ]
+class LosSystemOverrides:
+    """
+    Add these to game state to override LOS system with new logic.
+    """
 
+    @dataclass
+    class HasLos:
+        method: Callable[
+            [GameState, Vec2, Vec2],
+            bool,
+        ]
 
-@dataclass
-class GetLosFromLineOverrideComponent:
-    method: Callable[
-        [GameState, UUID, tuple[Vec2, Vec2]],
-        Vec2 | None,
-    ]
+    @dataclass
+    class GetLosFromLine:
+        method: Callable[
+            [GameState, UUID, tuple[Vec2, Vec2]],
+            Vec2 | None,
+        ]
 
-
-@dataclass
-class GetLosPolygonOverrideComponent:
-    method: Callable[
-        [GameState, Vec2],
-        list[Vec2],
-    ]
+    @dataclass
+    class GetLosPolygon:
+        method: Callable[
+            [GameState, Vec2],
+            list[Vec2],
+        ]
 
 
 class LosSystem:
@@ -101,7 +104,7 @@ class LosSystem:
         """
 
         # Use the override if exists
-        for _, override in gs.query(HasLosOverrideComponent):
+        for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
         # Count each intersects to not see through terrain
@@ -149,7 +152,7 @@ class LosSystem:
         """
 
         # Use the override if exists
-        for _, override in gs.query(GetLosFromLineOverrideComponent):
+        for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
             return override.method(gs, spotter_id, line)
 
         interrupt_pos: Vec2 | None = None
@@ -274,7 +277,7 @@ class LosSystem:
         """Returns a polygon representing the LOS from a spotter position."""
 
         # Use the override if exists
-        for _, override in gs.query(GetLosPolygonOverrideComponent):
+        for _, override in gs.query(LosSystemOverrides.GetLosPolygon):
             return override.method(gs, spotter_pos)
 
         # If already exists in cache, no need to recalculate
