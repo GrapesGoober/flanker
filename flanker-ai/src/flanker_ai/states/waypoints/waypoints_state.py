@@ -69,10 +69,8 @@ class WaypointsState(IRepresentationState[Action]):
     @override
     def get_actions(self) -> list[Action]:
 
-        waypoints_system = self.gs.get(WaypointsGraphSystem)
-
         actions: list[Action] = []
-        waypoints = waypoints_system.get_waypoints(self.gs)
+        waypoints = WaypointsGraphSystem.get_waypoints(self.gs)
 
         # Aggregate a list of friendly and enemy units separately
         # instead of inside the big loop. This keeps time complexity low.
@@ -86,7 +84,7 @@ class WaypointsState(IRepresentationState[Action]):
 
         for friendly_id in friendly_ids:
             friendly_transform = self.gs.get_component(friendly_id, Transform)
-            friendly_waypoint_id = waypoints_system.get_waypoint_id(
+            friendly_waypoint_id = WaypointsGraphSystem.get_waypoint_id(
                 gs=self.gs,
                 position=friendly_transform.position,
             )
@@ -112,7 +110,7 @@ class WaypointsState(IRepresentationState[Action]):
             # This is generalized action filter to reduce branching factor.
             for enemy_id in enemy_ids:
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
-                enemy_waypoint_id = waypoints_system.get_waypoint_id(
+                enemy_waypoint_id = WaypointsGraphSystem.get_waypoint_id(
                     gs=self.gs,
                     position=enemy_transform.position,
                 )
@@ -135,7 +133,7 @@ class WaypointsState(IRepresentationState[Action]):
             # Adds move actions last, for best alpha-beta pruning.
             # Have friendly units move to non-occupied waypoints
             occupied_waypoint_ids: set[int] = {
-                waypoints_system.get_waypoint_id(self.gs, transform.position)
+                WaypointsGraphSystem.get_waypoint_id(self.gs, transform.position)
                 for _, _, transform in self.gs.query(CombatUnit, Transform)
             }
             available_waypoints: list[int] = [
@@ -205,18 +203,13 @@ class WaypointsState(IRepresentationState[Action]):
             ),
         )
 
-        self.gs.register(WaypointsGraphSystem)
-
-        waypoints_system = self.gs.get(WaypointsGraphSystem)
-
-        # Add the waypoints graph, with combat units as new waypoints
         points: list[Vec2] = list(self._points)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             # Add new waypoints for each combat units
             if transform.position not in points:
                 points.append(transform.position)
 
-        waypoints_system.set_waypoints(
+        WaypointsGraphSystem.set_waypoints(
             gs=self.gs,
             points=points,
             path_tolerance=self._path_tolerance,

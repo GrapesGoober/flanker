@@ -19,9 +19,8 @@ class WaypointsLosSystemOverrides:
         Override using precomputed waypoint visibility.
         """
 
-        waypoints_system = gs.get(WaypointsGraphSystem)
-        spotter_waypoint = waypoints_system.get_waypoint(gs, spotter_pos)
-        target_waypoint_id = waypoints_system.get_waypoint_id(gs, target_pos)
+        spotter_waypoint = WaypointsGraphSystem.get_waypoint(gs, spotter_pos)
+        target_waypoint_id = WaypointsGraphSystem.get_waypoint_id(gs, target_pos)
         return target_waypoint_id in spotter_waypoint.visible_nodes
 
     @staticmethod
@@ -36,18 +35,16 @@ class WaypointsLosSystemOverrides:
         has a valid LOS to the spotter.
         """
 
-        waypoints_system = gs.get(WaypointsGraphSystem)
-
         # Coerce the positions to waypoints
-        start_waypoint = waypoints_system.get_waypoint(gs, line[0])
-        end_waypoint_id = waypoints_system.get_waypoint_id(gs, line[1])
+        start_waypoint = WaypointsGraphSystem.get_waypoint(gs, line[0])
+        end_waypoint_id = WaypointsGraphSystem.get_waypoint_id(gs, line[1])
         spotter_transform = gs.get_component(spotter_id, Transform)
-        spotter_waypoint_id = waypoints_system.get_waypoint_id(
+        spotter_waypoint_id = WaypointsGraphSystem.get_waypoint_id(
             gs, spotter_transform.position
         )
 
         # Loop through each path nodes to find the earliest valid LOS waypoint
-        waypoints = waypoints_system.get_waypoints(gs)
+        waypoints = WaypointsGraphSystem.get_waypoints(gs)
         path_waypoint_ids = start_waypoint.movable_paths[end_waypoint_id]
         for path_id in path_waypoint_ids:
             path_waypoint = waypoints[path_id]

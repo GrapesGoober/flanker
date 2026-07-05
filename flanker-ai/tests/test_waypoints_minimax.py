@@ -177,8 +177,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
         rs, WaypointsState
     ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
-    waypoints_system = rs.gs.get(WaypointsGraphSystem)
-    waypoints = waypoints_system.get_waypoints(rs.gs)
+    waypoints = WaypointsGraphSystem.get_waypoints(rs.gs)
     assert waypoints[5].movable_paths[3] == [5, 3]
     assert waypoints[5].movable_paths[2] == [5, 2]
     assert waypoints[5].movable_paths[7] == [5, 6, 0, 7]
@@ -196,8 +195,7 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
         rs, WaypointsState
     ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
-    waypoints_system = rs.gs.get(WaypointsGraphSystem)
-    waypoints = waypoints_system.get_waypoints(rs.gs)
+    waypoints = WaypointsGraphSystem.get_waypoints(rs.gs)
     assert set(waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 

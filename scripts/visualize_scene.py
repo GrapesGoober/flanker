@@ -160,7 +160,6 @@ def draw_waypoints(
     ), "Configured agent's state representation must be waypoints state."
 
     waypoints_state.update_state(gs)
-    waypoints_system = waypoints_state.gs.get(WaypointsGraphSystem)
 
     print("Drawing waypoints...")
 
@@ -169,7 +168,7 @@ def draw_waypoints(
     points_y: list[float] = []
     ids: list[int] = []
 
-    waypoints = waypoints_system.get_waypoints(waypoints_state.gs)
+    waypoints = WaypointsGraphSystem.get_waypoints(waypoints_state.gs)
 
     for id, point in waypoints.items():
 
