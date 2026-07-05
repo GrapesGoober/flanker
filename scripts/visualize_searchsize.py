@@ -1,6 +1,8 @@
 from itertools import product
 
 import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 from flanker_ai.ai_agent import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
@@ -22,41 +24,180 @@ class ExperimentResult(BaseModel):
 
 
 def main() -> None:
+    scene_1_sizes, scene_2_sizes = get_sizes()
+    # plot_kde(scene_1_sizes, scene_2_sizes)
+    plot_hist(scene_1_sizes, scene_2_sizes)
 
-    SCENES = ["scene-1", "scene-2"]  # Modified to support two scenes
-    BLUE_CONFIGS_TO_SHOW: list[str] = ["grid", "analysis"]
+
+def get_sizes() -> tuple[dict[str, list[int]], dict[str, list[int]]]:
+    size_grid_scene_1: list[int] = get_search_sizes(
+        scene_name="scene-1",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["grid"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+    size_grid_scene_2: list[int] = get_search_sizes(
+        scene_name="scene-2",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["grid"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+    size_analysis_scene_1: list[int] = get_search_sizes(
+        scene_name="scene-1",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["analysis"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+    size_analysis_scene_2: list[int] = get_search_sizes(
+        scene_name="scene-2",
+        faction=InitiativeState.Faction.BLUE,
+        blue_configs=["analysis"],
+        red_configs=["grid", "analysis", "rh"],
+    )
+
+    CUTOFF = 200_000
+
+    def percent_cutoff(numbers: list[int]) -> float:
+        above_cutoff_count = sum(1 for x in numbers if x > CUTOFF)
+        return (above_cutoff_count / len(numbers)) * 100
+
+    print(
+        f"grid-scene-1 >{CUTOFF} accounts for {percent_cutoff(size_grid_scene_1):.2f}%",
+        f"grid-scene-2 >{CUTOFF} accounts for {percent_cutoff(size_grid_scene_2):.2f}%",
+        f"analysis-scene-1 >{CUTOFF} accounts for {percent_cutoff(size_analysis_scene_1):.2f}%",
+        f"analysis-scene-2 >{CUTOFF} accounts for {percent_cutoff(size_analysis_scene_2):.2f}%",
+        sep="\n",
+    )
+
+    print(
+        f"grid-scene-1 average {np.average(size_grid_scene_1)}",
+        f"grid-scene-2 average {np.average(size_grid_scene_2)}",
+        f"analysis-scene-1 average {np.average(size_analysis_scene_1)}",
+        f"analysis-scene-2 average {np.average(size_analysis_scene_2)}",
+        sep="\n",
+    )
+
+    print(
+        f"grid-scene-1 min {min(size_grid_scene_1)}",
+        f"grid-scene-2 min {min(size_grid_scene_2)}",
+        f"analysis-scene-1 min {min(size_analysis_scene_1)}",
+        f"analysis-scene-2 min {min(size_analysis_scene_2)}",
+        sep="\n",
+    )
+
+    print(
+        f"grid-scene-1 max {max(size_grid_scene_1)}",
+        f"grid-scene-2 max {max(size_grid_scene_2)}",
+        f"analysis-scene-1 max {max(size_analysis_scene_1)}",
+        f"analysis-scene-2 max {max(size_analysis_scene_2)}",
+        sep="\n",
+    )
+
+    scene_1_sizes: dict[str, list[int]] = {
+        "grid": size_grid_scene_1,
+        "analysis": size_analysis_scene_1,
+    }
+    scene_2_sizes: dict[str, list[int]] = {
+        "grid": size_grid_scene_2,
+        "analysis": size_analysis_scene_2,
+    }
+
+    return scene_1_sizes, scene_2_sizes
+
+
+def plot_kde(
+    scene_1_sizes: dict[str, list[int]],
+    scene_2_sizes: dict[str, list[int]],
+) -> None:
+
+    sns.set_style("whitegrid")
+
+    # Init the subplots
+    axes: list[Axes]
+    fig, axes = plt.subplots(  # type: ignore
+        nrows=2,
+        ncols=1,
+        figsize=(4.5, 4),
+        sharex=True,
+    )
+    CLIP_RANGE = (0, 300_000)
+
+    # Plot scene-1
+    for name, sizes in scene_1_sizes.items():
+        sns.kdeplot(
+            np.array(sizes),
+            clip=CLIP_RANGE,
+            label=name,
+            fill=True,
+            ax=axes[0],  # Put into top plot
+        )
+    axes[0].set_title("scene-1")  # type: ignore
+    axes[0].legend()  # type: ignore
+
+    # Plot scene-2
+    for name, sizes in scene_2_sizes.items():
+        sns.kdeplot(
+            np.array(sizes),
+            clip=CLIP_RANGE,
+            label=name,
+            fill=True,
+            ax=axes[1],  # Put into bottom plot
+        )
+    axes[1].set_title("scene-2")  # type: ignore
+    axes[1].legend()  # type: ignore
+
+    # Save to file
+    fig.tight_layout()
+    fig.savefig(  # type: ignore
+        "results-treesize.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
+
+
+def plot_hist(
+    scene_1_sizes: dict[str, list[int]],
+    scene_2_sizes: dict[str, list[int]],
+) -> None:
+
     FIG_SIZE = (4.5, 4)
+    CUTOFF = 200_000
+    BINS_COUNT = 20
+    Y_LIMIT = 0.5
+    FILE_NAME = "searchsizes-comparison.png"
+
+    print(f"Bin width is {CUTOFF/BINS_COUNT}")
 
     # Create a 2x1 subplot layout (2 rows, 1 column)
     axes: list[Axes]
     fig, axes = plt.subplots(2, 1, figsize=FIG_SIZE, sharex=True)  # type: ignore
 
     # Loop through scenes and zip them with their corresponding subplot axis
-    for ax, scene_name in zip(axes, SCENES):
-        all_search_sizes: list[list[int]] = []
-        for blue_config in BLUE_CONFIGS_TO_SHOW:
-            search_sizes = get_search_sizes(
-                scene_name=scene_name,
-                faction=InitiativeState.Faction.BLUE,
-                blue_configs=[blue_config],
-                red_configs=["grid", "analysis", "rh"],
-            )
-            all_search_sizes.append(search_sizes)
-
+    for ax, search_sizes, scene_name in zip(
+        axes,
+        [scene_1_sizes, scene_2_sizes],
+        ["scene-1", "scene-2"],
+    ):
+        weights_list = [
+            np.ones_like(dataset) / len(dataset)
+            for dataset in list(search_sizes.values())
+        ]
         ax.hist(  # type: ignore
-            x=all_search_sizes,
-            range=(0, 200_000),
-            bins=30,
+            x=list(search_sizes.values()),
+            range=(0, CUTOFF),
+            bins=BINS_COUNT,
             histtype="bar",
-            label=BLUE_CONFIGS_TO_SHOW,
+            label=["grid", "analysis"],
+            weights=weights_list,
         )
+        ax.set_ylim(0, Y_LIMIT)
         ax.legend()  # type: ignore
         ax.set_xlabel(f"BLUE game-tree sizes ({scene_name})")  # type: ignore
-        ax.set_ylabel("Count")  # type: ignore
+        ax.set_ylabel("Relative Frequency")  # type: ignore
 
     fig.tight_layout()
     fig.savefig(  # type: ignore
-        f"searchsizes-comparison.png",
+        FILE_NAME,
         dpi=300,
         bbox_inches="tight",
     )
