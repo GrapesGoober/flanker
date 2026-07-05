@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
@@ -35,6 +35,30 @@ class _Terrain:
 class _LosCacheComponent:
     los_polygon_by_point: dict[Vec2, list[Vec2]]
     fov_polygon_by_point: dict[tuple[Vec2, float], list[Vec2]]
+
+
+@dataclass
+class _HasLosLogicOverride:
+    method: Callable[
+        [GameState, Vec2, Vec2],
+        bool,
+    ]
+
+
+@dataclass
+class _GetLosFromLineLogicOverride:
+    method: Callable[
+        [GameState, UUID, tuple[Vec2, Vec2]],
+        Vec2 | None,
+    ]
+
+
+@dataclass
+class _GetLosPolygonLogicOverride:
+    method: Callable[
+        [GameState, Vec2],
+        list[Vec2],
+    ]
 
 
 class LosSystem:
@@ -75,24 +99,34 @@ class LosSystem:
         Returns `True` if position `spotter_pos` has LOS to
         position `target_pos`. Does not check for FOV.
         """
+
+        # Use the override if exists
+        for _, override in gs.query(_HasLosLogicOverride):
+            return override.method(gs, spotter_pos, target_pos)
+
+        # Count each intersects to not see through terrain
         intersects = IntersectSystem.get(
             gs=gs,
             start=spotter_pos,
             end=target_pos,
             mask=TerrainFeature.Flag.OPAQUE,
         )
-
-        # Can see into one other terrain polygon
         passed_one_terrain = False
         for intersect in intersects:
             # Doesn't count spotter's terrain
             terrain_id = intersect.terrain_id
             terrain = gs.get_component(terrain_id, TerrainFeature)
             terrain_transform = gs.get_component(terrain_id, Transform)
-            vertices = LinearTransform.apply(terrain.vertices, terrain_transform)
+            vertices = LinearTransform.apply(
+                vec_list=terrain.vertices,
+                transform=terrain_transform,
+            )
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-                if IntersectGetter.is_inside(point=spotter_pos, polygon=vertices):
+                if IntersectGetter.is_inside(
+                    point=spotter_pos,
+                    polygon=vertices,
+                ):
                     continue
 
             if not passed_one_terrain:
@@ -113,6 +147,10 @@ class LosSystem:
         Returns an eariliest point position, if exists, along `line` that
         has a valid LOS to the entity `spotter_id`. This considers FOV.
         """
+
+        # Use the override if exists
+        for _, override in gs.query(_GetLosFromLineLogicOverride):
+            return override.method(gs, spotter_id, line)
 
         los_system = gs.get(LosSystem)
 
@@ -236,6 +274,11 @@ class LosSystem:
         jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
+
+        # Use the override if exists
+        for _, override in gs.query(_GetLosPolygonLogicOverride):
+            return override.method(gs, spotter_pos)
+
         los_system = gs.get(LosSystem)
 
         # If already exists in cache, no need to recalculate
