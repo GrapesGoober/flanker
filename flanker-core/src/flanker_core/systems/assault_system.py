@@ -36,13 +36,12 @@ class AssaultSystem:
         target_id: UUID,
     ) -> InvalidAction | None:
         """Check whether assault action valid."""
-        initiative_system = gs.get(InitiativeSystem)
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         target_unit = gs.get_component(target_id, CombatUnit)
 
         if FireSystem.get_status(gs, attacker_id) != CombatUnit.Status.ACTIVE:
             return InvalidAction.NO_INITIATIVE
-        if not initiative_system.has_initiative(gs, attacker_id):
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
         if attacker_unit.faction == target_unit.faction:
             return InvalidAction.BAD_ENTITY

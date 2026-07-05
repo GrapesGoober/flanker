@@ -86,19 +86,17 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         5, -15
     ), "Move action expects to not be interrupted"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "NO reactive fire mustn't flip initiative."
 
 
 def test_interrupt_miss(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls.override = FireOutcomes.MISS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
@@ -106,12 +104,11 @@ def test_interrupt_miss(fixture: Fixture) -> None:
         20, -10
     ), "Move action expects to not be interrupted"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "MISS reactive fire mustn't flip initiative"
 
 
 def test_interrupt_pin(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls.override = FireOutcomes.PIN
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
@@ -121,12 +118,11 @@ def test_interrupt_pin(fixture: Fixture) -> None:
     unit_status = FireSystem.get_status(fixture.gs, fixture.unit_move)
     assert unit_status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "PINNED reactive fire must maintain initiative."
 
 
 def test_interrupt_suppress(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
@@ -138,16 +134,15 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
         unit_status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True
     ), "SUPPRESS reactive fire must flip initiative."
 
 
 def test_interrupt_kill(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.fire_controls.override = FireOutcomes.KILL
     MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
     transform = fixture.gs.try_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True
     ), "KILL reactive fire must flip initiative"

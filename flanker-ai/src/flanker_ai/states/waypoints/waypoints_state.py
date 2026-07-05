@@ -36,8 +36,7 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
-        initiative_system = self.gs.get(InitiativeSystem)
-        return initiative_system.get_initiative(self.gs)
+        return InitiativeSystem.get_initiative(self.gs)
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:

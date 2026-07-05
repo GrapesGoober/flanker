@@ -154,11 +154,10 @@ class FireSystem:
         target_id: UUID,
     ) -> _FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
-        initiative_system = gs.get(InitiativeSystem)
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
-        if not initiative_system.has_initiative(gs, attacker_id):
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
 
         # Reset stall count after validity checks
@@ -176,7 +175,7 @@ class FireSystem:
         )
         match fire_outcome:
             case FireOutcomes.MISS | FireOutcomes.PIN:
-                initiative_system.set_initiative(gs, target_unit.faction)
+                InitiativeSystem.set_initiative(gs, target_unit.faction)
             case FireOutcomes.SUPPRESS | FireOutcomes.KILL:
                 pass
         return _FireActionResult(outcome=fire_outcome)

@@ -66,21 +66,19 @@ class AiAgent:
         self,
     ) -> list[tuple[ActionResult, int]]:
         """Have the agent play the entire initiative."""
-
-        initiative_system = self.gs.get(InitiativeSystem)
-        if initiative_system.get_initiative(self.gs) != self.faction:
+        if InitiativeSystem.get_initiative(self.gs) != self.faction:
             return []
 
         halt_counter = 0
         action_results: list[tuple[ActionResult, int]] = []
-        while initiative_system.get_initiative(self.gs) == self.faction:
+        while InitiativeSystem.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
             if ObjectiveSystem.get_winning_faction(self.gs) != None:
                 break
 
             # Check redundant moves (stop search)
             if halt_counter > _MAX_ACTION_PER_INITIATIVE:
-                initiative_system.flip_initiative(self.gs)
+                InitiativeSystem.flip_initiative(self.gs)
                 break
 
             # Prepare the representation and run the policy on it
@@ -88,12 +86,12 @@ class AiAgent:
             rs.update_state(self.gs)
             action, size = self.policy.get_action(rs)
             if action == None:
-                initiative_system.flip_initiative(self.gs)
+                InitiativeSystem.flip_initiative(self.gs)
                 break
 
             result = self._perform_action(action)
             if isinstance(result, InvalidAction):
-                initiative_system.flip_initiative(self.gs)
+                InitiativeSystem.flip_initiative(self.gs)
                 break
             # These result objects would be used for logging
             # Thus, prevent mutation by creating a copy

@@ -122,8 +122,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
-        initiative_system = self._gs.get(InitiativeSystem)
-        return self._gs.get(initiative_system).get_initiative(self._gs)
+        return InitiativeSystem.get_initiative(self._gs)
 
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
