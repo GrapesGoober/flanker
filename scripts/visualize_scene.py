@@ -27,7 +27,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.register_systems import register_systems
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 from matplotlib import pyplot as plt
@@ -54,7 +53,6 @@ def get_game_state(
             )
 
     gs = GameState.load(entities)
-    register_systems(gs)
     return gs
 
 

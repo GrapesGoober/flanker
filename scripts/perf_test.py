@@ -7,7 +7,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 def load_state(path: str) -> GameState:
@@ -24,7 +23,6 @@ def load_state(path: str) -> GameState:
         )
         gs = GameState.load(entities)
 
-    register_systems(gs)
     return gs
 
 

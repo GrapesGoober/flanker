@@ -6,7 +6,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -22,7 +21,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(
         initiative := InitiativeState(),
     )

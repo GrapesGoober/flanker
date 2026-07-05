@@ -24,7 +24,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeState
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -41,7 +40,6 @@ class Fixture:
 def fixture() -> Fixture:
 
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(
         InitiativeState(
             faction=InitiativeState.Faction.BLUE,

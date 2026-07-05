@@ -13,7 +13,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -27,7 +26,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     attacker_id = gs.add_entity(

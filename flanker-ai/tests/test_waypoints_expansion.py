@@ -8,7 +8,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import GetLosPolygonOverrideComponent
-from flanker_core.systems.register_systems import register_systems
 
 
 def mock_get_los_polygon(
@@ -38,7 +37,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
 
     # Terrain passes between wappoints (0, 10) and (10, 10).
     # Intersect at (6, 10)

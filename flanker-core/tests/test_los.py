@@ -13,7 +13,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.move_system import MoveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -28,7 +27,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(InitiativeState())
     # Two entities
     target_id = gs.add_entity(

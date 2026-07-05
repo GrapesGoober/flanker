@@ -28,13 +28,11 @@ from flanker_core.systems.los_system import (
     LosSystem,
 )
 from flanker_core.systems.objective_system import ObjectiveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 class WaypointsState(IRepresentationState[Action]):
     def __init__(self, points: list[Vec2], path_tolerance: float) -> None:
         self.gs = GameState()
-        register_systems(self.gs)
         self._points = points
         self._path_tolerance = path_tolerance
 

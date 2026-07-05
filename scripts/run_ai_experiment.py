@@ -14,7 +14,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
-from flanker_core.systems.register_systems import register_systems
 from pydantic import BaseModel
 
 
@@ -165,7 +164,6 @@ def get_game_state(
             )
 
     gs = GameState.load(entities)
-    register_systems(gs)
     AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
     AiAgent.get_agent(gs, InitiativeState.Faction.RED)
     return gs
