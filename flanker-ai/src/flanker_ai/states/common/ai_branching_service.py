@@ -86,8 +86,7 @@ class AiBranchingService:
     ) -> list[tuple[float, GameState]]:
         """Get new game state branches configured with reactive fire overrides."""
 
-        move_system = gs.get(MoveSystem)
-        reactive_fire_candidates = move_system.get_interrupt_candidates(
+        reactive_fire_candidates = MoveSystem.get_interrupt_candidates(
             gs, unit_id, move_to
         )
         reactive_fire_ids = {
@@ -177,7 +176,6 @@ class AiBranchingService:
         from a given action.
         """
 
-        move_system = gs.get(MoveSystem)
         assault_system = gs.get(AssaultSystem)
         fire_system = gs.get(FireSystem)
 
@@ -214,13 +212,13 @@ class AiBranchingService:
             result: Any | InvalidAction
             match action:
                 case MoveAction():
-                    result = move_system.move(
+                    result = MoveSystem.move(
                         gs=new_state,
                         unit_id=action.unit_id,
                         to=action.to,
                     )
                 case PivotAction():
-                    result = move_system.pivot(
+                    result = MoveSystem.pivot(
                         gs=new_state,
                         unit_id=action.unit_id,
                         to=action.to,

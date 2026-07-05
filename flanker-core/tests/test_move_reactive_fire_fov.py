@@ -68,8 +68,7 @@ def fixture() -> Fixture:
 
 
 def test_reactive_fire_at_fov(fixture: Fixture) -> None:
-    move_system = fixture.gs.get(MoveSystem)
-    move_system.move(fixture.gs, fixture.unit_move, Vec2(-50, 0))
+    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(-50, 0))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         -10, 0
@@ -78,10 +77,9 @@ def test_reactive_fire_at_fov(fixture: Fixture) -> None:
 
 def test_reactive_fire_after_rotated(fixture: Fixture) -> None:
     # Rotate the RED unit slightly to the left so that FOV is 56.31 degrees
-    move_system = fixture.gs.get(MoveSystem)
     red_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
     red_transform.degrees = -78.69
-    move_system.move(fixture.gs, fixture.unit_move, Vec2(-50, 0))
+    MoveSystem.move(fixture.gs, fixture.unit_move, Vec2(-50, 0))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert (
         transform.position - Vec2(-5, 0)

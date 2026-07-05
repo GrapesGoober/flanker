@@ -118,11 +118,8 @@ def test_copy(fixture: Fixture) -> None:
 
 
 def test_one_interrupt(fixture: Fixture) -> None:
-
-    move_system = fixture.gs.get(MoveSystem)
-
     move_position = Vec2(20, -10)
-    interrupts = move_system.get_interrupt_candidates(
+    interrupts = MoveSystem.get_interrupt_candidates(
         gs=fixture.gs,
         unit_id=fixture.unit_move,
         to=move_position,

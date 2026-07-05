@@ -187,12 +187,9 @@ class AiAgent:
         self,
         action: Action,
     ) -> ActionResult | InvalidAction:
-        assault_system = self.gs.get(AssaultSystem)
-        fire_system = self.gs.get(FireSystem)
-        move_system = self.gs.get(MoveSystem)
         match action:
             case MoveAction():
-                result = move_system.move(
+                result = MoveSystem.move(
                     self.gs,
                     action.unit_id,
                     action.to,
@@ -204,7 +201,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
-                result = move_system.pivot(
+                result = MoveSystem.pivot(
                     self.gs,
                     action.unit_id,
                     action.to,
@@ -216,7 +213,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
-                result = fire_system.fire(
+                result = FireSystem.fire(
                     self.gs,
                     action.unit_id,
                     action.target_id,
@@ -228,7 +225,7 @@ class AiAgent:
                         outcome=result.outcome,
                     )
             case AssaultAction():
-                result = assault_system.assault(
+                result = AssaultSystem.assault(
                     self.gs,
                     action.unit_id,
                     action.target_id,

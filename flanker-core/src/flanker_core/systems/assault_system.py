@@ -82,7 +82,6 @@ class AssaultSystem:
     ) -> _AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
         assault_system = gs.get(AssaultSystem)
-        move_system = gs.get(MoveSystem)
         objective_system = gs.get(ObjectiveSystem)
 
         # Check assault action valid
@@ -93,7 +92,7 @@ class AssaultSystem:
 
         # Moves the unit to target position (allow reactive fire)
         target_position = gs.get_component(target_id, Transform).position
-        result = move_system.move(gs, attacker_id, target_position)
+        result = MoveSystem.move(gs, attacker_id, target_position)
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:

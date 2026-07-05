@@ -25,8 +25,7 @@ class ActionService:
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> None:
         """Perform a move action."""
-        move_system = gs.get(MoveSystem)
-        result = move_system.move(gs, body.unit_id, body.to)
+        result = MoveSystem.move(gs, body.unit_id, body.to)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
@@ -41,8 +40,7 @@ class ActionService:
     @staticmethod
     def pivot(gs: GameState, body: PivotActionRequest) -> None:
         """Perform a pivot action."""
-        move_system = gs.get(MoveSystem)
-        result = move_system.pivot(gs, body.unit_id, body.to)
+        result = MoveSystem.pivot(gs, body.unit_id, body.to)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
