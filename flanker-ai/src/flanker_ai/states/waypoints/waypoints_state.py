@@ -15,7 +15,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
+from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
 )
@@ -71,7 +71,7 @@ class WaypointsState(IRepresentationState[Action]):
     def get_actions(self) -> list[Action]:
 
         actions: list[Action] = []
-        waypoints = WaypointsGraphSystem.get_waypoints(self.gs)
+        waypoints = WaypointsGraph.get_waypoints(self.gs)
 
         # Aggregate a list of friendly and enemy units separately
         # instead of inside the big loop. This keeps time complexity low.
@@ -85,7 +85,7 @@ class WaypointsState(IRepresentationState[Action]):
 
         for friendly_id in friendly_ids:
             friendly_transform = self.gs.get_component(friendly_id, Transform)
-            friendly_waypoint_id = WaypointsGraphSystem.get_waypoint_id(
+            friendly_waypoint_id = WaypointsGraph.get_waypoint_id(
                 gs=self.gs,
                 position=friendly_transform.position,
             )
@@ -111,7 +111,7 @@ class WaypointsState(IRepresentationState[Action]):
             # This is generalized action filter to reduce branching factor.
             for enemy_id in enemy_ids:
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
-                enemy_waypoint_id = WaypointsGraphSystem.get_waypoint_id(
+                enemy_waypoint_id = WaypointsGraph.get_waypoint_id(
                     gs=self.gs,
                     position=enemy_transform.position,
                 )
@@ -134,7 +134,7 @@ class WaypointsState(IRepresentationState[Action]):
             # Adds move actions last, for best alpha-beta pruning.
             # Have friendly units move to non-occupied waypoints
             occupied_waypoint_ids: set[int] = {
-                WaypointsGraphSystem.get_waypoint_id(self.gs, transform.position)
+                WaypointsGraph.get_waypoint_id(self.gs, transform.position)
                 for _, _, transform in self.gs.query(CombatUnit, Transform)
             }
             available_waypoints: list[int] = [
@@ -210,7 +210,7 @@ class WaypointsState(IRepresentationState[Action]):
             if transform.position not in points:
                 points.append(transform.position)
 
-        WaypointsGraphSystem.set_waypoints(
+        WaypointsGraph.set_waypoints(
             gs=self.gs,
             points=points,
             path_tolerance=self._path_tolerance,

@@ -14,7 +14,7 @@ from flanker_ai.states.common.ai_waypoints_initialize_service import (
     AiWaypointsInitializeService,
 )
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
+from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -168,7 +168,7 @@ def draw_waypoints(
     points_y: list[float] = []
     ids: list[int] = []
 
-    waypoints = WaypointsGraphSystem.get_waypoints(waypoints_state.gs)
+    waypoints = WaypointsGraph.get_waypoints(waypoints_state.gs)
 
     for id, point in waypoints.items():
 

@@ -18,7 +18,12 @@ class _WaypointsGraphComponent:
     waypoints: dict[int, WaypointNode]
 
 
-class WaypointsGraphSystem:
+class WaypointsGraph:
+    """
+    Defines operations for waypoints-graph initialization, getters,
+    pathing, and visibility logic. This is meant for waypoints-graph state.
+    """
+
     @staticmethod
     def get_waypoints(
         gs: GameState,
@@ -36,7 +41,7 @@ class WaypointsGraphSystem:
         position: Vec2,
     ) -> int:
         """Returns a waypoint ID from coerced position."""
-        waypoints = WaypointsGraphSystem.get_waypoints(gs)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         coerced_waypoint_id = min(
             waypoints.keys(),
             key=lambda idx: abs((position - waypoints[idx].position).length()),
@@ -49,8 +54,8 @@ class WaypointsGraphSystem:
         position: Vec2,
     ) -> WaypointNode:
         """Returns a waypoint object from coerced position."""
-        waypoint_id = WaypointsGraphSystem.get_waypoint_id(gs, position)
-        waypoints = WaypointsGraphSystem.get_waypoints(gs)
+        waypoint_id = WaypointsGraph.get_waypoint_id(gs, position)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         return waypoints[waypoint_id]
 
     @staticmethod
@@ -77,15 +82,15 @@ class WaypointsGraphSystem:
             )
 
         # Add relationships between nodes
-        WaypointsGraphSystem._add_visibility_relationships(gs)
-        WaypointsGraphSystem._add_path_relationships(gs, path_tolerance)
+        WaypointsGraph._add_visibility_relationships(gs)
+        WaypointsGraph._add_path_relationships(gs, path_tolerance)
 
     @staticmethod
     def _add_path_relationships(
         gs: GameState,
         path_tolerance: float,
     ) -> None:
-        waypoints = WaypointsGraphSystem.get_waypoints(gs)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         for waypoint_id, waypoint in waypoints.items():
             for move_id, move_waypoint in waypoints.items():
                 move_from = waypoint.position
@@ -126,7 +131,7 @@ class WaypointsGraphSystem:
         # Compute LOS polygon for all these waypoints.
         # The LOS polygon might be overkill for now,
         # but future cases might need it
-        waypoints = WaypointsGraphSystem.get_waypoints(gs)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
         for waypoint_id, waypoint in waypoints.items():
             waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
