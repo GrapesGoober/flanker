@@ -69,6 +69,10 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> list[Action]:
+        # FIXME TODO The waypoints-state isn't using AiActionService for its action space.
+        # This is because at the time I didn't plan to use the waypoints-state yet,
+        # and that this action space isn't compatible with the new move candidate waypoints.
+        # They should share the same code. Maybe waypoints-prune before sample MoveActions?
 
         actions: list[Action] = []
         waypoints = WaypointsGraph.get_waypoints(self.gs)
