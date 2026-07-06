@@ -10,29 +10,6 @@ class GameState:
         """Initializes the game state with empty entities."""
         self._entities: dict[UUID, dict[type[Any], Any]] = {}
         self._query_cache: dict[tuple[type, ...], list[UUID]] = {}
-        self._systems: dict[type, type] = {}
-
-    def register(self, cls: type[Any]) -> None:
-        """Register a new system to game state."""
-        if cls in self._systems:
-            raise KeyError(f"System {cls} already exists.")
-        self._systems[cls] = cls
-
-    def replace(self, existing: type[Any], replacement: type[Any]) -> None:
-        """Replace an existing registered system with a subclass variant."""
-        if existing not in self._systems:
-            raise KeyError(f"System {existing} does not exists")
-        if not issubclass(replacement, existing):
-            raise ValueError(
-                f"Replacement {replacement} is not subclass of {existing}."
-            )
-        self._systems[existing] = replacement
-
-    def get[T](self, cls: type[T]) -> type[T]:
-        """Get a registered system."""
-        if cls not in self._systems:
-            raise KeyError(f"System {cls} does not exist.")
-        return self._systems[cls]
 
     def add_entity(self, *components: Any, id: UUID | None = None) -> UUID:
         """Adds a new entity with the given components, returns ID."""
@@ -128,7 +105,6 @@ class GameState:
         new_gs = GameState()
         new_gs._entities = self._entities.copy()
         new_gs._query_cache = self._query_cache.copy()
-        new_gs._systems = self._systems.copy()
 
         # Copies each entity dict and its component instances
         for entity_id in new_gs._entities:

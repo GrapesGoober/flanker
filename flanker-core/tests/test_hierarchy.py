@@ -6,7 +6,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -22,7 +21,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(
         initiative := InitiativeState(),
     )
@@ -61,29 +59,26 @@ def fixture() -> Fixture:
 
 
 def test_initiative(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
 
-    has_initiative = initiative_system.has_initiative(fixture.gs, fixture.unit_id_1)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == True, "Expects faction BLUE to have initiative"
 
-    has_initiative = initiative_system.has_initiative(fixture.gs, fixture.unit_id_2)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == True, "Expects faction BLUE to have initiative"
 
 
 def test_no_initiative(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
     fixture.initiative.faction = InitiativeState.Faction.RED
 
-    has_initiative = initiative_system.has_initiative(fixture.gs, fixture.unit_id_1)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_1)
     assert has_initiative == False, "Expects faction BLUE to no longer have initiative"
 
-    has_initiative = initiative_system.has_initiative(fixture.gs, fixture.unit_id_2)
+    has_initiative = InitiativeSystem.has_initiative(fixture.gs, fixture.unit_id_2)
     assert has_initiative == False, "Expects faction BLUE to no longer have initiative"
 
 
 def test_chain_command(fixture: Fixture) -> None:
-    command_system = fixture.gs.get(CommandSystem)
-    command_system.kill_unit(fixture.gs, fixture.unit_id_1)
+    CommandSystem.kill_unit(fixture.gs, fixture.unit_id_1)
     unit_2 = fixture.gs.get_component(fixture.unit_id_2, CombatUnit)
     assert (
         unit_2.command_id == fixture.unit_root

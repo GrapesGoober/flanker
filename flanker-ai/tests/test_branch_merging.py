@@ -18,7 +18,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeState
 from flanker_core.systems.move_system import MoveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -32,7 +31,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
@@ -118,11 +116,8 @@ def test_copy(fixture: Fixture) -> None:
 
 
 def test_one_interrupt(fixture: Fixture) -> None:
-
-    move_system = fixture.gs.get(MoveSystem)
-
     move_position = Vec2(20, -10)
-    interrupts = move_system.get_interrupt_candidates(
+    interrupts = MoveSystem.get_interrupt_candidates(
         gs=fixture.gs,
         unit_id=fixture.unit_move,
         to=move_position,

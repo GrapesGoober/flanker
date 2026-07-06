@@ -37,6 +37,5 @@ class CommandSystem:
             else:
                 child_unit.command_id = next_command
 
-        objective_system = gs.get(ObjectiveSystem)
-        objective_system.count_kill(gs, unit_id)
+        ObjectiveSystem.count_kill(gs, unit_id)
         gs.delete_entity(unit_id)

@@ -13,7 +13,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -27,7 +26,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     attacker_id = gs.add_entity(
@@ -54,9 +52,8 @@ def fixture() -> Fixture:
 
 
 def test_assault_fail(fixture: Fixture) -> None:
-    assault_system = fixture.gs.get(AssaultSystem)
     fixture.assault_controls.override = AssaultOutcomes.FAIL
-    assault_system.assault(
+    AssaultSystem.assault(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,
@@ -67,9 +64,8 @@ def test_assault_fail(fixture: Fixture) -> None:
 
 
 def test_assault_success(fixture: Fixture) -> None:
-    assault_system = fixture.gs.get(AssaultSystem)
     fixture.assault_controls.override = AssaultOutcomes.SUCCESS
-    assault_system.assault(
+    AssaultSystem.assault(
         fixture.gs,
         fixture.attacker_id,
         fixture.target_id,

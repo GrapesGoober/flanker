@@ -7,7 +7,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 def load_state(path: str) -> GameState:
@@ -24,15 +23,12 @@ def load_state(path: str) -> GameState:
         )
         gs = GameState.load(entities)
 
-    register_systems(gs)
     return gs
 
 
 if __name__ == "__main__":
     PATH = "./scenes/demo.json"
     gs = load_state(PATH)
-
-    los_system = gs.get(LosSystem)
 
     def calculate_visibility() -> None:
 
@@ -43,7 +39,7 @@ if __name__ == "__main__":
             if unit.faction == InitiativeState.Faction.RED:
                 continue
 
-            los_system.get_los_polygon(gs, transform.position)
+            LosSystem.get_los_polygon(gs, transform.position)
 
     from timeit import timeit
 

@@ -12,7 +12,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -24,7 +23,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(InitiativeState())
     unit_id = gs.add_entity(
         MoveControls(),
@@ -36,20 +34,17 @@ def fixture() -> Fixture:
 
 def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
-    initiative_system = fixture.gs.get(InitiativeSystem)
-    move_system = fixture.gs.get(MoveSystem)
-    initiative_system.set_initiative(fixture.gs, InitiativeState.Faction.RED)
+    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     # Try to move the unit
-    move_system.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Should not move from original position
     assert transform.position == Vec2(0, 0), "Unit without initiative musn't move"
 
 
 def test_has_initiative(fixture: Fixture) -> None:
-    move_system = fixture.gs.get(MoveSystem)
     # Try to move the unit
-    move_system.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    MoveSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Expects to move to new position
     assert transform.position == Vec2(10, 10), "Unit with initiative can move"

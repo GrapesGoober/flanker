@@ -36,15 +36,12 @@ class AssaultSystem:
         target_id: UUID,
     ) -> InvalidAction | None:
         """Check whether assault action valid."""
-        initiative_system = gs.get(InitiativeSystem)
-        fire_system = gs.get(FireSystem)
-
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         target_unit = gs.get_component(target_id, CombatUnit)
 
-        if fire_system.get_status(gs, attacker_id) != CombatUnit.Status.ACTIVE:
+        if FireSystem.get_status(gs, attacker_id) != CombatUnit.Status.ACTIVE:
             return InvalidAction.NO_INITIATIVE
-        if not initiative_system.has_initiative(gs, attacker_id):
+        if not InitiativeSystem.has_initiative(gs, attacker_id):
             return InvalidAction.NO_INITIATIVE
         if attacker_unit.faction == target_unit.faction:
             return InvalidAction.BAD_ENTITY
@@ -56,8 +53,6 @@ class AssaultSystem:
         target_id: UUID,
     ) -> AssaultOutcomes:
         """Rolls a randomized assault outcome, or overriden if provided."""
-        fire_system = gs.get(FireSystem)
-
         attacker_assault = gs.get_component(attacker_id, AssaultControls)
 
         # Once at location, do dice roll; only one can survive
@@ -66,7 +61,7 @@ class AssaultSystem:
         else:
             return attacker_assault.override
 
-        target_status = fire_system.get_status(gs, target_id)
+        target_status = FireSystem.get_status(gs, target_id)
         threshold = _ASSAULT_SUCCESS_PROBABILITIES[target_status]
 
         if attacker_roll <= threshold:
@@ -81,19 +76,15 @@ class AssaultSystem:
         target_id: UUID,
     ) -> _AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
-        assault_system = gs.get(AssaultSystem)
-        move_system = gs.get(MoveSystem)
-        objective_system = gs.get(ObjectiveSystem)
-
         # Check assault action valid
-        if invalid_reason := assault_system._validate_assault_action(
+        if invalid_reason := AssaultSystem._validate_assault_action(
             gs, attacker_id, target_id
         ):
             return invalid_reason
 
         # Moves the unit to target position (allow reactive fire)
         target_position = gs.get_component(target_id, Transform).position
-        result = move_system.move(gs, attacker_id, target_position)
+        result = MoveSystem.move(gs, attacker_id, target_position)
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:
@@ -103,18 +94,17 @@ class AssaultSystem:
 
         # Reset stall count after validity checks
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
-        objective_system.reset_stall(gs, attacker_unit.faction)
+        ObjectiveSystem.reset_stall(gs, attacker_unit.faction)
 
         # Once at location, do dice roll; only one can survive
-        outcome = assault_system._get_assault_outcome(
+        outcome = AssaultSystem._get_assault_outcome(
             gs,
             attacker_id,
             target_id,
         )
-        command_system = gs.get(CommandSystem)
         match outcome:
             case AssaultOutcomes.SUCCESS:
-                command_system.kill_unit(gs, target_id)
+                CommandSystem.kill_unit(gs, target_id)
             case AssaultOutcomes.FAIL:
-                command_system.kill_unit(gs, attacker_id)
+                CommandSystem.kill_unit(gs, attacker_id)
         return _AssaultActionResult(outcome=outcome)

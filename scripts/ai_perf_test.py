@@ -10,7 +10,6 @@ from flanker_ai.components import AiConfigComponent, InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
-from flanker_core.systems.register_systems import register_systems
 
 
 def get_game_state(
@@ -33,7 +32,6 @@ def get_game_state(
             )
 
     gs = GameState.load(entities)
-    register_systems(gs)
     return gs
 
 

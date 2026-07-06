@@ -40,8 +40,6 @@ class CombatUnitService:
     @staticmethod
     def get_units_view_state(gs: GameState) -> CombatUnitsViewState:
         """Get all squads for a given faction as a view state."""
-        fire_system = gs.get(FireSystem)
-
         # Assume player faction is BLUE
         faction = InitiativeState.Faction.BLUE
         squads: list[SquadModel] = []
@@ -55,16 +53,14 @@ class CombatUnitService:
                     unit_id=unit_id,
                     position=transform.position,
                     degree=transform.degrees,
-                    status=fire_system.get_status(gs, unit_id),
+                    status=FireSystem.get_status(gs, unit_id),
                     is_friendly=(unit.faction == faction),
                     firing_at=fire_controls.firing_at,
                 )
             )
 
-        initiative_system = gs.get(InitiativeSystem)
-        has_initiative = initiative_system.get_initiative(gs) == faction
-        objective_system = gs.get(ObjectiveSystem)
-        winning_faction = objective_system.get_winning_faction(gs)
+        has_initiative = InitiativeSystem.get_initiative(gs) == faction
+        winning_faction = ObjectiveSystem.get_winning_faction(gs)
 
         if winning_faction == faction:
             objective_state = CombatUnitsViewState.ObjectiveState.COMPLETED

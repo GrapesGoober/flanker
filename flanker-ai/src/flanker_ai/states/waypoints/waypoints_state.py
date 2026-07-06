@@ -15,34 +15,34 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
-from flanker_ai.states.waypoints.waypoints_los_system import WaypointsLosSystem
+from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
+from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
+    WaypointsLosSystemOverrides,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.los_system import LosSystem
+from flanker_core.systems.los_system import (
+    LosSystem,
+    LosSystemOverrides,
+)
 from flanker_core.systems.objective_system import ObjectiveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 class WaypointsState(IRepresentationState[Action]):
     def __init__(self, points: list[Vec2], path_tolerance: float) -> None:
         self.gs = GameState()
-        register_systems(self.gs)
         self._points = points
         self._path_tolerance = path_tolerance
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
-        initiative_system = self.gs.get(InitiativeSystem)
-        return initiative_system.get_initiative(self.gs)
+        return InitiativeSystem.get_initiative(self.gs)
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
-        fire_system = self.gs.get(FireSystem)
-
         winner = self.get_winner()
         if winner is not None:
             if winner == maximizing_faction:
@@ -53,7 +53,7 @@ class WaypointsState(IRepresentationState[Action]):
         score = 0.0
         for unit_id, unit in self.gs.query(CombatUnit):
             value = 0
-            match fire_system.get_status(self.gs, unit_id):
+            match FireSystem.get_status(self.gs, unit_id):
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:
@@ -69,12 +69,13 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> list[Action]:
-
-        los_system = self.gs.get(LosSystem)
-        waypoints_system = self.gs.get(WaypointsGraphSystem)
+        # FIXME TODO The waypoints-state isn't using AiActionService for its action space.
+        # This is because at the time I didn't plan to use the waypoints-state yet,
+        # and that this action space isn't compatible with the new move candidate waypoints.
+        # They should share the same code. Maybe waypoints-prune before sample MoveActions?
 
         actions: list[Action] = []
-        waypoints = waypoints_system.get_waypoints(self.gs)
+        waypoints = WaypointsGraph.get_waypoints(self.gs)
 
         # Aggregate a list of friendly and enemy units separately
         # instead of inside the big loop. This keeps time complexity low.
@@ -88,7 +89,7 @@ class WaypointsState(IRepresentationState[Action]):
 
         for friendly_id in friendly_ids:
             friendly_transform = self.gs.get_component(friendly_id, Transform)
-            friendly_waypoint_id = waypoints_system.get_waypoint_id(
+            friendly_waypoint_id = WaypointsGraph.get_waypoint_id(
                 gs=self.gs,
                 position=friendly_transform.position,
             )
@@ -114,12 +115,12 @@ class WaypointsState(IRepresentationState[Action]):
             # This is generalized action filter to reduce branching factor.
             for enemy_id in enemy_ids:
                 enemy_transform = self.gs.get_component(enemy_id, Transform)
-                enemy_waypoint_id = waypoints_system.get_waypoint_id(
+                enemy_waypoint_id = WaypointsGraph.get_waypoint_id(
                     gs=self.gs,
                     position=enemy_transform.position,
                 )
                 # if already looking there, no need to pivot again
-                if los_system.in_fov(
+                if LosSystem.in_fov(
                     Transform(friendly_waypoint.position, friendly_transform.degrees),
                     enemy_transform.position,
                 ):
@@ -137,7 +138,7 @@ class WaypointsState(IRepresentationState[Action]):
             # Adds move actions last, for best alpha-beta pruning.
             # Have friendly units move to non-occupied waypoints
             occupied_waypoint_ids: set[int] = {
-                waypoints_system.get_waypoint_id(self.gs, transform.position)
+                WaypointsGraph.get_waypoint_id(self.gs, transform.position)
                 for _, _, transform in self.gs.query(CombatUnit, Transform)
             }
             available_waypoints: list[int] = [
@@ -189,8 +190,7 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-        objective_system = self.gs.get(ObjectiveSystem)
-        return objective_system.get_winning_faction(self.gs)
+        return ObjectiveSystem.get_winning_faction(self.gs)
 
     @override
     def update_state(
@@ -199,23 +199,22 @@ class WaypointsState(IRepresentationState[Action]):
     ) -> None:
 
         self.gs = deepcopy(gs)
-
-        self.gs.replace(
-            existing=LosSystem,
-            replacement=WaypointsLosSystem,
+        self.gs.add_entity(
+            LosSystemOverrides.GetLosFromLine(
+                method=WaypointsLosSystemOverrides.get_los_from_line,
+            ),
+            LosSystemOverrides.HasLos(
+                method=WaypointsLosSystemOverrides.has_los,
+            ),
         )
-        self.gs.register(WaypointsGraphSystem)
 
-        waypoints_system = self.gs.get(WaypointsGraphSystem)
-
-        # Add the waypoints graph, with combat units as new waypoints
         points: list[Vec2] = list(self._points)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             # Add new waypoints for each combat units
             if transform.position not in points:
                 points.append(transform.position)
 
-        waypoints_system.set_waypoints(
+        WaypointsGraph.set_waypoints(
             gs=self.gs,
             points=points,
             path_tolerance=self._path_tolerance,

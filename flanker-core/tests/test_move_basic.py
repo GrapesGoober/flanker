@@ -14,7 +14,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -27,7 +26,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(InitiativeState())
     # Rifle Squad
     unit_id_1 = gs.add_entity(
@@ -85,40 +83,34 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    move_system = fixture.gs.get(MoveSystem)
-    move_system.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
     assert transform.degrees == -45, "Unit #1 expects to pivot towards direction."
-    move_system.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
+    MoveSystem.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
     assert transform.position == Vec2(5, -15), "Pivot action shouldn't move unit"
     assert transform.degrees == 90, "Unit #1 expects to pivot towards direction."
 
 
 def test_move_stall(fixture: Fixture) -> None:
-    move_system = fixture.gs.get(MoveSystem)
-    objective_system = fixture.gs.get(ObjectiveSystem)
-
     for _ in range(5):
-        move_system.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
-    winner = objective_system.get_winning_faction(fixture.gs)
+        MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects to be able to stall 5 times before losing."
 
-    move_system.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
-    winner = objective_system.get_winning_faction(fixture.gs)
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == InitiativeState.Faction.RED, "Expects the 6th stall to lose."
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    move_system = fixture.gs.get(MoveSystem)
-    move_system.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
+    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
 
 
 def test_group_move(fixture: Fixture) -> None:
-    move_system = fixture.gs.get(MoveSystem)
-    move_system.group_move(
+    MoveSystem.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_id_1, Vec2(5, -15)),

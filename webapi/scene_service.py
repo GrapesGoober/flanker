@@ -7,7 +7,6 @@ from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
-from flanker_core.systems.register_systems import register_systems
 
 from webapi.tag_components import TerrainTypeTag
 
@@ -85,5 +84,4 @@ class SceneService:
                 )
 
         gs = GameState.load(entities)
-        register_systems(gs)
         return gs

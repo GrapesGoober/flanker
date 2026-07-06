@@ -18,7 +18,12 @@ class _WaypointsGraphComponent:
     waypoints: dict[int, WaypointNode]
 
 
-class WaypointsGraphSystem:
+class WaypointsGraph:
+    """
+    Defines operations for waypoints-graph initialization, getters,
+    pathing, and visibility logic. This is meant for waypoints-graph state.
+    """
+
     @staticmethod
     def get_waypoints(
         gs: GameState,
@@ -36,8 +41,7 @@ class WaypointsGraphSystem:
         position: Vec2,
     ) -> int:
         """Returns a waypoint ID from coerced position."""
-        waypoints_system = gs.get(WaypointsGraphSystem)
-        waypoints = waypoints_system.get_waypoints(gs)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         coerced_waypoint_id = min(
             waypoints.keys(),
             key=lambda idx: abs((position - waypoints[idx].position).length()),
@@ -50,9 +54,8 @@ class WaypointsGraphSystem:
         position: Vec2,
     ) -> WaypointNode:
         """Returns a waypoint object from coerced position."""
-        waypoints_system = gs.get(WaypointsGraphSystem)
-        waypoint_id = waypoints_system.get_waypoint_id(gs, position)
-        waypoints = waypoints_system.get_waypoints(gs)
+        waypoint_id = WaypointsGraph.get_waypoint_id(gs, position)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         return waypoints[waypoint_id]
 
     @staticmethod
@@ -62,9 +65,6 @@ class WaypointsGraphSystem:
         path_tolerance: float,
     ) -> None:
         """Sets a new waypoints graph configured on the given waypoints"""
-
-        waypoints_system = gs.get(WaypointsGraphSystem)
-
         # Creates or resets a new empty singleton graph if not exists.
         if entities := gs.query(_WaypointsGraphComponent):
             _, component = entities[0]
@@ -82,17 +82,15 @@ class WaypointsGraphSystem:
             )
 
         # Add relationships between nodes
-        waypoints_system._add_visibility_relationships(gs)
-        waypoints_system._add_path_relationships(gs, path_tolerance)
+        WaypointsGraph._add_visibility_relationships(gs)
+        WaypointsGraph._add_path_relationships(gs, path_tolerance)
 
     @staticmethod
     def _add_path_relationships(
         gs: GameState,
         path_tolerance: float,
     ) -> None:
-        waypoints_system = gs.get(WaypointsGraphSystem)
-
-        waypoints = waypoints_system.get_waypoints(gs)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         for waypoint_id, waypoint in waypoints.items():
             for move_id, move_waypoint in waypoints.items():
                 move_from = waypoint.position
@@ -130,17 +128,13 @@ class WaypointsGraphSystem:
     def _add_visibility_relationships(
         gs: GameState,
     ) -> None:
-
-        waypoints_system = gs.get(WaypointsGraphSystem)
-        los_system = gs.get(LosSystem)
-
         # Compute LOS polygon for all these waypoints.
         # The LOS polygon might be overkill for now,
         # but future cases might need it
-        waypoints = waypoints_system.get_waypoints(gs)
+        waypoints = WaypointsGraph.get_waypoints(gs)
         waypoint_LOS_polygons: dict[int, list[Vec2]] = {}
         for waypoint_id, waypoint in waypoints.items():
-            waypoint_LOS_polygons[waypoint_id] = los_system.get_los_polygon(
+            waypoint_LOS_polygons[waypoint_id] = LosSystem.get_los_polygon(
                 gs, waypoint.position
             )
 

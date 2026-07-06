@@ -35,8 +35,7 @@ class AiMatch:
         # Let two agents fight each other over and over
         action_results: list[ActionResult] = []
         start_time = perf_counter()
-        objective_system = gs.get(ObjectiveSystem)
-        while (winner := objective_system.get_winning_faction(gs)) == None:
+        while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
 
             # Have the AI play agianst each other.
             blue_action_results = blue_agent.play_initiative()

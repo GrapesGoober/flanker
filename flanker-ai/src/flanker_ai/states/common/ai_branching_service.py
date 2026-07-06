@@ -86,8 +86,7 @@ class AiBranchingService:
     ) -> list[tuple[float, GameState]]:
         """Get new game state branches configured with reactive fire overrides."""
 
-        move_system = gs.get(MoveSystem)
-        reactive_fire_candidates = move_system.get_interrupt_candidates(
+        reactive_fire_candidates = MoveSystem.get_interrupt_candidates(
             gs, unit_id, move_to
         )
         reactive_fire_ids = {
@@ -152,8 +151,6 @@ class AiBranchingService:
         unit_id: UUID,
         target_id: UUID,
     ) -> list[tuple[float, GameState]]:
-        fire_system = gs.get(FireSystem)
-
         target_transform = gs.get_component(target_id, Transform)
         branches = AiBranchingService.get_reactive_fire_branches(
             gs=gs,
@@ -162,7 +159,7 @@ class AiBranchingService:
         )
         for _, new_state in branches:
             assault_controls = new_state.get_component(unit_id, AssaultControls)
-            if fire_system.get_status(gs, target_id) == CombatUnit.Status.SUPPRESSED:
+            if FireSystem.get_status(gs, target_id) == CombatUnit.Status.SUPPRESSED:
                 assault_controls.override = AssaultOutcomes.SUCCESS
             else:
                 assault_controls.override = AssaultOutcomes.FAIL
@@ -176,11 +173,6 @@ class AiBranchingService:
         Returns a list of branching states and their probabilities
         from a given action.
         """
-
-        move_system = gs.get(MoveSystem)
-        assault_system = gs.get(AssaultSystem)
-        fire_system = gs.get(FireSystem)
-
         # Prepare a list of configured branches
         branches: list[tuple[float, GameState]]
         match action:
@@ -214,25 +206,25 @@ class AiBranchingService:
             result: Any | InvalidAction
             match action:
                 case MoveAction():
-                    result = move_system.move(
+                    result = MoveSystem.move(
                         gs=new_state,
                         unit_id=action.unit_id,
                         to=action.to,
                     )
                 case PivotAction():
-                    result = move_system.pivot(
+                    result = MoveSystem.pivot(
                         gs=new_state,
                         unit_id=action.unit_id,
                         to=action.to,
                     )
                 case AssaultAction():
-                    result = assault_system.assault(
+                    result = AssaultSystem.assault(
                         gs=new_state,
                         attacker_id=action.unit_id,
                         target_id=action.target_id,
                     )
                 case FireAction():
-                    result = fire_system.fire(
+                    result = FireSystem.fire(
                         gs=new_state,
                         attacker_id=action.unit_id,
                         target_id=action.target_id,

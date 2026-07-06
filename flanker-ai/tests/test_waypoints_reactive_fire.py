@@ -20,7 +20,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeState
 from flanker_core.systems.move_system import MoveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -36,7 +35,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
@@ -122,10 +120,9 @@ def fixture() -> Fixture:
 
 
 def test_no_interrupt(fixture: Fixture) -> None:
-    move_system = fixture.state.gs.get(MoveSystem)
 
     move_position = fixture.waypoint_positions[1]
-    interrupts = move_system.get_interrupt_candidates(
+    interrupts = MoveSystem.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         to=move_position,
@@ -135,10 +132,9 @@ def test_no_interrupt(fixture: Fixture) -> None:
 
 
 def test_one_interrupt(fixture: Fixture) -> None:
-    move_system = fixture.state.gs.get(MoveSystem)
 
     move_position = fixture.waypoint_positions[2]
-    interrupts = move_system.get_interrupt_candidates(
+    interrupts = MoveSystem.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         to=move_position,
@@ -149,10 +145,9 @@ def test_one_interrupt(fixture: Fixture) -> None:
 
 
 def test_two_interrupts(fixture: Fixture) -> None:
-    move_system = fixture.state.gs.get(MoveSystem)
 
     move_position = fixture.waypoint_positions[3]
-    interrupts = move_system.get_interrupt_candidates(
+    interrupts = MoveSystem.get_interrupt_candidates(
         gs=fixture.state.gs,
         unit_id=fixture.unit_move,
         to=move_position,

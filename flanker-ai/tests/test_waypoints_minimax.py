@@ -10,7 +10,7 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.states.waypoints.waypoints_graph_system import WaypointsGraphSystem
+from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -26,7 +26,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeState
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -44,7 +43,6 @@ class Fixture:
 def fixture() -> Fixture:
 
     gs = GameState()
-    register_systems(gs)
     gs.add_entity(
         InitiativeState(
             faction=InitiativeState.Faction.BLUE,
@@ -179,8 +177,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
         rs, WaypointsState
     ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
-    waypoints_system = rs.gs.get(WaypointsGraphSystem)
-    waypoints = waypoints_system.get_waypoints(rs.gs)
+    waypoints = WaypointsGraph.get_waypoints(rs.gs)
     assert waypoints[5].movable_paths[3] == [5, 3]
     assert waypoints[5].movable_paths[2] == [5, 2]
     assert waypoints[5].movable_paths[7] == [5, 6, 0, 7]
@@ -198,8 +195,7 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
         rs, WaypointsState
     ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
-    waypoints_system = rs.gs.get(WaypointsGraphSystem)
-    waypoints = waypoints_system.get_waypoints(rs.gs)
+    waypoints = WaypointsGraph.get_waypoints(rs.gs)
     assert set(waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 

@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
@@ -35,6 +35,33 @@ class _Terrain:
 class _LosCacheComponent:
     los_polygon_by_point: dict[Vec2, list[Vec2]]
     fov_polygon_by_point: dict[tuple[Vec2, float], list[Vec2]]
+
+
+class LosSystemOverrides:
+    """
+    Add these to game state to override LOS system with new logic.
+    """
+
+    @dataclass
+    class HasLos:
+        method: Callable[
+            [GameState, Vec2, Vec2],
+            bool,
+        ]
+
+    @dataclass
+    class GetLosFromLine:
+        method: Callable[
+            [GameState, UUID, tuple[Vec2, Vec2]],
+            Vec2 | None,
+        ]
+
+    @dataclass
+    class GetLosPolygon:
+        method: Callable[
+            [GameState, Vec2],
+            list[Vec2],
+        ]
 
 
 class LosSystem:
@@ -76,25 +103,33 @@ class LosSystem:
         position `target_pos`. Does not check for FOV.
         """
 
-        intersect_system = gs.get(IntersectSystem)
-        intersects = intersect_system.get(
+        # Use the override if exists
+        for _, override in gs.query(LosSystemOverrides.HasLos):
+            return override.method(gs, spotter_pos, target_pos)
+
+        # Count each intersects to not see through terrain
+        intersects = IntersectSystem.get(
             gs=gs,
             start=spotter_pos,
             end=target_pos,
             mask=TerrainFeature.Flag.OPAQUE,
         )
-
-        # Can see into one other terrain polygon
         passed_one_terrain = False
         for intersect in intersects:
             # Doesn't count spotter's terrain
             terrain_id = intersect.terrain_id
             terrain = gs.get_component(terrain_id, TerrainFeature)
             terrain_transform = gs.get_component(terrain_id, Transform)
-            vertices = LinearTransform.apply(terrain.vertices, terrain_transform)
+            vertices = LinearTransform.apply(
+                vec_list=terrain.vertices,
+                transform=terrain_transform,
+            )
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-                if IntersectGetter.is_inside(point=spotter_pos, polygon=vertices):
+                if IntersectGetter.is_inside(
+                    point=spotter_pos,
+                    polygon=vertices,
+                ):
                     continue
 
             if not passed_one_terrain:
@@ -116,7 +151,9 @@ class LosSystem:
         has a valid LOS to the entity `spotter_id`. This considers FOV.
         """
 
-        los_system = gs.get(LosSystem)
+        # Use the override if exists
+        for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
+            return override.method(gs, spotter_id, line)
 
         interrupt_pos: Vec2 | None = None
 
@@ -135,11 +172,11 @@ class LosSystem:
         if cache_key in cache.fov_polygon_by_point:
             fov_polygon = cache.fov_polygon_by_point[cache_key]
         else:
-            los_polygon = los_system.get_los_polygon(
+            los_polygon = LosSystem.get_los_polygon(
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = los_system.apply_fov_to_polygon(
+            fov_polygon = LosSystem.apply_fov_to_polygon(
                 polyline=los_polygon,
                 center_point=spotter_transform.position,
                 heading_degree=spotter_transform.degrees,
@@ -238,7 +275,10 @@ class LosSystem:
         jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """Returns a polygon representing the LOS from a spotter position."""
-        los_system = gs.get(LosSystem)
+
+        # Use the override if exists
+        for _, override in gs.query(LosSystemOverrides.GetLosPolygon):
+            return override.method(gs, spotter_pos)
 
         # If already exists in cache, no need to recalculate
         if ent := gs.query(_LosCacheComponent):
@@ -249,14 +289,14 @@ class LosSystem:
             return cache.los_polygon_by_point[spotter_pos]
 
         terrains = list(
-            los_system._get_terrain_vertices(
+            LosSystem._get_terrain_vertices(
                 gs,
                 spotter_pos,
                 mask=TerrainFeature.Flag.OPAQUE,
             )
         )
         terrain_verts = [vert for t in terrains for vert in t.vertices]
-        verts = los_system._sort_verts_by_angle(spotter_pos, terrain_verts)
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
         los_polygon: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -268,7 +308,7 @@ class LosSystem:
             right_point = spotter_pos + jitter
             for point in [left_point, right_point]:
                 intersects = sorted(
-                    los_system._get_terrain_intersects(
+                    LosSystem._get_terrain_intersects(
                         line=(point, point + ray),
                         terrains=terrains,
                     ),
@@ -292,7 +332,7 @@ class LosSystem:
                 if los_polygon and los_polygon[-1] == new_point:
                     continue
                 # If points are colinear, replace instead of append
-                if los_system._is_colinear(los_polygon, new_point):
+                if LosSystem._is_colinear(los_polygon, new_point):
                     los_polygon[-1] = new_point
                     continue
                 los_polygon.append(new_point)

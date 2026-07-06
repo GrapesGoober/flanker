@@ -15,7 +15,6 @@ from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
-from flanker_core.systems.register_systems import register_systems
 
 
 @dataclass
@@ -30,7 +29,6 @@ class Fixture:
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
-    register_systems(gs)
     # Rifle Squads
     gs.add_entity(InitiativeState())
     unit_move_1 = gs.add_entity(
@@ -96,9 +94,7 @@ def fixture() -> Fixture:
 
 
 def test_group_move(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
-    move_system = fixture.gs.get(MoveSystem)
-    move_system.group_move(
+    MoveSystem.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_move_1, Vec2(5, -15)),
@@ -115,15 +111,13 @@ def test_group_move(fixture: Fixture) -> None:
         6, -14
     ), "Move action expects to not be interrupted"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "NO reactive fire mustn't flip initiative."
 
 
 def test_interrupt_success(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
-    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    move_system.group_move(
+    MoveSystem.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_move_1, Vec2(7, -10)),
@@ -139,15 +133,13 @@ def test_interrupt_success(fixture: Fixture) -> None:
         6.25, -15
     ), "Second unit must be interrupted at Vec2(6.25, -15)"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "Success group move doesn't flip initiative."
 
 
 def test_interrupt_fail(fixture: Fixture) -> None:
-    initiative_system = fixture.gs.get(InitiativeSystem)
-    move_system = fixture.gs.get(MoveSystem)
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    move_system.group_move(
+    MoveSystem.group_move(
         fixture.gs,
         moves=[
             (fixture.unit_move_1, Vec2(9, -10)),
@@ -163,5 +155,5 @@ def test_interrupt_fail(fixture: Fixture) -> None:
         6.25, -15
     ), "Second unit must be interrupted at Vec2(6.25, -15)"
     assert (
-        initiative_system.has_initiative(fixture.gs, fixture.unit_shoot) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True
     ), "Success group move doesn't flip initiative."
