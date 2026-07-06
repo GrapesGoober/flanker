@@ -12,6 +12,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -83,7 +84,7 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    ActionsSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
     assert transform.degrees == -45, "Unit #1 expects to pivot towards direction."
@@ -94,17 +95,17 @@ def test_move(fixture: Fixture) -> None:
 
 def test_move_stall(fixture: Fixture) -> None:
     for _ in range(5):
-        MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+        ActionsSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects to be able to stall 5 times before losing."
 
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    ActionsSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == InitiativeState.Faction.RED, "Expects the 6th stall to lose."
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
+    ActionsSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
 

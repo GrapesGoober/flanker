@@ -23,6 +23,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
@@ -206,7 +207,7 @@ class AiBranchingService:
             result: Any | InvalidAction
             match action:
                 case MoveAction():
-                    result = MoveSystem.move(
+                    result = ActionsSystem.move(
                         gs=new_state,
                         unit_id=action.unit_id,
                         to=action.to,

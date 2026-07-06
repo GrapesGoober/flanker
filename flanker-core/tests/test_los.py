@@ -11,8 +11,8 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.systems.move_system import MoveSystem
 
 
 @dataclass
@@ -87,7 +87,7 @@ def test_no_los(fixture: Fixture) -> None:
 
 
 def test_los(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.target_id, Vec2(6, -10))
+    ActionsSystem.move(fixture.gs, fixture.target_id, Vec2(6, -10))
     has_los = LosSystem.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
@@ -97,7 +97,7 @@ def test_los(fixture: Fixture) -> None:
 
 
 def test_los_target_inside_terrain(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.target_id, Vec2(5, 1))
+    ActionsSystem.move(fixture.gs, fixture.target_id, Vec2(5, 1))
     has_los = LosSystem.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
@@ -107,7 +107,7 @@ def test_los_target_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_source_inside_terrain(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.spotter_id, Vec2(9, 9))
+    ActionsSystem.move(fixture.gs, fixture.spotter_id, Vec2(9, 9))
     has_los = LosSystem.has_los(
         fixture.gs,
         fixture.spotter_transform.position,
@@ -117,8 +117,8 @@ def test_los_source_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_both_inside_terrain(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.spotter_id, Vec2(9, 9))
-    MoveSystem.move(fixture.gs, fixture.target_id, Vec2(-6, 4))
+    ActionsSystem.move(fixture.gs, fixture.spotter_id, Vec2(9, 9))
+    ActionsSystem.move(fixture.gs, fixture.target_id, Vec2(-6, 4))
     has_los = LosSystem.has_los(
         fixture.gs,
         fixture.spotter_transform.position,

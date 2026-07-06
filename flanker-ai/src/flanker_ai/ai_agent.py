@@ -34,6 +34,7 @@ from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -186,7 +187,7 @@ class AiAgent:
     ) -> ActionResult | InvalidAction:
         match action:
             case MoveAction():
-                result = MoveSystem.move(
+                result = ActionsSystem.move(
                     self.gs,
                     action.unit_id,
                     action.to,
