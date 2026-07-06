@@ -108,18 +108,3 @@ def test_move_invalid(fixture: Fixture) -> None:
     ActionsSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
-
-
-def test_group_move(fixture: Fixture) -> None:
-    MoveSystem.group_move(
-        fixture.gs,
-        moves=[
-            (fixture.unit_id_1, Vec2(5, -15)),
-            (fixture.unit_id_2, Vec2(15, -5)),
-        ],
-    )
-    transform_1 = fixture.gs.get_component(fixture.unit_id_1, Transform)
-    assert transform_1.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
-
-    transform_2 = fixture.gs.get_component(fixture.unit_id_2, Transform)
-    assert transform_2.position == Vec2(15, -5), "Unit #2 expects at Vec2(15, -5)"

@@ -30,13 +30,6 @@ class _PivotActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
-@dataclass
-class _GroupMoveActionResult:
-    """Result of a group move action as multiple singular move results."""
-
-    results: list[MoveActionResult]
-
-
 class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
@@ -211,32 +204,6 @@ class MoveSystem:
         return result
 
     @staticmethod
-    def group_move(
-        gs: GameState,
-        moves: list[tuple[UUID, Vec2]],
-    ) -> _GroupMoveActionResult | InvalidAction:
-        """Mutator method performs group move action with reactive fire."""
-
-        results: list[MoveActionResult] = []
-        interrupt_count = 0
-        # TODO: group move validation
-        # TODO: group move stall counting
-        for unit_id, to in moves:
-            result = MoveSystem.singular_move(gs, unit_id, to)
-            if not isinstance(result, MoveActionResult):
-                return result
-            if result.reactive_fire_outcome in (
-                FireOutcomes.SUPPRESS,
-                FireOutcomes.KILL,
-            ):
-                interrupt_count += 1
-
-        if interrupt_count >= len(moves):
-            InitiativeSystem.flip_initiative(gs)
-
-        return _GroupMoveActionResult(results)
-
-    @staticmethod
     def pivot(
         gs: GameState,
         unit_id: UUID,
@@ -252,6 +219,8 @@ class MoveSystem:
         move_vector = (to - transform.position).normalized() * 1e-12
         move_to = initial_position + move_vector
         result = MoveSystem.singular_move(gs, unit_id, move_to)
+
+        # FIXME this doesn't flip initiative if reactive fired.
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
