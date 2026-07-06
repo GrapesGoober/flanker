@@ -11,7 +11,7 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction, MoveActionResult
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -21,13 +21,6 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 # This is a bandaid fix for LOS polygon imprecision
 _MOVE_INTERRUPT_ATOL = 5
-
-
-@dataclass
-class _MoveActionResult:
-    """Result of a move action as any reactive fire."""
-
-    reactive_fire_outcome: FireOutcomes | None = None
 
 
 @dataclass
@@ -41,7 +34,7 @@ class _PivotActionResult:
 class _GroupMoveActionResult:
     """Result of a group move action as multiple singular move results."""
 
-    results: list[_MoveActionResult]
+    results: list[MoveActionResult]
 
 
 class MoveSystem:
@@ -117,11 +110,11 @@ class MoveSystem:
         return interrupt_candidates
 
     @staticmethod
-    def _singular_move(
+    def singular_move(
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
-    ) -> _MoveActionResult | InvalidAction:
+    ) -> MoveActionResult | InvalidAction:
         """
         Mutator method moves a single unit with reactive fire.
         Doesn't flip initiative.
@@ -194,7 +187,7 @@ class MoveSystem:
         if worst_fire_outcome is None:
             transform.position = to
 
-        return _MoveActionResult(
+        return MoveActionResult(
             reactive_fire_outcome=worst_fire_outcome,
         )
 
@@ -203,11 +196,11 @@ class MoveSystem:
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
-    ) -> _MoveActionResult | InvalidAction:
+    ) -> MoveActionResult | InvalidAction:
         """Mutator method performs move action with reactive fire."""
 
-        result = MoveSystem._singular_move(gs, unit_id, to)
-        if not isinstance(result, _MoveActionResult):
+        result = MoveSystem.singular_move(gs, unit_id, to)
+        if not isinstance(result, MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
             FireOutcomes.SUPPRESS,
@@ -224,13 +217,13 @@ class MoveSystem:
     ) -> _GroupMoveActionResult | InvalidAction:
         """Mutator method performs group move action with reactive fire."""
 
-        results: list[_MoveActionResult] = []
+        results: list[MoveActionResult] = []
         interrupt_count = 0
         # TODO: group move validation
         # TODO: group move stall counting
         for unit_id, to in moves:
-            result = MoveSystem._singular_move(gs, unit_id, to)
-            if not isinstance(result, _MoveActionResult):
+            result = MoveSystem.singular_move(gs, unit_id, to)
+            if not isinstance(result, MoveActionResult):
                 return result
             if result.reactive_fire_outcome in (
                 FireOutcomes.SUPPRESS,
@@ -258,11 +251,11 @@ class MoveSystem:
         # the singular move handles pivoting AND reactive fire
         move_vector = (to - transform.position).normalized() * 1e-12
         move_to = initial_position + move_vector
-        result = MoveSystem._singular_move(gs, unit_id, move_to)
+        result = MoveSystem.singular_move(gs, unit_id, move_to)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
 
-        if isinstance(result, _MoveActionResult):
+        if isinstance(result, MoveActionResult):
             return _PivotActionResult(result.reactive_fire_outcome)
         return result
