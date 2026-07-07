@@ -13,7 +13,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.actions_system import ActionsSystem
-from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -88,7 +87,7 @@ def test_move(fixture: Fixture) -> None:
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
     assert transform.degrees == -45, "Unit #1 expects to pivot towards direction."
-    MoveSystem.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
+    ActionsSystem.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
     assert transform.position == Vec2(5, -15), "Pivot action shouldn't move unit"
     assert transform.degrees == 90, "Unit #1 expects to pivot towards direction."
 

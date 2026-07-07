@@ -4,7 +4,6 @@ from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
-from flanker_core.systems.move_system import MoveSystem
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
@@ -41,7 +40,7 @@ class ActionService:
     @staticmethod
     def pivot(gs: GameState, body: PivotActionRequest) -> None:
         """Perform a pivot action."""
-        result = MoveSystem.pivot(gs, body.unit_id, body.to)
+        result = ActionsSystem.pivot(gs, body.unit_id, body.to)
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(

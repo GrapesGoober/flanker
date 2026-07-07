@@ -38,7 +38,6 @@ from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
@@ -199,7 +198,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
-                result = MoveSystem.pivot(
+                result = ActionsSystem.pivot(
                     self.gs,
                     action.unit_id,
                     action.to,

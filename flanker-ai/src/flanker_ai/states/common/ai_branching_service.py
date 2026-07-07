@@ -213,7 +213,7 @@ class AiBranchingService:
                         to=action.to,
                     )
                 case PivotAction():
-                    result = MoveSystem.pivot(
+                    result = ActionsSystem.pivot(
                         gs=new_state,
                         unit_id=action.unit_id,
                         to=action.to,
