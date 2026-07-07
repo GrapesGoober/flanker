@@ -2,14 +2,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveAction, PivotAction
+from flanker_core.models.actions import FireAction, MoveAction, PivotAction
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
-
-
-@dataclass
-class FireAction:
-    unit_id: UUID
-    target_id: UUID
 
 
 @dataclass

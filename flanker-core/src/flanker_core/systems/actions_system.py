@@ -48,4 +48,4 @@ class ActionsSystem:
             case PivotAction():
                 return MoveSystem.pivot(gs, action.unit_id, action.to)
             case FireAction():
-                return FireSystem.fire(gs, action.attacker_id, action.target_id)
+                return FireSystem.fire(gs, action.unit_id, action.target_id)

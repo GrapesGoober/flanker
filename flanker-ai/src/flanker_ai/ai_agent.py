@@ -36,7 +36,6 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -202,11 +201,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
-                result = FireSystem.fire(
-                    self.gs,
-                    action.unit_id,
-                    action.target_id,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return FireActionResult(
                         action=action,

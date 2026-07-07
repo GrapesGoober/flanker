@@ -19,7 +19,7 @@ class PivotAction:
 
 @dataclass
 class FireAction:
-    attacker_id: UUID
+    unit_id: UUID
     target_id: UUID
 
 

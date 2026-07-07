@@ -217,11 +217,7 @@ class AiBranchingService:
                         target_id=action.target_id,
                     )
                 case FireAction():
-                    result = FireSystem.fire(
-                        gs=new_state,
-                        attacker_id=action.unit_id,
-                        target_id=action.target_id,
-                    )
+                    result = ActionsSystem.perform(new_state, action)
 
             # Invalid action won't be performable.
             if isinstance(result, InvalidAction):
