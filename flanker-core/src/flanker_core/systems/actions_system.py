@@ -4,6 +4,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     ActionResults,
     Actions,
+    AssaultAction,
     FireAction,
     FireActionResult,
     MoveAction,
@@ -12,6 +13,7 @@ from flanker_core.models.actions import (
     PivotActionResult,
 )
 from flanker_core.models.outcomes import InvalidAction
+from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
 
@@ -37,6 +39,12 @@ class ActionsSystem:
         gs: GameState, action: FireAction
     ) -> FireActionResult | InvalidAction: ...
 
+    @overload
+    @staticmethod
+    def perform(
+        gs: GameState, action: AssaultAction
+    ) -> FireActionResult | InvalidAction: ...
+
     @staticmethod
     def perform(
         gs: GameState,
@@ -49,3 +57,5 @@ class ActionsSystem:
                 return MoveSystem.pivot(gs, action.unit_id, action.to)
             case FireAction():
                 return FireSystem.fire(gs, action.unit_id, action.target_id)
+            case AssaultAction():
+                return AssaultSystem.assault(gs, action.unit_id, action.target_id)

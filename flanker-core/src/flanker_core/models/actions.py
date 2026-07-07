@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from flanker_core.models.outcomes import FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 
 
@@ -19,6 +19,12 @@ class PivotAction:
 
 @dataclass
 class FireAction:
+    unit_id: UUID
+    target_id: UUID
+
+
+@dataclass
+class AssaultAction:
     unit_id: UUID
     target_id: UUID
 
@@ -44,5 +50,15 @@ class FireActionResult:
     outcome: FireOutcomes | None = None
 
 
-Actions = MoveAction | PivotAction | FireAction
-ActionResults = MoveActionResult | PivotActionResult | FireActionResult
+@dataclass
+class AssaultActionResult:
+    """Result of an assault action as assault outcome, and any reactive fire."""
+
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+Actions = MoveAction | PivotAction | FireAction | AssaultAction
+ActionResults = (
+    MoveActionResult | PivotActionResult | FireActionResult | AssaultActionResult
+)

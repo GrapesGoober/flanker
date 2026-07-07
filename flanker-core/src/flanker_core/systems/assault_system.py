@@ -1,11 +1,10 @@
 import random
-from dataclasses import dataclass
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveAction
+from flanker_core.models.actions import AssaultActionResult, MoveAction
 from flanker_core.models.components import AssaultControls, CombatUnit, Transform
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import AssaultOutcomes, InvalidAction
 from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -17,14 +16,6 @@ _ASSAULT_SUCCESS_PROBABILITIES = {
     CombatUnit.Status.PINNED: 0.7,
     CombatUnit.Status.SUPPRESSED: 0.95,
 }
-
-
-@dataclass
-class _AssaultActionResult:
-    """Result of an assault action as assault outcome, and any reactive fire."""
-
-    outcome: AssaultOutcomes | None = None
-    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class AssaultSystem:
@@ -75,7 +66,7 @@ class AssaultSystem:
         gs: GameState,
         attacker_id: UUID,
         target_id: UUID,
-    ) -> _AssaultActionResult | InvalidAction:
+    ) -> AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
         # Check assault action valid
         if invalid_reason := AssaultSystem._validate_assault_action(
@@ -89,7 +80,7 @@ class AssaultSystem:
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:
-            return _AssaultActionResult(
+            return AssaultActionResult(
                 reactive_fire_outcome=result.reactive_fire_outcome
             )
 
@@ -108,4 +99,4 @@ class AssaultSystem:
                 CommandSystem.kill_unit(gs, target_id)
             case AssaultOutcomes.FAIL:
                 CommandSystem.kill_unit(gs, attacker_id)
-        return _AssaultActionResult(outcome=outcome)
+        return AssaultActionResult(outcome=outcome)
