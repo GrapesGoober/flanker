@@ -1,23 +1,15 @@
 import random
-from dataclasses import dataclass
 from typing import Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import FireActionResult
 from flanker_core.models.components import CombatUnit, FireControls, Transform
 from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-
-
-@dataclass
-class _FireActionResult:
-    """Result of a fire action as outcome."""
-
-    outcome: FireOutcomes | None = None
-
 
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
@@ -151,7 +143,7 @@ class FireSystem:
         gs: GameState,
         attacker_id: UUID,
         target_id: UUID,
-    ) -> _FireActionResult | InvalidAction:
+    ) -> FireActionResult | InvalidAction:
         """Mutator method performs fire action from attacker unit to target unit."""
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
@@ -177,7 +169,7 @@ class FireSystem:
                 InitiativeSystem.set_initiative(gs, target_unit.faction)
             case FireOutcomes.SUPPRESS | FireOutcomes.KILL:
                 pass
-        return _FireActionResult(outcome=fire_outcome)
+        return FireActionResult(outcome=fire_outcome)
 
     @staticmethod
     def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
