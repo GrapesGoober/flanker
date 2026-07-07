@@ -4,6 +4,7 @@ from typing import Literal
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveActionResult
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
@@ -11,7 +12,7 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes, InvalidAction, MoveActionResult
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem

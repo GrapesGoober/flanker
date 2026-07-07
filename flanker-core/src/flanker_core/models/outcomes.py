@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from enum import Enum
 
 
@@ -32,10 +31,3 @@ class InvalidAction(str, Enum):
     NO_INITIATIVE = "NO_INITIATIVE"
     BAD_ENTITY = "BAD_ENTITY"
     BAD_COORDS = "BAD_COORDS"
-
-
-@dataclass
-class MoveActionResult:
-    """Result of a move action as any reactive fire."""
-
-    reactive_fire_outcome: FireOutcomes | None = None
