@@ -186,11 +186,7 @@ class AiAgent:
     ) -> ActionResult | InvalidAction:
         match action:
             case MoveAction():
-                result = ActionsSystem.move(
-                    self.gs,
-                    action.unit_id,
-                    action.to,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return MoveActionResult(
                         action=action,
@@ -198,11 +194,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
-                result = ActionsSystem.pivot(
-                    self.gs,
-                    action.unit_id,
-                    action.to,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return PivotActionResult(
                         action=action,

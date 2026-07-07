@@ -3,6 +3,7 @@ from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
@@ -36,7 +37,7 @@ def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     # Try to move the unit
-    ActionsSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Should not move from original position
     assert transform.position == Vec2(0, 0), "Unit without initiative musn't move"
@@ -44,7 +45,7 @@ def test_no_initiative(fixture: Fixture) -> None:
 
 def test_has_initiative(fixture: Fixture) -> None:
     # Try to move the unit
-    ActionsSystem.move(fixture.gs, fixture.unit_id, Vec2(10, 10))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Expects to move to new position
     assert transform.position == Vec2(10, 10), "Unit with initiative can move"

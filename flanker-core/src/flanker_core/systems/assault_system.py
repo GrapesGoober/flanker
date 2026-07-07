@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import AssaultControls, CombatUnit, Transform
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.systems.actions_system import ActionsSystem
@@ -84,7 +85,7 @@ class AssaultSystem:
 
         # Moves the unit to target position (allow reactive fire)
         target_position = gs.get_component(target_id, Transform).position
-        result = ActionsSystem.move(gs, attacker_id, target_position)
+        result = ActionsSystem.perform(gs, MoveAction(attacker_id, target_position))
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:

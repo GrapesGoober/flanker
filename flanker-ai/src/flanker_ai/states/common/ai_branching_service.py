@@ -207,17 +207,9 @@ class AiBranchingService:
             result: Any | InvalidAction
             match action:
                 case MoveAction():
-                    result = ActionsSystem.move(
-                        gs=new_state,
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    )
+                    result = ActionsSystem.perform(new_state, action)
                 case PivotAction():
-                    result = ActionsSystem.pivot(
-                        gs=new_state,
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    )
+                    result = ActionsSystem.perform(new_state, action)
                 case AssaultAction():
                     result = AssaultSystem.assault(
                         gs=new_state,

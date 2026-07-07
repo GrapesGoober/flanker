@@ -27,14 +27,6 @@ class ActionsSystem:
                 return MoveSystem.pivot(gs, action.unit_id, action.to)
 
     @staticmethod
-    def move(
-        gs: GameState,
-        unit_id: UUID,
-        to: Vec2,
-    ) -> MoveActionResult | InvalidAction:
-        return MoveSystem.move(gs, unit_id, to)
-
-    @staticmethod
     def pivot(
         gs: GameState,
         unit_id: UUID,

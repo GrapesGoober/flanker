@@ -3,6 +3,7 @@ from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
@@ -99,7 +100,7 @@ def fixture() -> Fixture:
 
 
 def test_no_interrupt(fixture: Fixture) -> None:
-    ActionsSystem.move(fixture.gs, fixture.unit_move, Vec2(5, -15))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(5, -15)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         5, -15
@@ -112,7 +113,7 @@ def test_no_interrupt(fixture: Fixture) -> None:
 def test_both_miss(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.MISS
-    ActionsSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         20, -10
@@ -125,7 +126,7 @@ def test_both_miss(fixture: Fixture) -> None:
 def test_one_pin(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.PIN
-    ActionsSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         7.5, -10
@@ -140,7 +141,7 @@ def test_one_pin(fixture: Fixture) -> None:
 def test_one_pin_one_suppress(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.PIN
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
-    ActionsSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         7.5, -10
@@ -157,7 +158,7 @@ def test_one_pin_one_suppress(fixture: Fixture) -> None:
 def test_both_suppress(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.SUPPRESS
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
-    ActionsSystem.move(fixture.gs, fixture.unit_move, Vec2(20, -10))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
     transform = fixture.gs.try_component(fixture.unit_move, Transform)
     assert transform == None, "Target expects to be killed"
     assert (

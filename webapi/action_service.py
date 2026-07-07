@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.assault_system import AssaultSystem
@@ -25,7 +26,7 @@ class ActionService:
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> None:
         """Perform a move action."""
-        result = ActionsSystem.move(gs, body.unit_id, body.to)
+        result = ActionsSystem.perform(gs, MoveAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(

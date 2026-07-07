@@ -2,20 +2,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveAction, PivotAction
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
-from flanker_core.models.vec2 import Vec2
-
-
-@dataclass
-class MoveAction:
-    unit_id: UUID
-    to: Vec2
-
-
-@dataclass
-class PivotAction:
-    unit_id: UUID
-    to: Vec2
 
 
 @dataclass
