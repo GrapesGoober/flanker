@@ -1,10 +1,9 @@
 import math
-from dataclasses import dataclass
 from typing import Literal
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveActionResult
+from flanker_core.models.actions import MoveActionResult, PivotActionResult
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
@@ -22,13 +21,6 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 # This is a bandaid fix for LOS polygon imprecision
 _MOVE_INTERRUPT_ATOL = 5
-
-
-@dataclass
-class _PivotActionResult:
-    """Result of a pivot action as any reactive fire."""
-
-    reactive_fire_outcome: FireOutcomes | None = None
 
 
 class MoveSystem:
@@ -209,7 +201,7 @@ class MoveSystem:
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
-    ) -> _PivotActionResult | InvalidAction:
+    ) -> PivotActionResult | InvalidAction:
         """Mutator method performs pivot action with reactive fire."""
 
         transform = gs.get_component(unit_id, Transform)
@@ -227,5 +219,5 @@ class MoveSystem:
         transform.position = initial_position
 
         if isinstance(result, MoveActionResult):
-            return _PivotActionResult(result.reactive_fire_outcome)
+            return PivotActionResult(result.reactive_fire_outcome)
         return result

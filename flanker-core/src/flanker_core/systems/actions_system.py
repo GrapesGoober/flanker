@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveAction, MoveActionResult
+from flanker_core.models.actions import MoveAction, MoveActionResult, PivotActionResult
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
@@ -25,7 +25,12 @@ class ActionsSystem:
         return MoveSystem.move(gs, unit_id, to)
 
     @staticmethod
-    def pivot(): ...
+    def pivot(
+        gs: GameState,
+        unit_id: UUID,
+        to: Vec2,
+    ) -> PivotActionResult | InvalidAction:
+        return MoveSystem.pivot(gs, unit_id, to)
 
     @staticmethod
     def fire(): ...

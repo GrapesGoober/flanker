@@ -16,3 +16,10 @@ class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
     reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
+class PivotActionResult:
+    """Result of a pivot action as any reactive fire."""
+
+    reactive_fire_outcome: FireOutcomes | None = None
