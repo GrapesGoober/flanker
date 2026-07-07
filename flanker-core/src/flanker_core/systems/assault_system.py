@@ -2,13 +2,13 @@ import random
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import AssaultActionResult, MoveAction
+from flanker_core.models.actions import AssaultActionResult
 from flanker_core.models.components import AssaultControls, CombatUnit, Transform
 from flanker_core.models.outcomes import AssaultOutcomes, InvalidAction
-from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _ASSAULT_SUCCESS_PROBABILITIES = {
@@ -76,7 +76,7 @@ class AssaultSystem:
 
         # Moves the unit to target position (allow reactive fire)
         target_position = gs.get_component(target_id, Transform).position
-        result = ActionsSystem.perform(gs, MoveAction(attacker_id, target_position))
+        result = MoveSystem.move(gs, attacker_id, target_position)
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:
