@@ -12,6 +12,12 @@ class MoveAction:
 
 
 @dataclass
+class PivotAction:
+    unit_id: UUID
+    to: Vec2
+
+
+@dataclass
 class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
