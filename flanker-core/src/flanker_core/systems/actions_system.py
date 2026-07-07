@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveActionResult
+from flanker_core.models.actions import MoveAction, MoveActionResult
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
@@ -9,6 +9,12 @@ from flanker_core.systems.move_system import MoveSystem
 
 class ActionsSystem:
     """Static system class to perform all in-game actions."""
+
+    @staticmethod
+    def perform(
+        gs: GameState,
+        action: MoveAction,
+    ) -> MoveActionResult | InvalidAction: ...
 
     @staticmethod
     def move(
