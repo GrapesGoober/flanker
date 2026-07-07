@@ -24,7 +24,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.actions_system import ActionsSystem
-from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
 
@@ -205,20 +204,7 @@ class AiBranchingService:
         # Perform the actions
         for _, new_state in branches:
             result: Any | InvalidAction
-            match action:
-                case MoveAction():
-                    result = ActionsSystem.perform(new_state, action)
-                case PivotAction():
-                    result = ActionsSystem.perform(new_state, action)
-                case AssaultAction():
-                    result = AssaultSystem.assault(
-                        gs=new_state,
-                        attacker_id=action.unit_id,
-                        target_id=action.target_id,
-                    )
-                case FireAction():
-                    result = ActionsSystem.perform(new_state, action)
-
+            result = ActionsSystem.perform(new_state, action)
             # Invalid action won't be performable.
             if isinstance(result, InvalidAction):
                 return []

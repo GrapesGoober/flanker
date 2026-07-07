@@ -5,6 +5,7 @@ from flanker_core.models.actions import (
     ActionResults,
     Actions,
     AssaultAction,
+    AssaultActionResult,
     FireAction,
     FireActionResult,
     MoveAction,
@@ -43,7 +44,7 @@ class ActionsSystem:
     @staticmethod
     def perform(
         gs: GameState, action: AssaultAction
-    ) -> FireActionResult | InvalidAction: ...
+    ) -> AssaultActionResult | InvalidAction: ...
 
     @staticmethod
     def perform(

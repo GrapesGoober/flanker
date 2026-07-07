@@ -3,6 +3,7 @@ from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import AssaultAction
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
@@ -12,7 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import AssaultOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.actions_system import ActionsSystem
 
 
 @dataclass
@@ -53,22 +54,25 @@ def fixture() -> Fixture:
 
 def test_assault_fail(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultOutcomes.FAIL
-    AssaultSystem.assault(
-        fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+    ActionsSystem.perform(
+        gs=fixture.gs,
+        action=AssaultAction(
+            unit_id=fixture.attacker_id,
+            target_id=fixture.target_id,
+        ),
     )
-
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
     assert attacker == None, "Failed assault must destroy attacker"
 
 
 def test_assault_success(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultOutcomes.SUCCESS
-    AssaultSystem.assault(
-        fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id,
+    ActionsSystem.perform(
+        gs=fixture.gs,
+        action=AssaultAction(
+            unit_id=fixture.attacker_id,
+            target_id=fixture.target_id,
+        ),
     )
     attacker = fixture.gs.try_component(fixture.attacker_id, CombatUnit)
     assert attacker != None, "Successful assault mustn't destroy attacker"

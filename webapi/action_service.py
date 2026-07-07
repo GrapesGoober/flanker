@@ -1,9 +1,13 @@
 from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import FireAction, MoveAction, PivotAction
+from flanker_core.models.actions import (
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.actions_system import ActionsSystem
-from flanker_core.systems.assault_system import AssaultSystem
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
@@ -77,7 +81,13 @@ class ActionService:
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform an assault action."""
-        result = AssaultSystem.assault(gs, body.unit_id, body.target_id)
+        result = ActionsSystem.perform(
+            gs=gs,
+            action=AssaultAction(
+                unit_id=body.unit_id,
+                target_id=body.target_id,
+            ),
+        )
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
