@@ -35,6 +35,7 @@ class AiActionResult:
     action: Action
     result: ActionResult
     result_gs: GameState
+    search_size: int
 
 
 @dataclass
@@ -58,13 +59,13 @@ class AiAgent:
 
     def play_initiative(
         self,
-    ) -> list[tuple[AiActionResult, int]]:
+    ) -> list[AiActionResult]:
         """Have the agent play the entire initiative."""
         if InitiativeSystem.get_initiative(self.gs) != self.faction:
             return []
 
         halt_counter = 0
-        action_results: list[tuple[AiActionResult, int]] = []
+        action_results: list[AiActionResult] = []
         while InitiativeSystem.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
             if ObjectiveSystem.get_winning_faction(self.gs) != None:
@@ -83,15 +84,20 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self.gs)
                 break
 
-            result = self._perform_action(action)
+            result = ActionSystem.perform(self.gs, action)
             if isinstance(result, InvalidAction):
                 InitiativeSystem.flip_initiative(self.gs)
                 break
-            # These result objects would be used for logging
-            # Thus, prevent mutation by creating a copy
-            action_results.append((deepcopy(result), size))
-            halt_counter += 1
 
+            ai_action_result = AiActionResult(
+                action=action,
+                result=result,
+                result_gs=self.gs,
+                search_size=size,
+            )
+            # Prevent mutation by creating a copy
+            action_results.append(deepcopy(ai_action_result))
+            halt_counter += 1
         return action_results
 
     @staticmethod
@@ -173,18 +179,3 @@ class AiAgent:
             )
         )
         return agent
-
-    def _perform_action(
-        self,
-        action: Action,
-    ) -> AiActionResult | InvalidAction:
-        result = ActionSystem.perform(self.gs, action)
-        if not isinstance(result, InvalidAction):
-            return deepcopy(
-                AiActionResult(
-                    action=action,
-                    result=result,
-                    result_gs=self.gs,
-                )
-            )
-        return result

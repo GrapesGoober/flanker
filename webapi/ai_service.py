@@ -45,7 +45,7 @@ class AiService:
         """Runs the default REDFOR AI."""
         agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
         results = agent.play_initiative()
-        action_results = [action_result for action_result, _ in results]
+        action_results = [action_result for action_result in results]
         AiService._log_ai_action_results(gs, action_results)
 
     @staticmethod

@@ -39,12 +39,12 @@ class AiMatch:
             # Have the AI play agianst each other.
             blue_action_results = blue_agent.play_initiative()
             red_action_results = red_agent.play_initiative()
-            for action_result, search_size in blue_action_results:
-                blue_search_sizes.append(search_size)
+            for action_result in blue_action_results:
+                blue_search_sizes.append(action_result.search_size)
                 action_results.append(action_result)
 
-            for action_result, search_size in red_action_results:
-                red_search_sizes.append(search_size)
+            for action_result in red_action_results:
+                red_search_sizes.append(action_result.search_size)
                 action_results.append(action_result)
 
             # If both agents have no actions, then consider it draw
