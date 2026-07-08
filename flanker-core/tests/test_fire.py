@@ -13,7 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -77,7 +77,7 @@ def test_no_los(fixture: Fixture) -> None:
     )
     attacker_transform.position = Vec2(0, -10)
     # Fire action won't occur
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -96,7 +96,7 @@ def test_no_los(fixture: Fixture) -> None:
 
 def test_no_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.MISS
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -116,7 +116,7 @@ def test_no_fire(fixture: Fixture) -> None:
 def test_pin_fire(fixture: Fixture) -> None:
 
     fixture.fire_controls.override = FireOutcomes.PIN
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -141,7 +141,7 @@ def test_pin_fire(fixture: Fixture) -> None:
 
 def test_fire_reset_on_target_killed(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.PIN
-    _ = ActionsSystem.perform(
+    _ = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -161,7 +161,7 @@ def test_fire_reset_on_target_killed(fixture: Fixture) -> None:
 
 def test_suppress_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -178,7 +178,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
     ), "Expects attacker to retain initiative"
 
     fixture.fire_controls.override = FireOutcomes.PIN
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -197,7 +197,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
 
 def test_kill_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.KILL
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -214,7 +214,7 @@ def test_kill_fire(fixture: Fixture) -> None:
 
 def test_status_pinned(fixture: Fixture) -> None:
     fixture.attacker_unit.status_override = CombatUnit.Status.PINNED
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -226,7 +226,7 @@ def test_status_pinned(fixture: Fixture) -> None:
 
 def test_status_supppressed(fixture: Fixture) -> None:
     fixture.attacker_unit.status_override = CombatUnit.Status.SUPPRESSED
-    fire_result = ActionsSystem.perform(
+    fire_result = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,

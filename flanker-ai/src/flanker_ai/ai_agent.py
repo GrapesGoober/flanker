@@ -34,7 +34,7 @@ from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -184,7 +184,7 @@ class AiAgent:
     ) -> ActionResult | InvalidAction:
         match action:
             case MoveAction():
-                result = ActionsSystem.perform(self.gs, action)
+                result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return MoveActionResult(
                         action=action,
@@ -192,7 +192,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
-                result = ActionsSystem.perform(self.gs, action)
+                result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return PivotActionResult(
                         action=action,
@@ -200,7 +200,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
-                result = ActionsSystem.perform(self.gs, action)
+                result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return FireActionResult(
                         action=action,
@@ -208,7 +208,7 @@ class AiAgent:
                         outcome=result.outcome,
                     )
             case AssaultAction():
-                result = ActionsSystem.perform(self.gs, action)
+                result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return AssaultActionResult(
                         action=action,

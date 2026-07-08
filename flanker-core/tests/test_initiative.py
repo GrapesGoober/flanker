@@ -11,7 +11,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
@@ -37,7 +37,7 @@ def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
     InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     # Try to move the unit
-    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Should not move from original position
     assert transform.position == Vec2(0, 0), "Unit without initiative musn't move"
@@ -45,7 +45,7 @@ def test_no_initiative(fixture: Fixture) -> None:
 
 def test_has_initiative(fixture: Fixture) -> None:
     # Try to move the unit
-    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
     # Expects to move to new position
     assert transform.position == Vec2(10, 10), "Unit with initiative can move"

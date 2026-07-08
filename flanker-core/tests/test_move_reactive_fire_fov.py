@@ -14,7 +14,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 
 
 @dataclass
@@ -67,7 +67,7 @@ def fixture() -> Fixture:
 
 
 def test_reactive_fire_at_fov(fixture: Fixture) -> None:
-    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(-50, 0)))
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(-50, 0)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert transform.position == Vec2(
         -10, 0
@@ -78,7 +78,7 @@ def test_reactive_fire_after_rotated(fixture: Fixture) -> None:
     # Rotate the RED unit slightly to the left so that FOV is 56.31 degrees
     red_transform = fixture.gs.get_component(fixture.unit_shoot, Transform)
     red_transform.degrees = -78.69
-    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(-50, 0)))
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(-50, 0)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
     assert (
         transform.position - Vec2(-5, 0)
