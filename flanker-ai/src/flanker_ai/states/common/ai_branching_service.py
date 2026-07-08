@@ -4,7 +4,6 @@ from math import prod
 from typing import Any
 from uuid import UUID
 
-from flanker_ai.components import InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     Action,
@@ -18,6 +17,7 @@ from flanker_core.models.components import (
     CombatUnit,
     EliminationWinCondition,
     FireControls,
+    InitiativeState,
     StallLoseCondition,
     Transform,
 )
