@@ -144,7 +144,8 @@ class FireSystem:
         attacker_id: UUID,
         target_id: UUID,
     ) -> FireActionResult | InvalidAction:
-        """Mutator method performs fire action from attacker unit to target unit."""
+        """Performs a complete fire action from attacker to target unit."""
+
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
@@ -164,11 +165,8 @@ class FireSystem:
             target_id=target_id,
             fire_outcome=fire_outcome,
         )
-        match fire_outcome:
-            case FireOutcomes.MISS | FireOutcomes.PIN:
-                InitiativeSystem.set_initiative(gs, target_unit.faction)
-            case FireOutcomes.SUPPRESS | FireOutcomes.KILL:
-                pass
+        if fire_outcome in (FireOutcomes.MISS, FireOutcomes.PIN):
+            InitiativeSystem.set_initiative(gs, target_unit.faction)
         return FireActionResult(outcome=fire_outcome)
 
     @staticmethod

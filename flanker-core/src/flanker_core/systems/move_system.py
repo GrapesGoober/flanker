@@ -102,8 +102,8 @@ class MoveSystem:
         to: Vec2,
     ) -> MoveActionResult | InvalidAction:
         """
-        Mutator method moves a single unit with reactive fire.
-        Doesn't flip initiative.
+        Atomic move operation for a unit. Orients and moves unit
+        in that direction with reactive fire. Doesn't flip initiative.
         """
         if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
             return reason
@@ -183,7 +183,7 @@ class MoveSystem:
         unit_id: UUID,
         to: Vec2,
     ) -> MoveActionResult | InvalidAction:
-        """Mutator method performs move action with reactive fire."""
+        """Performs a complete move action with reactive fire."""
 
         result = MoveSystem.singular_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
@@ -202,7 +202,7 @@ class MoveSystem:
         unit_id: UUID,
         to: Vec2,
     ) -> PivotActionResult | InvalidAction:
-        """Mutator method performs pivot action with reactive fire."""
+        """Performs a complete pivot action with reactive fire."""
 
         transform = gs.get_component(unit_id, Transform)
         initial_position = transform.position

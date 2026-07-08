@@ -33,29 +33,29 @@ class AssaultAction:
 class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
-    reactive_fire_outcome: FireOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None
 
 
 @dataclass
 class PivotActionResult:
     """Result of a pivot action as any reactive fire."""
 
-    reactive_fire_outcome: FireOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None
 
 
 @dataclass
 class FireActionResult:
     """Result of a fire action as outcome."""
 
-    outcome: FireOutcomes | None = None
+    outcome: FireOutcomes | None
 
 
 @dataclass
 class AssaultActionResult:
     """Result of an assault action as assault outcome, and any reactive fire."""
 
-    outcome: AssaultOutcomes | None = None
-    reactive_fire_outcome: FireOutcomes | None = None
+    outcome: AssaultOutcomes | None
+    reactive_fire_outcome: FireOutcomes | None
 
 
 Action = MoveAction | PivotAction | FireAction | AssaultAction
