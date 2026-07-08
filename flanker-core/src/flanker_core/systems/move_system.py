@@ -213,11 +213,16 @@ class MoveSystem:
         move_to = initial_position + move_vector
         result = MoveSystem.singular_move(gs, unit_id, move_to)
 
-        # FIXME this doesn't flip initiative if reactive fired.
+        if isinstance(result, InvalidAction):
+            return result
+
+        if result.reactive_fire_outcome in (
+            FireOutcomes.SUPPRESS,
+            FireOutcomes.PIN,
+        ):
+            InitiativeSystem.flip_initiative(gs)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
 
-        if isinstance(result, MoveActionResult):
-            return PivotActionResult(result.reactive_fire_outcome)
-        return result
+        return PivotActionResult(result.reactive_fire_outcome)
