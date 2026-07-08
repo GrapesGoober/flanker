@@ -96,7 +96,7 @@ class MoveSystem:
         return interrupt_candidates
 
     @staticmethod
-    def singular_move(
+    def _atomic_move(
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
@@ -185,7 +185,7 @@ class MoveSystem:
     ) -> MoveActionResult | InvalidAction:
         """Performs a complete move action with reactive fire."""
 
-        result = MoveSystem.singular_move(gs, unit_id, to)
+        result = MoveSystem._atomic_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
@@ -211,7 +211,7 @@ class MoveSystem:
         # the singular move handles pivoting AND reactive fire
         move_vector = (to - transform.position).normalized() * 1e-12
         move_to = initial_position + move_vector
-        result = MoveSystem.singular_move(gs, unit_id, move_to)
+        result = MoveSystem._atomic_move(gs, unit_id, move_to)
 
         if isinstance(result, InvalidAction):
             return result
