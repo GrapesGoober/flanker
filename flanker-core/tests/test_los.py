@@ -12,7 +12,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 
 
@@ -88,7 +88,7 @@ def test_no_los(fixture: Fixture) -> None:
 
 
 def test_los(fixture: Fixture) -> None:
-    ActionsSystem.perform(
+    ActionSystem.perform(
         fixture.gs,
         MoveAction(fixture.target_id, Vec2(6, -10)),
     )
@@ -101,7 +101,7 @@ def test_los(fixture: Fixture) -> None:
 
 
 def test_los_target_inside_terrain(fixture: Fixture) -> None:
-    ActionsSystem.perform(
+    ActionSystem.perform(
         fixture.gs,
         MoveAction(fixture.target_id, Vec2(5, 1)),
     )
@@ -114,7 +114,7 @@ def test_los_target_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_source_inside_terrain(fixture: Fixture) -> None:
-    ActionsSystem.perform(
+    ActionSystem.perform(
         fixture.gs,
         MoveAction(fixture.spotter_id, Vec2(9, 9)),
     )
@@ -127,11 +127,11 @@ def test_los_source_inside_terrain(fixture: Fixture) -> None:
 
 
 def test_los_both_inside_terrain(fixture: Fixture) -> None:
-    ActionsSystem.perform(
+    ActionSystem.perform(
         fixture.gs,
         MoveAction(fixture.spotter_id, Vec2(9, 9)),
     )
-    ActionsSystem.perform(
+    ActionSystem.perform(
         fixture.gs,
         MoveAction(fixture.target_id, Vec2(-6, 4)),
     )

@@ -1,7 +1,6 @@
 from copy import deepcopy
 from typing import Sequence, override
 
-from flanker_ai.actions import Action
 from flanker_ai.config_models import PointsConfig
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_action_service import AiActionService
@@ -13,6 +12,7 @@ from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import Action
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,

@@ -7,7 +7,7 @@ from flanker_core.models.actions import (
     PivotAction,
 )
 from flanker_core.models.outcomes import InvalidAction
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 
 from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
@@ -29,7 +29,7 @@ class ActionService:
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> None:
         """Perform a move action."""
-        result = ActionsSystem.perform(gs, MoveAction(body.unit_id, body.to))
+        result = ActionSystem.perform(gs, MoveAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
@@ -44,7 +44,7 @@ class ActionService:
     @staticmethod
     def pivot(gs: GameState, body: PivotActionRequest) -> None:
         """Perform a pivot action."""
-        result = ActionsSystem.perform(gs, PivotAction(body.unit_id, body.to))
+        result = ActionSystem.perform(gs, PivotAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
         LoggingService.log(
@@ -60,7 +60,7 @@ class ActionService:
     def fire(gs: GameState, body: FireActionRequest) -> None:
         """Perform a fire action."""
 
-        result = ActionsSystem.perform(
+        result = ActionSystem.perform(
             gs=gs,
             action=FireAction(
                 unit_id=body.unit_id,
@@ -81,7 +81,7 @@ class ActionService:
     @staticmethod
     def assault(gs: GameState, body: AssaultActionRequest) -> None:
         """Perform an assault action."""
-        result = ActionsSystem.perform(
+        result = ActionSystem.perform(
             gs=gs,
             action=AssaultAction(
                 unit_id=body.unit_id,

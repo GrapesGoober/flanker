@@ -1,5 +1,5 @@
-from flanker_ai.actions import Action, FireAction
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import Action, FireAction
 from flanker_core.models.components import CombatUnit, FireControls
 from flanker_core.systems.fire_system import FireSystem
 

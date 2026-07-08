@@ -13,7 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -61,7 +61,7 @@ def fixture() -> Fixture:
 
 
 def test_kill_one(fixture: Fixture) -> None:
-    _ = ActionsSystem.perform(
+    _ = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
@@ -73,14 +73,14 @@ def test_kill_one(fixture: Fixture) -> None:
 
 
 def test_kill_two(fixture: Fixture) -> None:
-    _ = ActionsSystem.perform(
+    _ = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,
             target_id=fixture.target_id_1,
         ),
     )
-    _ = ActionsSystem.perform(
+    _ = ActionSystem.perform(
         gs=fixture.gs,
         action=FireAction(
             unit_id=fixture.attacker_id,

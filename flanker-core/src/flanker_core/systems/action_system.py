@@ -2,8 +2,8 @@ from typing import overload
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
-    ActionResults,
-    Actions,
+    Action,
+    ActionResult,
     AssaultAction,
     AssaultActionResult,
     FireAction,
@@ -19,7 +19,7 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
-class ActionsSystem:
+class ActionSystem:
     """Static system class to perform all in-game actions."""
 
     @overload
@@ -49,8 +49,8 @@ class ActionsSystem:
     @staticmethod
     def perform(
         gs: GameState,
-        action: Actions,
-    ) -> ActionResults | InvalidAction:
+        action: Action,
+    ) -> ActionResult | InvalidAction:
         match action:
             case MoveAction():
                 return MoveSystem.move(gs, action.unit_id, action.to)

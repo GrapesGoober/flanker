@@ -4,26 +4,26 @@ from math import prod
 from typing import Any
 from uuid import UUID
 
-from flanker_ai.actions import (
+from flanker_core.gamestate import GameState
+from flanker_core.models.actions import (
     Action,
     AssaultAction,
     FireAction,
     MoveAction,
     PivotAction,
 )
-from flanker_ai.components import InitiativeState
-from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
     EliminationWinCondition,
     FireControls,
+    InitiativeState,
     StallLoseCondition,
     Transform,
 )
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
 
@@ -204,7 +204,7 @@ class AiBranchingService:
         # Perform the actions
         for _, new_state in branches:
             result: Any | InvalidAction
-            result = ActionsSystem.perform(new_state, action)
+            result = ActionSystem.perform(new_state, action)
             # Invalid action won't be performable.
             if isinstance(result, InvalidAction):
                 return []

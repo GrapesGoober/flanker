@@ -58,7 +58,7 @@ class AssaultActionResult:
     reactive_fire_outcome: FireOutcomes | None = None
 
 
-Actions = MoveAction | PivotAction | FireAction | AssaultAction
-ActionResults = (
+Action = MoveAction | PivotAction | FireAction | AssaultAction
+ActionResult = (
     MoveActionResult | PivotActionResult | FireActionResult | AssaultActionResult
 )

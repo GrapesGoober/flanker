@@ -13,7 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import AssaultOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 
 
 @dataclass
@@ -54,7 +54,7 @@ def fixture() -> Fixture:
 
 def test_assault_fail(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultOutcomes.FAIL
-    ActionsSystem.perform(
+    ActionSystem.perform(
         gs=fixture.gs,
         action=AssaultAction(
             unit_id=fixture.attacker_id,
@@ -67,7 +67,7 @@ def test_assault_fail(fixture: Fixture) -> None:
 
 def test_assault_success(fixture: Fixture) -> None:
     fixture.assault_controls.override = AssaultOutcomes.SUCCESS
-    ActionsSystem.perform(
+    ActionSystem.perform(
         gs=fixture.gs,
         action=AssaultAction(
             unit_id=fixture.attacker_id,

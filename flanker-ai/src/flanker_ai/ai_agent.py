@@ -1,18 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
-from flanker_ai.actions import (
-    Action,
-    ActionResult,
-    AssaultAction,
-    AssaultActionResult,
-    FireAction,
-    FireActionResult,
-    MoveAction,
-    MoveActionResult,
-    PivotAction,
-    PivotActionResult,
-)
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     HeuristicPolicyConfig,
@@ -32,13 +20,22 @@ from flanker_ai.states.common.ai_points_expansion_service import (
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
-from flanker_core.systems.actions_system import ActionsSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
+
+
+@dataclass
+class AiActionResult:
+    action: Action
+    result: ActionResult
+    result_gs: GameState
+    search_size: int
 
 
 @dataclass
@@ -62,13 +59,13 @@ class AiAgent:
 
     def play_initiative(
         self,
-    ) -> list[tuple[ActionResult, int]]:
+    ) -> list[AiActionResult]:
         """Have the agent play the entire initiative."""
         if InitiativeSystem.get_initiative(self.gs) != self.faction:
             return []
 
         halt_counter = 0
-        action_results: list[tuple[ActionResult, int]] = []
+        action_results: list[AiActionResult] = []
         while InitiativeSystem.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
             if ObjectiveSystem.get_winning_faction(self.gs) != None:
@@ -87,15 +84,20 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self.gs)
                 break
 
-            result = self._perform_action(action)
+            result = ActionSystem.perform(self.gs, action)
             if isinstance(result, InvalidAction):
                 InitiativeSystem.flip_initiative(self.gs)
                 break
-            # These result objects would be used for logging
-            # Thus, prevent mutation by creating a copy
-            action_results.append((deepcopy(result), size))
-            halt_counter += 1
 
+            ai_action_result = AiActionResult(
+                action=action,
+                result=result,
+                result_gs=self.gs,
+                search_size=size,
+            )
+            # Prevent mutation by creating a copy
+            action_results.append(deepcopy(ai_action_result))
+            halt_counter += 1
         return action_results
 
     @staticmethod
@@ -177,45 +179,3 @@ class AiAgent:
             )
         )
         return agent
-
-    def _perform_action(
-        self,
-        action: Action,
-    ) -> ActionResult | InvalidAction:
-        match action:
-            case MoveAction():
-                result = ActionsSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return MoveActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case PivotAction():
-                result = ActionsSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return PivotActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case FireAction():
-                result = ActionsSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return FireActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        outcome=result.outcome,
-                    )
-            case AssaultAction():
-                result = ActionsSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return AssaultActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        outcome=result.outcome,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case _:
-                raise Exception(f"Unknown action {action}")
-        return result

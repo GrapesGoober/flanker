@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/debug_load_game": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Debug Load Game
+         * @description Loads scenes into a game.
+         */
+        post: operations["debug_load_game_api_debug_load_game_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/{sceneName}/{gameId}/save/{newScene}": {
         parameters: {
             query?: never;
@@ -267,6 +287,15 @@ export interface components {
          * @enum {string}
          */
         AssaultOutcomes: "FAIL" | "SUCCESS";
+        /** Body_debug_load_game_api_debug_load_game_post */
+        Body_debug_load_game_api_debug_load_game_post: {
+            /** Scenenames */
+            sceneNames: string[];
+            /** Scenekey */
+            sceneKey: string;
+            /** Gameid */
+            gameId: number;
+        };
         /**
          * CombatUnitsViewState
          * @description View state for all combat units in the game.
@@ -453,6 +482,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    debug_load_game_api_debug_load_game_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_debug_load_game_api_debug_load_game_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     save_game_api__sceneName___gameId__save__newScene__post: {
         parameters: {
             query?: never;
