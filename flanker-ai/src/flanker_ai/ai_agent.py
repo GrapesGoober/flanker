@@ -20,13 +20,7 @@ from flanker_ai.states.common.ai_points_expansion_service import (
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import (
-    Action,
-    AssaultAction,
-    FireAction,
-    MoveAction,
-    PivotAction,
-)
+from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
@@ -35,44 +29,12 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
-
 
 @dataclass
-class AiMoveActionResult:
-    action: MoveAction
+class AiActionResult:
+    action: Action
+    result: ActionResult
     result_gs: GameState
-    reactive_fire_outcome: FireOutcomes | None = None
-
-
-@dataclass
-class AiPivotActionResult:
-    action: PivotAction
-    result_gs: GameState
-    reactive_fire_outcome: FireOutcomes | None = None
-
-
-@dataclass
-class AiFireActionResult:
-    action: FireAction
-    result_gs: GameState
-    outcome: FireOutcomes | None = None
-
-
-@dataclass
-class AiAssaultActionResult:
-    action: AssaultAction
-    result_gs: GameState
-    outcome: AssaultOutcomes | None = None
-    reactive_fire_outcome: FireOutcomes | None = None
-
-
-AiActionResult = (
-    AiMoveActionResult
-    | AiPivotActionResult
-    | AiFireActionResult
-    | AiAssaultActionResult
-)
 
 
 @dataclass
@@ -216,40 +178,13 @@ class AiAgent:
         self,
         action: Action,
     ) -> AiActionResult | InvalidAction:
-        match action:
-            case MoveAction():
-                result = ActionSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return AiMoveActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case PivotAction():
-                result = ActionSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return AiPivotActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case FireAction():
-                result = ActionSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return AiFireActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        outcome=result.outcome,
-                    )
-            case AssaultAction():
-                result = ActionSystem.perform(self.gs, action)
-                if not isinstance(result, InvalidAction):
-                    return AiAssaultActionResult(
-                        action=action,
-                        result_gs=self.gs,
-                        outcome=result.outcome,
-                        reactive_fire_outcome=result.reactive_fire_outcome,
-                    )
-            case _:
-                raise Exception(f"Unknown action {action}")
+        result = ActionSystem.perform(self.gs, action)
+        if not isinstance(result, InvalidAction):
+            return deepcopy(
+                AiActionResult(
+                    action=action,
+                    result=result,
+                    result_gs=self.gs,
+                )
+            )
         return result

@@ -1,10 +1,6 @@
 from flanker_ai.ai_agent import (
     AiActionResult,
     AiAgent,
-    AiAssaultActionResult,
-    AiFireActionResult,
-    AiMoveActionResult,
-    AiPivotActionResult,
 )
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
@@ -14,6 +10,16 @@ from flanker_ai.config_models import (
     WaypointsStateConfig,
 )
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import (
+    AssaultAction,
+    AssaultActionResult,
+    FireAction,
+    FireActionResult,
+    MoveAction,
+    MoveActionResult,
+    PivotAction,
+    PivotActionResult,
+)
 from flanker_core.models.components import InitiativeState
 
 from webapi.combat_unit_service import CombatUnitService
@@ -75,48 +81,48 @@ class AiService:
         results: list[AiActionResult],
     ) -> None:
         for result in results:
-            match result:
-                case AiMoveActionResult():
+            match result.action, result.result:
+                case MoveAction(), MoveActionResult():
                     log = MoveActionLog(
                         body=MoveActionRequest(
                             unit_id=result.action.unit_id,
                             to=result.action.to,
                         ),
-                        reactive_fire_outcome=result.reactive_fire_outcome,
+                        reactive_fire_outcome=result.result.reactive_fire_outcome,
                         unit_state=CombatUnitService.get_units_view_state(
                             result.result_gs
                         ),
                     )
 
-                case AiPivotActionResult():
+                case PivotAction(), PivotActionResult():
                     log = PivotActionLog(
                         body=PivotActionRequest(
                             unit_id=result.action.unit_id,
                             to=result.action.to,
                         ),
-                        reactive_fire_outcome=result.reactive_fire_outcome,
+                        reactive_fire_outcome=result.result.reactive_fire_outcome,
                         unit_state=CombatUnitService.get_units_view_state(
                             result.result_gs
                         ),
                     )
-                case AiFireActionResult():
+                case FireAction(), FireActionResult():
                     log = FireActionLog(
                         body=FireActionRequest(
                             unit_id=result.action.unit_id,
                             target_id=result.action.target_id,
                         ),
-                        outcome=result.outcome,
+                        outcome=result.result.outcome,
                         unit_state=CombatUnitService.get_units_view_state(
                             result.result_gs
                         ),
                     )
-                case AiAssaultActionResult():
+                case AssaultAction(), AssaultActionResult():
                     log = AssaultActionLog(
                         body=AssaultActionRequest(
                             unit_id=result.action.unit_id,
                             target_id=result.action.target_id,
                         ),
-                        outcome=result.outcome,
+                        outcome=result.result.outcome,
                         unit_state=CombatUnitService.get_units_view_state(
                             result.result_gs
                         ),

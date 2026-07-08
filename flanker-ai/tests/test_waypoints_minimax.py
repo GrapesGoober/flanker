@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_agent import AiAgent, AiFireActionResult, AiMoveActionResult
+from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -12,6 +12,7 @@ from flanker_ai.config_models import (
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import FireAction, MoveAction
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
@@ -205,7 +206,7 @@ def test_optimal_waypoints(fixture: Fixture) -> None:
 
     staging_units: list[UUID] = []
     for result, _ in action_results:
-        if not isinstance(result, AiMoveActionResult):
+        if not isinstance(result.action, MoveAction):
             continue
         if result.action.to == Vec2(-10, 10):
             staging_units.append(result.action.unit_id)
@@ -213,7 +214,7 @@ def test_optimal_waypoints(fixture: Fixture) -> None:
 
     peeking_units: list[UUID] = []
     for result, _ in action_results:
-        if not isinstance(result, AiMoveActionResult):
+        if not isinstance(result.action, MoveAction):
             continue
         if result.action.to == Vec2(-10, 1):
             peeking_units.append(result.action.unit_id)
@@ -225,5 +226,5 @@ def test_optimal_waypoints(fixture: Fixture) -> None:
 
     last_action_result, _ = action_results[-1]
     assert isinstance(
-        last_action_result, AiFireActionResult
+        last_action_result.action, FireAction
     ), "AI must fire at the enemy once."
