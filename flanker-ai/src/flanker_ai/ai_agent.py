@@ -2,15 +2,10 @@ from copy import deepcopy
 from dataclasses import dataclass
 
 from flanker_ai.actions import (
-    Action,
     ActionResult,
-    AssaultAction,
     AssaultActionResult,
-    FireAction,
     FireActionResult,
-    MoveAction,
     MoveActionResult,
-    PivotAction,
     PivotActionResult,
 )
 from flanker_ai.components import AiConfigComponent
@@ -32,6 +27,13 @@ from flanker_ai.states.common.ai_points_expansion_service import (
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem

@@ -4,7 +4,6 @@ from typing import override
 from uuid import UUID
 
 from flanker_ai.actions import (
-    Action,
     AssaultAction,
     FireAction,
     MoveAction,
@@ -20,6 +19,7 @@ from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
 )
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import Action
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
