@@ -1,13 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
-from flanker_ai.actions import (
-    ActionResult,
-    AssaultActionResult,
-    FireActionResult,
-    MoveActionResult,
-    PivotActionResult,
-)
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     HeuristicPolicyConfig,
@@ -42,6 +35,45 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
 
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+
+
+@dataclass
+class AiMoveActionResult:
+    action: MoveAction
+    result_gs: GameState
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
+class AiPivotActionResult:
+    action: PivotAction
+    result_gs: GameState
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+@dataclass
+class AiFireActionResult:
+    action: FireAction
+    result_gs: GameState
+    outcome: FireOutcomes | None = None
+
+
+@dataclass
+class AiAssaultActionResult:
+    action: AssaultAction
+    result_gs: GameState
+    outcome: AssaultOutcomes | None = None
+    reactive_fire_outcome: FireOutcomes | None = None
+
+
+AiActionResult = (
+    AiMoveActionResult
+    | AiPivotActionResult
+    | AiFireActionResult
+    | AiAssaultActionResult
+)
+
 
 @dataclass
 class _AiAgentInstanceComponent:
@@ -64,13 +96,13 @@ class AiAgent:
 
     def play_initiative(
         self,
-    ) -> list[tuple[ActionResult, int]]:
+    ) -> list[tuple[AiActionResult, int]]:
         """Have the agent play the entire initiative."""
         if InitiativeSystem.get_initiative(self.gs) != self.faction:
             return []
 
         halt_counter = 0
-        action_results: list[tuple[ActionResult, int]] = []
+        action_results: list[tuple[AiActionResult, int]] = []
         while InitiativeSystem.get_initiative(self.gs) == self.faction:
             # If win/lose condition is already met, pass
             if ObjectiveSystem.get_winning_faction(self.gs) != None:
@@ -183,12 +215,12 @@ class AiAgent:
     def _perform_action(
         self,
         action: Action,
-    ) -> ActionResult | InvalidAction:
+    ) -> AiActionResult | InvalidAction:
         match action:
             case MoveAction():
                 result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
-                    return MoveActionResult(
+                    return AiMoveActionResult(
                         action=action,
                         result_gs=self.gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
@@ -196,7 +228,7 @@ class AiAgent:
             case PivotAction():
                 result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
-                    return PivotActionResult(
+                    return AiPivotActionResult(
                         action=action,
                         result_gs=self.gs,
                         reactive_fire_outcome=result.reactive_fire_outcome,
@@ -204,7 +236,7 @@ class AiAgent:
             case FireAction():
                 result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
-                    return FireActionResult(
+                    return AiFireActionResult(
                         action=action,
                         result_gs=self.gs,
                         outcome=result.outcome,
@@ -212,7 +244,7 @@ class AiAgent:
             case AssaultAction():
                 result = ActionSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
-                    return AssaultActionResult(
+                    return AiAssaultActionResult(
                         action=action,
                         result_gs=self.gs,
                         outcome=result.outcome,

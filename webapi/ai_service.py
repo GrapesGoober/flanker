@@ -1,11 +1,11 @@
-from flanker_ai.actions import (
-    ActionResult,
-    AssaultActionResult,
-    FireActionResult,
-    MoveActionResult,
-    PivotActionResult,
+from flanker_ai.ai_agent import (
+    AiActionResult,
+    AiAgent,
+    AiAssaultActionResult,
+    AiFireActionResult,
+    AiMoveActionResult,
+    AiPivotActionResult,
 )
-from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -72,11 +72,11 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[ActionResult],
+        results: list[AiActionResult],
     ) -> None:
         for result in results:
             match result:
-                case MoveActionResult():
+                case AiMoveActionResult():
                     log = MoveActionLog(
                         body=MoveActionRequest(
                             unit_id=result.action.unit_id,
@@ -88,7 +88,7 @@ class AiService:
                         ),
                     )
 
-                case PivotActionResult():
+                case AiPivotActionResult():
                     log = PivotActionLog(
                         body=PivotActionRequest(
                             unit_id=result.action.unit_id,
@@ -99,7 +99,7 @@ class AiService:
                             result.result_gs
                         ),
                     )
-                case FireActionResult():
+                case AiFireActionResult():
                     log = FireActionLog(
                         body=FireActionRequest(
                             unit_id=result.action.unit_id,
@@ -110,7 +110,7 @@ class AiService:
                             result.result_gs
                         ),
                     )
-                case AssaultActionResult():
+                case AiAssaultActionResult():
                     log = AssaultActionLog(
                         body=AssaultActionRequest(
                             unit_id=result.action.unit_id,

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.actions import ActionResult
-from flanker_ai.ai_agent import AiAgent
+from flanker_ai.ai_agent import AiActionResult, AiAgent
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -11,7 +10,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 @dataclass
 class AiMatchResult:
     runtime: float
-    action_results: list[ActionResult]
+    action_results: list[AiActionResult]
     winner: InitiativeState.Faction | None
     blue_search_sizes: list[int]
     red_search_sizes: list[int]
@@ -33,7 +32,7 @@ class AiMatch:
         red_search_sizes: list[int] = []
 
         # Let two agents fight each other over and over
-        action_results: list[ActionResult] = []
+        action_results: list[AiActionResult] = []
         start_time = perf_counter()
         while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
 

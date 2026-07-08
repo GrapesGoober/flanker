@@ -3,12 +3,6 @@ from copy import deepcopy
 from typing import override
 from uuid import UUID
 
-from flanker_ai.actions import (
-    AssaultAction,
-    FireAction,
-    MoveAction,
-    PivotAction,
-)
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
@@ -19,7 +13,13 @@ from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
 )
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action
+from flanker_core.models.actions import (
+    Action,
+    AssaultAction,
+    FireAction,
+    MoveAction,
+    PivotAction,
+)
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem

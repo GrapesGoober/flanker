@@ -1,15 +1,15 @@
 import random
 
-from flanker_ai.actions import (
+from flanker_ai.i_policy import IPolicy
+from flanker_ai.i_representation_state import IRepresentationState
+from flanker_core.gamestate import GameState
+from flanker_core.models.actions import (
+    Action,
     AssaultAction,
     FireAction,
     MoveAction,
     PivotAction,
 )
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
-from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action
 
 
 class RandomHeuristicPolicy(IPolicy[Action]):
