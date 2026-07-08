@@ -3,6 +3,7 @@ from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import FireAction
 from flanker_core.models.components import (
     CombatUnit,
     EliminationWinCondition,
@@ -12,7 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.fire_system import FireSystem
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -60,25 +61,31 @@ def fixture() -> Fixture:
 
 
 def test_kill_one(fixture: Fixture) -> None:
-    FireSystem.fire(
-        fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id_1,
+    _ = ActionsSystem.perform(
+        gs=fixture.gs,
+        action=FireAction(
+            unit_id=fixture.attacker_id,
+            target_id=fixture.target_id_1,
+        ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as objective not met"
 
 
 def test_kill_two(fixture: Fixture) -> None:
-    FireSystem.fire(
-        fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id_1,
+    _ = ActionsSystem.perform(
+        gs=fixture.gs,
+        action=FireAction(
+            unit_id=fixture.attacker_id,
+            target_id=fixture.target_id_1,
+        ),
     )
-    FireSystem.fire(
-        fixture.gs,
-        fixture.attacker_id,
-        fixture.target_id_2,
+    _ = ActionsSystem.perform(
+        gs=fixture.gs,
+        action=FireAction(
+            unit_id=fixture.attacker_id,
+            target_id=fixture.target_id_2,
+        ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert (

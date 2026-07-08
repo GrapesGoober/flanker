@@ -34,10 +34,8 @@ from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
-from flanker_core.systems.assault_system import AssaultSystem
-from flanker_core.systems.fire_system import FireSystem
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 _MAX_ACTION_PER_INITIATIVE = 20
@@ -186,11 +184,7 @@ class AiAgent:
     ) -> ActionResult | InvalidAction:
         match action:
             case MoveAction():
-                result = MoveSystem.move(
-                    self.gs,
-                    action.unit_id,
-                    action.to,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return MoveActionResult(
                         action=action,
@@ -198,11 +192,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case PivotAction():
-                result = MoveSystem.pivot(
-                    self.gs,
-                    action.unit_id,
-                    action.to,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return PivotActionResult(
                         action=action,
@@ -210,11 +200,7 @@ class AiAgent:
                         reactive_fire_outcome=result.reactive_fire_outcome,
                     )
             case FireAction():
-                result = FireSystem.fire(
-                    self.gs,
-                    action.unit_id,
-                    action.target_id,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return FireActionResult(
                         action=action,
@@ -222,11 +208,7 @@ class AiAgent:
                         outcome=result.outcome,
                     )
             case AssaultAction():
-                result = AssaultSystem.assault(
-                    self.gs,
-                    action.unit_id,
-                    action.target_id,
-                )
+                result = ActionsSystem.perform(self.gs, action)
                 if not isinstance(result, InvalidAction):
                     return AssaultActionResult(
                         action=action,

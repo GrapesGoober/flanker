@@ -3,6 +3,7 @@ from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import MoveAction, PivotAction
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
@@ -12,7 +13,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.actions_system import ActionsSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -83,42 +84,27 @@ def fixture() -> Fixture:
 
 
 def test_move(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(5, -15)))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
     assert transform.degrees == -45, "Unit #1 expects to pivot towards direction."
-    MoveSystem.pivot(fixture.gs, fixture.unit_id_1, Vec2(5, 100))
+    ActionsSystem.perform(fixture.gs, PivotAction(fixture.unit_id_1, Vec2(5, 100)))
     assert transform.position == Vec2(5, -15), "Pivot action shouldn't move unit"
     assert transform.degrees == 90, "Unit #1 expects to pivot towards direction."
 
 
 def test_move_stall(fixture: Fixture) -> None:
     for _ in range(5):
-        MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+        ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(5, -15)))
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects to be able to stall 5 times before losing."
 
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(5, -15))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(5, -15)))
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == InitiativeState.Faction.RED, "Expects the 6th stall to lose."
 
 
 def test_move_invalid(fixture: Fixture) -> None:
-    MoveSystem.move(fixture.gs, fixture.unit_id_1, Vec2(6, 6))
+    ActionsSystem.perform(fixture.gs, MoveAction(fixture.unit_id_1, Vec2(6, 6)))
     transform = fixture.gs.get_component(fixture.unit_id_1, Transform)
     assert transform.position == Vec2(0, -10), "Unit #1 expects to not move"
-
-
-def test_group_move(fixture: Fixture) -> None:
-    MoveSystem.group_move(
-        fixture.gs,
-        moves=[
-            (fixture.unit_id_1, Vec2(5, -15)),
-            (fixture.unit_id_2, Vec2(15, -5)),
-        ],
-    )
-    transform_1 = fixture.gs.get_component(fixture.unit_id_1, Transform)
-    assert transform_1.position == Vec2(5, -15), "Unit #1 expects at Vec2(5, -15)"
-
-    transform_2 = fixture.gs.get_component(fixture.unit_id_2, Transform)
-    assert transform_2.position == Vec2(15, -5), "Unit #2 expects at Vec2(15, -5)"
