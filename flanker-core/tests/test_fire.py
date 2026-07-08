@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.actions import FireAction
 from flanker_core.gamestate import GameState
+from flanker_core.models.actions import FireAction
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
