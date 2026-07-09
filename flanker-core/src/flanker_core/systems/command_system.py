@@ -10,7 +10,7 @@ class CommandSystem:
 
     @staticmethod
     def kill_unit(gs: GameState, unit_id: UUID) -> None:
-        """Mutator method kills a combat unit while transferring chain of command."""
+        """Kills a combat unit while transferring chain of command."""
 
         unit = gs.get_component(unit_id, CombatUnit)
 

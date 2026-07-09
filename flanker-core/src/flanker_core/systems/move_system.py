@@ -96,14 +96,14 @@ class MoveSystem:
         return interrupt_candidates
 
     @staticmethod
-    def singular_move(
+    def _atomic_move(
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
     ) -> MoveActionResult | InvalidAction:
         """
-        Mutator method moves a single unit with reactive fire.
-        Doesn't flip initiative.
+        Atomic move operation for a unit. Orients and moves unit
+        in that direction with reactive fire. Doesn't flip initiative.
         """
         if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
             return reason
@@ -183,9 +183,9 @@ class MoveSystem:
         unit_id: UUID,
         to: Vec2,
     ) -> MoveActionResult | InvalidAction:
-        """Mutator method performs move action with reactive fire."""
+        """Performs a complete move action with reactive fire."""
 
-        result = MoveSystem.singular_move(gs, unit_id, to)
+        result = MoveSystem._atomic_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
             return result
         if result.reactive_fire_outcome in (
@@ -202,7 +202,7 @@ class MoveSystem:
         unit_id: UUID,
         to: Vec2,
     ) -> PivotActionResult | InvalidAction:
-        """Mutator method performs pivot action with reactive fire."""
+        """Performs a complete pivot action with reactive fire."""
 
         transform = gs.get_component(unit_id, Transform)
         initial_position = transform.position
@@ -211,13 +211,18 @@ class MoveSystem:
         # the singular move handles pivoting AND reactive fire
         move_vector = (to - transform.position).normalized() * 1e-12
         move_to = initial_position + move_vector
-        result = MoveSystem.singular_move(gs, unit_id, move_to)
+        result = MoveSystem._atomic_move(gs, unit_id, move_to)
 
-        # FIXME this doesn't flip initiative if reactive fired.
+        if isinstance(result, InvalidAction):
+            return result
+
+        if result.reactive_fire_outcome in (
+            FireOutcomes.SUPPRESS,
+            FireOutcomes.PIN,
+        ):
+            InitiativeSystem.flip_initiative(gs)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
 
-        if isinstance(result, MoveActionResult):
-            return PivotActionResult(result.reactive_fire_outcome)
-        return result
+        return PivotActionResult(result.reactive_fire_outcome)

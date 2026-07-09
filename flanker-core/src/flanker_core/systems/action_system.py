@@ -20,7 +20,10 @@ from flanker_core.systems.move_system import MoveSystem
 
 
 class ActionSystem:
-    """Static system class to perform all in-game actions."""
+    """
+    Static system class to perform all in-game actions.
+    This acts as an entry point to dispatch to each system calls.
+    """
 
     @overload
     @staticmethod
@@ -51,6 +54,8 @@ class ActionSystem:
         gs: GameState,
         action: Action,
     ) -> ActionResult | InvalidAction:
+        """Performs an action."""
+
         match action:
             case MoveAction():
                 return MoveSystem.move(gs, action.unit_id, action.to)

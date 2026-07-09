@@ -81,7 +81,7 @@ class AssaultSystem:
             return result
         if result.reactive_fire_outcome != None:
             return AssaultActionResult(
-                reactive_fire_outcome=result.reactive_fire_outcome
+                outcome=None, reactive_fire_outcome=result.reactive_fire_outcome
             )
 
         # Reset stall count after validity checks
@@ -99,4 +99,7 @@ class AssaultSystem:
                 CommandSystem.kill_unit(gs, target_id)
             case AssaultOutcomes.FAIL:
                 CommandSystem.kill_unit(gs, attacker_id)
-        return AssaultActionResult(outcome=outcome)
+        return AssaultActionResult(
+            outcome=outcome,
+            reactive_fire_outcome=None,
+        )
