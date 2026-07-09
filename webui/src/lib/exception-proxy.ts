@@ -1,4 +1,10 @@
 export class ExceptionProxy {
+	private static showAlert() {
+		if (confirm('Something went wrong. Please reload.')) {
+			window.location.reload();
+		}
+	}
+
 	static wrap<T extends object>(instance: T): T {
 		return new Proxy(instance, {
 			get(target, prop, _) {
@@ -17,13 +23,13 @@ export class ExceptionProxy {
 						const result = fn(...args);
 						if (result instanceof Promise) {
 							return result.catch((error) => {
-								alert('Something went wrong');
+								ExceptionProxy.showAlert();
 								throw error;
 							});
 						}
 						return result;
 					} catch (error) {
-						alert('Something went wrong');
+						ExceptionProxy.showAlert();
 						throw error;
 					}
 				};
