@@ -4,12 +4,14 @@
 	 * Handles terrain editing, drawing polygons, and UI state management.
 	 */
 	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
+	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 	import { onMount } from 'svelte';
 	import { EditorController } from './editor-controller.svelte';
 	import EditorTerrainLayer from './editor-terrain-layer.svelte';
 
-	let controller: EditorController = $state(new EditorController());
+	const editorController = ExceptionProxy.wrap(new EditorController());
+	let controller: EditorController = $state(editorController);
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
