@@ -42,7 +42,6 @@
 			UnitId={controller.state.selectedUnit.unitId},
 			{controller.state.selectedUnit.isFriendly ? 'Friendly' : 'Hostile'},
 			{controller.state.selectedUnit.status}
-			{controller.state.selectedUnit.noFire ? ', No Fire' : ''}
 		</span>
 	</div>
 
