@@ -14,13 +14,10 @@ export class ExceptionProxy {
 					return value;
 				}
 
-				// Bind function to instance itself so its behaviour is the same
-				const fn = value.bind(target);
-
-				// Proxy each arbitrary function of instance with try-catch
+				// Wrap each function of the given instance with try-catch
 				return (...args: unknown[]) => {
 					try {
-						const result = fn(...args);
+						const result = value.call(target, ...args);
 						if (result instanceof Promise) {
 							return result.catch((error) => {
 								ExceptionProxy.showAlert();
