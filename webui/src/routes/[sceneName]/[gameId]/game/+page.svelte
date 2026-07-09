@@ -3,8 +3,7 @@
 	 * Gameplay page for handling player actions, map interactions, and UI state.
 	 * Manages player controller, map, and click events for move markers.
 	 */
-	import { SvgMap } from '$lib/components';
-	import TerrainLayer from '$lib/components/terrain-layer.svelte';
+	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { onMount } from 'svelte';
 	import CombatUnitsLayer from './combat-units-layer.svelte';

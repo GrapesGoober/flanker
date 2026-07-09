@@ -5,9 +5,8 @@
 	Handles log navigation and map rendering.
 	*/
 	import { GetLogs, GetTerrainData, type ActionLog, type TerrainModel } from '$lib/api';
-	import { SvgMap } from '$lib/components';
+	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { onMount } from 'svelte';
-	import TerrainLayer from '../../../../lib/components/terrain-layer.svelte';
 	import LogViewLayer from './log-view-layer.svelte';
 
 	let map: SvgMap | null = $state(null);

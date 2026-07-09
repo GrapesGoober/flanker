@@ -3,8 +3,7 @@
 	 * Editor page for terrain and polygon drawing in the map scene.
 	 * Handles terrain editing, drawing polygons, and UI state management.
 	 */
-	import { RifleSquad, SvgMap } from '$lib/components';
-	import TerrainLayer from '$lib/components/terrain-layer.svelte';
+	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 	import { onMount } from 'svelte';
 	import { EditorController } from './editor-controller.svelte';
