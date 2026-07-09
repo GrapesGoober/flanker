@@ -1,6 +1,7 @@
 // Base components
-export { default as SvgMap } from './svg-map.svelte';
 export { default as RifleSquad } from './rifle-squad.svelte';
+export { default as SvgMap } from './svg-map.svelte';
+export { default as TerrainLayer } from './terrain-layer.svelte';
 
 // SVG Icons
 export { default as Arrow } from './svg-icons/arrow.svelte';

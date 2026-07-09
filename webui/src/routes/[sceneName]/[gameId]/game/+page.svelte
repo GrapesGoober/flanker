@@ -3,14 +3,16 @@
 	 * Gameplay page for handling player actions, map interactions, and UI state.
 	 * Manages player controller, map, and click events for move markers.
 	 */
+	import { SvgMap, TerrainLayer } from '$lib/components';
+	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { onMount } from 'svelte';
-	import { PlayerController } from './player-controller.svelte';
-	import ControlPanel from './control-panel.svelte';
-	import { SvgMap } from '$lib/components';
-	import TerrainLayer from '../../../../lib/components/terrain-layer.svelte';
 	import CombatUnitsLayer from './combat-units-layer.svelte';
+	import ControlPanel from './control-panel.svelte';
+	import { PlayerController } from './player-controller.svelte';
 
-	let controller: PlayerController = $state(new PlayerController());
+	const playerController = ExceptionProxy.wrap(new PlayerController());
+	let controller: PlayerController = $state(playerController);
+	// let controller: PlayerController = $state(new PlayerController());
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 

@@ -82,9 +82,9 @@ export class EditorController {
 	}
 
 	/** Selects a terrain object and updates its data if already selected. */
-	selectTerrain(terrain: TerrainModel) {
+	async selectTerrain(terrain: TerrainModel) {
 		if (this.state.type != 'default' && this.state.type != 'selected') return;
-		if (this.state.type == 'selected') UpdateTerrainData(this.state.terrain);
+		if (this.state.type == 'selected') await UpdateTerrainData(this.state.terrain);
 		this.state = {
 			type: 'selected',
 			terrain: terrain
