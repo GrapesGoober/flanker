@@ -1,4 +1,4 @@
-fastapi[standard]
+fastapi
 numpy==2.2.*
 numba==0.61.*
 -e ./flanker-ai
