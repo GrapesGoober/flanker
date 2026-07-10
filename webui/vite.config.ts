@@ -7,14 +7,6 @@ export default defineConfig(({ mode }) => {
 	const webuiPort = env.VITE_WEBUI_PORT ?? '5173';
 
 	return {
-		plugins: [sveltekit()],
-		server: {
-			port: Number(webuiPort),
-			proxy: {
-				'/api': {
-					target: webapiUrl
-				}
-			}
-		}
+		plugins: [sveltekit()]
 	};
 });

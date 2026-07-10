@@ -1,7 +1,10 @@
 import { page } from '$app/state';
 import createClient from 'openapi-fetch';
 import type { components, paths } from './api-schema';
-const client = createClient<paths>();
+
+const client = createClient<paths>({
+	baseUrl: import.meta.env.VITE_WEBAPI_URL
+});
 
 export type Vec2 = components['schemas']['Vec2'];
 
