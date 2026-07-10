@@ -1,5 +1,5 @@
 fastapi
 numpy==2.2.*
 numba==0.61.*
--e ./flanker-ai
--e ./flanker-core
+./flanker-ai
+./flanker-core
