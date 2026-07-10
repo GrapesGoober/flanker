@@ -71,7 +71,7 @@ class IntersectSystem:
             )
 
     @staticmethod
-    @njit(cache=True)  # type: ignore
+    @njit  # type: ignore
     def _njit_get_intersect(
         start_pos: tuple[float, float],
         end_pos: tuple[float, float],

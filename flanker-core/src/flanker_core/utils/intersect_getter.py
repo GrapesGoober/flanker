@@ -58,7 +58,7 @@ class IntersectGetter:
         return set(points)
 
     @staticmethod
-    @njit(cache=True)  # type: ignore
+    @njit  # type: ignore
     def _njit_get_intersect(
         line_start: NDArray[np.float64],
         line_end: NDArray[np.float64],
