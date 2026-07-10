@@ -3,6 +3,7 @@ from typing import NoReturn
 from uuid import UUID
 
 from fastapi import Body, FastAPI, HTTPException, Path, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from webapi.action_service import ActionService
 from webapi.ai_service import AiService
@@ -22,6 +23,15 @@ from webapi.scene_service import SceneService
 from webapi.terrain_service import TerrainService
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 scene_service = SceneService()
 id_counter = 0
 
