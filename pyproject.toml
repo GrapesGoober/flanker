@@ -2,4 +2,6 @@
 entrypoint = "webapi:app"
 
 [project]
+name = "project-flanker"
+version = "0.1.0"
 requires-python = "==3.13"
