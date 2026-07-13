@@ -90,12 +90,12 @@ class TerrainService:
         )
 
     @staticmethod
-    def update_terrain(gs: GameState, body: TerrainModel) -> None:
-        transform = gs.get_component(body.terrain_id, Transform)
-        terrain = gs.get_component(body.terrain_id, TerrainFeature)
-        tag = gs.get_component(body.terrain_id, TerrainTypeTag)
-        transform.position = body.position
-        transform.degrees = body.degrees
-        terrain.vertices = body.vertices
-        terrain.flag = TerrainService.get_terrain_flags(body.terrain_type)
-        tag.type = body.terrain_type
+    def update_terrain(gs: GameState, terrain_model: TerrainModel) -> None:
+        transform = gs.get_component(terrain_model.terrain_id, Transform)
+        terrain = gs.get_component(terrain_model.terrain_id, TerrainFeature)
+        tag = gs.get_component(terrain_model.terrain_id, TerrainTypeTag)
+        transform.position = terrain_model.position
+        transform.degrees = terrain_model.degrees
+        terrain.vertices = terrain_model.vertices
+        terrain.flag = TerrainService.get_terrain_flags(terrain_model.terrain_type)
+        tag.type = terrain_model.terrain_type

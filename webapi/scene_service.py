@@ -13,9 +13,6 @@ from webapi.tag_components import TerrainTypeTag
 
 class SceneService:
 
-    def __init__(self) -> None:
-        self.games: dict[str, dict[int, GameState]] = {}
-
     @staticmethod
     def _get_component_types() -> Iterable[type[Any]]:
         for _, cls in vars(components).items():
@@ -39,51 +36,14 @@ class SceneService:
         entities = Serializer.deserialize(serialized_gs, component_types)
         return GameState.load(entities)
 
-    def save_scene(
-        self,
-        scene_name: str,
-        game_id: int,
-        path: str,
-    ) -> None:
-        gs = self.get_game_state(scene_name, game_id)
-        serialized_gs = SceneService.serialize(gs)
-        with open(path, "w") as f:
-            f.write(serialized_gs)
-
-    def get_game_state(
-        self,
-        scene_name: str,
-        game_id: int,
-    ) -> GameState:
-        # Initialize a new set of games for a scene
-        games = self.games.setdefault(scene_name, {})
-        # Initializing a new game is costly (file read),
-        # So only initialize if not exists
-        if game_id not in games:
-            path = f"./scenes/{scene_name}.json"
-            gs = SceneService.load_game_state([path])
-            self.games[scene_name].setdefault(game_id, gs)
-        return self.games[scene_name][game_id]
-
-    def set_new_game_state(
-        self,
-        scene_names: list[str],
-        scene_key: str,
-        game_id: int,
-    ) -> GameState:
-        paths = [f"./scenes/{name}.json" for name in scene_names]
-        gs = SceneService.load_game_state(paths)
-        self.games.setdefault(scene_key, {})
-        self.games[scene_key][game_id] = gs
-        return gs
-
     @staticmethod
     def load_game_state(
-        paths: list[str],
+        scene_names: list[str],
     ) -> GameState:
         component_types = list(SceneService._get_component_types())
         entities: dict[UUID, Any] = {}
-        for path in paths:
+        for scene in scene_names:
+            path = f"./scenes/{scene}.json"
             with open(path, "r") as f:
                 entities.update(
                     Serializer.deserialize(
