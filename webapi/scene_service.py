@@ -24,6 +24,21 @@ class SceneService:
         yield TerrainTypeTag
         yield AiConfigComponent
 
+    @staticmethod
+    def serialize(gs: GameState) -> str:
+        component_types = list(SceneService._get_component_types())
+        entities = gs.dump()
+        return Serializer.serialize(
+            entities,
+            component_types,
+        )
+
+    @staticmethod
+    def deserialize(serialized_gs: str) -> GameState:
+        component_types = list(SceneService._get_component_types())
+        entities = Serializer.deserialize(serialized_gs, component_types)
+        return GameState.load(entities)
+
     def save_scene(
         self,
         scene_name: str,
@@ -31,15 +46,9 @@ class SceneService:
         path: str,
     ) -> None:
         gs = self.get_game_state(scene_name, game_id)
-        component_types = list(SceneService._get_component_types())
+        serialized_gs = SceneService.serialize(gs)
         with open(path, "w") as f:
-            entities = gs.dump()
-            f.write(
-                Serializer.serialize(
-                    entities,
-                    component_types,
-                )
-            )
+            f.write(serialized_gs)
 
     def get_game_state(
         self,

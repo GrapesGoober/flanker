@@ -55,6 +55,28 @@ async def debug_load_game(
     )
 
 
+@app.get("/api/{sceneName}/{gameId}/")
+async def get_game_state(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+) -> str:
+    "Gets a game state serialized entities table."
+    gs = scene_service.get_game_state(scene_name, game_id)
+    return scene_service.serialize(gs)
+
+
+@app.put("/api/{sceneName}/{gameId}/")
+async def put_game_state(
+    scene_name: str = Path(..., alias="sceneName"),
+    game_id: int = Path(..., alias="gameId"),
+    body: str = Body(...),
+) -> None:
+    "Puts (idempotent) a game state serialized entities table."
+    gs = scene_service.deserialize(body)
+    scene_service.games.setdefault(scene_name, {})
+    scene_service.games[scene_name][game_id] = gs
+
+
 @app.post("/api/{sceneName}/{gameId}/save/{newScene}")
 async def save_game(
     scene_name: str = Path(..., alias="sceneName"),
