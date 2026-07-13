@@ -37,6 +37,7 @@ export function GetParams(): RouteParams {
 	};
 }
 
+/** Get scene's game state entities table, in JSON string. */
 export async function GetGameStateJSON(sceneName: string, gameId: number): Promise<string> {
 	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/', {
 		params: {
