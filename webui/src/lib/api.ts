@@ -37,6 +37,33 @@ export function GetParams(): RouteParams {
 	};
 }
 
+export async function GetGameStateJSON(sceneName: string, gameId: number): Promise<string> {
+	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/', {
+		params: {
+			path: {
+				sceneName: sceneName,
+				gameId: gameId
+			}
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+
+	return data;
+}
+
+export async function PutGameStateJSON(sceneName: string, gameId: number, gameStateJson: string) {
+	const { data, error } = await client.PUT('/api/{sceneName}/{gameId}/', {
+		params: {
+			path: {
+				sceneName: sceneName,
+				gameId: gameId
+			}
+		},
+		body: gameStateJson
+	});
+	if (error) throw new Error(JSON.stringify(error));
+}
+
 /** Fetch terrain data for the current game. */
 export async function GetTerrainData(): Promise<TerrainModel[]> {
 	const { data, error } = await client.GET('/api/{sceneName}/{gameId}/terrain', {

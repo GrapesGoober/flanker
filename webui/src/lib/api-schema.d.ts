@@ -24,6 +24,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/{sceneName}/{gameId}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Game State
+         * @description Gets a game state serialized entities table.
+         */
+        get: operations["get_game_state_api__sceneName___gameId___get"];
+        /**
+         * Put Game State
+         * @description Puts (idempotent) a game state serialized entities table.
+         */
+        put: operations["put_game_state_api__sceneName___gameId___put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/{sceneName}/{gameId}/save/{newScene}": {
         parameters: {
             query?: never;
@@ -492,6 +516,74 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["Body_debug_load_game_api_debug_load_game_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_game_state_api__sceneName___gameId___get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_game_state_api__sceneName___gameId___put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sceneName: string;
+                gameId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
             };
         };
         responses: {
