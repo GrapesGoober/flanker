@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { GetGameStateJSON, PutGameStateJSON } from '$lib/api';
+	import { loadGameLocal } from '$lib/scenes-storage';
 
 	let scene = $state('');
 
@@ -15,11 +16,7 @@
 	}
 
 	function loadLocal() {
-		scene = localStorage.getItem(storageKey(sceneName, gameId)) ?? '';
-	}
-
-	function deleteLocal() {
-		localStorage.removeItem(storageKey(sceneName, gameId));
+		scene = loadGameLocal(sceneName, gameId);
 	}
 
 	async function GetGameState() {
@@ -47,7 +44,6 @@ Game ID:
 
 <button onclick={saveLocal}>Save Local</button>
 <button onclick={loadLocal}>Load Local</button>
-<button onclick={deleteLocal}>Delete Local</button>
 
 <br /><br />
 
