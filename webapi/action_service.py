@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     AssaultAction,
@@ -31,7 +30,7 @@ class ActionService:
         """Perform a move action."""
         result = ActionSystem.perform(gs, MoveAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             MoveActionLog(
@@ -46,7 +45,7 @@ class ActionService:
         """Perform a pivot action."""
         result = ActionSystem.perform(gs, PivotAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             PivotActionLog(
@@ -68,7 +67,7 @@ class ActionService:
             ),
         )
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             FireActionLog(
@@ -89,7 +88,7 @@ class ActionService:
             ),
         )
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             AssaultActionLog(

@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import UUID, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -65,10 +64,7 @@ class TerrainService:
     def delete_terrain(gs: GameState, terrain_id: UUID) -> None:
         # Make sure the terrain exists
         if gs.try_component(terrain_id, TerrainFeature) is None:
-            raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Terrain {terrain_id=} does not exist",
-            )
+            raise ValueError(f"Terrain {terrain_id=} does not exist")
         # Then delete
         gs.delete_entity(terrain_id)
 
