@@ -1,48 +1,32 @@
 <script lang="ts">
-	import { GetGameStateJSON, PutGameStateJSON } from '$lib/api';
+	import { GetGameStateJSON } from '$lib/api';
 	import { loadGameLocal } from '$lib/scenes-storage';
 
 	let scene = $state('');
 
 	let sceneName = $state('');
-	let gameId = $state(0);
 
-	function storageKey(scene: string, gameId: number) {
-		return `game:${scene}:${gameId}`;
-	}
-
-	function saveLocal() {
-		localStorage.setItem(storageKey(sceneName, gameId), scene);
+	function storageKey(scene: string) {
+		return `game:${scene}`;
 	}
 
 	function loadLocal() {
-		scene = loadGameLocal(sceneName, gameId);
+		scene = loadGameLocal(sceneName);
 	}
 
 	async function GetGameState() {
-		scene = await GetGameStateJSON(sceneName, gameId);
-		saveLocal();
-	}
-
-	async function PutGameState() {
-		await PutGameStateJSON(sceneName, gameId, scene);
+		scene = await GetGameStateJSON([sceneName]);
+		localStorage.setItem(storageKey(sceneName), scene);
 	}
 </script>
 
 <h3>Game</h3>
 
-Scene Name:
-<input bind:value={sceneName} />
-
-Game ID:
-<input type="number" bind:value={gameId} />
+Scene Name:<input bind:value={sceneName} />
 
 <br /><br />
 
 <button onclick={GetGameState}>Download</button>
-<button onclick={PutGameState}>Upload</button>
-
-<button onclick={saveLocal}>Save Local</button>
 <button onclick={loadLocal}>Load Local</button>
 
 <br /><br />
