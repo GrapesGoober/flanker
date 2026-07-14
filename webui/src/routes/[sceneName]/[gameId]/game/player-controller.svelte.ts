@@ -5,7 +5,7 @@ import {
 	performFireActionAsync,
 	performMoveActionAsync,
 	performPivotActionAsync,
-	type CombatUnitsViewState,
+	type GameViewState,
 	type RifleSquadData,
 	type TerrainModel,
 	type Vec2
@@ -24,7 +24,7 @@ Handles validation and updates for gameplay interactions.
 */
 export class PlayerController {
 	terrainData: TerrainModel[] = $state([]);
-	unitData: CombatUnitsViewState = $state({
+	unitData: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []

@@ -135,7 +135,7 @@ async def run_match(
 @app.post("/api/ai-config-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
-    config_request: AiWaypointConfigRequest = Body(...),
+    config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
 ) -> None:
     gs = SceneService.deserialize(state)
     AiService.set_ai_waypoints_coordinates(gs, config_request)
@@ -154,11 +154,11 @@ async def update_terrain(
 @app.post("/api/terrain/add")
 async def add_terrain(
     state: str = Body(...),
-    body: TerrainModel = Body(...),
+    terrain: TerrainModel = Body(...),
 ) -> None:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
-    TerrainService.add_terrain(gs, body)
+    TerrainService.add_terrain(gs, terrain)
 
 
 @app.post("/api/terrain/delete")

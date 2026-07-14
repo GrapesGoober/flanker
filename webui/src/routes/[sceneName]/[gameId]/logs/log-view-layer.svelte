@@ -6,7 +6,7 @@
 	*/
 	import { onMount } from 'svelte';
 	import { RifleSquad, BorderFriendlyUnit, Arrow, BorderHostileUnit } from '$lib/components';
-	import { GetLogs, type ActionLog, type CombatUnitsViewState } from '$lib/api';
+	import { GetLogs, type ActionLog, type GameViewState } from '$lib/api';
 
 	type Props = {
 		logData: ActionLog[];
@@ -14,7 +14,7 @@
 	};
 
 	let props: Props = $props();
-	let currentView: CombatUnitsViewState = $derived(
+	let currentView: GameViewState = $derived(
 		props.logData[props.index]?.unitState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,

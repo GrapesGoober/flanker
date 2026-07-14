@@ -6,7 +6,7 @@ import {
 	UpdateTerrainData,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
-	type CombatUnitsViewState,
+	type GameViewState,
 	type TerrainModel,
 	type TerrainType,
 	type Vec2
@@ -26,7 +26,7 @@ type EditorControllerState =
  */
 export class EditorController {
 	terrainData: TerrainModel[] = $state([]);
-	combatUnitsData: CombatUnitsViewState = $state({
+	combatUnitsData: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []
