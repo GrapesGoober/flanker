@@ -2,7 +2,7 @@ from timeit import timeit
 from typing import NoReturn
 from uuid import UUID
 
-from fastapi import Body, FastAPI, HTTPException, Path, Query, Request, status
+from fastapi import Body, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from webapi.action_service import ActionService
@@ -42,7 +42,7 @@ async def value_error_handler(_: Request, exc: ValueError) -> NoReturn:
 
 @app.get("/api/json")
 async def get_game_state_json(
-    scene_names: list[str] = Query(...),
+    scene_names: list[str] = Query(..., alias="sceneNames"),
 ) -> str:
     "Gets a game state serialized entities table."
     gs = SceneService.load_game_state(scene_names)
@@ -161,10 +161,10 @@ async def add_terrain(
     TerrainService.add_terrain(gs, body)
 
 
-@app.post("/api/terrain/delete/{terrainId}")
+@app.post("/api/terrain/delete")
 async def delete_terrain(
     state: str = Body(...),
-    terrain_id: UUID = Path(..., alias="terrainId"),
+    terrain_id: UUID = Query(..., alias="terrainId"),
 ) -> None:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
