@@ -89,7 +89,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcome=result.result.reactive_fire_outcome,
-                        unit_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(result.result_gs),
                     )
 
                 case PivotAction(), PivotActionResult():
@@ -99,7 +99,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcome=result.result.reactive_fire_outcome,
-                        unit_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(result.result_gs),
                     )
                 case FireAction(), FireActionResult():
                     log = FireActionLog(
@@ -108,7 +108,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        unit_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(result.result_gs),
                     )
                 case AssaultAction(), AssaultActionResult():
                     log = AssaultActionLog(
@@ -117,7 +117,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        unit_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(result.result_gs),
                     )
 
                 case _:

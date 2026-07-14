@@ -17,7 +17,7 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-from webapi.models import GameViewState, SquadModel
+from webapi.models import GameViewState, GameViewStateResponse, SquadModel
 from webapi.tag_components import TerrainTypeTag
 
 
@@ -101,5 +101,11 @@ class SceneService:
             objective_state=objective_state,
             has_initiative=has_initiative,
             squads=squads,
-            state=SceneService.serialize(gs),
+        )
+
+    @staticmethod
+    def get_view_state_response(gs: GameState) -> GameViewStateResponse:
+        return GameViewStateResponse(
+            view_state=SceneService.get_view_state(gs),
+            json_state=SceneService.serialize(gs),
         )

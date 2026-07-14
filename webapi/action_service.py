@@ -36,7 +36,7 @@ class ActionService:
             MoveActionLog(
                 body=body,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=SceneService.get_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
 
@@ -51,7 +51,7 @@ class ActionService:
             PivotActionLog(
                 body=body,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=SceneService.get_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
 
@@ -73,7 +73,7 @@ class ActionService:
             FireActionLog(
                 body=body,
                 outcome=result.outcome,
-                unit_state=SceneService.get_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
 
@@ -95,6 +95,6 @@ class ActionService:
                 body=body,
                 outcome=result.outcome,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=SceneService.get_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )

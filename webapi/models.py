@@ -29,7 +29,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
 
 
 class GameViewState(BaseModel, CamelCaseConfig):
-    """View state for game state entities."""
+    """Simplified view model of the game state."""
 
     class ObjectiveState(Enum):
         INCOMPLETE = "INCOMPLETE"
@@ -39,7 +39,13 @@ class GameViewState(BaseModel, CamelCaseConfig):
     objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
-    state: str
+
+
+class GameViewStateResponse(BaseModel, CamelCaseConfig):
+    """Response model for actions contains view state and mutated game state."""
+
+    view_state: GameViewState
+    json_state: str
 
 
 class MoveActionRequest(BaseModel, CamelCaseConfig):
@@ -93,21 +99,21 @@ class MoveActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLog"] = "MoveActionLog"
     body: MoveActionRequest
     reactive_fire_outcome: FireOutcomes | None = None
-    unit_state: GameViewState
+    view_state: GameViewState
 
 
 class PivotActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["PivotActionLog"] = "PivotActionLog"
     body: PivotActionRequest
     reactive_fire_outcome: FireOutcomes | None = None
-    unit_state: GameViewState
+    view_state: GameViewState
 
 
 class FireActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["FireActionLog"] = "FireActionLog"
     body: FireActionRequest
     outcome: FireOutcomes | None = None
-    unit_state: GameViewState
+    view_state: GameViewState
 
 
 class AssaultActionLog(BaseModel, CamelCaseConfig):
@@ -115,7 +121,7 @@ class AssaultActionLog(BaseModel, CamelCaseConfig):
     body: AssaultActionRequest
     outcome: AssaultOutcomes | None = None
     reactive_fire_outcome: FireOutcomes | None = None
-    unit_state: GameViewState
+    view_state: GameViewState
 
 
 class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
