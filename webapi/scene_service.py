@@ -6,8 +6,18 @@ from uuid import UUID
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.components import (
+    CombatUnit,
+    FireControls,
+    InitiativeState,
+    Transform,
+)
 from flanker_core.serializer import Serializer
+from flanker_core.systems.fire_system import FireSystem
+from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
+from webapi.models import GameViewState, SquadModel
 from webapi.tag_components import TerrainTypeTag
 
 
@@ -54,3 +64,42 @@ class SceneService:
 
         gs = GameState.load(entities)
         return gs
+
+    @staticmethod
+    def get_view_state(gs: GameState) -> GameViewState:
+        """Get a view version of game state."""
+        # Assume player faction is BLUE
+        faction = InitiativeState.Faction.BLUE
+        squads: list[SquadModel] = []
+        for unit_id, unit, transform, fire_controls in gs.query(
+            CombatUnit,
+            Transform,
+            FireControls,
+        ):
+            squads.append(
+                SquadModel(
+                    unit_id=unit_id,
+                    position=transform.position,
+                    degree=transform.degrees,
+                    status=FireSystem.get_status(gs, unit_id),
+                    is_friendly=(unit.faction == faction),
+                    firing_at=fire_controls.firing_at,
+                )
+            )
+
+        has_initiative = InitiativeSystem.get_initiative(gs) == faction
+        winning_faction = ObjectiveSystem.get_winning_faction(gs)
+
+        if winning_faction == faction:
+            objective_state = GameViewState.ObjectiveState.COMPLETED
+        elif winning_faction == None:
+            objective_state = GameViewState.ObjectiveState.INCOMPLETE
+        else:
+            objective_state = GameViewState.ObjectiveState.FAILED
+
+        return GameViewState(
+            objective_state=objective_state,
+            has_initiative=has_initiative,
+            squads=squads,
+            state=SceneService.serialize(gs),
+        )

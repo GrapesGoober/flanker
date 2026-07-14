@@ -7,14 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from webapi.action_service import ActionService
 from webapi.ai_service import AiService
-from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
     AiWaypointConfigRequest,
     AssaultActionRequest,
-    CombatUnitsViewState,
     FireActionRequest,
+    GameViewState,
     MoveActionRequest,
     PivotActionRequest,
     TerrainModel,
@@ -52,10 +51,10 @@ async def get_game_state_json(
 @app.post("/api/units")
 async def get_units(
     state: str = Body(...),
-) -> CombatUnitsViewState:
+) -> GameViewState:
     """Get all combat units for the player faction."""
     gs = SceneService.deserialize(state)
-    return CombatUnitService.get_units_view_state(gs)
+    return SceneService.get_view_state(gs)
 
 
 @app.post("/api/terrain")
@@ -71,48 +70,48 @@ async def get_terrain(
 async def action_move(
     action: MoveActionRequest = Body(...),
     state: str = Body(...),
-) -> CombatUnitsViewState:
+) -> GameViewState:
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.move(gs, action)
     AiService.play_redfor(gs)
-    return CombatUnitService.get_units_view_state(gs)
+    return SceneService.get_view_state(gs)
 
 
 @app.post("/api/pivot")
 async def action_pivot(
     action: PivotActionRequest = Body(...),
     state: str = Body(...),
-) -> CombatUnitsViewState:
+) -> GameViewState:
     """Pivot a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.pivot(gs, action)
     AiService.play_redfor(gs)
-    return CombatUnitService.get_units_view_state(gs)
+    return SceneService.get_view_state(gs)
 
 
 @app.post("/api/fire")
 async def action_fire(
     action: FireActionRequest = Body(...),
     state: str = Body(...),
-) -> CombatUnitsViewState:
+) -> GameViewState:
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.fire(gs, action)
     AiService.play_redfor(gs)
-    return CombatUnitService.get_units_view_state(gs)
+    return SceneService.get_view_state(gs)
 
 
 @app.post("/api/assault")
 async def action_assault(
     action: AssaultActionRequest = Body(...),
     state: str = Body(...),
-) -> CombatUnitsViewState:
+) -> GameViewState:
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.assault(gs, action)
     AiService.play_redfor(gs)
-    return CombatUnitService.get_units_view_state(gs)
+    return SceneService.get_view_state(gs)
 
 
 @app.post("/api/logs")

@@ -22,7 +22,6 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import InitiativeState
 
-from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AiWaypointConfigRequest,
@@ -35,6 +34,7 @@ from webapi.models import (
     PivotActionLog,
     PivotActionRequest,
 )
+from webapi.scene_service import SceneService
 
 
 class AiService:
@@ -89,9 +89,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcome=result.result.reactive_fire_outcome,
-                        unit_state=CombatUnitService.get_units_view_state(
-                            result.result_gs
-                        ),
+                        unit_state=SceneService.get_view_state(result.result_gs),
                     )
 
                 case PivotAction(), PivotActionResult():
@@ -101,9 +99,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcome=result.result.reactive_fire_outcome,
-                        unit_state=CombatUnitService.get_units_view_state(
-                            result.result_gs
-                        ),
+                        unit_state=SceneService.get_view_state(result.result_gs),
                     )
                 case FireAction(), FireActionResult():
                     log = FireActionLog(
@@ -112,9 +108,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        unit_state=CombatUnitService.get_units_view_state(
-                            result.result_gs
-                        ),
+                        unit_state=SceneService.get_view_state(result.result_gs),
                     )
                 case AssaultAction(), AssaultActionResult():
                     log = AssaultActionLog(
@@ -123,9 +117,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        unit_state=CombatUnitService.get_units_view_state(
-                            result.result_gs
-                        ),
+                        unit_state=SceneService.get_view_state(result.result_gs),
                     )
 
                 case _:
