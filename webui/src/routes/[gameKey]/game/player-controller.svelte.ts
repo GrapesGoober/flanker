@@ -32,20 +32,20 @@ export class PlayerController {
 	});
 	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
-	sceneName: string = $state('');
+	gameKey: string = $state('');
 
 	getGameStateJson(): string {
-		const gameStateJson = loadGameLocal(this.sceneName);
+		const gameStateJson = loadGameLocal(this.gameKey);
 		return gameStateJson;
 	}
 
 	updateGameStateJson(gameStateJson: string) {
-		saveGameLocal(this.sceneName, gameStateJson);
+		saveGameLocal(this.gameKey, gameStateJson);
 	}
 
 	/* Initializes controller and loads terrain & unit states data. */
-	async initializeAsync(sceneName: string) {
-		this.sceneName = sceneName;
+	async initializeAsync(gameKey: string) {
+		this.gameKey = gameKey;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
 		this.terrainData = await GetTerrainData(gameStateJson);

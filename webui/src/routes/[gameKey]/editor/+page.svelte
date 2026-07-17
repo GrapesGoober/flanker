@@ -18,8 +18,8 @@
 
 	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
-		const sceneName: string = page.params['sceneName'] as string;
-		controller.initialize(sceneName);
+		const gameKey: string = page.params['gameKey'] as string;
+		controller.initialize(gameKey);
 		controller.refreshData();
 	});
 

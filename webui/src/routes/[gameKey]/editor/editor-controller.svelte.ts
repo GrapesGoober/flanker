@@ -33,19 +33,19 @@ export class EditorController {
 		squads: []
 	});
 	state: EditorControllerState = $state({ type: 'default' });
-	sceneName: string = $state('');
+	gameKey: string = $state('');
 
 	getGameStateJson(): string {
-		const gameStateJson = loadGameLocal(this.sceneName);
+		const gameStateJson = loadGameLocal(this.gameKey);
 		return gameStateJson;
 	}
 
 	updateGameStateJson(gameStateJson: string) {
-		saveGameLocal(this.sceneName, gameStateJson);
+		saveGameLocal(this.gameKey, gameStateJson);
 	}
 
-	initialize(sceneName: string) {
-		this.sceneName = sceneName;
+	initialize(gameKey: string) {
+		this.gameKey = gameKey;
 	}
 
 	/** Refreshes terrain data from the API. */

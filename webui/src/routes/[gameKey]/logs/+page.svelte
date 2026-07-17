@@ -19,8 +19,8 @@
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
-		const sceneName: string = page.params['sceneName'] as string;
-		const gameStateJson = loadGameLocal(sceneName);
+		const gameKey: string = page.params['gameKey'] as string;
+		const gameStateJson = loadGameLocal(gameKey);
 		terrain = await GetTerrainData(gameStateJson);
 		logData = await GetLogs(gameStateJson);
 	});

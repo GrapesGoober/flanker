@@ -29,8 +29,8 @@
 	}
 	/* Initializes the player controller and loads game data on mount. */
 	onMount(async () => {
-		const sceneName: string = page.params['sceneName'] as string;
-		await controller.initializeAsync(sceneName);
+		const gameKey: string = page.params['gameKey'] as string;
+		await controller.initializeAsync(gameKey);
 	});
 </script>
 

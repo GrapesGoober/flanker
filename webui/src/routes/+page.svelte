@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 
 	let stateJson = $state('');
-	let sceneName = $state('');
+	let gameKey = $state('');
 	let keys: string[] = $state([]);
 
 	onMount(() => {
@@ -12,18 +12,18 @@
 	});
 
 	function loadLocal() {
-		stateJson = loadGameLocal(sceneName);
+		stateJson = loadGameLocal(gameKey);
 	}
 
 	async function GetGameState() {
-		stateJson = await GetGameStateJSON([sceneName]);
-		saveGameLocal(sceneName, stateJson);
+		stateJson = await GetGameStateJSON([gameKey]);
+		saveGameLocal(gameKey, stateJson);
 	}
 </script>
 
 <h1>Project Flanker</h1>
 
-Scene Name:<input bind:value={sceneName} />
+Scene Name:<input bind:value={gameKey} />
 <br /><br />
 
 {keys}
