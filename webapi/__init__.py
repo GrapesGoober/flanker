@@ -126,46 +126,51 @@ async def get_logs(
 @app.post("/api/ai-play")
 async def run_match(
     state: str = Body(...),
-) -> None:
+) -> GameViewStateResponse:
     gs = SceneService.deserialize(state)
     exec_time = timeit(lambda: AiService.run_match(gs), number=1)
     print(f"Execution time: {exec_time:.6f} seconds")
+    return SceneService.get_view_state_response(gs)
 
 
 @app.post("/api/ai-config-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
     config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
-) -> None:
+) -> GameViewStateResponse:
     gs = SceneService.deserialize(state)
     AiService.set_ai_waypoints_coordinates(gs, config_request)
+    return SceneService.get_view_state_response(gs)
 
 
 @app.post("/api/terrain/update")
 async def update_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
-) -> None:
+) -> GameViewStateResponse:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
     TerrainService.update_terrain(gs, terrain)
+    return SceneService.get_view_state_response(gs)
 
 
 @app.post("/api/terrain/add")
 async def add_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
-) -> None:
+) -> GameViewStateResponse:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
     TerrainService.add_terrain(gs, terrain)
+    return SceneService.get_view_state_response(gs)
 
 
 @app.post("/api/terrain/delete")
 async def delete_terrain(
     state: str = Body(...),
     terrain_id: UUID = Query(..., alias="terrainId"),
-) -> None:
+) -> GameViewStateResponse:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
     TerrainService.delete_terrain(gs, terrain_id)
+    return SceneService.get_view_state_response(gs)

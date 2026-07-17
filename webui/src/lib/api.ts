@@ -63,7 +63,10 @@ export async function GetTerrainData(jsonState: string): Promise<TerrainModel[]>
 }
 
 /** Update terrain data for the current game. */
-export async function UpdateTerrainData(jsonState: string, terrain: TerrainModel) {
+export async function UpdateTerrainData(
+	jsonState: string,
+	terrain: TerrainModel
+): Promise<GameViewStateResponse> {
 	const { data, error } = await client.POST('/api/terrain/update', {
 		body: {
 			state: jsonState,
@@ -71,10 +74,14 @@ export async function UpdateTerrainData(jsonState: string, terrain: TerrainModel
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
+	return data;
 }
 
 /** Add terrain data for the current game. */
-export async function AddTerrainData(jsonState: string, terrain: TerrainModel) {
+export async function AddTerrainData(
+	jsonState: string,
+	terrain: TerrainModel
+): Promise<GameViewStateResponse> {
 	const { data, error } = await client.POST('/api/terrain/add', {
 		body: {
 			state: jsonState,
@@ -82,10 +89,14 @@ export async function AddTerrainData(jsonState: string, terrain: TerrainModel) {
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
+	return data;
 }
 
 /** Delete terrain data for the current game. */
-export async function DeleteTerrainData(jsonState: string, terrainId: string) {
+export async function DeleteTerrainData(
+	jsonState: string,
+	terrainId: string
+): Promise<GameViewStateResponse> {
 	const { data, error } = await client.POST('/api/terrain/delete', {
 		params: {
 			query: {
@@ -95,6 +106,7 @@ export async function DeleteTerrainData(jsonState: string, terrainId: string) {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
+	return data;
 }
 
 /** Get current combat unit states for the game. */
@@ -192,7 +204,10 @@ export async function GetLogs(jsonState: string): Promise<ActionLog[]> {
 }
 
 /** Update waypoints data for the current game. */
-export async function UpdateWaypointsData(jsonState: string, waypoints: AiWaypointsModel) {
+export async function UpdateWaypointsData(
+	jsonState: string,
+	waypoints: AiWaypointsModel
+): Promise<GameViewStateResponse> {
 	const { data, error } = await client.POST('/api/ai-config-waypoints', {
 		body: {
 			state: jsonState,
@@ -200,4 +215,5 @@ export async function UpdateWaypointsData(jsonState: string, waypoints: AiWaypoi
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
+	return data;
 }

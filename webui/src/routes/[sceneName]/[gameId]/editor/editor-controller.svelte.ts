@@ -49,14 +49,10 @@ export class EditorController {
 	}
 
 	/** Refreshes terrain data from the API. */
-	refreshData() {
+	async refreshData() {
 		const gameStateJson = this.getGameStateJson();
-		GetTerrainData(gameStateJson).then((data) => {
-			this.terrainData = data;
-		});
-		GetUnitStatesData(gameStateJson).then((data) => {
-			this.combatUnitsData = data;
-		});
+		this.terrainData = await GetTerrainData(gameStateJson);
+		this.combatUnitsData = await GetUnitStatesData(gameStateJson);
 	}
 
 	/** Resets the editor state to default. */
@@ -93,8 +89,9 @@ export class EditorController {
 			terrainType: this.state.terrainType
 		};
 		const gameStateJson = this.getGameStateJson();
-		await AddTerrainData(gameStateJson, terrain);
-		this.refreshData();
+		const viewState = await AddTerrainData(gameStateJson, terrain);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 		this.reset();
 	}
 
@@ -102,24 +99,41 @@ export class EditorController {
 	async selectTerrain(terrain: TerrainModel) {
 		if (this.state.type != 'default' && this.state.type != 'selected') return;
 		const gameStateJson = this.getGameStateJson();
-		if (this.state.type == 'selected') await UpdateTerrainData(gameStateJson, this.state.terrain);
-		this.state = {
-			type: 'selected',
-			terrain: terrain
-		};
+		if (this.state.type == 'selected') {
+			// Update the already selected terrain if selecting a new one.
+			const viewState = await UpdateTerrainData(gameStateJson, this.state.terrain);
+			this.updateGameStateJson(viewState.jsonState);
+			await this.refreshData();
+			const selectedTerrain = this.terrainData.find((i) => i.terrainId === terrain.terrainId);
+			if (selectedTerrain != undefined) {
+				this.state = {
+					type: 'selected',
+					terrain: selectedTerrain
+				};
+			}
+		} else {
+			this.state = {
+				type: 'selected',
+				terrain: terrain
+			};
+		}
 	}
 
 	/** Deletes the selected terrain */
 	async deleteTerrain() {
 		if (this.state.type != 'selected') return;
 		const gameStateJson = this.getGameStateJson();
-		await DeleteTerrainData(gameStateJson, this.state.terrain.terrainId);
+		const viewState = await DeleteTerrainData(gameStateJson, this.state.terrain.terrainId);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 	/** Asynchronously updates the selected terrain data via the API. */
 	async updateTerrainAsync() {
 		if (this.state.type != 'selected') return;
 		const gameStateJson = this.getGameStateJson();
-		await UpdateTerrainData(gameStateJson, this.state.terrain);
+		const viewState = await UpdateTerrainData(gameStateJson, this.state.terrain);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 
 	/** Adds a new waypoint */
@@ -131,6 +145,8 @@ export class EditorController {
 	async updateWaypoint() {
 		if (this.state.type != 'draw-waypoints') return;
 		const gameStateJson = this.getGameStateJson();
-		await UpdateWaypointsData(gameStateJson, this.state.waypoints);
+		const viewState = await UpdateWaypointsData(gameStateJson, this.state.waypoints);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 }
