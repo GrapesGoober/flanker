@@ -29,8 +29,10 @@
 	}
 
 	function deleteGameSave(gameKey: string) {
-		deleteGameLocal(gameKey);
-		reloadList();
+		if (confirm(`Confirm delete ${gameKey}?`)) {
+			deleteGameLocal(gameKey);
+			reloadList();
+		}
 	}
 </script>
 
