@@ -25,11 +25,11 @@ class SquadModel(BaseModel, CamelCaseConfig):
     degree: float
     status: CombatUnit.Status
     is_friendly: bool
-    firing_at: tuple[UUID, FireEffect] | None
+    firing_at: tuple[UUID, FireEffect] | None = None
 
 
-class CombatUnitsViewState(BaseModel, CamelCaseConfig):
-    """View state for all combat units in the game."""
+class GameViewState(BaseModel, CamelCaseConfig):
+    """Simplified view model of the game state."""
 
     class ObjectiveState(Enum):
         INCOMPLETE = "INCOMPLETE"
@@ -39,6 +39,13 @@ class CombatUnitsViewState(BaseModel, CamelCaseConfig):
     objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
+
+
+class GameViewStateResponse(BaseModel, CamelCaseConfig):
+    """Response model for actions contains view state and mutated game state."""
+
+    view_state: GameViewState
+    json_state: str
 
 
 class MoveActionRequest(BaseModel, CamelCaseConfig):
@@ -92,21 +99,21 @@ class MoveActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLog"] = "MoveActionLog"
     body: MoveActionRequest
     reactive_fire_outcome: FireOutcomes | None = None
-    unit_state: CombatUnitsViewState
+    view_state: GameViewState
 
 
 class PivotActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["PivotActionLog"] = "PivotActionLog"
     body: PivotActionRequest
     reactive_fire_outcome: FireOutcomes | None = None
-    unit_state: CombatUnitsViewState
+    view_state: GameViewState
 
 
 class FireActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["FireActionLog"] = "FireActionLog"
     body: FireActionRequest
     outcome: FireOutcomes | None = None
-    unit_state: CombatUnitsViewState
+    view_state: GameViewState
 
 
 class AssaultActionLog(BaseModel, CamelCaseConfig):
@@ -114,7 +121,7 @@ class AssaultActionLog(BaseModel, CamelCaseConfig):
     body: AssaultActionRequest
     outcome: AssaultOutcomes | None = None
     reactive_fire_outcome: FireOutcomes | None = None
-    unit_state: CombatUnitsViewState
+    view_state: GameViewState
 
 
 class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):

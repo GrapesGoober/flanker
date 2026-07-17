@@ -3,6 +3,7 @@
 	 * Editor page for terrain and polygon drawing in the map scene.
 	 * Handles terrain editing, drawing polygons, and UI state management.
 	 */
+	import { page } from '$app/state';
 	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
@@ -17,6 +18,8 @@
 
 	/// Refreshes terrain data when the component mounts. */
 	onMount(() => {
+		const gameKey: string = page.params['gameKey'] as string;
+		controller.initialize(gameKey);
 		controller.refreshData();
 	});
 

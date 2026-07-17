@@ -1,10 +1,9 @@
-from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import UUID, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 
+from webapi.components import TerrainTypeTag
 from webapi.models import TerrainModel
-from webapi.tag_components import TerrainTypeTag
 
 
 class TerrainService:
@@ -65,10 +64,7 @@ class TerrainService:
     def delete_terrain(gs: GameState, terrain_id: UUID) -> None:
         # Make sure the terrain exists
         if gs.try_component(terrain_id, TerrainFeature) is None:
-            raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Terrain {terrain_id=} does not exist",
-            )
+            raise ValueError(f"Terrain {terrain_id=} does not exist")
         # Then delete
         gs.delete_entity(terrain_id)
 
@@ -90,12 +86,12 @@ class TerrainService:
         )
 
     @staticmethod
-    def update_terrain(gs: GameState, body: TerrainModel) -> None:
-        transform = gs.get_component(body.terrain_id, Transform)
-        terrain = gs.get_component(body.terrain_id, TerrainFeature)
-        tag = gs.get_component(body.terrain_id, TerrainTypeTag)
-        transform.position = body.position
-        transform.degrees = body.degrees
-        terrain.vertices = body.vertices
-        terrain.flag = TerrainService.get_terrain_flags(body.terrain_type)
-        tag.type = body.terrain_type
+    def update_terrain(gs: GameState, terrain_model: TerrainModel) -> None:
+        transform = gs.get_component(terrain_model.terrain_id, Transform)
+        terrain = gs.get_component(terrain_model.terrain_id, TerrainFeature)
+        tag = gs.get_component(terrain_model.terrain_id, TerrainTypeTag)
+        transform.position = terrain_model.position
+        transform.degrees = terrain_model.degrees
+        terrain.vertices = terrain_model.vertices
+        terrain.flag = TerrainService.get_terrain_flags(terrain_model.terrain_type)
+        tag.type = terrain_model.terrain_type

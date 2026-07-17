@@ -4,9 +4,8 @@
 	Renders unit icons and action overlays for a specific log entry.
 	Handles display of actor and target units for fire/assault actions.
 	*/
-	import { onMount } from 'svelte';
-	import { RifleSquad, BorderFriendlyUnit, Arrow, BorderHostileUnit } from '$lib/components';
-	import { GetLogs, type ActionLog, type CombatUnitsViewState } from '$lib/api';
+	import { type ActionLog, type GameViewState } from '$lib/api';
+	import { Arrow, BorderFriendlyUnit, BorderHostileUnit, RifleSquad } from '$lib/components';
 
 	type Props = {
 		logData: ActionLog[];
@@ -14,19 +13,14 @@
 	};
 
 	let props: Props = $props();
-	let currentView: CombatUnitsViewState = $derived(
-		props.logData[props.index]?.unitState ?? {
+	let currentView: GameViewState = $derived(
+		props.logData[props.index]?.viewState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
 			squads: []
 		}
 	);
 	let currentAction: ActionLog | null = $derived(props.logData[props.index] ?? null);
-
-	/* Loads log data on mount. */
-	onMount(async () => {
-		props.logData = await GetLogs();
-	});
 </script>
 
 <svg overflow="visible">

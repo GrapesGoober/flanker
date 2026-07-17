@@ -5,8 +5,7 @@
 	 * The terrains are drawn transparently, as it handles clicking.
 	 */
 	import type { TerrainModel } from '$lib/api';
-	import { transform } from '$lib/map-utils';
-	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath } from '$lib/map-utils';
+	import { GetClosedPath, GetSmoothedClosedPath, GetSmoothedPath, transform } from '$lib/map-utils';
 	import type { EditorController } from './editor-controller.svelte';
 
 	type Props = {

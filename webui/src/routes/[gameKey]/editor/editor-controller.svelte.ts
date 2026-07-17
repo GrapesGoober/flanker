@@ -6,12 +6,13 @@ import {
 	UpdateTerrainData,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
-	type CombatUnitsViewState,
+	type GameViewState,
 	type TerrainModel,
 	type TerrainType,
 	type Vec2
 } from '$lib/api';
 import { transform } from '$lib/map-utils';
+import { loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
 import { v4 as uuidv4 } from 'uuid';
 
 type EditorControllerState =
@@ -26,21 +27,32 @@ type EditorControllerState =
  */
 export class EditorController {
 	terrainData: TerrainModel[] = $state([]);
-	combatUnitsData: CombatUnitsViewState = $state({
+	combatUnitsData: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []
 	});
 	state: EditorControllerState = $state({ type: 'default' });
+	gameKey: string = $state('');
+
+	getGameStateJson(): string {
+		const gameStateJson = loadGameLocal(this.gameKey);
+		return gameStateJson;
+	}
+
+	updateGameStateJson(gameStateJson: string) {
+		saveGameLocal(this.gameKey, gameStateJson);
+	}
+
+	initialize(gameKey: string) {
+		this.gameKey = gameKey;
+	}
 
 	/** Refreshes terrain data from the API. */
-	refreshData() {
-		GetTerrainData().then((data) => {
-			this.terrainData = data;
-		});
-		GetUnitStatesData().then((data) => {
-			this.combatUnitsData = data;
-		});
+	async refreshData() {
+		const gameStateJson = this.getGameStateJson();
+		this.terrainData = await GetTerrainData(gameStateJson);
+		this.combatUnitsData = await GetUnitStatesData(gameStateJson);
 	}
 
 	/** Resets the editor state to default. */
@@ -76,30 +88,52 @@ export class EditorController {
 			vertices: vertices,
 			terrainType: this.state.terrainType
 		};
-		await AddTerrainData(terrain);
-		this.refreshData();
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await AddTerrainData(gameStateJson, terrain);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 		this.reset();
 	}
 
 	/** Selects a terrain object and updates its data if already selected. */
 	async selectTerrain(terrain: TerrainModel) {
 		if (this.state.type != 'default' && this.state.type != 'selected') return;
-		if (this.state.type == 'selected') await UpdateTerrainData(this.state.terrain);
-		this.state = {
-			type: 'selected',
-			terrain: terrain
-		};
+		const gameStateJson = this.getGameStateJson();
+		if (this.state.type == 'selected') {
+			// Update the already selected terrain if selecting a new one.
+			const viewState = await UpdateTerrainData(gameStateJson, this.state.terrain);
+			this.updateGameStateJson(viewState.jsonState);
+			await this.refreshData();
+			const selectedTerrain = this.terrainData.find((i) => i.terrainId === terrain.terrainId);
+			if (selectedTerrain != undefined) {
+				this.state = {
+					type: 'selected',
+					terrain: selectedTerrain
+				};
+			}
+		} else {
+			this.state = {
+				type: 'selected',
+				terrain: terrain
+			};
+		}
 	}
 
 	/** Deletes the selected terrain */
 	async deleteTerrain() {
 		if (this.state.type != 'selected') return;
-		await DeleteTerrainData(this.state.terrain.terrainId);
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await DeleteTerrainData(gameStateJson, this.state.terrain.terrainId);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 	/** Asynchronously updates the selected terrain data via the API. */
 	async updateTerrainAsync() {
 		if (this.state.type != 'selected') return;
-		await UpdateTerrainData(this.state.terrain);
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await UpdateTerrainData(gameStateJson, this.state.terrain);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 
 	/** Adds a new waypoint */
@@ -110,6 +144,9 @@ export class EditorController {
 	/** Async updates the waypoints to server */
 	async updateWaypoint() {
 		if (this.state.type != 'draw-waypoints') return;
-		await UpdateWaypointsData(this.state.waypoints);
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await UpdateWaypointsData(gameStateJson, this.state.waypoints);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 }

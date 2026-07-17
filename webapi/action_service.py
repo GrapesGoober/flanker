@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     AssaultAction,
@@ -9,7 +8,6 @@ from flanker_core.models.actions import (
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 
-from webapi.combat_unit_service import CombatUnitService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AssaultActionLog,
@@ -21,6 +19,7 @@ from webapi.models import (
     PivotActionLog,
     PivotActionRequest,
 )
+from webapi.scene_service import SceneService
 
 
 class ActionService:
@@ -31,13 +30,13 @@ class ActionService:
         """Perform a move action."""
         result = ActionSystem.perform(gs, MoveAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             MoveActionLog(
                 body=body,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=CombatUnitService.get_units_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
 
@@ -46,13 +45,13 @@ class ActionService:
         """Perform a pivot action."""
         result = ActionSystem.perform(gs, PivotAction(body.unit_id, body.to))
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             PivotActionLog(
                 body=body,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=CombatUnitService.get_units_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
 
@@ -68,13 +67,13 @@ class ActionService:
             ),
         )
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             FireActionLog(
                 body=body,
                 outcome=result.outcome,
-                unit_state=CombatUnitService.get_units_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
 
@@ -89,13 +88,13 @@ class ActionService:
             ),
         )
         if isinstance(result, InvalidAction):
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result)
+            raise ValueError(result)
         LoggingService.log(
             gs,
             AssaultActionLog(
                 body=body,
                 outcome=result.outcome,
                 reactive_fire_outcome=result.reactive_fire_outcome,
-                unit_state=CombatUnitService.get_units_view_state(gs),
+                view_state=SceneService.get_view_state(gs),
             ),
         )
