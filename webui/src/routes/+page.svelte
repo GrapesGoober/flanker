@@ -60,7 +60,7 @@
 	</ul>
 {/if}
 
-<h3>Scene Presets</h3>
+<h3>Load Scene Presets</h3>
 {#if sceneNames.length === 0}
 	<p>No scene presets.</p>
 {:else}
