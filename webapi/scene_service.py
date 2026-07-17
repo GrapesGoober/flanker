@@ -1,5 +1,6 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from pathlib import Path
 from typing import Any, Iterable
 from uuid import UUID
 
@@ -31,6 +32,11 @@ class SceneService:
         yield TerrainTypeTag
         yield AiConfigComponent
         yield LogRecords
+
+    @staticmethod
+    def get_scenes() -> list[str]:
+        folder = Path("./scenes/")
+        return [file.stem for file in folder.iterdir() if file.is_file()]
 
     @staticmethod
     def serialize(gs: GameState) -> str:

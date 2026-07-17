@@ -40,11 +40,17 @@ async def value_error_handler(_: Request, exc: ValueError) -> NoReturn:
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc)
 
 
-@app.get("/api/json")
+@app.get("/api/scenes")
+async def get_scenes() -> list[str]:
+    """Gets a list of scenes."""
+    return SceneService.get_scenes()
+
+
+@app.get("/api/scenes/json")
 async def get_game_state_json(
     scene_names: list[str] = Query(..., alias="sceneNames"),
 ) -> str:
-    "Gets a game state serialized entities table."
+    """Gets a game state serialized entities table."""
     gs = SceneService.load_game_state(scene_names)
     return SceneService.serialize(gs)
 

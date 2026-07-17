@@ -20,9 +20,16 @@ export type AssaultActionLog = components['schemas']['AssaultActionLog'];
 export type PivotActionLog = components['schemas']['PivotActionLog'];
 export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog | PivotActionLog;
 
+/** Get all available scene names. */
+export async function GetSceneNames(): Promise<string[]> {
+	const { data, error } = await client.GET('/api/scenes');
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
 /** Get game state entities table from scene presets, in JSON string. */
 export async function GetGameStateJSON(sceneNames: string[]): Promise<string> {
-	const { data, error } = await client.GET('/api/json', {
+	const { data, error } = await client.GET('/api/scenes/json', {
 		params: {
 			query: {
 				sceneNames: sceneNames

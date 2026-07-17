@@ -4,7 +4,27 @@
  */
 
 export interface paths {
-    "/api/json": {
+    "/api/scenes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Scenes
+         * @description Gets a list of scenes.
+         */
+        get: operations["get_scenes_api_scenes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenes/json": {
         parameters: {
             query?: never;
             header?: never;
@@ -15,7 +35,7 @@ export interface paths {
          * Get Game State Json
          * @description Gets a game state serialized entities table.
          */
-        get: operations["get_game_state_json_api_json_get"];
+        get: operations["get_game_state_json_api_scenes_json_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -536,7 +556,27 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_game_state_json_api_json_get: {
+    get_scenes_api_scenes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+        };
+    };
+    get_game_state_json_api_scenes_json_get: {
         parameters: {
             query: {
                 sceneNames: string[];
