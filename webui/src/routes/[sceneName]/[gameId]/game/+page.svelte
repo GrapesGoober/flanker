@@ -3,6 +3,7 @@
 	 * Gameplay page for handling player actions, map interactions, and UI state.
 	 * Manages player controller, map, and click events for move markers.
 	 */
+	import { page } from '$app/state';
 	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { onMount } from 'svelte';
@@ -28,7 +29,8 @@
 	}
 	/* Initializes the player controller and loads game data on mount. */
 	onMount(async () => {
-		await controller.initializeAsync();
+		const sceneName: string = page.params['sceneName'] as string;
+		await controller.initializeAsync(sceneName);
 	});
 </script>
 
@@ -47,4 +49,4 @@
 
 <ControlPanel bind:controller />
 
-{controller.unitData.objectiveState == 'COMPLETED' ? 'Objectives Completed' : ''}
+{controller.viewState.objectiveState == 'COMPLETED' ? 'Objectives Completed' : ''}

@@ -28,7 +28,7 @@
 	}
 
 	function GetUnitPosition(unitId: string): Vec2 | null {
-		for (let squad of controller.unitData.squads) {
+		for (let squad of controller.viewState.squads) {
 			if (squad.unitId == unitId) {
 				return squad.position;
 			}
@@ -39,7 +39,7 @@
 
 <!-- Draw overlay for gameplay icons -->
 <svg overflow="visible" class="transparent-icons">
-	{#each controller.unitData.squads as unit}
+	{#each controller.viewState.squads as unit}
 		{#if unit.firingAt != null}
 			{@const unitPos = GetUnitPosition(unit.firingAt[0])}
 			{#if unitPos != null}
@@ -73,9 +73,9 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- Draw combat units -->
-	{#each controller.unitData.squads as unit, index}
+	{#each controller.viewState.squads as unit, index}
 		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-			<RifleSquad bind:rifleSquadData={controller.unitData.squads[index]} />
+			<RifleSquad bind:rifleSquadData={controller.viewState.squads[index]} />
 		</g>
 	{/each}
 </svg>

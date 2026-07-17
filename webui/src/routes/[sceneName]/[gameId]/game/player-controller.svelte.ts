@@ -10,6 +10,7 @@ import {
 	type TerrainModel,
 	type Vec2
 } from '$lib/api';
+import { loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
 
 type PlayerControllerState =
 	| { type: 'default' }
@@ -24,25 +25,37 @@ Handles validation and updates for gameplay interactions.
 */
 export class PlayerController {
 	terrainData: TerrainModel[] = $state([]);
-	unitData: GameViewState = $state({
+	viewState: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: []
 	});
 	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
+	sceneName: string = $state('');
+
+	getGameStateJson(): string {
+		const gameStateJson = loadGameLocal(this.sceneName);
+		return gameStateJson;
+	}
+
+	updateGameStateJson(gameStateJson: string) {
+		saveGameLocal(this.sceneName, gameStateJson);
+	}
 
 	/* Initializes controller and loads terrain & unit states data. */
-	async initializeAsync() {
+	async initializeAsync(sceneName: string) {
+		this.sceneName = sceneName;
 		this.isFetching = true;
-		this.terrainData = await GetTerrainData();
-		this.unitData = await GetUnitStatesData();
+		const gameStateJson = this.getGameStateJson();
+		this.terrainData = await GetTerrainData(gameStateJson);
+		this.viewState = await GetUnitStatesData(gameStateJson);
 		this.isFetching = false;
 	}
 
 	/* Selects a combat unit and transitions to state 'selected'. */
 	selectUnit(unitId: string) {
-		let unit = this.unitData.squads.find((squad) => squad.unitId == unitId);
+		let unit = this.viewState.squads.find((squad) => squad.unitId == unitId);
 		if (!unit) return;
 		if (unit.isFriendly === true) {
 			this.state = {
@@ -62,7 +75,7 @@ export class PlayerController {
 
 	/* Set move marker and transition state to 'moveMarked'. */
 	setMoveMarker(at: Vec2) {
-		if (!this.unitData.hasInitiative) return;
+		if (!this.viewState.hasInitiative) return;
 		if (this.state.type == 'default') return;
 		if (!this.state.selectedUnit.isFriendly) return;
 		this.state = {
@@ -74,7 +87,7 @@ export class PlayerController {
 
 	/* Sets aan marker for the selected unit then transition to 'attackMarked'. */
 	setAttackMarker(target: RifleSquadData) {
-		if (!this.unitData.hasInitiative) return;
+		if (!this.viewState.hasInitiative) return;
 		if (this.state.type == 'default') return;
 		if (target.isFriendly) return;
 		this.state = {
@@ -97,7 +110,7 @@ export class PlayerController {
 		if (this.state.type !== 'moveMarked') return false;
 		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
 		if (!this.state.selectedUnit.isFriendly) return false;
-		if (!this.unitData.hasInitiative) return false;
+		if (!this.viewState.hasInitiative) return false;
 		return true;
 	}
 
@@ -107,7 +120,7 @@ export class PlayerController {
 		if (this.state.type !== 'moveMarked') return false;
 		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
 		if (!this.state.selectedUnit.isFriendly) return false;
-		if (!this.unitData.hasInitiative) return false;
+		if (!this.viewState.hasInitiative) return false;
 		return true;
 	}
 
@@ -117,7 +130,7 @@ export class PlayerController {
 		if (this.state.type !== 'attackMarked') return false;
 		if (this.state.selectedUnit.status === 'SUPPRESSED') return false;
 		if (!this.state.selectedUnit.isFriendly) return false;
-		if (!this.unitData.hasInitiative) return false;
+		if (!this.viewState.hasInitiative) return false;
 		return true;
 	}
 
@@ -127,7 +140,7 @@ export class PlayerController {
 		if (this.state.type !== 'attackMarked') return false;
 		if (this.state.selectedUnit.status !== 'ACTIVE') return false;
 		if (!this.state.selectedUnit.isFriendly) return false;
-		if (!this.unitData.hasInitiative) return false;
+		if (!this.viewState.hasInitiative) return false;
 		return true;
 	}
 
@@ -137,7 +150,10 @@ export class PlayerController {
 		if (this.state.type !== 'moveMarked') return false;
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
-		this.unitData = await performMoveActionAsync(unitId, this.state.moveMarker);
+		const gameStateJson = this.getGameStateJson();
+		const result = await performMoveActionAsync(gameStateJson, unitId, this.state.moveMarker);
+		this.viewState = result.viewState;
+		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
 		this.reselectUnit(unitId);
 	}
@@ -148,7 +164,10 @@ export class PlayerController {
 		if (this.state.type !== 'moveMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
-		this.unitData = await performPivotActionAsync(unitId, this.state.moveMarker);
+		const gameStateJson = this.getGameStateJson();
+		const result = await performPivotActionAsync(gameStateJson, unitId, this.state.moveMarker);
+		this.viewState = result.viewState;
+		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
 		this.reselectUnit(unitId);
 	}
@@ -159,7 +178,10 @@ export class PlayerController {
 		if (this.state.type !== 'attackMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
-		this.unitData = await performFireActionAsync(unitId, this.state.target.unitId);
+		const gameStateJson = this.getGameStateJson();
+		const result = await performFireActionAsync(gameStateJson, unitId, this.state.target.unitId);
+		this.viewState = result.viewState;
+		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
 		this.reselectUnit(unitId);
 	}
@@ -170,14 +192,17 @@ export class PlayerController {
 		if (this.state.type !== 'attackMarked') return;
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
-		this.unitData = await performAssaultActionAsync(unitId, this.state.target.unitId);
+		const gameStateJson = this.getGameStateJson();
+		const result = await performAssaultActionAsync(gameStateJson, unitId, this.state.target.unitId);
+		this.viewState = result.viewState;
+		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
 		this.reselectUnit(unitId);
 	}
 
 	/* Reselects the unit after an action, or resets state if not found. */
 	private reselectUnit(unitId: string) {
-		let currentUnit = this.unitData.squads.find((unit) => unit.unitId == unitId);
+		let currentUnit = this.viewState.squads.find((unit) => unit.unitId == unitId);
 		if (currentUnit)
 			this.state = {
 				type: 'selected',
