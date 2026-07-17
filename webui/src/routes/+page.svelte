@@ -1,22 +1,18 @@
 <script lang="ts">
 	import { GetGameStateJSON } from '$lib/api';
-	import { loadGameLocal } from '$lib/scenes-storage';
+	import { loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
 
-	let scene = $state('');
+	let stateJson = $state('');
 
 	let sceneName = $state('');
 
-	function storageKey(scene: string) {
-		return `game:${scene}`;
-	}
-
 	function loadLocal() {
-		scene = loadGameLocal(sceneName);
+		stateJson = loadGameLocal(sceneName);
 	}
 
 	async function GetGameState() {
-		scene = await GetGameStateJSON([sceneName]);
-		localStorage.setItem(storageKey(sceneName), scene);
+		stateJson = await GetGameStateJSON([sceneName]);
+		saveGameLocal(sceneName, stateJson);
 	}
 </script>
 
@@ -31,4 +27,4 @@ Scene Name:<input bind:value={sceneName} />
 
 <br /><br />
 
-<textarea rows="15" cols="80" bind:value={scene}></textarea>
+<textarea rows="15" cols="80" bind:value={stateJson}></textarea>

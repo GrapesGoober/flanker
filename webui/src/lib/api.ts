@@ -1,4 +1,3 @@
-import { page } from '$app/state';
 import createClient from 'openapi-fetch';
 import type { components, paths } from './api-schema';
 
@@ -27,16 +26,6 @@ export type RouteParams = {
 		gameId: number;
 	};
 };
-
-/** Get route parameters from the current page. */
-export function GetParams(): RouteParams {
-	return {
-		path: {
-			sceneName: page.params['sceneName'] as string,
-			gameId: Number(page.params['gameId'])
-		}
-	};
-}
 
 /** Get game state entities table from scene presets, in JSON string. */
 export async function GetGameStateJSON(sceneNames: string[]): Promise<string> {
