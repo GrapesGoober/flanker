@@ -3,18 +3,26 @@
 	import { getGameKeys, saveGameLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 
-	let gameKey = $state('');
 	let saveGameKeys: string[] = $state([]);
 	let sceneNames: string[] = $state([]);
+	let selectedScenes: string[] = $state([]);
+	let newGameName: string = $state('');
 
 	onMount(async () => {
 		saveGameKeys = getGameKeys();
 		sceneNames = await GetSceneNames();
 	});
 
-	async function GetGameState() {
-		const stateJson = await GetGameStateJSON([gameKey]);
-		saveGameLocal(gameKey, stateJson);
+	$effect(() => {
+		newGameName = selectedScenes.join('-');
+	});
+
+	async function createNewGame() {
+		console.log(selectedScenes);
+		console.log(newGameName);
+		if (selectedScenes.length == 0) return;
+		const stateJson = await GetGameStateJSON(selectedScenes);
+		saveGameLocal(newGameName, stateJson);
 	}
 </script>
 
@@ -42,7 +50,13 @@
 {:else}
 	<ul>
 		{#each sceneNames as sceneName}
-			<li>{sceneName}</li>
+			<li>
+				<input type="checkbox" value={sceneName} bind:group={selectedScenes} />
+				{sceneName}
+			</li>
 		{/each}
 	</ul>
 {/if}
+
+<input type="text" bind:value={newGameName} />
+<input type="button" value="New Game" onclick={createNewGame} />
