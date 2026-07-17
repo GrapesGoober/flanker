@@ -12,4 +12,6 @@ class TerrainTypeTag:
 
 @dataclass
 class LogRecords:
+    """Singleton component contains past action log snapshots."""
+
     logs: list[ActionLog]

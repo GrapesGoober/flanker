@@ -2,8 +2,8 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import UUID, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 
+from webapi.components import TerrainTypeTag
 from webapi.models import TerrainModel
-from webapi.tag_components import TerrainTypeTag
 
 
 class TerrainService:
