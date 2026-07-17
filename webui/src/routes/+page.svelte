@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { GetGameStateJSON, GetSceneNames } from '$lib/api';
-	import { getGameKeys, saveGameLocal } from '$lib/scenes-storage';
+	import { deleteGameLocal, getGameKeys, saveGameLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 
 	let saveGameKeys: string[] = $state([]);
@@ -8,14 +8,16 @@
 	let selectedScenes: string[] = $state([]);
 	let newGameName: string = $state('');
 
-	onMount(async () => {
-		saveGameKeys = getGameKeys();
-		sceneNames = await GetSceneNames();
-	});
+	onMount(reloadList);
 
 	$effect(() => {
 		newGameName = selectedScenes.join('-');
 	});
+
+	async function reloadList() {
+		saveGameKeys = getGameKeys();
+		sceneNames = await GetSceneNames();
+	}
 
 	async function createNewGame() {
 		console.log(selectedScenes);
@@ -23,6 +25,12 @@
 		if (selectedScenes.length == 0) return;
 		const stateJson = await GetGameStateJSON(selectedScenes);
 		saveGameLocal(newGameName, stateJson);
+		reloadList();
+	}
+
+	function deleteGameSave(gameKey: string) {
+		deleteGameLocal(gameKey);
+		reloadList();
 	}
 </script>
 
@@ -35,10 +43,16 @@
 	<ul>
 		{#each saveGameKeys as gameKey}
 			<li>
-				<!-- Standard SvelteKit client-side routing anchor tag -->
 				<a href="/{gameKey}/game" class="key-link">
 					<span class="key-text">{gameKey}</span>
 				</a>
+				<input
+					type="button"
+					value="❌"
+					onclick={() => {
+						deleteGameSave(gameKey);
+					}}
+				/>
 			</li>
 		{/each}
 	</ul>

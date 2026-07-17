@@ -15,6 +15,10 @@ export function loadGameLocal(gameKey: string): string {
 	return localStorage.getItem(prefix + gameKey) ?? '';
 }
 
+export function deleteGameLocal(gameKey: string): string {
+	return localStorage.removeItem(prefix + gameKey) ?? '';
+}
+
 export function saveGameLocal(gameKey: string, jsonState: string) {
 	localStorage.setItem(prefix + gameKey, jsonState);
 }
