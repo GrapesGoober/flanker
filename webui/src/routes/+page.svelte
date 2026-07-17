@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { GetGameStateJSON } from '$lib/api';
-	import { loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
+	import { getGameKeys, loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
+	import { onMount } from 'svelte';
 
 	let stateJson = $state('');
-
 	let sceneName = $state('');
+	let keys: string[] = $state([]);
+
+	onMount(() => {
+		keys = getGameKeys();
+	});
 
 	function loadLocal() {
 		stateJson = loadGameLocal(sceneName);
@@ -16,9 +21,12 @@
 	}
 </script>
 
-<h3>Game</h3>
+<h1>Project Flanker</h1>
 
 Scene Name:<input bind:value={sceneName} />
+<br /><br />
+
+{keys}
 
 <br /><br />
 
@@ -26,5 +34,3 @@ Scene Name:<input bind:value={sceneName} />
 <button onclick={loadLocal}>Load Local</button>
 
 <br /><br />
-
-<textarea rows="15" cols="80" bind:value={stateJson}></textarea>
