@@ -478,7 +478,7 @@ export interface components {
             /** Isfriendly */
             isFriendly: boolean;
             /** Firingat */
-            firingAt: [
+            firingAt?: [
                 string,
                 components["schemas"]["FireEffect"]
             ] | null;
