@@ -18,7 +18,7 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 from webapi.models import GameViewState, GameViewStateResponse, SquadModel
-from webapi.tag_components import TerrainTypeTag
+from webapi.tag_components import LogRecords, TerrainTypeTag
 
 
 class SceneService:
@@ -30,6 +30,7 @@ class SceneService:
                 yield cls
         yield TerrainTypeTag
         yield AiConfigComponent
+        yield LogRecords
 
     @staticmethod
     def serialize(gs: GameState) -> str:

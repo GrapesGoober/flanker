@@ -4,8 +4,10 @@
 	Displays action logs, terrain, and unit state for replay and analysis.
 	Handles log navigation and map rendering.
 	*/
+	import { page } from '$app/state';
 	import { GetLogs, GetTerrainData, type ActionLog, type TerrainModel } from '$lib/api';
 	import { SvgMap, TerrainLayer } from '$lib/components';
+	import { loadGameLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import LogViewLayer from './log-view-layer.svelte';
 
@@ -17,8 +19,10 @@
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
-		terrain = await GetTerrainData();
-		logData = await GetLogs();
+		const sceneName: string = page.params['sceneName'] as string;
+		const gameStateJson = loadGameLocal(sceneName);
+		terrain = await GetTerrainData(gameStateJson);
+		logData = await GetLogs(gameStateJson);
 	});
 </script>
 

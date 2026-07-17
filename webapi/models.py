@@ -25,7 +25,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
     degree: float
     status: CombatUnit.Status
     is_friendly: bool
-    firing_at: tuple[UUID, FireEffect] | None
+    firing_at: tuple[UUID, FireEffect] | None = None
 
 
 class GameViewState(BaseModel, CamelCaseConfig):
