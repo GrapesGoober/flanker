@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 from uuid import UUID
 
 import pytest
@@ -29,7 +30,6 @@ from flanker_core.models.vec2 import Vec2
 @dataclass
 class Fixture:
     gs: GameState
-    blue_agent: AiAgent
     friendly_1: UUID
     friendly_2: UUID
     enemy_1: UUID
@@ -101,34 +101,6 @@ def fixture() -> Fixture:
         ),
     )
 
-    move_candidate_points = [
-        Vec2(0, 0),
-        Vec2(-10, 1),
-        Vec2(-10, 10),
-        # Vec2(10, 10),   # These are also optimal peeking nodes
-        # Vec2(10, 1),   # but mirrored on the other side
-    ]
-
-    gs.add_entity(
-        AiConfigComponent(
-            faction=InitiativeState.Faction.BLUE,
-            config=SearchPolicyConfig(
-                policy_type="Minimax",
-                state=UnabstractedStateConfig(
-                    type="UnabstractedStateConfig",
-                    move_candidates=PointsConfig(
-                        initial_points=PointsConfig.HandDrawnConfig(
-                            type="HandDrawnConfig",
-                            points=move_candidate_points,
-                        ),
-                        use_combat_unit_positions=False,
-                        expansions=[],
-                    ),
-                    divide_moves_per_unit=False,
-                ),
-            ),
-        ),
-    )
     gs.add_entity(
         EliminationWinCondition(
             target_faction=InitiativeState.Faction.RED,
@@ -154,11 +126,8 @@ def fixture() -> Fixture:
         )
     )
 
-    blue_agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
-
     return Fixture(
         gs=gs,
-        blue_agent=blue_agent,
         friendly_1=friendly_1,
         friendly_2=friendly_2,
         enemy_1=enemy_1,
@@ -166,20 +135,64 @@ def fixture() -> Fixture:
     )
 
 
+def get_agent(
+    gs: GameState,
+    policy_type: Literal["Minimax", "MCTS"],
+) -> AiAgent:
+
+    move_candidate_points = [
+        Vec2(0, 0),
+        Vec2(-10, 1),
+        Vec2(-10, 10),
+        # Vec2(10, 10),   # These are also optimal peeking nodes
+        # Vec2(10, 1),   # but mirrored on the other side
+    ]
+
+    gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.BLUE,
+            config=SearchPolicyConfig(
+                policy_type=policy_type,
+                state=UnabstractedStateConfig(
+                    type="UnabstractedStateConfig",
+                    move_candidates=PointsConfig(
+                        initial_points=PointsConfig.HandDrawnConfig(
+                            type="HandDrawnConfig",
+                            points=move_candidate_points,
+                        ),
+                        use_combat_unit_positions=False,
+                        expansions=[],
+                    ),
+                    divide_moves_per_unit=False,
+                ),
+            ),
+        ),
+    )
+
+    return AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+
+
 def test_branching_total_prob(fixture: Fixture) -> None:
     action = MoveAction(
         unit_id=fixture.friendly_1,
         to=Vec2(-10, 1),
     )
-    branches = fixture.blue_agent.rs.get_branches(action)
+    blue_agent = get_agent(fixture.gs, policy_type="Minimax")
+    branches = blue_agent.rs.get_branches(action)
     total_prob = 0
     for prob, _ in branches:
         total_prob += prob
     assert total_prob == 1, "Total probability must equal 1"
 
 
-def test_optimal_actions(fixture: Fixture) -> None:
-    action_results = fixture.blue_agent.play_initiative()
+@pytest.mark.parametrize("policy_type", ["Minimax", "MCTS"])
+def test_optimal_actions(
+    fixture: Fixture,
+    policy_type: Literal["Minimax", "MCTS"],
+) -> None:
+
+    blue_agent = get_agent(fixture.gs, policy_type)
+    action_results = blue_agent.play_initiative()
     assert action_results != [], "The minimax must find optimal action sequence."
 
     staging_units: list[UUID] = []
