@@ -55,7 +55,7 @@ def test_mcts_move(fixture: TicTacToeState) -> None:
             "X . O",
         ]
     )
-    minimax = MctsPolicy[TicTacToeAction](depth=1)
+    minimax = MctsPolicy[TicTacToeAction](max_iterations=100_000)
     action, _ = minimax.get_action(fixture)
     assert action != None
     _, new_state = fixture.get_branches(action)[0]
