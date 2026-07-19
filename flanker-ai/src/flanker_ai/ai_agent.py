@@ -12,6 +12,7 @@ from flanker_ai.config_models import (
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
+from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.states.common.ai_points_expansion_service import (
@@ -149,6 +150,8 @@ class AiAgent:
                         policy = ExpectimaxPolicy[Action](depth=4)
                     case "Minimax":
                         policy = MinimaxPolicy[Action](depth=4)
+                    case "MCTS":
+                        policy = MctsPolicy[Action](max_iterations=10_000)
                 match config_component.config.state:
                     case UnabstractedStateConfig():
                         # The unabstracted state uses lazy waypoint expansion

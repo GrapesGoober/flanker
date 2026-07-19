@@ -122,10 +122,6 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         # MAXIMIZING_FACTION's perspective.
         return node.state.get_score(MAXIMIZING_FACTION)
 
-    # ------------------------------------------------------------------
-    # Game-specific hooks (fill these in later)
-    # ------------------------------------------------------------------
-
     def _get_legal_actions(
         self,
         state: IRepresentationState[TAction],
