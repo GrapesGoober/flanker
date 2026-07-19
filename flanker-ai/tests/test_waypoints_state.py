@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 from uuid import UUID
 
 import pytest
@@ -31,7 +32,6 @@ from flanker_core.systems.initiative_system import InitiativeState
 @dataclass
 class Fixture:
     gs: GameState
-    blue_agent: AiAgent
     friendly_1: UUID
     friendly_2: UUID
     enemy_1: UUID
@@ -104,34 +104,6 @@ def fixture() -> Fixture:
         ),
     )
 
-    waypoint_coordinates = [
-        Vec2(0, 0),  # 0
-        Vec2(10, 1),  # 1
-        Vec2(-10, 1),  # 2
-        Vec2(-10, 10),  # 3
-        Vec2(10, 10),  # 4
-    ]
-
-    gs.add_entity(
-        AiConfigComponent(
-            faction=InitiativeState.Faction.BLUE,
-            config=SearchPolicyConfig(
-                policy_type="Minimax",
-                state=WaypointsStateConfig(
-                    type="WaypointsStateConfig",
-                    waypoints=PointsConfig(
-                        initial_points=PointsConfig.HandDrawnConfig(
-                            type="HandDrawnConfig",
-                            points=waypoint_coordinates,
-                        ),
-                        use_combat_unit_positions=False,
-                        expansions=[],
-                    ),
-                    path_tolerance=3,
-                ),
-            ),
-        )
-    )
     gs.add_entity(
         EliminationWinCondition(
             target_faction=InitiativeState.Faction.RED,
@@ -157,21 +129,52 @@ def fixture() -> Fixture:
         )
     )
 
-    blue_agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
-
     return Fixture(
         gs=gs,
-        blue_agent=blue_agent,
         friendly_1=friendly_1,
         friendly_2=friendly_2,
         enemy_1=enemy_1,
         enemy_2=enemy_2,
-        waypoint_coordinates=waypoint_coordinates,
+        waypoint_coordinates=[
+            Vec2(0, 0),  # 0
+            Vec2(10, 1),  # 1
+            Vec2(-10, 1),  # 2
+            Vec2(-10, 10),  # 3
+            Vec2(10, 10),  # 4
+        ],
     )
 
 
+def get_agent(
+    fixture: Fixture,
+    policy_type: Literal["Minimax", "MCTS"],
+) -> AiAgent:
+    fixture.gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.BLUE,
+            config=SearchPolicyConfig(
+                policy_type=policy_type,
+                state=WaypointsStateConfig(
+                    type="WaypointsStateConfig",
+                    waypoints=PointsConfig(
+                        initial_points=PointsConfig.HandDrawnConfig(
+                            type="HandDrawnConfig",
+                            points=fixture.waypoint_coordinates,
+                        ),
+                        use_combat_unit_positions=False,
+                        expansions=[],
+                    ),
+                    path_tolerance=3,
+                ),
+            ),
+        )
+    )
+
+    return AiAgent.get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
+
+
 def test_waypoints_pathing(fixture: Fixture) -> None:
-    agent = fixture.blue_agent
+    agent = get_agent(fixture, policy_type="Minimax")
     rs = agent.rs
     assert isinstance(
         rs, WaypointsState
@@ -189,7 +192,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
-    agent = fixture.blue_agent
+    agent = get_agent(fixture, policy_type="Minimax")
     rs = agent.rs
     assert isinstance(
         rs, WaypointsState
@@ -200,8 +203,13 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
-def test_optimal_waypoints(fixture: Fixture) -> None:
-    action_results = fixture.blue_agent.play_initiative()
+@pytest.mark.parametrize("policy_type", ["Minimax", "MCTS"])
+def test_optimal_actions(
+    fixture: Fixture,
+    policy_type: Literal["Minimax", "MCTS"],
+) -> None:
+    blue_agent = get_agent(fixture, policy_type)
+    action_results = blue_agent.play_initiative()
     assert action_results != [], "The minimax must find optimal action sequence."
 
     staging_units: list[UUID] = []
