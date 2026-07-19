@@ -534,6 +534,10 @@
             {
               "const": "Expectimax",
               "type": "string"
+            },
+            {
+              "const": "MCTS",
+              "type": "string"
             }
           ],
           "title": "Policy Type"
