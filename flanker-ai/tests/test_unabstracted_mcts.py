@@ -113,7 +113,7 @@ def fixture() -> Fixture:
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
             config=SearchPolicyConfig(
-                policy_type="Minimax",
+                policy_type="MCTS",
                 state=UnabstractedStateConfig(
                     type="UnabstractedStateConfig",
                     move_candidates=PointsConfig(
