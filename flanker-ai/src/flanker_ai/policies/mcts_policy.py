@@ -117,9 +117,9 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
-        # TODO:
-        # Run a rollout until terminal and return reward from
-        # MAXIMIZING_FACTION's perspective.
+        # TODO: Run a rollout until terminal and return reward from
+        # MAXIMIZING_FACTION's perspective. I'm using heuristic score
+        # for now. Configurable alternatives are possible.
         return node.state.get_score(MAXIMIZING_FACTION)
 
     def _get_legal_actions(
