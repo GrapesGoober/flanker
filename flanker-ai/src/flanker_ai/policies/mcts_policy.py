@@ -37,14 +37,14 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             state=rs,
             parent=None,
             children=[],
-            unexpanded_actions=self._legal_actions(rs),
+            unexpanded_actions=self._get_legal_actions(rs),
             visits=0,
             value=0,
             action=None,
         )
 
         for _ in range(self._max_iterations):
-            leaf = self._select(root)
+            leaf = self._select_child(root)
             child = self._expand(leaf)
             value = self._simulate(child)
 
@@ -61,11 +61,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         best = max(root.children, key=lambda c: c.visits)
         return best.action, 0
 
-    # ------------------------------------------------------------------
-    # MCTS phases
-    # ------------------------------------------------------------------
-
-    def _select(
+    def _select_child(
         self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
@@ -74,7 +70,19 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             and not node.unexpanded_actions
             and node.children
         ):
-            node = self._best_uct_child(node)
+            assert node.children != None
+
+            log_parent = math.log(node.visits)
+
+            def uct(child: _MctsTreeNode[TAction]) -> float:
+                if child.visits == 0:
+                    return float("inf")
+
+                exploitation = child.value / child.visits
+                exploration = math.sqrt(2 * log_parent / child.visits)
+                return exploitation + exploration
+
+            node = max(node.children, key=uct)
 
         return node
 
@@ -97,7 +105,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             parent=node,
             children=[],
             action=action,
-            unexpanded_actions=self._legal_actions(child_state),
+            unexpanded_actions=self._get_legal_actions(child_state),
             value=0,
             visits=0,
         )
@@ -115,35 +123,16 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         return node.state.get_score(MAXIMIZING_FACTION)
 
     # ------------------------------------------------------------------
-    # Tree helpers
-    # ------------------------------------------------------------------
-
-    def _best_uct_child(
-        self,
-        node: _MctsTreeNode[TAction],
-    ) -> _MctsTreeNode[TAction]:
-        assert node.children
-
-        log_parent = math.log(node.visits)
-
-        def uct(child: _MctsTreeNode[TAction]) -> float:
-            if child.visits == 0:
-                return float("inf")
-
-            exploitation = child.value / child.visits
-            exploration = math.sqrt(2 * log_parent / child.visits)
-            return exploitation + exploration
-
-        return max(node.children, key=uct)
-
-    # ------------------------------------------------------------------
     # Game-specific hooks (fill these in later)
     # ------------------------------------------------------------------
 
-    def _legal_actions(
+    def _get_legal_actions(
         self,
         state: IRepresentationState[TAction],
     ) -> list[TAction]:
+        """
+        Returns a list of legal actions. This loops each action to check.
+        """
         valid_actions: list[TAction] = []
         for action in state.get_actions():
             branch = state.get_one_branch(action)
@@ -157,6 +146,9 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         state: IRepresentationState[TAction],
         action: TAction,
     ) -> IRepresentationState[TAction]:
+        """
+        Applies a legal action, assuming the given action is already validated.
+        """
         new_state = state.get_one_branch(action)
         assert new_state != None
         return new_state
