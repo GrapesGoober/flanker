@@ -16,7 +16,7 @@ class IRepresentationState[TAction](Protocol):
         ...
 
     def get_actions(self) -> Sequence[TAction]:
-        """Get possible actions from the current state"""
+        """Get possible actions from the current state. May not be legal."""
         ...
 
     def get_branches(
