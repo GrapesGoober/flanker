@@ -18,8 +18,8 @@ class _MctsTreeNode[TAction]:
     children: list["_MctsTreeNode[TAction]"]
     unexpanded_actions: list[TAction]  # All actions, some are illegal.
 
-    visits: int
-    value: float
+    total_visits: int  # N(v) total number of visits
+    total_value: float  # Q(v) total simulation reward of all visited children
 
     action: TAction | None
 
@@ -38,8 +38,8 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             parent=None,
             children=[],
             unexpanded_actions=list(rs.get_actions()),
-            visits=0,
-            value=0,
+            total_visits=0,
+            total_value=0,
             action=None,
         )
 
@@ -55,8 +55,8 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             # Back propagate each node
             node: _MctsTreeNode[TAction] | None = child
             while node is not None:
-                node.visits += 1
-                node.value += value
+                node.total_visits += 1
+                node.total_value += value
                 node = node.parent
 
         # No valid actions at this root
@@ -64,41 +64,44 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             return None, 0
 
         # Choose the root's best action to perform
-        best = max(root.children, key=lambda c: c.visits)
+        best = max(root.children, key=lambda c: c.total_visits)
         return best.action, 0
 
     def _select_child_best_uct(
         self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
-        """Search node's children with max UCT."""
-        while (
-            node.state.get_winner() == None
-            and not node.unexpanded_actions
-            and node.children
-        ):
-            assert node.children != None
+        """Search node's subtree for leaf node with max UCT."""
 
-            log_parent = math.log(node.visits)
+        current_node: _MctsTreeNode[TAction] = node
+        # Keep traversing down the node's subtree and choose a non-terminal leaf
+        while (
+            current_node.state.get_winner() == None  # Non-terminal
+            and current_node.unexpanded_actions == []  # No actions unexpanded
+            and current_node.children  # Has children to select from
+        ):
+            assert current_node.children != None
+
+            log_parent = math.log(current_node.total_visits)
 
             def uct(child: _MctsTreeNode[TAction]) -> float:
-                if child.visits == 0:
+                if child.total_visits == 0:  # unvisited nodes chosen first
                     return float("inf")
 
-                exploitation = child.value / child.visits
-                exploration = math.sqrt(2 * log_parent / child.visits)
+                exploitation = child.total_value / child.total_visits
+                exploration = math.sqrt(2 * log_parent / child.total_visits)
                 return exploitation + exploration
 
-            node = max(node.children, key=uct)
+            current_node = max(current_node.children, key=uct)
 
-        return node
+        return current_node
 
     def _expand(
         self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
         """
-        Use any unexpanded action from node and expand it into a new child.
+        Find a legal unexpanded action and expand it into a new child.
         """
 
         # Ignore expansion if terminal or if no expandable actions left.
@@ -111,7 +114,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         # Find the first legal action and its resulting state
         legal_action: TAction | None = None
         child_state: IRepresentationState[TAction] | None = None
-        while node.unexpanded_actions:
+        while node.unexpanded_actions != []:
             legal_action = node.unexpanded_actions.pop()
             child_state = node.state.get_one_branch(legal_action)
             if child_state is not None and legal_action is not None:
@@ -127,8 +130,8 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             children=[],
             action=legal_action,
             unexpanded_actions=list(child_state.get_actions()),
-            value=0,
-            visits=0,
+            total_value=0,
+            total_visits=0,
         )
         node.children.append(child)
         return child
