@@ -303,6 +303,12 @@ export interface components {
          */
         AssaultActionRequest: {
             /**
+             * Actiontype
+             * @default AssaultActionRequest
+             * @constant
+             */
+            actionType: "AssaultActionRequest";
+            /**
              * Unitid
              * Format: uuid
              */
@@ -383,6 +389,12 @@ export interface components {
          */
         FireActionRequest: {
             /**
+             * Actiontype
+             * @default FireActionRequest
+             * @constant
+             */
+            actionType: "FireActionRequest";
+            /**
              * Unitid
              * Format: uuid
              */
@@ -447,6 +459,12 @@ export interface components {
          */
         MoveActionRequest: {
             /**
+             * Actiontype
+             * @default MoveActionRequest
+             * @constant
+             */
+            actionType: "MoveActionRequest";
+            /**
              * Unitid
              * Format: uuid
              */
@@ -474,6 +492,12 @@ export interface components {
          * @description Request model for a unit's pivot action.
          */
         PivotActionRequest: {
+            /**
+             * Actiontype
+             * @default PivotActionRequest
+             * @constant
+             */
+            actionType: "PivotActionRequest";
             /**
              * Unitid
              * Format: uuid

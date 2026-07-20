@@ -117,6 +117,7 @@ export async function performMoveActionAsync(
 		body: {
 			state: jsonState,
 			action: {
+				actionType: 'MoveActionRequest',
 				unitId: unitId,
 				to: to
 			}
@@ -136,6 +137,7 @@ export async function performPivotActionAsync(
 		body: {
 			state: jsonState,
 			action: {
+				actionType: 'PivotActionRequest',
 				unitId: unitId,
 				to: to
 			}
@@ -155,6 +157,7 @@ export async function performFireActionAsync(
 		body: {
 			state: jsonState,
 			action: {
+				actionType: 'FireActionRequest',
 				unitId: unitId,
 				targetId: targetId
 			}
@@ -174,6 +177,7 @@ export async function performAssaultActionAsync(
 		body: {
 			state: jsonState,
 			action: {
+				actionType: 'AssaultActionRequest',
 				unitId: unitId,
 				targetId: targetId
 			}
