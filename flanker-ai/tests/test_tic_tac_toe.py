@@ -34,7 +34,7 @@ def test_str_simple_board(fixture: TicTacToeState) -> None:
 
 
 @pytest.mark.parametrize("policy_type", ["Minimax", "MCTS"])
-def test_minimax_move(
+def test_optimal_action(
     fixture: TicTacToeState,
     policy_type: Literal["Minimax", "MCTS"],
 ) -> None:
