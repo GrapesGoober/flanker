@@ -1,10 +1,7 @@
 import {
 	GetTerrainData,
 	GetUnitStatesData,
-	performAssaultActionAsync,
-	performFireActionAsync,
-	performMoveActionAsync,
-	performPivotActionAsync,
+	performActionAsync,
 	type GameViewState,
 	type RifleSquadData,
 	type TerrainModel,
@@ -151,7 +148,11 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performMoveActionAsync(gameStateJson, unitId, this.state.moveMarker);
+		const result = await performActionAsync(gameStateJson, {
+			actionType: 'MoveActionRequest',
+			unitId: unitId,
+			to: this.state.moveMarker
+		});
 		this.viewState = result.viewState;
 		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
@@ -165,7 +166,11 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performPivotActionAsync(gameStateJson, unitId, this.state.moveMarker);
+		const result = await performActionAsync(gameStateJson, {
+			actionType: 'PivotActionRequest',
+			unitId: unitId,
+			to: this.state.moveMarker
+		});
 		this.viewState = result.viewState;
 		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
@@ -179,7 +184,11 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performFireActionAsync(gameStateJson, unitId, this.state.target.unitId);
+		const result = await performActionAsync(gameStateJson, {
+			actionType: 'FireActionRequest',
+			unitId: unitId,
+			targetId: this.state.target.unitId
+		});
 		this.viewState = result.viewState;
 		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;
@@ -193,7 +202,11 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performAssaultActionAsync(gameStateJson, unitId, this.state.target.unitId);
+		const result = await performActionAsync(gameStateJson, {
+			actionType: 'AssaultActionRequest',
+			unitId: unitId,
+			targetId: this.state.target.unitId
+		});
 		this.viewState = result.viewState;
 		this.updateGameStateJson(result.jsonState);
 		this.isFetching = false;

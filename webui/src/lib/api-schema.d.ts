@@ -84,7 +84,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/move": {
+    "/api/perform": {
         parameters: {
             query?: never;
             header?: never;
@@ -94,70 +94,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Action Move
+         * Perform Action
          * @description Move a unit and return updated rifle squads.
          */
-        post: operations["action_move_api_move_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/pivot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Action Pivot
-         * @description Pivot a unit and return updated rifle squads.
-         */
-        post: operations["action_pivot_api_pivot_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/fire": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Action Fire
-         * @description Move a unit and return updated rifle squads.
-         */
-        post: operations["action_fire_api_fire_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/assault": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Action Assault
-         * @description Move a unit and return updated rifle squads.
-         */
-        post: operations["action_assault_api_assault_post"];
+        post: operations["perform_action_api_perform_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -303,6 +243,12 @@ export interface components {
          */
         AssaultActionRequest: {
             /**
+             * Actiontype
+             * @default AssaultActionRequest
+             * @constant
+             */
+            actionType: "AssaultActionRequest";
+            /**
              * Unitid
              * Format: uuid
              */
@@ -319,30 +265,6 @@ export interface components {
          * @enum {string}
          */
         AssaultOutcomes: "FAIL" | "SUCCESS";
-        /** Body_action_assault_api_assault_post */
-        Body_action_assault_api_assault_post: {
-            action: components["schemas"]["AssaultActionRequest"];
-            /** State */
-            state: string;
-        };
-        /** Body_action_fire_api_fire_post */
-        Body_action_fire_api_fire_post: {
-            action: components["schemas"]["FireActionRequest"];
-            /** State */
-            state: string;
-        };
-        /** Body_action_move_api_move_post */
-        Body_action_move_api_move_post: {
-            action: components["schemas"]["MoveActionRequest"];
-            /** State */
-            state: string;
-        };
-        /** Body_action_pivot_api_pivot_post */
-        Body_action_pivot_api_pivot_post: {
-            action: components["schemas"]["PivotActionRequest"];
-            /** State */
-            state: string;
-        };
         /** Body_add_terrain_api_terrain_add_post */
         Body_add_terrain_api_terrain_add_post: {
             /** State */
@@ -354,6 +276,13 @@ export interface components {
             /** State */
             state: string;
             configRequest: components["schemas"]["AiWaypointConfigRequest"];
+        };
+        /** Body_perform_action_api_perform_post */
+        Body_perform_action_api_perform_post: {
+            /** Action */
+            action: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
+            /** State */
+            state: string;
         };
         /** Body_update_terrain_api_terrain_update_post */
         Body_update_terrain_api_terrain_update_post: {
@@ -382,6 +311,12 @@ export interface components {
          * @description Request model for a unit's fire action.
          */
         FireActionRequest: {
+            /**
+             * Actiontype
+             * @default FireActionRequest
+             * @constant
+             */
+            actionType: "FireActionRequest";
             /**
              * Unitid
              * Format: uuid
@@ -447,6 +382,12 @@ export interface components {
          */
         MoveActionRequest: {
             /**
+             * Actiontype
+             * @default MoveActionRequest
+             * @constant
+             */
+            actionType: "MoveActionRequest";
+            /**
              * Unitid
              * Format: uuid
              */
@@ -474,6 +415,12 @@ export interface components {
          * @description Request model for a unit's pivot action.
          */
         PivotActionRequest: {
+            /**
+             * Actiontype
+             * @default PivotActionRequest
+             * @constant
+             */
+            actionType: "PivotActionRequest";
             /**
              * Unitid
              * Format: uuid
@@ -673,7 +620,7 @@ export interface operations {
             };
         };
     };
-    action_move_api_move_post: {
+    perform_action_api_perform_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -682,106 +629,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_action_move_api_move_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    action_pivot_api_pivot_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Body_action_pivot_api_pivot_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    action_fire_api_fire_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Body_action_fire_api_fire_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    action_assault_api_assault_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Body_action_assault_api_assault_post"];
+                "application/json": components["schemas"]["Body_perform_action_api_perform_post"];
             };
         };
         responses: {

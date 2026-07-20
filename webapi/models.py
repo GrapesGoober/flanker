@@ -51,6 +51,7 @@ class GameViewStateResponse(BaseModel, CamelCaseConfig):
 class MoveActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's move action."""
 
+    action_type: Literal["MoveActionRequest"] = "MoveActionRequest"
     unit_id: UUID
     to: Vec2
 
@@ -58,6 +59,7 @@ class MoveActionRequest(BaseModel, CamelCaseConfig):
 class FireActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's fire action."""
 
+    action_type: Literal["FireActionRequest"] = "FireActionRequest"
     unit_id: UUID
     target_id: UUID
 
@@ -65,6 +67,7 @@ class FireActionRequest(BaseModel, CamelCaseConfig):
 class AssaultActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's assault action."""
 
+    action_type: Literal["AssaultActionRequest"] = "AssaultActionRequest"
     unit_id: UUID
     target_id: UUID
 
@@ -72,6 +75,7 @@ class AssaultActionRequest(BaseModel, CamelCaseConfig):
 class PivotActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's pivot action."""
 
+    action_type: Literal["PivotActionRequest"] = "PivotActionRequest"
     unit_id: UUID
     to: Vec2
 
@@ -129,7 +133,23 @@ class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
     points: list[Vec2]
 
 
+ActionRequest = Annotated[
+    Union[
+        MoveActionRequest,
+        PivotActionRequest,
+        FireActionRequest,
+        AssaultActionRequest,
+    ],
+    Field(discriminator="action_type"),
+]
+
+
 ActionLog = Annotated[
-    Union[MoveActionLog, PivotActionLog, FireActionLog, AssaultActionLog],
+    Union[
+        MoveActionLog,
+        PivotActionLog,
+        FireActionLog,
+        AssaultActionLog,
+    ],
     Field(discriminator="log_type"),
 ]

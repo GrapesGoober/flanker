@@ -10,6 +10,7 @@ from flanker_core.systems.action_system import ActionSystem
 
 from webapi.logging_service import LoggingService
 from webapi.models import (
+    ActionRequest,
     AssaultActionLog,
     AssaultActionRequest,
     FireActionLog,
@@ -26,9 +27,28 @@ class ActionService:
     """Provides static methods to process player actions."""
 
     @staticmethod
-    def move(gs: GameState, body: MoveActionRequest) -> None:
-        """Perform a move action."""
-        result = ActionSystem.perform(gs, MoveAction(body.unit_id, body.to))
+    def perform(gs: GameState, action_request: ActionRequest) -> None:
+        """Perform an action."""
+
+        match action_request:
+            case MoveActionRequest():
+                ActionService._move(gs, action_request)
+            case PivotActionRequest():
+                ActionService._pivot(gs, action_request)
+            case FireActionRequest():
+                ActionService._fire(gs, action_request)
+            case AssaultActionRequest():
+                ActionService._assault(gs, action_request)
+
+    @staticmethod
+    def _move(gs: GameState, body: MoveActionRequest) -> None:
+        result = ActionSystem.perform(
+            gs=gs,
+            action=MoveAction(
+                unit_id=body.unit_id,
+                to=body.to,
+            ),
+        )
         if isinstance(result, InvalidAction):
             raise ValueError(result)
         LoggingService.log(
@@ -41,9 +61,14 @@ class ActionService:
         )
 
     @staticmethod
-    def pivot(gs: GameState, body: PivotActionRequest) -> None:
-        """Perform a pivot action."""
-        result = ActionSystem.perform(gs, PivotAction(body.unit_id, body.to))
+    def _pivot(gs: GameState, body: PivotActionRequest) -> None:
+        result = ActionSystem.perform(
+            gs=gs,
+            action=PivotAction(
+                unit_id=body.unit_id,
+                to=body.to,
+            ),
+        )
         if isinstance(result, InvalidAction):
             raise ValueError(result)
         LoggingService.log(
@@ -56,9 +81,7 @@ class ActionService:
         )
 
     @staticmethod
-    def fire(gs: GameState, body: FireActionRequest) -> None:
-        """Perform a fire action."""
-
+    def _fire(gs: GameState, body: FireActionRequest) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=FireAction(
@@ -78,8 +101,7 @@ class ActionService:
         )
 
     @staticmethod
-    def assault(gs: GameState, body: AssaultActionRequest) -> None:
-        """Perform an assault action."""
+    def _assault(gs: GameState, body: AssaultActionRequest) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=AssaultAction(

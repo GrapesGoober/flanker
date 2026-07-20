@@ -10,13 +10,10 @@ from webapi.ai_service import AiService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
+    ActionRequest,
     AiWaypointConfigRequest,
-    AssaultActionRequest,
-    FireActionRequest,
     GameViewState,
     GameViewStateResponse,
-    MoveActionRequest,
-    PivotActionRequest,
     TerrainModel,
 )
 from webapi.scene_service import SceneService
@@ -73,50 +70,14 @@ async def get_terrain(
     return TerrainService.get_terrains(gs)
 
 
-@app.post("/api/move")
-async def action_move(
-    action: MoveActionRequest = Body(...),
+@app.post("/api/perform")
+async def perform_action(
+    action: ActionRequest = Body(...),
     state: str = Body(...),
 ) -> GameViewStateResponse:
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
-    ActionService.move(gs, action)
-    AiService.play_redfor(gs)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/pivot")
-async def action_pivot(
-    action: PivotActionRequest = Body(...),
-    state: str = Body(...),
-) -> GameViewStateResponse:
-    """Pivot a unit and return updated rifle squads."""
-    gs = SceneService.deserialize(state)
-    ActionService.pivot(gs, action)
-    AiService.play_redfor(gs)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/fire")
-async def action_fire(
-    action: FireActionRequest = Body(...),
-    state: str = Body(...),
-) -> GameViewStateResponse:
-    """Move a unit and return updated rifle squads."""
-    gs = SceneService.deserialize(state)
-    ActionService.fire(gs, action)
-    AiService.play_redfor(gs)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/assault")
-async def action_assault(
-    action: AssaultActionRequest = Body(...),
-    state: str = Body(...),
-) -> GameViewStateResponse:
-    """Move a unit and return updated rifle squads."""
-    gs = SceneService.deserialize(state)
-    ActionService.assault(gs, action)
+    ActionService.perform(gs, action)
     AiService.play_redfor(gs)
     return SceneService.get_view_state_response(gs)
 
