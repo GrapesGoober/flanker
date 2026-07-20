@@ -10,6 +10,7 @@ from flanker_core.systems.action_system import ActionSystem
 
 from webapi.logging_service import LoggingService
 from webapi.models import (
+    ActionRequest,
     AssaultActionLog,
     AssaultActionRequest,
     FireActionLog,
@@ -24,6 +25,18 @@ from webapi.scene_service import SceneService
 
 class ActionService:
     """Provides static methods to process player actions."""
+
+    @staticmethod
+    def perform(gs: GameState, action_request: ActionRequest) -> None:
+        match action_request:
+            case MoveActionRequest():
+                ActionService.move(gs, action_request)
+            case PivotActionRequest():
+                ActionService.pivot(gs, action_request)
+            case FireActionRequest():
+                ActionService.fire(gs, action_request)
+            case AssaultActionRequest():
+                ActionService.assault(gs, action_request)
 
     @staticmethod
     def move(gs: GameState, body: MoveActionRequest) -> None:

@@ -133,7 +133,23 @@ class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
     points: list[Vec2]
 
 
+ActionRequest = Annotated[
+    Union[
+        MoveActionRequest,
+        PivotActionRequest,
+        FireActionRequest,
+        AssaultActionRequest,
+    ],
+    Field(discriminator="action_type"),
+]
+
+
 ActionLog = Annotated[
-    Union[MoveActionLog, PivotActionLog, FireActionLog, AssaultActionLog],
+    Union[
+        MoveActionLog,
+        PivotActionLog,
+        FireActionLog,
+        AssaultActionLog,
+    ],
     Field(discriminator="log_type"),
 ]

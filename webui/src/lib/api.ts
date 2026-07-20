@@ -14,6 +14,16 @@ export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse = components['schemas']['GameViewStateResponse'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 
+export type MoveActionRequest = components['schemas']['MoveActionRequest'];
+export type FireActionRequest = components['schemas']['FireActionRequest'];
+export type AssaultActionRequest = components['schemas']['AssaultActionRequest'];
+export type PivotActionRequest = components['schemas']['PivotActionRequest'];
+export type ActionRequest =
+	| MoveActionRequest
+	| FireActionRequest
+	| AssaultActionRequest
+	| PivotActionRequest;
+
 export type MoveActionLog = components['schemas']['MoveActionLog'];
 export type FireActionLog = components['schemas']['FireActionLog'];
 export type AssaultActionLog = components['schemas']['AssaultActionLog'];
@@ -107,80 +117,14 @@ export async function GetUnitStatesData(jsonState: string): Promise<GameViewStat
 	return data;
 }
 
-/** Move a unit to a target position. */
-export async function performMoveActionAsync(
+export async function performActionAsync(
 	jsonState: string,
-	unitId: string,
-	to: Vec2
+	action: ActionRequest
 ): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/move', {
+	const { data, error } = await client.POST('/api/perform', {
 		body: {
 			state: jsonState,
-			action: {
-				actionType: 'MoveActionRequest',
-				unitId: unitId,
-				to: to
-			}
-		}
-	});
-	if (error) throw new Error(JSON.stringify(error));
-	return data;
-}
-
-/** Pivots a unit towards a target position. */
-export async function performPivotActionAsync(
-	jsonState: string,
-	unitId: string,
-	to: Vec2
-): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/pivot', {
-		body: {
-			state: jsonState,
-			action: {
-				actionType: 'PivotActionRequest',
-				unitId: unitId,
-				to: to
-			}
-		}
-	});
-	if (error) throw new Error(JSON.stringify(error));
-	return data;
-}
-
-/** Fire from one unit to a target unit. */
-export async function performFireActionAsync(
-	jsonState: string,
-	unitId: string,
-	targetId: string
-): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/fire', {
-		body: {
-			state: jsonState,
-			action: {
-				actionType: 'FireActionRequest',
-				unitId: unitId,
-				targetId: targetId
-			}
-		}
-	});
-	if (error) throw new Error(JSON.stringify(error));
-	return data;
-}
-
-/** Assault a target unit with a unit. */
-export async function performAssaultActionAsync(
-	jsonState: string,
-	unitId: string,
-	targetId: string
-): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/assault', {
-		body: {
-			state: jsonState,
-			action: {
-				actionType: 'AssaultActionRequest',
-				unitId: unitId,
-				targetId: targetId
-			}
+			action: action
 		}
 	});
 	if (error) throw new Error(JSON.stringify(error));
