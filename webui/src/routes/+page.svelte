@@ -20,8 +20,6 @@
 	}
 
 	async function createNewGame() {
-		console.log(selectedScenes);
-		console.log(newGameName);
 		if (selectedScenes.length == 0) return;
 		const stateJson = await GetGameStateJSON(selectedScenes);
 		saveGameLocal(newGameName, stateJson);
