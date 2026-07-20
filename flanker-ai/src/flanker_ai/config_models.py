@@ -76,7 +76,7 @@ class UnabstractedStateConfig:
 
 @dataclass
 class SearchPolicyConfig:
-    policy_type: Literal["Minimax"] | Literal["Expectimax"] | Literal["MCTS"]
+    policy_type: Literal["Minimax", "Expectimax", "MCTS"]
     state: WaypointsStateConfig | UnabstractedStateConfig
 
 
