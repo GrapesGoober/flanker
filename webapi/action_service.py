@@ -28,20 +28,27 @@ class ActionService:
 
     @staticmethod
     def perform(gs: GameState, action_request: ActionRequest) -> None:
+        """Perform an action."""
+
         match action_request:
             case MoveActionRequest():
-                ActionService.move(gs, action_request)
+                ActionService._move(gs, action_request)
             case PivotActionRequest():
-                ActionService.pivot(gs, action_request)
+                ActionService._pivot(gs, action_request)
             case FireActionRequest():
-                ActionService.fire(gs, action_request)
+                ActionService._fire(gs, action_request)
             case AssaultActionRequest():
-                ActionService.assault(gs, action_request)
+                ActionService._assault(gs, action_request)
 
     @staticmethod
-    def move(gs: GameState, body: MoveActionRequest) -> None:
-        """Perform a move action."""
-        result = ActionSystem.perform(gs, MoveAction(body.unit_id, body.to))
+    def _move(gs: GameState, body: MoveActionRequest) -> None:
+        result = ActionSystem.perform(
+            gs=gs,
+            action=MoveAction(
+                unit_id=body.unit_id,
+                to=body.to,
+            ),
+        )
         if isinstance(result, InvalidAction):
             raise ValueError(result)
         LoggingService.log(
@@ -54,9 +61,14 @@ class ActionService:
         )
 
     @staticmethod
-    def pivot(gs: GameState, body: PivotActionRequest) -> None:
-        """Perform a pivot action."""
-        result = ActionSystem.perform(gs, PivotAction(body.unit_id, body.to))
+    def _pivot(gs: GameState, body: PivotActionRequest) -> None:
+        result = ActionSystem.perform(
+            gs=gs,
+            action=PivotAction(
+                unit_id=body.unit_id,
+                to=body.to,
+            ),
+        )
         if isinstance(result, InvalidAction):
             raise ValueError(result)
         LoggingService.log(
@@ -69,9 +81,7 @@ class ActionService:
         )
 
     @staticmethod
-    def fire(gs: GameState, body: FireActionRequest) -> None:
-        """Perform a fire action."""
-
+    def _fire(gs: GameState, body: FireActionRequest) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=FireAction(
@@ -91,8 +101,7 @@ class ActionService:
         )
 
     @staticmethod
-    def assault(gs: GameState, body: AssaultActionRequest) -> None:
-        """Perform an assault action."""
+    def _assault(gs: GameState, body: AssaultActionRequest) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=AssaultAction(
