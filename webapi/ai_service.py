@@ -117,6 +117,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
+                        reactive_fire_outcome=result.result.reactive_fire_outcome,
                         view_state=SceneService.get_view_state(result.result_gs),
                     )
 
