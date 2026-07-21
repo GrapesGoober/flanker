@@ -526,21 +526,13 @@
     "SearchPolicyConfig": {
       "properties": {
         "policy_type": {
-          "anyOf": [
-            {
-              "const": "Minimax",
-              "type": "string"
-            },
-            {
-              "const": "Expectimax",
-              "type": "string"
-            },
-            {
-              "const": "MCTS",
-              "type": "string"
-            }
+          "enum": [
+            "Minimax",
+            "Expectimax",
+            "MCTS"
           ],
-          "title": "Policy Type"
+          "title": "Policy Type",
+          "type": "string"
         },
         "state": {
           "anyOf": [
