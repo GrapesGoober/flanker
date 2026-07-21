@@ -72,7 +72,7 @@ class Serializer:
         )
 
         # Serialize with nulls excluded
-        return file_data.model_dump_json(indent=2, exclude_defaults=True)
+        return file_data.model_dump_json(indent=2, exclude_none=True)
 
     @staticmethod
     def deserialize(
