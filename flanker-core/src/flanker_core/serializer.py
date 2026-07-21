@@ -23,7 +23,7 @@ class Serializer:
     class _SparseEntity(BaseModel):
         """
         Defines custom serialization that ignores `None` fields.
-        This is similiar to `exclude_none=True` but is not recursive.
+        This is similar to `exclude_none=True` but is not recursive.
         """
 
         @model_serializer(mode="wrap")
