@@ -3,21 +3,40 @@ import json
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, TypeAdapter, create_model
+from pydantic import (
+    BaseModel,
+    Field,
+    SerializerFunctionWrapHandler,
+    create_model,
+    model_serializer,
+)
 
 
 class Serializer:
     """Static class for game state's entity-components serialization."""
 
-    class EntitiesTable[TEntity](BaseModel):
+    class _EntitiesTable[TEntity](BaseModel):
         """Defines the entities table serialized data structure."""
 
         entities: dict[UUID, TEntity]
 
+    class _SparseEntity(BaseModel):
+        """
+        Defines custom serialization that ignores `None` fields.
+        This is similiar to `exclude_none=True` but is not recursive.
+        """
+
+        @model_serializer(mode="wrap")
+        def serialize_model(
+            self, handler: SerializerFunctionWrapHandler
+        ) -> dict[str, object]:
+            data: dict[str, Any] = handler(self)
+            return {key: val for key, val in data.items() if val is not None}
+
     @staticmethod
     def _get_entities_types(
         component_types: list[type],
-    ) -> tuple[type[BaseModel], type[EntitiesTable[BaseModel]]]:
+    ) -> tuple[type[_SparseEntity], type[_EntitiesTable[_SparseEntity]]]:
         """Build BaseModels of Entity and EntitiesTable using component types."""
 
         # Build a table of component to its type, default value, and description
@@ -28,12 +47,16 @@ class Serializer:
                 Field(default=None, description=inspect.getdoc(t)),
             )
 
-        # TODO: this create_model is security risk by executing arbitrary code
-        # see https://docs.pydantic.dev/latest/examples/dynamic_models/
-        Entity = create_model("Entity", **component_fields)
+        # NOTE: create_model has security risk by executing arbitrary code.
+        # Never use type annotations from untrusted input.
+        Entity = create_model(
+            "Entity",
+            __base__=Serializer._SparseEntity,
+            **component_fields,
+        )
         EntitiesTable = create_model(
             "EntitiesTable",
-            __base__=Serializer.EntitiesTable[Entity],
+            __base__=Serializer._EntitiesTable[Entity],
         )
         return Entity, EntitiesTable
 
@@ -71,18 +94,9 @@ class Serializer:
             },
         )
 
-        # Duplicate the EntitiesTable but without None
-        payload = {
-            "entities": {
-                entity_id: {
-                    name: value
-                    for name, value in entity.model_dump(mode="json").items()
-                    if value is not None
-                }
-                for entity_id, entity in file_data.entities.items()
-            }
-        }
-        return TypeAdapter(type(payload)).dump_json(payload, indent=2).decode()
+        # Avoid using exclude_none or any of those variants as
+        # those are recursive, and leads to lossy component serialization.
+        return file_data.model_dump_json(indent=2)
 
     @staticmethod
     def deserialize(
