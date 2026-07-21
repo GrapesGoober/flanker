@@ -10,7 +10,7 @@ class Serializer:
     """Static class for game state's entity-components serialization."""
 
     class EntitiesTable[TEntity](BaseModel):
-        """Defines the entities table data structure."""
+        """Defines the entities table serialized data structure."""
 
         entities: dict[UUID, TEntity]
 
@@ -20,14 +20,14 @@ class Serializer:
     ) -> tuple[type[BaseModel], type[EntitiesTable[BaseModel]]]:
         """Build BaseModels of Entity and EntitiesTable using component types."""
 
+        # Build a table of component to its type, default value, and description
         component_fields: dict[str, Any] = {}
-
         for t in component_types:
-            # Define the field with its type, default value, and description
             component_fields[t.__name__] = (
                 Optional[t],
                 Field(default=None, description=inspect.getdoc(t)),
             )
+
         # TODO: this create_model is security risk by executing arbitrary code
         # see https://docs.pydantic.dev/latest/examples/dynamic_models/
         Entity = create_model("Entity", **component_fields)
