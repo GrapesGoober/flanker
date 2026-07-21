@@ -3,7 +3,7 @@ import json
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, TypeAdapter, create_model
 
 
 class Serializer:
@@ -71,8 +71,18 @@ class Serializer:
             },
         )
 
-        # Serialize with nulls excluded
-        return file_data.model_dump_json(indent=2, exclude_none=True)
+        # Duplicate the EntitiesTable but without None
+        payload = {
+            "entities": {
+                entity_id: {
+                    name: value
+                    for name, value in entity.model_dump(mode="json").items()
+                    if value is not None
+                }
+                for entity_id, entity in file_data.entities.items()
+            }
+        }
+        return TypeAdapter(type(payload)).dump_json(payload, indent=2).decode()
 
     @staticmethod
     def deserialize(
