@@ -49,7 +49,7 @@ async def get_game_state_json(
 ) -> str:
     """Gets a game state serialized entities table."""
     gs = SceneService.load_game_state(scene_names)
-    return SceneService.serialize(gs)
+    return SceneService.serialize(gs, indent=False)
 
 
 @app.post("/api/units")

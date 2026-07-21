@@ -72,6 +72,7 @@ class Serializer:
     def serialize(
         entities: dict[UUID, dict[type, Any]],
         component_types: list[type],
+        indent: int | None = None,
     ) -> str:
         """Serialises entity-component table & id counter to json string"""
 
@@ -96,7 +97,7 @@ class Serializer:
 
         # Avoid using exclude_none or any of those variants as
         # those are recursive, and leads to lossy component serialization.
-        return file_data.model_dump_json(indent=2)
+        return file_data.model_dump_json(indent=indent)
 
     @staticmethod
     def deserialize(

@@ -39,12 +39,13 @@ class SceneService:
         return [file.stem for file in folder.iterdir() if file.is_file()]
 
     @staticmethod
-    def serialize(gs: GameState) -> str:
+    def serialize(gs: GameState, indent: int | None = None) -> str:
         component_types = list(SceneService._get_component_types())
         entities = gs.dump()
         return Serializer.serialize(
             entities,
             component_types,
+            indent=indent,
         )
 
     @staticmethod
