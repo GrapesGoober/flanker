@@ -48,7 +48,7 @@ class Serializer:
             )
 
         # NOTE: create_model has security risk by executing arbitrary code.
-        # Never use type annotations from untrusted input.
+        # Never use type annotations, foo: 'bad_code()', from untrusted input.
         Entity = create_model(
             "Entity",
             __base__=Serializer._SparseEntity,
