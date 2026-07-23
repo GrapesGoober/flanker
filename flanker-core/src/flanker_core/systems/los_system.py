@@ -275,7 +275,10 @@ class LosSystem:
         radius: float = 1000,
         jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
-        """Returns a polygon representing the LOS from a spotter position."""
+        """
+        Returns a polygon representing the LOS from a spotter position.
+        Does not consider the FOV of the spotter.
+        """
 
         # Use the override if exists
         for _, override in gs.query(LosSystemOverrides.GetLosPolygon):
