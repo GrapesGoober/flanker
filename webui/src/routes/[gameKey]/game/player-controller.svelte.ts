@@ -66,7 +66,9 @@ export class PlayerController {
 					type: 'selected',
 					selectedUnit: unit
 				};
-			} else this.setAttackMarker(unit);
+			} else if (this.state.type == 'selected' && this.state.selectedUnit.isFriendly) {
+				this.setAttackMarker(unit);
+			}
 		}
 	}
 
