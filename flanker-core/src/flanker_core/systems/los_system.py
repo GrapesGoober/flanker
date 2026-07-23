@@ -289,14 +289,13 @@ class LosSystem:
             return cache.los_polygon_by_point[spotter_pos]
 
         terrains = list(
-            LosSystem._get_terrain_vertices(
+            LosSystem._get_terrains(
                 gs,
                 spotter_pos,
                 mask=TerrainFeature.Flag.OPAQUE,
             )
         )
-        terrain_verts = [vert for t in terrains for vert in t.vertices]
-        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
+        verts = LosSystem._get_terrain_vertices(terrains, spotter_pos)
         los_polygon: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -406,7 +405,7 @@ class LosSystem:
                 )
 
     @staticmethod
-    def _get_terrain_vertices(
+    def _get_terrains(
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = -1,
@@ -426,3 +425,14 @@ class LosSystem:
                     ):
                         continue
                 yield _Terrain(id, terrain, vertices)
+
+    @staticmethod
+    def _get_terrain_vertices(
+        terrains: list[_Terrain],
+        spotter_pos: Vec2,
+    ) -> list[Vec2]:
+        """Get a list of sorted vertices from terrains, including intersects."""
+        # TODO add terrain overlap fix here
+        terrain_verts = [vert for t in terrains for vert in t.vertices]
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
+        return verts
