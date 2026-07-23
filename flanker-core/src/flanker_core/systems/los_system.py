@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import Callable, Iterable
 from uuid import UUID
 
@@ -432,7 +433,17 @@ class LosSystem:
         spotter_pos: Vec2,
     ) -> list[Vec2]:
         """Get a list of sorted vertices from terrains, including intersects."""
-        # TODO add terrain overlap fix here
-        terrain_verts = [vert for t in terrains for vert in t.vertices]
-        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
+        verts: list[Vec2] = [vert for t in terrains for vert in t.vertices]
+
+        # TODO: this has a very bad time complexity. alternatives?
+        for terrain in terrains:
+            for other_terrain in terrains:
+                for line in pairwise(terrain.vertices):
+                    intersects = IntersectGetter.get_intersects(
+                        line=line,
+                        polyline=other_terrain.vertices,
+                    )
+                    verts += intersects
+
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, verts)
         return verts
