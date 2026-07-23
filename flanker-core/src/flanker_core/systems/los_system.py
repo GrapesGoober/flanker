@@ -7,7 +7,7 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.intersect_system import IntersectSystem
+from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -109,7 +109,7 @@ class LosSystem:
             return override.method(gs, spotter_pos, target_pos)
 
         # Count each intersects to not see through terrain
-        intersects = IntersectSystem.get(
+        intersects = TerrainSystem.get_intersect(
             gs=gs,
             start=spotter_pos,
             end=target_pos,

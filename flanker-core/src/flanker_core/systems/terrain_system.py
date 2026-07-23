@@ -17,11 +17,11 @@ class Intersection:
     terrain_id: UUID
 
 
-class IntersectSystem:
+class TerrainSystem:
     """ECS system for finding line and terrain feature intersections."""
 
     @staticmethod
-    def get(
+    def get_intersect(
         gs: GameState, start: Vec2, end: Vec2, mask: int = -1
     ) -> Iterable[Intersection]:
         """
