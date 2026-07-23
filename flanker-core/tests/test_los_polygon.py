@@ -65,6 +65,13 @@ def fixture() -> Fixture:
     )
 
 
-def test_los_polygon(fixture: Fixture) -> None:
-    polygon = LosSystem.get_los_polygon(fixture.gs, Vec2(2.5, -2.5))
-    assert Vec2(2.5, 2.5) in polygon
+def test_los_polygon_overlapping_terrain(fixture: Fixture) -> None:
+    polygon = LosSystem.get_los_polygon(fixture.gs, Vec2(2.5, -5))
+    # There could be other vertices to test, but I'd focus on important ones
+    must_includes: list[Vec2] = [
+        Vec2(2.5, 2.5),  # The intersection between two terrains
+        Vec2(-5, 5),  # The left-most vertex
+        Vec2(10, 5),  # The right-most vertex
+    ]
+    for point in must_includes:
+        assert point in polygon, f"LOS polygon must include {point=}."
