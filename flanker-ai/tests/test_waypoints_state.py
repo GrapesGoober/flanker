@@ -19,6 +19,7 @@ from flanker_core.models.components import (
     CombatUnit,
     EliminationWinCondition,
     FireControls,
+    InitiativeState,
     MoveControls,
     StallLoseCondition,
     TerrainFeature,
@@ -26,7 +27,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.initiative_system import InitiativeState
 
 
 @dataclass

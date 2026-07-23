@@ -1,5 +1,7 @@
+from uuid import UUID
+
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import UUID, TerrainFeature, Transform
+from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 
 from webapi.components import TerrainTypeTag
