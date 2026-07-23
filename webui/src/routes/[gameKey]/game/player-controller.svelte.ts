@@ -61,12 +61,17 @@ export class PlayerController {
 			};
 		}
 		if (unit.isFriendly === false) {
+			// Allow selection of enemy unit only from default state
 			if (this.state.type === 'default') {
 				this.state = {
 					type: 'selected',
 					selectedUnit: unit
 				};
-			} else this.setAttackMarker(unit);
+			}
+			// Otherwise, if current is friendly, place an attack mark
+			else if (this.state.selectedUnit.isFriendly) {
+				this.setAttackMarker(unit);
+			}
 		}
 	}
 

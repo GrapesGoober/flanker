@@ -2,7 +2,6 @@ from itertools import batched
 from typing import Sequence
 from uuid import UUID
 
-from flanker_ai.components import InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     Action,
@@ -11,7 +10,7 @@ from flanker_core.models.actions import (
     MoveAction,
     PivotAction,
 )
-from flanker_core.models.components import CombatUnit, Transform
+from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 

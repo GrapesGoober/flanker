@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from flanker_core.models.components import Vec2
+from flanker_core.models.vec2 import Vec2
 
 # TODO: this is using string literal type discriminator
 # Is this needed? Should it be removed? What cleaner options are available?
