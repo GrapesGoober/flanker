@@ -151,11 +151,11 @@ class LosSystem:
             return override.method(gs, spotter_id, line)
 
         # Reuse FOV polygon from cache
+        fov_polygon: list[Vec2]
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
         else:
             gs.add_entity(cache := _LosCacheComponent({}, {}))
-
         spotter_transform = gs.get_component(spotter_id, Transform)
         cache_key: tuple[Vec2, float] = (
             spotter_transform.position,
@@ -175,6 +175,18 @@ class LosSystem:
             )
             cache.fov_polygon_by_point[cache_key] = fov_polygon
 
+        return LosSystem._get_line_fov_intersection(line, fov_polygon)
+
+    @staticmethod
+    def _get_line_fov_intersection(
+        line: tuple[Vec2, Vec2],
+        fov_polygon: list[Vec2],
+    ) -> Vec2 | None:
+        """
+        Returns the earliest intersection between a line and a FOV polygon.
+        If the line already starts inside, return the starting point,
+        otherwise returns the intersection.
+        """
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
         if IntersectGetter.is_inside(
@@ -201,6 +213,7 @@ class LosSystem:
 
         return None
 
+    # TODO Move this to Utils?
     @staticmethod
     def apply_fov_to_polygon(
         polyline: list[Vec2],
@@ -263,8 +276,6 @@ class LosSystem:
     def get_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
-        radius: float = 1000,
-        jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
         """
         Returns a polygon representing the LOS from a spotter position.
@@ -283,6 +294,7 @@ class LosSystem:
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
+        # Not in cache; recompute LOS polygon
         polygon = LosSystem._compute_los_polygon(gs, spotter_pos)
         cache.los_polygon_by_point[spotter_pos] = polygon
         return polygon
