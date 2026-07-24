@@ -1,6 +1,5 @@
 import math
 from dataclasses import dataclass
-from itertools import pairwise
 from typing import Callable, Iterable
 from uuid import UUID
 
@@ -297,67 +296,16 @@ class LosSystem:
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
-        polygon = LosSystem.new_get_los_polygon(gs, spotter_pos)
+        polygon = LosSystem._compute_los_polygon(gs, spotter_pos)
         cache.los_polygon_by_point[spotter_pos] = polygon
         return polygon
 
-        terrains = list(
-            LosSystem._get_terrains(
-                gs,
-                spotter_pos,
-                mask=TerrainFeature.Flag.OPAQUE,
-            )
-        )
-        verts = LosSystem._get_terrain_vertices(terrains, spotter_pos)
-        los_polygon: list[Vec2] = []
-        for vert in verts:
-            direction = (vert - spotter_pos).normalized()
-            ray = direction * radius
-            # Instead of casting one ray, casts two rays slightly to the left and right.
-            # This prevents boundary sensitivity when casting rays at the vertices.
-            jitter = direction.rotated(1.5708) * jitter_size
-            left_point = spotter_pos - jitter
-            right_point = spotter_pos + jitter
-            for point in [left_point, right_point]:
-                intersects = sorted(
-                    LosSystem._get_terrain_intersects(
-                        line=(point, point + ray),
-                        terrains=terrains,
-                    ),
-                    key=lambda i: (i.point - spotter_pos).length(),
-                )
-                # Choose which point from the intersects to append
-                if intersects:
-                    # Selects the second point to allow see-into terrain
-                    if len(intersects) > 1:
-                        new_point = intersects[1].point
-                    else:
-                        new_point = intersects[0].point
-                else:  # No intersects, use fallback point using the ray
-                    new_point = spotter_pos + ray
-
-                # If the new point is close enough to the target vertex,
-                # assume that the point is aimed there and lands close enough
-                if (new_point - vert).length() < 1e-3:
-                    new_point = vert
-                # If points are colocated, don't append
-                if los_polygon and los_polygon[-1] == new_point:
-                    continue
-                # If points are colinear, replace instead of append
-                if LosSystem._is_colinear(los_polygon, new_point):
-                    los_polygon[-1] = new_point
-                    continue
-                los_polygon.append(new_point)
-
-        los_polygon.append(los_polygon[0])
-        cache.los_polygon_by_point[spotter_pos] = los_polygon
-        return los_polygon
-
     @staticmethod
-    def new_get_los_polygon(
+    def _compute_los_polygon(
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
+        """Generates a new LOS polygon."""
 
         terrains = LosSystem._get_terrains(gs, spotter_pos)
         obstacles: list[Obstacle[UUID]] = []
@@ -405,39 +353,6 @@ class LosSystem:
         return sorted(verts, key=angle_from_spotter)
 
     @staticmethod
-    def _is_colinear(previous_points: list[Vec2], new_point: Vec2) -> bool:
-        """Returns whether points are colinear from the previous other points."""
-        if len(previous_points) >= 2:
-            a = previous_points[-2]
-            b = previous_points[-1]
-            c = new_point
-            ab = b - a
-            ac = c - a
-            cross = ab.cross(ac)
-            if abs(cross) < 1e-9:
-                return True
-
-        return False
-
-    @staticmethod
-    def _get_terrain_intersects(
-        line: tuple[Vec2, Vec2],
-        terrains: list[_Terrain],
-    ) -> Iterable[_TerrainIntersection]:
-        """Yields unsorted intersections between the line segment and terrain."""
-        for terrain in terrains:
-            points = IntersectGetter.get_intersects(
-                line=line,
-                polyline=terrain.vertices,
-            )
-            for point in points:
-                yield _TerrainIntersection(
-                    point,
-                    terrain.terrain_feature,
-                    terrain.terrain_id,
-                )
-
-    @staticmethod
     def _get_terrains(
         gs: GameState,
         spotter_pos: Vec2,
@@ -458,24 +373,3 @@ class LosSystem:
                     ):
                         continue
                 yield _Terrain(id, terrain, vertices)
-
-    @staticmethod
-    def _get_terrain_vertices(
-        terrains: list[_Terrain],
-        spotter_pos: Vec2,
-    ) -> list[Vec2]:
-        """Get a list of sorted vertices from terrains, including intersects."""
-        verts: list[Vec2] = [vert for t in terrains for vert in t.vertices]
-
-        # TODO: this has a very bad time complexity. alternatives?
-        for terrain in terrains:
-            for other_terrain in terrains:
-                for line in pairwise(terrain.vertices):
-                    intersects = IntersectGetter.get_intersects(
-                        line=line,
-                        polyline=other_terrain.vertices,
-                    )
-                    verts += intersects
-
-        verts = LosSystem._sort_verts_by_angle(spotter_pos, verts)
-        return verts
