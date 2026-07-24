@@ -10,6 +10,11 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
+from flanker_core.utils.reachability_polygon import (
+    Obstacle,
+    ObstacleIntersection,
+    ReachabilityPolygon,
+)
 
 FOV_DEGREE = 90
 
@@ -292,6 +297,10 @@ class LosSystem:
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
+        # polygon = LosSystem.new_get_los_polygon(gs, spotter_pos)
+        # cache.los_polygon_by_point[spotter_pos] = polygon
+        # return polygon
+
         terrains = list(
             LosSystem._get_terrains(
                 gs,
@@ -343,6 +352,38 @@ class LosSystem:
         los_polygon.append(los_polygon[0])
         cache.los_polygon_by_point[spotter_pos] = los_polygon
         return los_polygon
+
+    @staticmethod
+    def new_get_los_polygon(
+        gs: GameState,
+        spotter_pos: Vec2,
+    ) -> list[Vec2]:
+
+        terrains = LosSystem._get_terrains(gs, spotter_pos)
+        obstacles: list[Obstacle[UUID]] = []
+        for terrain in terrains:
+            obstacles.append(
+                Obstacle(
+                    polyline=terrain.vertices,
+                    metadata=terrain.terrain_id,
+                )
+            )
+
+        def criteria(
+            intersects: list[ObstacleIntersection[UUID]],
+        ) -> Vec2:
+            # Selects the second point to allow see-into terrain
+            if len(intersects) > 1:
+                new_point = intersects[1].point
+            else:
+                new_point = intersects[0].point
+            return new_point
+
+        return ReachabilityPolygon.get_polygon(
+            center_point=spotter_pos,
+            obstacles=obstacles,
+            criteria=criteria,
+        )
 
     @staticmethod
     def _sort_verts_by_angle(
@@ -412,7 +453,7 @@ class LosSystem:
     def _get_terrains(
         gs: GameState,
         spotter_pos: Vec2,
-        mask: int = -1,
+        mask: int = TerrainFeature.Flag.OPAQUE,
     ) -> Iterable[_Terrain]:
         """Yields only relevant terrains and its transformed vertices."""
         for id, terrain, transform in gs.query(TerrainFeature, Transform):

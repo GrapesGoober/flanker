@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from itertools import pairwise
 from typing import Any, Callable
@@ -13,7 +14,7 @@ class Obstacle[T]:
 
 
 @dataclass
-class Intersection[T]:
+class ObstacleIntersection[T]:
     obstacle: Obstacle[T]
     point: Vec2
 
@@ -23,7 +24,7 @@ class ReachabilityPolygon:
     def get_polygon[T](
         center_point: Vec2,
         obstacles: list[Obstacle[T]],
-        criteria: Callable[[list[Intersection[T]]], Vec2],
+        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2],
         jitter_size: float = 1e-6,  # Smaller values will break t-u bezier checks
         # TODO: consider an explicit boundary box instead?
         radius: float = 1000,
@@ -32,8 +33,13 @@ class ReachabilityPolygon:
         Returns a polygon of all reachable region from the center point.
         """
 
-        los_polygon: list[Vec2] = []
-        for vert in ReachabilityPolygon._get_relevant_vertices(obstacles):
+        vertices = ReachabilityPolygon._get_relevant_vertices(obstacles)
+        vertices = ReachabilityPolygon._sort_verts_by_angle(
+            point=center_point,
+            verts=vertices,
+        )
+        polygon: list[Vec2] = []
+        for vert in vertices:
             direction = (vert - center_point).normalized()
             ray = direction * radius
             # Instead of casting one ray, casts two rays slightly to the left and right.
@@ -43,7 +49,7 @@ class ReachabilityPolygon:
             right_point = center_point + jitter
             for center_point in [left_point, right_point]:
                 # Calculates intersections against each obstacle
-                intersections: list[Intersection[T]] = []
+                intersections: list[ObstacleIntersection[T]] = []
                 for obstacle in obstacles:
                     intersects = IntersectGetter.get_intersects(
                         line=(center_point, center_point + ray),
@@ -51,7 +57,7 @@ class ReachabilityPolygon:
                     )
                     for intersect in intersects:
                         intersections.append(
-                            Intersection(
+                            ObstacleIntersection(
                                 obstacle=obstacle,
                                 point=intersect,
                             )
@@ -72,16 +78,16 @@ class ReachabilityPolygon:
                 if (new_point - vert).length() < 1e-3:
                     new_point = vert
                 # If points are colocated, don't append
-                if los_polygon and los_polygon[-1] == new_point:
+                if polygon and polygon[-1] == new_point:
                     continue
                 # If points are colinear, replace instead of append
-                if ReachabilityPolygon._is_colinear(los_polygon, new_point):
-                    los_polygon[-1] = new_point
+                if ReachabilityPolygon._is_colinear(polygon, new_point):
+                    polygon[-1] = new_point
                     continue
-                los_polygon.append(new_point)
+                polygon.append(new_point)
 
-        los_polygon.append(los_polygon[0])
-        return los_polygon
+        polygon.append(polygon[0])
+        return polygon
 
     @staticmethod
     def _is_colinear(
@@ -104,7 +110,9 @@ class ReachabilityPolygon:
         return False
 
     @staticmethod
-    def _get_relevant_vertices(obstacles: list[Obstacle[Any]]) -> list[Vec2]:
+    def _get_relevant_vertices(
+        obstacles: list[Obstacle[Any]],
+    ) -> list[Vec2]:
         """
         Returns relevant vertices to cast against for polygon.
         """
@@ -120,5 +128,23 @@ class ReachabilityPolygon:
                         polyline=other_obstacle.polyline,
                     )
                     vertices += intersects
-
         return vertices
+
+    @staticmethod
+    def _sort_verts_by_angle(
+        point: Vec2,
+        verts: list[Vec2],
+    ) -> list[Vec2]:
+        """Sort vertices by the angle from a point."""
+
+        def angle_from_spotter(v: Vec2) -> float:
+            # Vector from spotter_pos to vertex
+            rel = v - point
+            # Compute angle relative to +x axis (0 radians)
+            theta = math.atan2(rel.y, rel.x)
+            # Normalize to [0, 2π)
+            if theta < 0:
+                theta += 2 * math.pi
+            return theta
+
+        return sorted(verts, key=angle_from_spotter)
