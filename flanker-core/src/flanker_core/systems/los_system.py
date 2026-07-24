@@ -297,9 +297,9 @@ class LosSystem:
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
-        # polygon = LosSystem.new_get_los_polygon(gs, spotter_pos)
-        # cache.los_polygon_by_point[spotter_pos] = polygon
-        # return polygon
+        polygon = LosSystem.new_get_los_polygon(gs, spotter_pos)
+        cache.los_polygon_by_point[spotter_pos] = polygon
+        return polygon
 
         terrains = list(
             LosSystem._get_terrains(
@@ -418,18 +418,6 @@ class LosSystem:
                 return True
 
         return False
-
-    @staticmethod
-    def _sort_intersects_by_distance(
-        intersects: list[_TerrainIntersection],
-        spotter_pos: Vec2,
-    ) -> list[_TerrainIntersection]:
-        """Sorts a list of intersection by distance from spotter."""
-
-        def distance_from_spotter(v: _TerrainIntersection) -> float:
-            return (v.point - spotter_pos).length()
-
-        return sorted(intersects, key=distance_from_spotter)
 
     @staticmethod
     def _get_terrain_intersects(

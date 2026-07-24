@@ -33,6 +33,9 @@ class ReachabilityPolygon:
         Returns a polygon of all reachable region from the center point.
         """
 
+        # FIXME why are there 44 vertices? Duplicates?
+        # Observation: this duplicates are slowing things down,
+        # But is not causing problems. It does risk future bugs though.
         vertices = ReachabilityPolygon._get_relevant_vertices(obstacles)
         vertices = ReachabilityPolygon._sort_verts_by_angle(
             point=center_point,
@@ -47,12 +50,12 @@ class ReachabilityPolygon:
             jitter = direction.rotated(1.5708) * jitter_size
             left_point = center_point - jitter
             right_point = center_point + jitter
-            for center_point in [left_point, right_point]:
+            for cast_from in [left_point, right_point]:
                 # Calculates intersections against each obstacle
                 intersections: list[ObstacleIntersection[T]] = []
                 for obstacle in obstacles:
                     intersects = IntersectGetter.get_intersects(
-                        line=(center_point, center_point + ray),
+                        line=(cast_from, cast_from + ray),
                         polyline=obstacle.polyline,
                     )
                     for intersect in intersects:
@@ -75,10 +78,12 @@ class ReachabilityPolygon:
 
                 # If the new point is close enough to the target vertex,
                 # assume that the point is aimed there and lands close enough
+                # FIXME: why isn't (2.5, 2.5) also snapped?
                 if (new_point - vert).length() < 1e-3:
                     new_point = vert
+                # FIXME: why is (4,4) not considered colocated?
                 # If points are colocated, don't append
-                if polygon and polygon[-1] == new_point:
+                if polygon and (polygon[-1] - new_point).length() < 1e-3:
                     continue
                 # If points are colinear, replace instead of append
                 if ReachabilityPolygon._is_colinear(polygon, new_point):
@@ -118,6 +123,7 @@ class ReachabilityPolygon:
         """
         vertices: list[Vec2] = []
         for obstacle in obstacles:
+            # FIXME: since polyline is closed loop, its [0] == [-1]
             vertices += obstacle.polyline
 
         for obstacle in obstacles:
