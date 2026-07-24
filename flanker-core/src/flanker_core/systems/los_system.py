@@ -19,20 +19,10 @@ FOV_DEGREE = 90
 
 
 @dataclass
-class _TerrainIntersection:
-    """Represents intersection between line and terrain feature."""
-
-    point: Vec2
-    terrain: TerrainFeature
-    terrain_id: UUID
-
-
-@dataclass
 class _Terrain:
     """Represents a prepared terrain ready for LOS."""
 
     terrain_id: UUID
-    terrain_feature: TerrainFeature
     vertices: list[Vec2]
 
 
@@ -333,6 +323,7 @@ class LosSystem:
             criteria=criteria,
         )
 
+    # TODO reuse this from utils?
     @staticmethod
     def _sort_verts_by_angle(
         spotter_pos: Vec2,
@@ -341,17 +332,15 @@ class LosSystem:
         """Get all terrain vertices sorted by angle."""
 
         def angle_from_spotter(v: Vec2) -> float:
-            # Vector from spotter_pos to vertex
             rel = v - spotter_pos
-            # Compute angle relative to +x axis (0 radians)
             theta = math.atan2(rel.y, rel.x)
-            # Normalize to [0, 2π)
             if theta < 0:
                 theta += 2 * math.pi
             return theta
 
         return sorted(verts, key=angle_from_spotter)
 
+    # TODO recycle this for `has_los` too
     @staticmethod
     def _get_terrains(
         gs: GameState,
@@ -372,4 +361,4 @@ class LosSystem:
                         and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
                     ):
                         continue
-                yield _Terrain(id, terrain, vertices)
+                yield _Terrain(terrain_id=id, vertices=vertices)
