@@ -24,6 +24,7 @@ class ReachabilityPolygon:
         obstacles: list[Obstacle[T]],
         criteria: Callable[[list[Intersection[T]]], Vec2],
         jitter_size: float = 1e-6,  # Smaller values will break t-u bezier checks
+        # TODO: consider an explicit boundary box instead?
         radius: float = 1000,
     ) -> list[Vec2]:
         """
