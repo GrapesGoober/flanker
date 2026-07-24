@@ -33,17 +33,14 @@ class ReachabilityPolygon:
         Returns a polygon of all reachable region from the center point.
         """
 
-        # FIXME why are there 44 vertices? Duplicates?
-        # Observation: this duplicates are slowing things down,
-        # But is not causing problems. It does risk future bugs though.
         vertices = ReachabilityPolygon._get_relevant_vertices(obstacles)
         vertices = ReachabilityPolygon._sort_verts_by_angle(
-            point=center_point,
+            center_point=center_point,
             verts=vertices,
         )
         polygon: list[Vec2] = []
-        for vert in vertices:
-            direction = (vert - center_point).normalized()
+        for target_vertex in vertices:
+            direction = (target_vertex - center_point).normalized()
             ray = direction * radius
             # Instead of casting one ray, casts two rays slightly to the left and right.
             # This prevents boundary sensitivity when casting rays at the vertices.
@@ -76,14 +73,11 @@ class ReachabilityPolygon:
                 else:  # No intersects, use fallback point using the ray
                     new_point = center_point + ray
 
-                # If the new point is close enough to the target vertex,
-                # assume that the point is aimed there and lands close enough
-                # FIXME: why isn't (2.5, 2.5) also snapped?
-                if (new_point - vert).length() < 1e-3:
-                    new_point = vert
-                # FIXME: why is (4,4) not considered colocated?
+                # Snap new point to target vertex
+                if new_point.is_close(target_vertex, abs_tol=1e-3):
+                    new_point = target_vertex
                 # If points are colocated, don't append
-                if polygon and (polygon[-1] - new_point).length() < 1e-3:
+                if polygon and polygon[-1].is_close(new_point):
                     continue
                 # If points are colinear, replace instead of append
                 if ReachabilityPolygon._is_colinear(polygon, new_point):
@@ -134,23 +128,36 @@ class ReachabilityPolygon:
                         polyline=other_obstacle.polyline,
                     )
                     vertices += intersects
+        vertices = ReachabilityPolygon._filter_colocated(vertices)
         return vertices
 
     @staticmethod
     def _sort_verts_by_angle(
-        point: Vec2,
+        center_point: Vec2,
         verts: list[Vec2],
     ) -> list[Vec2]:
         """Sort vertices by the angle from a point."""
 
-        def angle_from_spotter(v: Vec2) -> float:
-            # Vector from spotter_pos to vertex
-            rel = v - point
-            # Compute angle relative to +x axis (0 radians)
+        def angle_from_center(v: Vec2) -> float:
+            rel = v - center_point
             theta = math.atan2(rel.y, rel.x)
-            # Normalize to [0, 2π)
             if theta < 0:
                 theta += 2 * math.pi
             return theta
 
-        return sorted(verts, key=angle_from_spotter)
+        return sorted(verts, key=angle_from_center)
+
+    @staticmethod
+    def _filter_colocated(
+        points: list[Vec2],
+        tolerance: float = 1e-5,
+    ) -> list[Vec2]:
+        """Filter"""
+
+        filtered_points: list[Vec2] = []
+        for point in points:
+            if not any(
+                point.is_close(other, abs_tol=tolerance) for other in filtered_points
+            ):
+                filtered_points.append(point)
+        return filtered_points
