@@ -150,23 +150,20 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
             return override.method(gs, spotter_id, line)
 
-        interrupt_pos: Vec2 | None = None
-
-        spotter_transform = gs.get_component(spotter_id, Transform)
-
-        # If already exists in cache, no need to recalculate
+        # Reuse FOV polygon from cache
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
         else:
             gs.add_entity(cache := _LosCacheComponent({}, {}))
 
+        spotter_transform = gs.get_component(spotter_id, Transform)
         cache_key: tuple[Vec2, float] = (
             spotter_transform.position,
             spotter_transform.degrees,
         )
         if cache_key in cache.fov_polygon_by_point:
             fov_polygon = cache.fov_polygon_by_point[cache_key]
-        else:
+        else:  # Regenerate FOV polygon
             los_polygon = LosSystem.get_los_polygon(
                 gs=gs,
                 spotter_pos=spotter_transform.position,
@@ -184,7 +181,7 @@ class LosSystem:
             point=line[0],
             polygon=fov_polygon,
         ):
-            interrupt_pos = line[0]
+            return line[0]
 
         # The first point is outside, thus only care about intersection
         elif intersects := IntersectGetter.get_intersects(
@@ -200,9 +197,9 @@ class LosSystem:
             # This reduces floating point sensitivity.
             line_direction = line[1] - line[0]
             offset = line_direction * 1e-12
-            interrupt_pos = earliest_point + offset
+            return earliest_point + offset
 
-        return interrupt_pos
+        return None
 
     @staticmethod
     def apply_fov_to_polygon(
