@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Callable
+from itertools import pairwise
+from typing import Any, Callable
 
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.intersect_getter import IntersectGetter
@@ -31,12 +32,8 @@ class ReachabilityPolygon:
         Returns a polygon of all reachable region from the center point.
         """
 
-        # TODO: consider inter-obstacle intersections too.
-        verts: list[Vec2] = [
-            vertex for obstacle in obstacles for vertex in obstacle.polyline
-        ]
         los_polygon: list[Vec2] = []
-        for vert in verts:
+        for vert in ReachabilityPolygon._get_relevant_vertices(obstacles):
             direction = (vert - center_point).normalized()
             ray = direction * radius
             # Instead of casting one ray, casts two rays slightly to the left and right.
@@ -105,3 +102,23 @@ class ReachabilityPolygon:
                 return True
 
         return False
+
+    @staticmethod
+    def _get_relevant_vertices(obstacles: list[Obstacle[Any]]) -> list[Vec2]:
+        """
+        Returns relevant vertices to cast against for polygon.
+        """
+        vertices: list[Vec2] = []
+        for obstacle in obstacles:
+            vertices += obstacle.polyline
+
+        for obstacle in obstacles:
+            for other_obstacle in obstacles:
+                for line in pairwise(obstacle.polyline):
+                    intersects = IntersectGetter.get_intersects(
+                        line=line,
+                        polyline=other_obstacle.polyline,
+                    )
+                    vertices += intersects
+
+        return vertices
