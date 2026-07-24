@@ -82,17 +82,19 @@ class Serializer:
         # Convert entities to pydantic models
         file_data = EntitiesTable(
             entities={
-                # Each entity is validated using the built BaseModel
-                entity_id: Entity(
-                    **{
+                # Each entity is validated using the dynamically-built BaseModel
+                entity_id: Entity(**component_data)
+                for entity_id, comps in entities.items()
+                if (
+                    # Only consider entities with non-empty component data
+                    component_data := {
                         comp.__class__.__name__: comp
                         for comp in comps.values()
                         # Filter out unregistered components
                         if type(comp) in component_types
                     }
                 )
-                for entity_id, comps in entities.items()
-            },
+            }
         )
 
         # Avoid using exclude_none or any of those variants as

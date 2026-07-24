@@ -2,9 +2,9 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.components import InitiativeState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 

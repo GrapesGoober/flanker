@@ -6,9 +6,10 @@ from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.components import AiConfigComponent, InitiativeState
+from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
 
 

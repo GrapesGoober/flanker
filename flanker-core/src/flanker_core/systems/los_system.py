@@ -1,12 +1,13 @@
 import math
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.intersect_system import IntersectSystem
+from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
 from flanker_core.utils.linear_transform import LinearTransform
 
@@ -108,7 +109,7 @@ class LosSystem:
             return override.method(gs, spotter_pos, target_pos)
 
         # Count each intersects to not see through terrain
-        intersects = IntersectSystem.get(
+        intersects = TerrainSystem.get_intersect(
             gs=gs,
             start=spotter_pos,
             end=target_pos,
@@ -274,7 +275,10 @@ class LosSystem:
         radius: float = 1000,
         jitter_size: float = 1e-6,  # Smaller than this will break t-u bezier checks
     ) -> list[Vec2]:
-        """Returns a polygon representing the LOS from a spotter position."""
+        """
+        Returns a polygon representing the LOS from a spotter position.
+        Does not consider the FOV of the spotter.
+        """
 
         # Use the override if exists
         for _, override in gs.query(LosSystemOverrides.GetLosPolygon):
@@ -289,14 +293,13 @@ class LosSystem:
             return cache.los_polygon_by_point[spotter_pos]
 
         terrains = list(
-            LosSystem._get_terrain_vertices(
+            LosSystem._get_terrains(
                 gs,
                 spotter_pos,
                 mask=TerrainFeature.Flag.OPAQUE,
             )
         )
-        terrain_verts = [vert for t in terrains for vert in t.vertices]
-        verts = LosSystem._sort_verts_by_angle(spotter_pos, terrain_verts)
+        verts = LosSystem._get_terrain_vertices(terrains, spotter_pos)
         los_polygon: list[Vec2] = []
         for vert in verts:
             direction = (vert - spotter_pos).normalized()
@@ -406,7 +409,7 @@ class LosSystem:
                 )
 
     @staticmethod
-    def _get_terrain_vertices(
+    def _get_terrains(
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = -1,
@@ -426,3 +429,24 @@ class LosSystem:
                     ):
                         continue
                 yield _Terrain(id, terrain, vertices)
+
+    @staticmethod
+    def _get_terrain_vertices(
+        terrains: list[_Terrain],
+        spotter_pos: Vec2,
+    ) -> list[Vec2]:
+        """Get a list of sorted vertices from terrains, including intersects."""
+        verts: list[Vec2] = [vert for t in terrains for vert in t.vertices]
+
+        # TODO: this has a very bad time complexity. alternatives?
+        for terrain in terrains:
+            for other_terrain in terrains:
+                for line in pairwise(terrain.vertices):
+                    intersects = IntersectGetter.get_intersects(
+                        line=line,
+                        polyline=other_terrain.vertices,
+                    )
+                    verts += intersects
+
+        verts = LosSystem._sort_verts_by_angle(spotter_pos, verts)
+        return verts

@@ -15,9 +15,9 @@ from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.intersect_system import IntersectSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.systems.terrain_system import TerrainSystem
 
 # This is a bandaid fix for LOS polygon imprecision
 _MOVE_INTERRUPT_ATOL = 5
@@ -47,7 +47,7 @@ class MoveSystem:
         match move_controls.move_type:
             case MoveControls.MoveType.FOOT:
                 terrain_type = TerrainFeature.Flag.WALKABLE
-        for intersect in IntersectSystem.get(gs, transform.position, to):
+        for intersect in TerrainSystem.get_intersect(gs, transform.position, to):
             if not (intersect.terrain.flag & terrain_type):
                 return InvalidAction.BAD_COORDS
 

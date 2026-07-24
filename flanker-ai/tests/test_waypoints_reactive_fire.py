@@ -12,12 +12,12 @@ from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
-    FireOutcomes,
     InitiativeState,
     MoveControls,
     TerrainFeature,
     Transform,
 )
+from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
 

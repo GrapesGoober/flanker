@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from flanker_ai.ai_agent import AiConfigComponent
+from flanker_ai.components import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
 from pydantic import BaseModel
