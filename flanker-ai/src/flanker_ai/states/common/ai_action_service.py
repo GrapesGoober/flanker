@@ -93,7 +93,7 @@ class AiActionService:
 
                 # Only pivot if not already looking there.
                 if LosSystem.in_fov(
-                    origin_transform=friendly_transform,
+                    spotter_transform=friendly_transform,
                     target_pos=target_transform.position,
                 ):
                     continue
