@@ -6,7 +6,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
+from flanker_core.utils.transform_utils import TransformUtils
 
 
 @dataclass
@@ -33,7 +33,7 @@ class TerrainSystem:
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if (terrain.flag & mask) == 0:
                 continue
-            vertices = LinearTransform.apply(terrain.vertices, transform)
+            vertices = TransformUtils.apply(terrain.vertices, transform)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
             intersections = IntersectGetter.get_intersects(

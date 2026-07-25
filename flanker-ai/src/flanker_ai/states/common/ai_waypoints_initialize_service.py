@@ -4,7 +4,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
+from flanker_core.utils.transform_utils import TransformUtils
 
 
 class AiWaypointsInitializeService:
@@ -25,7 +25,7 @@ class AiWaypointsInitializeService:
         boundary_vertices: list[Vec2] = []
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
+                boundary_vertices = TransformUtils.apply(
                     terrain.vertices,
                     transform,
                 )
@@ -64,7 +64,7 @@ class AiWaypointsInitializeService:
         mask = TerrainFeature.Flag.BOUNDARY
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
-                boundary_vertices = LinearTransform.apply(
+                boundary_vertices = TransformUtils.apply(
                     terrain.vertices,
                     transform,
                 )

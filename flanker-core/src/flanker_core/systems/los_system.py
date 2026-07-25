@@ -8,12 +8,12 @@ from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
 from flanker_core.utils.reachability_polygon import (
     Obstacle,
     ObstacleIntersection,
     ReachabilityPolygon,
 )
+from flanker_core.utils.transform_utils import TransformUtils
 
 FOV_DEGREE = 90
 
@@ -117,7 +117,7 @@ class LosSystem:
             terrain_id = intersect.terrain_id
             terrain = gs.get_component(terrain_id, TerrainFeature)
             terrain_transform = gs.get_component(terrain_id, Transform)
-            vertices = LinearTransform.apply(
+            vertices = TransformUtils.apply(
                 vec_list=terrain.vertices,
                 transform=terrain_transform,
             )
@@ -365,7 +365,7 @@ class LosSystem:
         """Yields only relevant terrains and its transformed vertices."""
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
-                vertices = LinearTransform.apply(terrain.vertices, transform)
+                vertices = TransformUtils.apply(terrain.vertices, transform)
                 if terrain.is_closed_loop:
                     vertices.append(vertices[0])
                     # Ignore the terrain entity if the spotter is inside it,

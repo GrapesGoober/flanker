@@ -28,7 +28,7 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
+from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
@@ -85,7 +85,7 @@ def draw_terrains(gs: GameState) -> None:
         components.TerrainFeature,
         components.Transform,
     ):
-        vertices = LinearTransform.apply(terrain.vertices, transform)
+        vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
         visualize_polygon(
@@ -327,7 +327,7 @@ def visualize_expansion(gs: GameState) -> None:
     intersections: list[Vec2] = []
     all_polygons: list[list[Vec2]] = []
     for _, transform, terrain in gs.query(Transform, TerrainFeature):
-        vertices = LinearTransform.apply(terrain.vertices, transform)
+        vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
         all_polygons.append(vertices)
