@@ -62,6 +62,7 @@ class LosSystemOverrides:
 class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
+    # TODO put this in utils?
     @staticmethod
     def in_fov(
         spotter_transform: Transform,
