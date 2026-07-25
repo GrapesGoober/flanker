@@ -9,6 +9,7 @@ from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_utils import IntersectUtils
+from flanker_core.utils.polygon_utils import PolygonUtils
 from flanker_core.utils.transform_utils import TransformUtils
 
 
@@ -196,8 +197,8 @@ class AiPointsExpansionService:
         """
         waypoint_los_polygon = LosSystem.get_los_polygon(gs, waypoint)
         return {
-            other_waypoint: IntersectUtils.is_inside(
-                other_waypoint, waypoint_los_polygon
+            other_waypoint: PolygonUtils.is_inside(
+                point=other_waypoint, polygon=waypoint_los_polygon
             )
             for other_waypoint in flag_waypoints
         }

@@ -97,7 +97,7 @@ class LosSystem:
             # Ignore count spotter's terrain (allow to see out)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-                if IntersectUtils.is_inside(
+                if PolygonUtils.is_inside(
                     point=spotter_pos,
                     polygon=vertices,
                 ):
@@ -168,7 +168,7 @@ class LosSystem:
         """
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
-        if IntersectUtils.is_inside(
+        if PolygonUtils.is_inside(
             point=line[0],
             polygon=fov_polygon,
         ):
@@ -268,7 +268,7 @@ class LosSystem:
                     # Ignore the terrain entity if the spotter is inside it,
                     # this allows spotter to see-out of a terrain
                     if (
-                        IntersectUtils.is_inside(spotter_pos, vertices)
+                        PolygonUtils.is_inside(spotter_pos, vertices)
                         # This rule doesn't apply to boundary terrain
                         and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
                     ):
