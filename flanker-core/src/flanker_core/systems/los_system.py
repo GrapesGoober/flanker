@@ -225,7 +225,7 @@ class LosSystem:
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
-        """Generates a new LOS polygon."""
+        """Helper method for `get_los_polygon`. Generates a new LOS polygon."""
 
         terrains = LosSystem._get_terrains(gs, spotter_pos)
         obstacles: list[Obstacle[UUID]] = []
