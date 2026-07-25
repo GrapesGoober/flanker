@@ -27,8 +27,9 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.linear_transform import LinearTransform
+from flanker_core.utils.intersect_utils import IntersectUtils
+from flanker_core.utils.polygon_utils import PolygonUtils
+from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
@@ -85,7 +86,7 @@ def draw_terrains(gs: GameState) -> None:
         components.TerrainFeature,
         components.Transform,
     ):
-        vertices = LinearTransform.apply(terrain.vertices, transform)
+        vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
         visualize_polygon(
@@ -109,7 +110,7 @@ def draw_combat_unit_los_cone(
         spotter_pos=spotter_transform.position,
     )
     if draw_as_cone:
-        polygon = LosSystem.apply_fov_to_polygon(
+        polygon = PolygonUtils.clip_by_fov_cone(
             polyline=polygon,
             center_point=spotter_transform.position,
             heading_degree=spotter_transform.degrees,
@@ -327,13 +328,13 @@ def visualize_expansion(gs: GameState) -> None:
     intersections: list[Vec2] = []
     all_polygons: list[list[Vec2]] = []
     for _, transform, terrain in gs.query(Transform, TerrainFeature):
-        vertices = LinearTransform.apply(terrain.vertices, transform)
+        vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
         all_polygons.append(vertices)
     all_polygons.append(los_polygon)
     for polygon in all_polygons:
-        intersects = IntersectGetter.get_intersects(
+        intersects = IntersectUtils.get_intersects(
             line=(segment_a, segment_b),
             polyline=polygon,
         )

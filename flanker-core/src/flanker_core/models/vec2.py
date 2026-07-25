@@ -42,14 +42,23 @@ class Vec2:
         length = self.length()
         return self / length if length else Vec2(0, 0)
 
-    def rotated(self, angle: float) -> "Vec2":
-        """Returns a new vector rotated by `angle` radians."""
-        cos_a = math.cos(angle)
-        sin_a = math.sin(angle)
+    def rotated(self, degrees: float) -> "Vec2":
+        """Returns a new vector rotated by `degrees`."""
+        radians = math.radians(degrees)
+        cos_a = math.cos(radians)
+        sin_a = math.sin(radians)
+
         return Vec2(
             self.x * cos_a - self.y * sin_a,
             self.x * sin_a + self.y * cos_a,
         )
+
+    def angle_to(self, other: "Vec2") -> float:
+        """
+        Returns the angle from this point to another point in degrees,
+        counter-clockwise from the positive X axis, range [-180, 180]
+        """
+        return math.degrees(math.atan2(other.y - self.y, other.x - self.x))
 
     def is_close(
         self,

@@ -4,34 +4,8 @@ from numba import njit  # type: ignore
 from numpy.typing import NDArray
 
 
-class IntersectGetter:
+class IntersectUtils:
     """Utility to compute line segment intersections."""
-
-    @staticmethod
-    def is_inside(
-        point: Vec2,
-        polygon: list[Vec2],
-    ) -> bool:
-        """
-        Checks whether a point is inside a polygon.
-        Polygon must be closed loop that `polygon[-1] == polygon[0]`.
-        """
-        if len(polygon) <= 2:
-            raise ValueError("`is_inside` need at least three vertices.")
-        if polygon[-1] != polygon[0]:
-            raise ValueError("Polygon is not closed loop.")
-
-        # Create a line in arbitrary (right-ward) direction to count intersections
-        # Direction doesn't matter. All results are the same.
-        line_cast_to = Vec2(max(v.x for v in polygon) + 1, point.y)
-        # Prevent this line from casting directly at a vertex
-        line_cast_to = line_cast_to.rotated(1e-2) * 2  # Make the line longer
-        # Cast and count
-        intersect_points = IntersectGetter.get_intersects(
-            line=(point, line_cast_to),
-            polyline=polygon,
-        )
-        return len(intersect_points) % 2 != 0
 
     @staticmethod
     def get_intersects(
@@ -48,7 +22,7 @@ class IntersectGetter:
             return set()
 
         # Convert to np arrays and let the compiled function compute
-        intersections = IntersectGetter._njit_get_intersect(
+        intersections = IntersectUtils._njit_get_intersect(
             line_start=np.array([line[0].x, line[0].y], dtype=np.float64),
             line_end=np.array([line[1].x, line[1].y], dtype=np.float64),
             polyline=np.array([[v.x, v.y] for v in polyline], dtype=np.float64),

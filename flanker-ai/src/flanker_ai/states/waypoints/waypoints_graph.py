@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from flanker_core.gamestate import GameState
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.polygon_utils import PolygonUtils
 
 
 @dataclass
@@ -142,7 +142,7 @@ class WaypointsGraph:
         for waypoint_id, waypoint in waypoints.items():
             for other_id, other_waypoint in waypoints.items():
                 # Add visibility relationship
-                if IntersectGetter.is_inside(
+                if PolygonUtils.is_inside(
                     other_waypoint.position, waypoint_LOS_polygons[waypoint_id]
                 ):
                     waypoint.visible_nodes.add(other_id)
