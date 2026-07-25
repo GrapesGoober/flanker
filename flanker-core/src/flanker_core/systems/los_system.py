@@ -66,8 +66,8 @@ class LosSystem:
         fov: float = 90,
     ) -> bool:
         """
-        Util method returns `True` if the position `target_pos`
-        is in FOV cone of origin position `spotter_transform`.
+        Util method returns `True` the target position `target_pos`
+        is in FOV cone of spotter position `spotter_transform`.
         """
         target_angle = spotter_transform.position.angle_to(target_pos)
 
