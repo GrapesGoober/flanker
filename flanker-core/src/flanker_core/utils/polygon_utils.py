@@ -1,9 +1,9 @@
+import math
 from dataclasses import dataclass
 from itertools import pairwise
 from typing import Any, Callable
 
 from flanker_core.models.vec2 import Vec2
-from flanker_core.utils.geometry_utils import GeometryUtils
 from flanker_core.utils.intersect_utils import IntersectUtils
 
 
@@ -19,7 +19,7 @@ class ObstacleIntersection[T]:
     point: Vec2
 
 
-class ReachablePolygonUtils:
+class PolygonUtils:
 
     @staticmethod
     def get_reachable_polygon[T](
@@ -34,8 +34,8 @@ class ReachablePolygonUtils:
         Returns a polygon of all reachable region from the center point.
         """
 
-        vertices = ReachablePolygonUtils._get_relevant_vertices(obstacles)
-        vertices = GeometryUtils.sort_verts_by_angle(
+        vertices = PolygonUtils._get_relevant_vertices(obstacles)
+        vertices = PolygonUtils._sort_verts_by_angle(
             center_point=center_point,
             verts=vertices,
         )
@@ -81,13 +81,71 @@ class ReachablePolygonUtils:
                 if polygon and polygon[-1].is_close(new_point):
                     continue
                 # If points are colinear, replace instead of append
-                if ReachablePolygonUtils._is_colinear(polygon, new_point):
+                if PolygonUtils._is_colinear(polygon, new_point):
                     polygon[-1] = new_point
                     continue
                 polygon.append(new_point)
 
         polygon.append(polygon[0])
         return polygon
+
+    @staticmethod
+    def clip_by_fov_cone(
+        polyline: list[Vec2],
+        center_point: Vec2,
+        heading_degree: float,
+        fov_degree: int = 90,
+        radius: float = 1000,
+    ) -> list[Vec2]:
+        """Returns a new clipped a polygon to the specified cone."""
+
+        # Create some rays that defines this FOV cone
+        heading_rad = math.radians(heading_degree)
+        forward_direction: Vec2 = Vec2(1, 0).rotated(heading_rad)
+        forward_ray = forward_direction * radius
+        half_angle_rad = math.radians(fov_degree / 2)
+        left_ray: Vec2 = center_point + forward_ray.rotated(half_angle_rad)
+        right_ray: Vec2 = center_point + forward_ray.rotated(-half_angle_rad)
+
+        # Choose the two first intersection points of this FOV cone
+        left_point = min(
+            IntersectUtils.get_intersects(
+                line=(center_point, left_ray), polyline=polyline
+            ),
+            key=lambda point: (center_point - point).length(),
+        )
+        right_point = min(
+            IntersectUtils.get_intersects(
+                line=(center_point, right_ray), polyline=polyline
+            ),
+            key=lambda point: (center_point - point).length(),
+        )
+
+        # Filter LOS polygon of any points outside of FOV
+        threshold_rad: float = math.cos(half_angle_rad)
+        new_los: list[Vec2] = []
+        for vertex in polyline:
+            direction = vertex - center_point
+
+            if direction.length() < 1e-9:
+                # Keep the center point
+                new_los.append(vertex)
+                continue
+
+            # Using dot formula to filter the angle
+            a: Vec2 = forward_direction
+            b: Vec2 = direction.normalized()
+            if a.dot(b) >= threshold_rad:
+                new_los.append(vertex)
+
+        # Add left points and right points back to the list
+        # to represent the cut FOV edges.
+        new_los.append(left_point)
+        new_los.append(right_point)
+        new_los.append(center_point - forward_direction * 1e-9)
+        new_los = PolygonUtils._sort_verts_by_angle(center_point, new_los)
+        new_los.append(new_los[0])  # Loop back to a closed polyline
+        return new_los
 
     @staticmethod
     def _is_colinear(
@@ -129,7 +187,7 @@ class ReachablePolygonUtils:
                         polyline=other_obstacle.polyline,
                     )
                     vertices += intersects
-        vertices = ReachablePolygonUtils._filter_colocated(vertices)
+        vertices = PolygonUtils._filter_colocated(vertices)
         return vertices
 
     @staticmethod
@@ -137,7 +195,7 @@ class ReachablePolygonUtils:
         points: list[Vec2],
         tolerance: float = 1e-5,
     ) -> list[Vec2]:
-        """Filter"""
+        """Returns a new list that filtered redundant colocated points."""
 
         filtered_points: list[Vec2] = []
         for point in points:
@@ -146,3 +204,20 @@ class ReachablePolygonUtils:
             ):
                 filtered_points.append(point)
         return filtered_points
+
+    # TODO make an angle method in Vec2? and reuse this sort inline?
+    @staticmethod
+    def _sort_verts_by_angle(
+        center_point: Vec2,
+        verts: list[Vec2],
+    ) -> list[Vec2]:
+        """Sort vertices by the angle from a point."""
+
+        def angle_from_center(v: Vec2) -> float:
+            rel = v - center_point
+            theta = math.atan2(rel.y, rel.x)
+            if theta < 0:
+                theta += 2 * math.pi
+            return theta
+
+        return sorted(verts, key=angle_from_center)

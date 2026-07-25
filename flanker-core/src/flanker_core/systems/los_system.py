@@ -6,12 +6,11 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.terrain_system import TerrainSystem
-from flanker_core.utils.geometry_utils import GeometryUtils
 from flanker_core.utils.intersect_utils import IntersectUtils
-from flanker_core.utils.reachable_polygon_utils import (
+from flanker_core.utils.polygon_utils import (
     Obstacle,
     ObstacleIntersection,
-    ReachablePolygonUtils,
+    PolygonUtils,
 )
 from flanker_core.utils.transform_utils import TransformUtils
 
@@ -147,7 +146,7 @@ class LosSystem:
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = GeometryUtils.clip_by_fov_cone(
+            fov_polygon = PolygonUtils.clip_by_fov_cone(
                 polyline=los_polygon,
                 center_point=spotter_transform.position,
                 heading_degree=spotter_transform.degrees,
@@ -247,7 +246,7 @@ class LosSystem:
                 new_point = intersects[0].point
             return new_point
 
-        return ReachablePolygonUtils.get_reachable_polygon(
+        return PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
             criteria=criteria,
