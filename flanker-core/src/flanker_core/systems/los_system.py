@@ -87,7 +87,7 @@ class LosSystem:
         position `target_pos`. Does not check for FOV.
         """
 
-        # Use the override if exists..
+        # Use the override if exists.
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
