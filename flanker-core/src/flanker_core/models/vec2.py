@@ -42,10 +42,12 @@ class Vec2:
         length = self.length()
         return self / length if length else Vec2(0, 0)
 
-    def rotated(self, angle: float) -> "Vec2":
-        """Returns a new vector rotated by `angle` radians."""
-        cos_a = math.cos(angle)
-        sin_a = math.sin(angle)
+    def rotated(self, degrees: float) -> "Vec2":
+        """Returns a new vector rotated by `degrees`."""
+        radians = math.radians(degrees)
+        cos_a = math.cos(radians)
+        sin_a = math.sin(radians)
+
         return Vec2(
             self.x * cos_a - self.y * sin_a,
             self.x * sin_a + self.y * cos_a,

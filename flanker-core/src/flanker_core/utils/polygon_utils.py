@@ -1,4 +1,3 @@
-import math
 from dataclasses import dataclass
 from itertools import pairwise
 from typing import Any, Callable
@@ -68,7 +67,7 @@ class PolygonUtils:
             ray = direction * radius
             # Instead of casting one ray, casts two rays slightly to the left and right.
             # This prevents boundary sensitivity when casting rays at the vertices.
-            jitter = direction.rotated(1.5708) * jitter_size
+            jitter = direction.rotated(90) * jitter_size
             left_point = center_point - jitter
             right_point = center_point + jitter
             for cast_from in [left_point, right_point]:
@@ -117,18 +116,16 @@ class PolygonUtils:
         polyline: list[Vec2],
         center_point: Vec2,
         heading_degree: float,
-        fov_degree: int = 90,
+        fov_degree: float = 90,
         radius: float = 1000,
     ) -> list[Vec2]:
         """Returns a new clipped a polygon to the specified cone."""
 
         # Create some rays that defines this FOV cone
-        heading_rad = math.radians(heading_degree)
-        forward_direction: Vec2 = Vec2(1, 0).rotated(heading_rad)
+        forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)
         forward_ray = forward_direction * radius
-        half_angle_rad = math.radians(fov_degree / 2)
-        left_ray: Vec2 = center_point + forward_ray.rotated(half_angle_rad)
-        right_ray: Vec2 = center_point + forward_ray.rotated(-half_angle_rad)
+        left_ray: Vec2 = center_point + forward_ray.rotated(fov_degree / 2)
+        right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degree / 2)
 
         # Choose the two first intersection points of this FOV cone
         left_point = min(
@@ -145,20 +142,17 @@ class PolygonUtils:
         )
 
         # Filter LOS polygon of any points outside of FOV
-        threshold_rad: float = math.cos(half_angle_rad)
         new_los: list[Vec2] = []
         for vertex in polyline:
-            direction = vertex - center_point
-
-            if direction.length() < 1e-9:
-                # Keep the center point
+            # Keep the center point
+            if (vertex - center_point).length() < 1e-9:
                 new_los.append(vertex)
                 continue
 
-            # Using dot formula to filter the angle
-            a: Vec2 = forward_direction
-            b: Vec2 = direction.normalized()
-            if a.dot(b) >= threshold_rad:
+            # Only keep other points if within FOV half angle
+            target_angle = center_point.angle_to(vertex)
+            angle_diff = (target_angle - heading_degree + 180) % 360 - 180
+            if abs(angle_diff) <= fov_degree / 2:
                 new_los.append(vertex)
 
         # Add left points and right points back to the list
