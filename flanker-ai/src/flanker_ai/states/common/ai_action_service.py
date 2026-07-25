@@ -13,6 +13,7 @@ from flanker_core.models.actions import (
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
+from flanker_core.utils.geometry_utils import GeometryUtils
 
 
 class AiActionService:
@@ -92,8 +93,8 @@ class AiActionService:
                 target_transform = gs.get_component(target_id, Transform)
 
                 # Only pivot if not already looking there.
-                if LosSystem.in_fov(
-                    spotter_transform=friendly_transform,
+                if GeometryUtils.in_fov(
+                    origin_transform=friendly_transform,
                     target_pos=target_transform.position,
                 ):
                     continue

@@ -4,7 +4,7 @@ from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.los_system import LosSystem
+from flanker_core.utils.geometry_utils import GeometryUtils
 
 
 class WaypointsLosSystemOverrides:
@@ -50,7 +50,7 @@ class WaypointsLosSystemOverrides:
             path_waypoint = waypoints[path_id]
             if spotter_waypoint_id not in path_waypoint.visible_nodes:
                 continue
-            if not LosSystem.in_fov(spotter_transform, path_waypoint.position):
+            if not GeometryUtils.in_fov(spotter_transform, path_waypoint.position):
                 continue
             return path_waypoint.position
 

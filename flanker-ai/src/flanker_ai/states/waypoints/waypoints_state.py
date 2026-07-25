@@ -24,11 +24,9 @@ from flanker_core.models.components import CombatUnit, InitiativeState, Transfor
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.los_system import (
-    LosSystem,
-    LosSystemOverrides,
-)
+from flanker_core.systems.los_system import LosSystemOverrides
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.utils.geometry_utils import GeometryUtils
 
 
 class WaypointsState(IRepresentationState[Action]):
@@ -120,7 +118,7 @@ class WaypointsState(IRepresentationState[Action]):
                     position=enemy_transform.position,
                 )
                 # if already looking there, no need to pivot again
-                if LosSystem.in_fov(
+                if GeometryUtils.in_fov(
                     Transform(friendly_waypoint.position, friendly_transform.degrees),
                     enemy_transform.position,
                 ):

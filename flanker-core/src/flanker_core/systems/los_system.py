@@ -1,4 +1,3 @@
-import math
 from dataclasses import dataclass
 from typing import Callable, Iterable
 from uuid import UUID
@@ -7,15 +6,14 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.terrain_system import TerrainSystem
+from flanker_core.utils.geometry_utils import GeometryUtils
 from flanker_core.utils.intersect_utils import IntersectUtils
-from flanker_core.utils.polygon_utils import (
+from flanker_core.utils.reachable_polygon_utils import (
     Obstacle,
     ObstacleIntersection,
-    PolygonUtils,
+    ReachablePolygonUtils,
 )
 from flanker_core.utils.transform_utils import TransformUtils
-
-FOV_DEGREE = 90
 
 
 @dataclass
@@ -61,32 +59,6 @@ class LosSystemOverrides:
 
 class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
-
-    # TODO put this in utils?
-    @staticmethod
-    def in_fov(
-        spotter_transform: Transform,
-        target_pos: Vec2,
-        fov: float = FOV_DEGREE,
-    ) -> bool:
-        """
-        Util method returns `True` if the target position `target_pos`
-        is in FOV cone of spotter position `spotter_transform`.
-        """
-
-        # Direction the spotter is facing
-        heading_rad = math.radians(spotter_transform.degrees)
-        forward_dir: Vec2 = Vec2(1, 0).rotated(heading_rad)
-
-        # Direction to target
-        to_target = (target_pos - spotter_transform.position).normalized()
-
-        # Dot product -> angle check
-        dot = forward_dir.dot(to_target)
-
-        # cos(theta) comparison (avoid expensive acos)
-        half_fov_rad = math.radians(fov / 2)
-        return dot >= math.cos(half_fov_rad)
 
     @staticmethod
     def has_los(
@@ -175,7 +147,7 @@ class LosSystem:
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = PolygonUtils.clip_by_fov_cone(
+            fov_polygon = GeometryUtils.clip_by_fov_cone(
                 polyline=los_polygon,
                 center_point=spotter_transform.position,
                 heading_degree=spotter_transform.degrees,
@@ -275,7 +247,7 @@ class LosSystem:
                 new_point = intersects[0].point
             return new_point
 
-        return PolygonUtils.get_reachable_polygon(
+        return ReachablePolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
             criteria=criteria,

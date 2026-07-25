@@ -10,6 +10,7 @@ from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.utils.geometry_utils import GeometryUtils
 
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
@@ -84,7 +85,7 @@ class FireSystem:
             target_transform.position,
         ):
             return InvalidAction.BAD_COORDS
-        if not LosSystem.in_fov(
+        if not GeometryUtils.in_fov(
             attacker_transform,
             target_transform.position,
         ):
