@@ -28,6 +28,7 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.polygon_utils import PolygonUtils
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
@@ -109,7 +110,7 @@ def draw_combat_unit_los_cone(
         spotter_pos=spotter_transform.position,
     )
     if draw_as_cone:
-        polygon = LosSystem.apply_fov_to_polygon(
+        polygon = PolygonUtils.clip_by_fov_cone(
             polyline=polygon,
             center_point=spotter_transform.position,
             heading_degree=spotter_transform.degrees,

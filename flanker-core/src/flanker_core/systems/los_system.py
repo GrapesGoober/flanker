@@ -8,10 +8,10 @@ from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_getter import IntersectGetter
-from flanker_core.utils.reachability_polygon import (
+from flanker_core.utils.polygon_utils import (
     Obstacle,
     ObstacleIntersection,
-    ReachabilityPolygon,
+    PolygonUtils,
 )
 from flanker_core.utils.transform_utils import TransformUtils
 
@@ -174,7 +174,7 @@ class LosSystem:
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = LosSystem.apply_fov_to_polygon(
+            fov_polygon = PolygonUtils.clip_by_fov_cone(
                 polyline=los_polygon,
                 center_point=spotter_transform.position,
                 heading_degree=spotter_transform.degrees,
@@ -189,6 +189,7 @@ class LosSystem:
         fov_polygon: list[Vec2],
     ) -> Vec2 | None:
         """
+        Helper method for `get_los_from_line`.
         Returns the earliest intersection between a line and a FOV polygon.
         If the line already starts inside, return the starting point,
         otherwise returns the intersection.
@@ -218,65 +219,6 @@ class LosSystem:
             return earliest_point + offset
 
         return None
-
-    # TODO Move this to Utils?
-    @staticmethod
-    def apply_fov_to_polygon(
-        polyline: list[Vec2],
-        center_point: Vec2,
-        heading_degree: float,
-        fov_degree: int = FOV_DEGREE,
-        radius: float = 1000,
-    ) -> list[Vec2]:
-        """Applies FOV cone to LOS polygon to create a smaller LOS cone."""
-
-        # Create some rays that defines this FOV cone
-        heading_rad = math.radians(heading_degree)
-        forward_direction: Vec2 = Vec2(1, 0).rotated(heading_rad)
-        forward_ray = forward_direction * radius
-        half_angle_rad = math.radians(fov_degree / 2)
-        left_ray: Vec2 = center_point + forward_ray.rotated(half_angle_rad)
-        right_ray: Vec2 = center_point + forward_ray.rotated(-half_angle_rad)
-
-        # Choose the two first intersection points of this FOV cone
-        left_point = min(
-            IntersectGetter.get_intersects(
-                line=(center_point, left_ray), polyline=polyline
-            ),
-            key=lambda point: (center_point - point).length(),
-        )
-        right_point = min(
-            IntersectGetter.get_intersects(
-                line=(center_point, right_ray), polyline=polyline
-            ),
-            key=lambda point: (center_point - point).length(),
-        )
-
-        # Filter LOS polygon of any points outside of FOV
-        threshold_rad: float = math.cos(half_angle_rad)
-        new_los: list[Vec2] = []
-        for vertex in polyline:
-            direction = vertex - center_point
-
-            if direction.length() < 1e-9:
-                # Keep the center point
-                new_los.append(vertex)
-                continue
-
-            # Using dot formula to filter the angle
-            a: Vec2 = forward_direction
-            b: Vec2 = direction.normalized()
-            if a.dot(b) >= threshold_rad:
-                new_los.append(vertex)
-
-        # Add left points and right points back to the list
-        # to represent the cut FOV edges.
-        new_los.append(left_point)
-        new_los.append(right_point)
-        new_los.append(center_point - forward_direction * 1e-9)
-        new_los = LosSystem._sort_verts_by_angle(center_point, new_los)
-        new_los.append(new_los[0])  # Loop back to a closed polyline
-        return new_los
 
     @staticmethod
     def get_los_polygon(
@@ -332,28 +274,11 @@ class LosSystem:
                 new_point = intersects[0].point
             return new_point
 
-        return ReachabilityPolygon.get_polygon(
+        return PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
             criteria=criteria,
         )
-
-    # TODO reuse this from utils?
-    @staticmethod
-    def _sort_verts_by_angle(
-        spotter_pos: Vec2,
-        verts: list[Vec2],
-    ) -> list[Vec2]:
-        """Get all terrain vertices sorted by angle."""
-
-        def angle_from_spotter(v: Vec2) -> float:
-            rel = v - spotter_pos
-            theta = math.atan2(rel.y, rel.x)
-            if theta < 0:
-                theta += 2 * math.pi
-            return theta
-
-        return sorted(verts, key=angle_from_spotter)
 
     # TODO recycle this for `has_los` too
     @staticmethod
