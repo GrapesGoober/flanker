@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pytest
 from flanker_core.models.components import Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.transform_utils import TransformUtils
 
 
@@ -38,5 +38,5 @@ def fixture() -> Fixture:
 
 
 def test_is_inside_false(fixture: Fixture) -> None:
-    is_inside = IntersectGetter.is_inside(Vec2(104, 25), fixture.vertices)
+    is_inside = IntersectUtils.is_inside(Vec2(104, 25), fixture.vertices)
     assert is_inside == False, "The point lies outside of the polygon."

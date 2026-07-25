@@ -4,7 +4,7 @@ from numba import njit  # type: ignore
 from numpy.typing import NDArray
 
 
-class IntersectGetter:
+class IntersectUtils:
     """Utility to compute line segment intersections."""
 
     @staticmethod
@@ -27,7 +27,7 @@ class IntersectGetter:
         # Prevent this line from casting directly at a vertex
         line_cast_to = line_cast_to.rotated(1e-2) * 2  # Make the line longer
         # Cast and count
-        intersect_points = IntersectGetter.get_intersects(
+        intersect_points = IntersectUtils.get_intersects(
             line=(point, line_cast_to),
             polyline=polygon,
         )
@@ -48,7 +48,7 @@ class IntersectGetter:
             return set()
 
         # Convert to np arrays and let the compiled function compute
-        intersections = IntersectGetter._njit_get_intersect(
+        intersections = IntersectUtils._njit_get_intersect(
             line_start=np.array([line[0].x, line[0].y], dtype=np.float64),
             line_end=np.array([line[1].x, line[1].y], dtype=np.float64),
             polyline=np.array([[v.x, v.y] for v in polyline], dtype=np.float64),

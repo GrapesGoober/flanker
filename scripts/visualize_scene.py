@@ -27,7 +27,7 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import PolygonUtils
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib import pyplot as plt
@@ -334,7 +334,7 @@ def visualize_expansion(gs: GameState) -> None:
         all_polygons.append(vertices)
     all_polygons.append(los_polygon)
     for polygon in all_polygons:
-        intersects = IntersectGetter.get_intersects(
+        intersects = IntersectUtils.get_intersects(
             line=(segment_a, segment_b),
             polyline=polygon,
         )

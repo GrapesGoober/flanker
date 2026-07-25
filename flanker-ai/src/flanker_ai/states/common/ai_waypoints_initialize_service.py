@@ -3,7 +3,7 @@ import random
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.transform_utils import TransformUtils
 
 
@@ -48,7 +48,7 @@ class AiWaypointsInitializeService:
                 p = Vec2(x, y)
 
                 # Keep only points inside polygon
-                if IntersectGetter.is_inside(p, boundary_vertices):
+                if IntersectUtils.is_inside(p, boundary_vertices):
                     points.append(p)
 
                 x += spacing
@@ -80,7 +80,7 @@ class AiWaypointsInitializeService:
             rand_x = random.randrange(min_x, max_x)
             rand_y = random.randrange(min_y, max_y)
             move_candidate = Vec2(rand_x, rand_y)
-            if not IntersectGetter.is_inside(
+            if not IntersectUtils.is_inside(
                 point=move_candidate,
                 polygon=boundary_vertices,
             ):

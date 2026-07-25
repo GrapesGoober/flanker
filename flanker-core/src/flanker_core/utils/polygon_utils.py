@@ -4,7 +4,7 @@ from itertools import pairwise
 from typing import Any, Callable
 
 from flanker_core.models.vec2 import Vec2
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 
 
 @dataclass
@@ -41,13 +41,13 @@ class PolygonUtils:
 
         # Choose the two first intersection points of this FOV cone
         left_point = min(
-            IntersectGetter.get_intersects(
+            IntersectUtils.get_intersects(
                 line=(center_point, left_ray), polyline=polyline
             ),
             key=lambda point: (center_point - point).length(),
         )
         right_point = min(
-            IntersectGetter.get_intersects(
+            IntersectUtils.get_intersects(
                 line=(center_point, right_ray), polyline=polyline
             ),
             key=lambda point: (center_point - point).length(),
@@ -110,7 +110,7 @@ class PolygonUtils:
                 # Calculates intersections against each obstacle
                 intersections: list[ObstacleIntersection[T]] = []
                 for obstacle in obstacles:
-                    intersects = IntersectGetter.get_intersects(
+                    intersects = IntersectUtils.get_intersects(
                         line=(cast_from, cast_from + ray),
                         polyline=obstacle.polyline,
                     )
@@ -182,7 +182,7 @@ class PolygonUtils:
         for obstacle in obstacles:
             for other_obstacle in obstacles:
                 for line in pairwise(obstacle.polyline):
-                    intersects = IntersectGetter.get_intersects(
+                    intersects = IntersectUtils.get_intersects(
                         line=line,
                         polyline=other_obstacle.polyline,
                     )

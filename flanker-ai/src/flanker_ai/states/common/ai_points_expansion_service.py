@@ -8,7 +8,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.transform_utils import TransformUtils
 
 
@@ -139,7 +139,7 @@ class AiPointsExpansionService:
 
                 # Check against all terrain for intersections.
                 for terrain in terrain_vertices:
-                    intersects += IntersectGetter.get_intersects(
+                    intersects += IntersectUtils.get_intersects(
                         line=(waypoint_a, waypoint_b),
                         polyline=terrain,
                     )
@@ -157,7 +157,7 @@ class AiPointsExpansionService:
 
                     # For now, consider polygon-edge as interrupts.
                     # Let's ignore FOV constraints for now.
-                    intersects += IntersectGetter.get_intersects(
+                    intersects += IntersectUtils.get_intersects(
                         line=(waypoint_a, waypoint_b),
                         polyline=los_polygon,
                     )
@@ -196,7 +196,7 @@ class AiPointsExpansionService:
         """
         waypoint_los_polygon = LosSystem.get_los_polygon(gs, waypoint)
         return {
-            other_waypoint: IntersectGetter.is_inside(
+            other_waypoint: IntersectUtils.is_inside(
                 other_waypoint, waypoint_los_polygon
             )
             for other_waypoint in flag_waypoints

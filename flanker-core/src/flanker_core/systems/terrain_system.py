@@ -5,7 +5,7 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.transform_utils import TransformUtils
 
 
@@ -36,7 +36,7 @@ class TerrainSystem:
             vertices = TransformUtils.apply(terrain.vertices, transform)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-            intersections = IntersectGetter.get_intersects(
+            intersections = IntersectUtils.get_intersects(
                 line=(start, end),
                 polyline=vertices,
             )

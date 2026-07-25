@@ -7,7 +7,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.terrain_system import TerrainSystem
-from flanker_core.utils.intersect_getter import IntersectGetter
+from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import (
     Obstacle,
     ObstacleIntersection,
@@ -126,7 +126,7 @@ class LosSystem:
             # Ignore count spotter's terrain (allow to see out)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-                if IntersectGetter.is_inside(
+                if IntersectUtils.is_inside(
                     point=spotter_pos,
                     polygon=vertices,
                 ):
@@ -197,14 +197,14 @@ class LosSystem:
         """
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
-        if IntersectGetter.is_inside(
+        if IntersectUtils.is_inside(
             point=line[0],
             polygon=fov_polygon,
         ):
             return line[0]
 
         # The first point is outside, thus only care about intersection
-        elif intersects := IntersectGetter.get_intersects(
+        elif intersects := IntersectUtils.get_intersects(
             line=(line[0], line[1]),
             polyline=fov_polygon,
         ):
@@ -297,7 +297,7 @@ class LosSystem:
                     # Ignore the terrain entity if the spotter is inside it,
                     # this allows spotter to see-out of a terrain
                     if (
-                        IntersectGetter.is_inside(spotter_pos, vertices)
+                        IntersectUtils.is_inside(spotter_pos, vertices)
                         # This rule doesn't apply to boundary terrain
                         and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
                     ):
