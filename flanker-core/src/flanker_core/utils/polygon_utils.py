@@ -61,10 +61,7 @@ class PolygonUtils:
         """
 
         vertices = PolygonUtils._get_relevant_vertices(obstacles)
-        vertices = PolygonUtils._sort_verts_by_angle(
-            center_point=center_point,
-            verts=vertices,
-        )
+        vertices = sorted(vertices, key=center_point.angle_to)
         polygon: list[Vec2] = []
         for target_vertex in vertices:
             direction = (target_vertex - center_point).normalized()
@@ -169,7 +166,7 @@ class PolygonUtils:
         new_los.append(left_point)
         new_los.append(right_point)
         new_los.append(center_point - forward_direction * 1e-9)
-        new_los = PolygonUtils._sort_verts_by_angle(center_point, new_los)
+        new_los = sorted(new_los, key=center_point.angle_to)
         new_los.append(new_los[0])  # Loop back to a closed polyline
         return new_los
 
@@ -230,20 +227,3 @@ class PolygonUtils:
             ):
                 filtered_points.append(point)
         return filtered_points
-
-    # TODO make an angle method in Vec2? and reuse this sort inline?
-    @staticmethod
-    def _sort_verts_by_angle(
-        center_point: Vec2,
-        verts: list[Vec2],
-    ) -> list[Vec2]:
-        """Sort vertices by the angle from a point."""
-
-        def angle_from_center(v: Vec2) -> float:
-            rel = v - center_point
-            theta = math.atan2(rel.y, rel.x)
-            if theta < 0:
-                theta += 2 * math.pi
-            return theta
-
-        return sorted(verts, key=angle_from_center)

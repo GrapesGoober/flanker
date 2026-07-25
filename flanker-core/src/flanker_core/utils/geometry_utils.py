@@ -1,5 +1,3 @@
-import math
-
 from flanker_core.models.components import Transform
 from flanker_core.models.vec2 import Vec2
 
@@ -18,17 +16,9 @@ class GeometryUtils:
         Util method returns `True` if the position `target_pos`
         is in FOV cone of origin position `origin_transform`.
         """
+        target_angle = origin_transform.position.angle_to(target_pos)
 
-        # Direction the spotter is facing
-        heading_rad = math.radians(origin_transform.degrees)
-        forward_dir: Vec2 = Vec2(1, 0).rotated(heading_rad)
+        # Wraps around to be in range [-180, 180]
+        angle_diff = (target_angle - origin_transform.degrees + 180) % 360 - 180
 
-        # Direction to target
-        to_target = (target_pos - origin_transform.position).normalized()
-
-        # Dot product -> angle check
-        dot = forward_dir.dot(to_target)
-
-        # cos(theta) comparison (avoid expensive acos)
-        half_fov_rad = math.radians(fov / 2)
-        return dot >= math.cos(half_fov_rad)
+        return abs(angle_diff) <= fov / 2

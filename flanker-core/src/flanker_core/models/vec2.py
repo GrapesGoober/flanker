@@ -51,6 +51,13 @@ class Vec2:
             self.x * sin_a + self.y * cos_a,
         )
 
+    def angle_to(self, other: "Vec2") -> float:
+        """
+        Returns the angle from this point to another point in degrees,
+        counter-clockwise from the positive X axis, range [-180, 180]
+        """
+        return math.degrees(math.atan2(other.y - self.y, other.x - self.x))
+
     def is_close(
         self,
         other: "Vec2",
