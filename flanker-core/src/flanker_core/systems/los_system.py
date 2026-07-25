@@ -69,7 +69,7 @@ class LosSystem:
         fov: float = FOV_DEGREE,
     ) -> bool:
         """
-        Util method returns `True` the target position `target_pos`
+        Util method returns `True` if the target position `target_pos`
         is in FOV cone of spotter position `spotter_transform`.
         """
 
@@ -98,20 +98,22 @@ class LosSystem:
         position `target_pos`. Does not check for FOV.
         """
 
-        # Use the override if exists
+        # Use the override if exists..
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
-        # Count each intersects to not see through terrain
         intersects = TerrainSystem.get_intersect(
             gs=gs,
             start=spotter_pos,
             end=target_pos,
             mask=TerrainFeature.Flag.OPAQUE,
         )
+
+        # Check each intersection; allow see into and out of terrain.
         passed_one_terrain = False
         for intersect in intersects:
-            # Doesn't count spotter's terrain
+
+            # Prep terrain vertices
             terrain_id = intersect.terrain_id
             terrain = gs.get_component(terrain_id, TerrainFeature)
             terrain_transform = gs.get_component(terrain_id, Transform)
@@ -119,6 +121,8 @@ class LosSystem:
                 vec_list=terrain.vertices,
                 transform=terrain_transform,
             )
+
+            # Ignore count spotter's terrain (allow to see out)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
                 if IntersectGetter.is_inside(
@@ -127,9 +131,11 @@ class LosSystem:
                 ):
                     continue
 
+            # Count terrain
             if not passed_one_terrain:
                 passed_one_terrain = True
                 continue
+
             # Can only see into one polygon
             if passed_one_terrain:
                 return False
