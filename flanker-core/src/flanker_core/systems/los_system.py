@@ -269,7 +269,6 @@ class LosSystem:
             criteria=criteria,
         )
 
-    # TODO recycle this for `has_los` too
     @staticmethod
     def _get_terrains(
         gs: GameState,
