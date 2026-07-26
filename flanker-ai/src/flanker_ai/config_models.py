@@ -78,8 +78,8 @@ class PolicyConfig:
         depth: int
 
     @dataclass
-    class HeuristicPolicy:
-        type: Literal["HeuristicPolicy"]
+    class RandomHeuristicPolicy:
+        type: Literal["RandomHeuristicPolicy"]
 
 
 @dataclass
@@ -108,4 +108,4 @@ class SearchPolicyConfig:
 
 @dataclass
 class HeuristicPolicyConfig:
-    policy: PolicyConfig.HeuristicPolicy
+    policy: PolicyConfig.RandomHeuristicPolicy

@@ -250,6 +250,25 @@
       "title": "Entity",
       "type": "object"
     },
+    "ExpectimaxPolicy": {
+      "properties": {
+        "type": {
+          "const": "ExpectimaxPolicy",
+          "title": "Type",
+          "type": "string"
+        },
+        "depth": {
+          "title": "Depth",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "depth"
+      ],
+      "title": "ExpectimaxPolicy",
+      "type": "object"
+    },
     "Faction": {
       "enum": [
         "BLUE",
@@ -380,14 +399,12 @@
     },
     "HeuristicPolicyConfig": {
       "properties": {
-        "policy_type": {
-          "const": "RandomHeuristic",
-          "title": "Policy Type",
-          "type": "string"
+        "policy": {
+          "$ref": "#/$defs/RandomHeuristicPolicy"
         }
       },
       "required": [
-        "policy_type"
+        "policy"
       ],
       "title": "HeuristicPolicyConfig",
       "type": "object"
@@ -419,6 +436,44 @@
         "tolerance"
       ],
       "title": "LineBasedExpansionConfig",
+      "type": "object"
+    },
+    "MctsPolicy": {
+      "properties": {
+        "type": {
+          "const": "MctsPolicy",
+          "title": "Type",
+          "type": "string"
+        },
+        "max_iterations": {
+          "title": "Max Iterations",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "max_iterations"
+      ],
+      "title": "MctsPolicy",
+      "type": "object"
+    },
+    "MinimaxPolicy": {
+      "properties": {
+        "type": {
+          "const": "MinimaxPolicy",
+          "title": "Type",
+          "type": "string"
+        },
+        "depth": {
+          "title": "Depth",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "type",
+        "depth"
+      ],
+      "title": "MinimaxPolicy",
       "type": "object"
     },
     "MoveControls": {
@@ -523,24 +578,35 @@
       "title": "RandomConfig",
       "type": "object"
     },
+    "RandomHeuristicPolicy": {
+      "properties": {
+        "type": {
+          "const": "RandomHeuristicPolicy",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "RandomHeuristicPolicy",
+      "type": "object"
+    },
     "SearchPolicyConfig": {
       "properties": {
-        "policy_type": {
+        "policy": {
           "anyOf": [
             {
-              "const": "Minimax",
-              "type": "string"
+              "$ref": "#/$defs/MinimaxPolicy"
             },
             {
-              "const": "Expectimax",
-              "type": "string"
+              "$ref": "#/$defs/ExpectimaxPolicy"
             },
             {
-              "const": "MCTS",
-              "type": "string"
+              "$ref": "#/$defs/MctsPolicy"
             }
           ],
-          "title": "Policy Type"
+          "title": "Policy"
         },
         "state": {
           "anyOf": [
@@ -555,7 +621,7 @@
         }
       },
       "required": [
-        "policy_type",
+        "policy",
         "state"
       ],
       "title": "SearchPolicyConfig",

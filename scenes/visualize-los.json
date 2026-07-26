@@ -65,7 +65,9 @@
     "3417bfb3-c72d-406a-b7c5-c7ff989ec70a": {
       "AiConfigComponent": {
         "config": {
-          "policy_type": "RandomHeuristic"
+          "policy": {
+            "type": "RandomHeuristicPolicy"
+          }
         },
         "faction": "BLUE"
       }
@@ -73,7 +75,9 @@
     "49a187dc-b48e-4d0a-b7a5-c628b5acc568": {
       "AiConfigComponent": {
         "config": {
-          "policy_type": "RandomHeuristic"
+          "policy": {
+            "type": "RandomHeuristicPolicy"
+          }
         },
         "faction": "RED"
       }
