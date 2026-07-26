@@ -17,6 +17,7 @@ from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
 )
+from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -101,8 +102,18 @@ class UnabstractedState(IRepresentationState[Action]):
         return state_branches
 
     @override
-    def perform_action(self, action: Action) -> None:
-        ActionSystem.perform(self._gs, action)
+    def perform_action(self, action: Action) -> bool:
+        result = ActionSystem.perform(self._gs, action)
+        return not isinstance(result, InvalidAction)
+
+    @override
+    def copy(self) -> "UnabstractedState":
+        gs_copy = AiBranchingService.copy(self._gs)
+        return UnabstractedState(
+            gs=gs_copy,
+            move_candidates_config=self._move_candidates_config,
+            divide_moves_per_unit=self._divide_moves_per_unit,
+        )
 
     @override
     def get_one_branch(

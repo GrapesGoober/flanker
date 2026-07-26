@@ -34,7 +34,6 @@ class MctsPolicy[TAction](IPolicy[TAction]):
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
-        self._simulate_method: IPolicy[TAction] = simulate_policy
 
     def get_action(
         self,
@@ -147,10 +146,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
-        # TODO: implement a simulation method
-        return node.state.get_score(MAXIMIZING_FACTION)
 
-        current_state = node.state
+        # Make a copy so it doesn't mutate the node itself
+        current_state = node.state.copy()
+
+        # Run simulation until hit the max limit
         stagnate_counter: int = 0
         for _ in range(self._max_simulate_length):
             if current_state.get_winner() != None:
@@ -158,43 +158,22 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             if stagnate_counter >= 2:
                 break
 
-            # Pick a legal action
-            action, _ = self._simulate_method.get_action(current_state)
-            if action == None:
+            # Pick a legal action to perform
+            possible_actions = list(current_state.get_actions())
+            is_valid: bool = False
+            while possible_actions != []:
+                action = possible_actions.pop(
+                    0,
+                    # random.randrange(len(possible_actions)),
+                )
+                is_valid = current_state.perform_action(action)
+                if is_valid:
+                    break
+
+            # If no valid action found, pass initiative
+            if not is_valid:
                 current_state.flip_initiative()
                 stagnate_counter += 1
                 continue
-
-            # Verify that the action is legal by checking result.
-            result_state = current_state.get_one_branch(action)
-            if result_state == None:
-                current_state.flip_initiative()
-                stagnate_counter += 1
-                continue
-
-            # Action is performed, continue the simulation
-            current_state = result_state
 
         return current_state.get_score(MAXIMIZING_FACTION)
-
-        # match self._simulate_method:
-        #     case None:
-        #         return node.state.get_score(MAXIMIZING_FACTION)
-        #     case "random":
-        #         # TODO: make a proper simulation.
-        #         # For now, this is just "keep choosing random action if available".
-        #         current_state = node.state
-        #         while current_state.get_winner() == None:
-        #             # Perform a random legal action
-        #             possible_actions = list(current_state.get_actions())
-        #             result_state: IRepresentationState[TAction] | None = None
-        #             while result_state == None and possible_actions != []:
-        #                 action = possible_actions.pop(
-        #                     random.randrange(len(possible_actions))
-        #                 )
-        #                 # Valid actions would have not-none result
-        #                 result_state = current_state.get_one_branch(action)
-        #             if result_state == None:
-        #                 break
-        #             current_state = result_state
-        #         return node.state.get_score(MAXIMIZING_FACTION)

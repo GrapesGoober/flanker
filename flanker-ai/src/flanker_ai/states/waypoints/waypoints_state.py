@@ -21,6 +21,7 @@ from flanker_core.models.actions import (
     PivotAction,
 )
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
+from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -70,8 +71,18 @@ class WaypointsState(IRepresentationState[Action]):
         return score
 
     @override
-    def perform_action(self, action: Action) -> None:
-        ActionSystem.perform(self.gs, action)
+    def perform_action(self, action: Action) -> bool:
+        result = ActionSystem.perform(self.gs, action)
+        return not isinstance(result, InvalidAction)
+
+    @override
+    def copy(self) -> "WaypointsState":
+        new_waypoints_state = WaypointsState(
+            points=self._points,
+            path_tolerance=self._path_tolerance,
+        )
+        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        return new_waypoints_state
 
     @override
     def get_actions(self) -> list[Action]:
