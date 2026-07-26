@@ -60,6 +60,28 @@ class PointsConfig:
     ]
 
 
+class PolicyConfig:
+
+    @dataclass
+    class MctsPolicy:
+        type: Literal["MctsPolicy"]
+        max_iterations: int
+
+    @dataclass
+    class MinimaxPolicy:
+        type: Literal["MinimaxPolicy"]
+        depth: int
+
+    @dataclass
+    class ExpectimaxPolicy:
+        type: Literal["ExpectimaxPolicy"]
+        depth: int
+
+    @dataclass
+    class HeuristicPolicy:
+        type: Literal["HeuristicPolicy"]
+
+
 @dataclass
 class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
@@ -76,10 +98,14 @@ class UnabstractedStateConfig:
 
 @dataclass
 class SearchPolicyConfig:
-    policy_type: Literal["Minimax", "Expectimax", "MCTS"]
+    policy: (
+        PolicyConfig.MinimaxPolicy
+        | PolicyConfig.ExpectimaxPolicy
+        | PolicyConfig.MctsPolicy
+    )
     state: WaypointsStateConfig | UnabstractedStateConfig
 
 
 @dataclass
 class HeuristicPolicyConfig:
-    policy_type: Literal["RandomHeuristic"]
+    policy: PolicyConfig.HeuristicPolicy

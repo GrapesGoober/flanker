@@ -7,6 +7,7 @@ from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
+    PolicyConfig,
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
@@ -149,11 +150,23 @@ def get_agent(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],
 ) -> AiAgent:
+    match policy_type:
+        case "MCTS":
+            policy = PolicyConfig.MctsPolicy(
+                type="MctsPolicy",
+                max_iterations=10_000,
+            )
+        case "Minimax":
+            policy = PolicyConfig.MinimaxPolicy(
+                type="MinimaxPolicy",
+                depth=4,
+            )
+
     fixture.gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
             config=SearchPolicyConfig(
-                policy_type=policy_type,
+                policy=policy,
                 state=WaypointsStateConfig(
                     type="WaypointsStateConfig",
                     waypoints=PointsConfig(
