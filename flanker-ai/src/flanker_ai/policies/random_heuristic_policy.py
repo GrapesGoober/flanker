@@ -2,7 +2,6 @@ import random
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
-from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     Action,
     AssaultAction,
@@ -22,12 +21,6 @@ class RandomHeuristicPolicy(IPolicy[Action]):
     It searches through the representation and finds the action that
     best match the heuristic criteria.
     """
-
-    def __init__(
-        self,
-        gs: GameState,  # Needed for deabstraction
-    ) -> None:
-        self._gs = gs
 
     def get_action(
         self,

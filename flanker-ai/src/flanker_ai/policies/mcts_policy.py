@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import math
-import random
 from dataclasses import dataclass
-from typing import Literal
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -31,10 +29,10 @@ class MctsPolicy[TAction](IPolicy[TAction]):
     def __init__(
         self,
         max_iterations: int,
-        simulate_method: Literal["random"] | None,
+        simulate_policy: IPolicy[TAction],
     ) -> None:
-        self._max_iterations = max_iterations
-        self._simulate_method: Literal["random"] | None = simulate_method
+        self._max_iterations: int = max_iterations
+        self._simulate_method: IPolicy[TAction] = simulate_policy
 
     def get_action(
         self,
@@ -148,24 +146,37 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         node: _MctsTreeNode[TAction],
     ) -> float:
 
-        match self._simulate_method:
-            case None:
-                return node.state.get_score(MAXIMIZING_FACTION)
-            case "random":
-                # TODO: make a proper simulation.
-                # For now, this is just "keep choosing random action if available".
-                current_state = node.state
-                while current_state.get_winner() == None:
-                    # Perform a random legal action
-                    possible_actions = list(current_state.get_actions())
-                    result_state: IRepresentationState[TAction] | None = None
-                    while result_state == None and possible_actions != []:
-                        action = possible_actions.pop(
-                            random.randrange(len(possible_actions))
-                        )
-                        # Valid actions would have not-none result
-                        result_state = current_state.get_one_branch(action)
-                    if result_state == None:
-                        break
-                    current_state = result_state
-                return node.state.get_score(MAXIMIZING_FACTION)
+        current_state = node.state
+        # FIXME: the loop breaks when the simulate doesnt pick any action
+        while current_state.get_winner() == None:
+            # Perform a random legal action
+            action, _ = self._simulate_method.get_action(current_state)
+            if action == None:
+                break
+            result_state = current_state.get_one_branch(action)
+            if result_state == None:
+                break
+            current_state = result_state
+        return node.state.get_score(MAXIMIZING_FACTION)
+
+        # match self._simulate_method:
+        #     case None:
+        #         return node.state.get_score(MAXIMIZING_FACTION)
+        #     case "random":
+        #         # TODO: make a proper simulation.
+        #         # For now, this is just "keep choosing random action if available".
+        #         current_state = node.state
+        #         while current_state.get_winner() == None:
+        #             # Perform a random legal action
+        #             possible_actions = list(current_state.get_actions())
+        #             result_state: IRepresentationState[TAction] | None = None
+        #             while result_state == None and possible_actions != []:
+        #                 action = possible_actions.pop(
+        #                     random.randrange(len(possible_actions))
+        #                 )
+        #                 # Valid actions would have not-none result
+        #                 result_state = current_state.get_one_branch(action)
+        #             if result_state == None:
+        #                 break
+        #             current_state = result_state
+        #         return node.state.get_score(MAXIMIZING_FACTION)

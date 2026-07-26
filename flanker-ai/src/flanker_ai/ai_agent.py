@@ -132,7 +132,7 @@ class AiAgent:
                 # TODO: need a better framework for rule-based policies.
                 # It should not take the same states as search based, since
                 # its use case is different.
-                policy = RandomHeuristicPolicy(gs)
+                policy = RandomHeuristicPolicy()
                 state = UnabstractedState(
                     gs=gs,
                     move_candidates_config=PointsConfig(
@@ -159,7 +159,7 @@ class AiAgent:
                     case PolicyConfig.MctsPolicy():
                         policy = MctsPolicy[Action](
                             max_iterations=policy_config.max_iterations,
-                            simulate_method=policy_config.simulation_method,
+                            simulate_policy=RandomHeuristicPolicy(),
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
