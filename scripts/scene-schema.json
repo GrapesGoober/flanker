@@ -448,11 +448,24 @@
         "max_iterations": {
           "title": "Max Iterations",
           "type": "integer"
+        },
+        "simulation_method": {
+          "anyOf": [
+            {
+              "const": "RandomHeuristic",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Simulation Method"
         }
       },
       "required": [
         "type",
-        "max_iterations"
+        "max_iterations",
+        "simulation_method"
       ],
       "title": "MctsPolicy",
       "type": "object"

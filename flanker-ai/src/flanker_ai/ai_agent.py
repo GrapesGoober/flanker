@@ -159,6 +159,7 @@ class AiAgent:
                     case PolicyConfig.MctsPolicy():
                         policy = MctsPolicy[Action](
                             max_iterations=policy_config.max_iterations,
+                            simulate_method=policy_config.simulation_method,
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
