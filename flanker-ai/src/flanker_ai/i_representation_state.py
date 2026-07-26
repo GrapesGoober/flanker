@@ -19,6 +19,9 @@ class IRepresentationState[TAction](Protocol):
         """Get possible actions from the current state. May not be legal."""
         ...
 
+    def perform_action(self, action: TAction) -> None:
+        """Performs an action by mutating the state in place."""
+
     def get_branches(
         self,
         action: TAction,

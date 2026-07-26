@@ -81,10 +81,14 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
         if self.board[action.row][action.column] is None:
             new_state = self._copy()
-            new_state.board[action.row][action.column] = self.current_player
-            new_state.current_player = "X" if self.current_player == "O" else "O"
+            new_state.perform_action(action)
             return new_state
         return None
+
+    @override
+    def perform_action(self, action: TicTacToeAction) -> None:
+        self.board[action.row][action.column] = self.current_player
+        self.current_player = "X" if self.current_player == "O" else "O"
 
     @override
     def get_actions(self) -> Sequence[TicTacToeAction]:

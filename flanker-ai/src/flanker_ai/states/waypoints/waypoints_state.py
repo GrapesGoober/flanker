@@ -22,6 +22,7 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem, LosSystemOverrides
@@ -67,6 +68,10 @@ class WaypointsState(IRepresentationState[Action]):
             else:
                 score -= value
         return score
+
+    @override
+    def perform_action(self, action: Action) -> None:
+        ActionSystem.perform(self.gs, action)
 
     @override
     def get_actions(self) -> list[Action]:

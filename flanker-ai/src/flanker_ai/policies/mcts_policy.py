@@ -147,6 +147,8 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
+        # TODO: implement a simulation method
+        return node.state.get_score(MAXIMIZING_FACTION)
 
         current_state = node.state
         stagnate_counter: int = 0
@@ -174,3 +176,25 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             current_state = result_state
 
         return current_state.get_score(MAXIMIZING_FACTION)
+
+        # match self._simulate_method:
+        #     case None:
+        #         return node.state.get_score(MAXIMIZING_FACTION)
+        #     case "random":
+        #         # TODO: make a proper simulation.
+        #         # For now, this is just "keep choosing random action if available".
+        #         current_state = node.state
+        #         while current_state.get_winner() == None:
+        #             # Perform a random legal action
+        #             possible_actions = list(current_state.get_actions())
+        #             result_state: IRepresentationState[TAction] | None = None
+        #             while result_state == None and possible_actions != []:
+        #                 action = possible_actions.pop(
+        #                     random.randrange(len(possible_actions))
+        #                 )
+        #                 # Valid actions would have not-none result
+        #                 result_state = current_state.get_one_branch(action)
+        #             if result_state == None:
+        #                 break
+        #             current_state = result_state
+        #         return node.state.get_score(MAXIMIZING_FACTION)

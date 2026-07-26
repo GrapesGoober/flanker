@@ -18,6 +18,7 @@ from flanker_core.models.components import (
     InitiativeState,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -98,6 +99,10 @@ class UnabstractedState(IRepresentationState[Action]):
             new_state.move_candidates = self.move_candidates
             state_branches.append((prob, new_state))
         return state_branches
+
+    @override
+    def perform_action(self, action: Action) -> None:
+        ActionSystem.perform(self._gs, action)
 
     @override
     def get_one_branch(
