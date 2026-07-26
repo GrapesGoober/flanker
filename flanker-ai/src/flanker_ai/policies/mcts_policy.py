@@ -25,14 +25,15 @@ class _MctsTreeNode[TAction]:
 
 
 class MctsPolicy[TAction](IPolicy[TAction]):
-    tree_counter = 0
 
     def __init__(
         self,
         max_iterations: int,
+        max_simulate_length: int,
         simulate_policy: IPolicy[TAction],
     ) -> None:
         self._max_iterations: int = max_iterations
+        self._max_simulate_length: int = max_simulate_length
         self._simulate_method: IPolicy[TAction] = simulate_policy
 
     def get_action(
@@ -52,7 +53,6 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         # Expand the game tree. MCTS is stop-any-time, so run
         # until _max_iterations to stop, as deep as it needs.
         for _ in range(self._max_iterations):
-            MctsPolicy.tree_counter += 1
 
             # Choose a leaf node with best UCT, and expand its leaves
             leaf = self._select_child_best_uct(root)
@@ -150,19 +150,27 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
         current_state = node.state
         stagnate_counter: int = 0
-        while current_state.get_winner() == None and stagnate_counter <= 2:
+        for _ in range(self._max_simulate_length):
+            if current_state.get_winner() != None:
+                break
+            if stagnate_counter >= 2:
+                break
+
             # Pick a legal action
             action, _ = self._simulate_method.get_action(current_state)
             if action == None:
                 current_state.flip_initiative()
                 stagnate_counter += 1
                 continue
+
             # Verify that the action is legal by checking result.
             result_state = current_state.get_one_branch(action)
             if result_state == None:
                 current_state.flip_initiative()
                 stagnate_counter += 1
                 continue
+
             # Action is performed, continue the simulation
             current_state = result_state
-        return node.state.get_score(MAXIMIZING_FACTION)
+
+        return current_state.get_score(MAXIMIZING_FACTION)

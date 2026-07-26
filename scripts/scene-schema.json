@@ -449,23 +449,29 @@
           "title": "Max Iterations",
           "type": "integer"
         },
-        "simulation_method": {
+        "max_simulate_length": {
+          "title": "Max Simulate Length",
+          "type": "integer"
+        },
+        "simulation_policy": {
           "anyOf": [
             {
-              "const": "RandomHeuristic",
+              "const": "random",
               "type": "string"
             },
             {
-              "type": "null"
+              "const": "RH",
+              "type": "string"
             }
           ],
-          "title": "Simulation Method"
+          "title": "Simulation Policy"
         }
       },
       "required": [
         "type",
         "max_iterations",
-        "simulation_method"
+        "max_simulate_length",
+        "simulation_policy"
       ],
       "title": "MctsPolicy",
       "type": "object"

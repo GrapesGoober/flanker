@@ -170,6 +170,7 @@ class AiAgent:
 
                         policy = MctsPolicy[Action](
                             max_iterations=policy_config.max_iterations,
+                            max_simulate_length=policy_config.max_simulate_length,
                             simulate_policy=simulate_policy,
                         )
                 match config_component.config.state:

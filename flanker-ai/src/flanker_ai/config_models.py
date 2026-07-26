@@ -66,6 +66,7 @@ class PolicyConfig:
     class MctsPolicy:
         type: Literal["MctsPolicy"]
         max_iterations: int
+        max_simulate_length: int
         simulation_policy: Literal["random"] | Literal["RH"]
 
     @dataclass

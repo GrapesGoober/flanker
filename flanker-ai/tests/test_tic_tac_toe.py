@@ -52,6 +52,7 @@ def test_optimal_action(
         case "MCTS":
             policy = MctsPolicy[TicTacToeAction](
                 max_iterations=10_000,
+                max_simulate_length=20,
                 simulate_policy=RandomPolicy(),
             )
 
