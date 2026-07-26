@@ -155,7 +155,7 @@ def get_agent(
             policy = PolicyConfig.MctsPolicy(
                 type="MctsPolicy",
                 max_iterations=10_000,
-                simulation_policy="random",
+                simulation_policy="RH",
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(

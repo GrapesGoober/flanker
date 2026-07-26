@@ -39,6 +39,10 @@ class WaypointsState(IRepresentationState[Action]):
         return InitiativeSystem.get_initiative(self.gs)
 
     @override
+    def flip_initiative(self) -> None:
+        InitiativeSystem.flip_initiative(self.gs)
+
+    @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
         winner = self.get_winner()
         if winner is not None:

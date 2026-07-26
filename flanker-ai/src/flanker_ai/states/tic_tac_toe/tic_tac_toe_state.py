@@ -37,8 +37,9 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
     def get_initiative(self) -> InitiativeState.Faction:
         return MARK_TO_FACTION[self.current_player]
 
-    def is_maximizing(self) -> bool:
-        return self.current_player == "O"
+    @override
+    def flip_initiative(self) -> None:
+        self.current_player = "X" if self.current_player == "O" else "O"
 
     @override
     def get_winner(self) -> Optional[InitiativeState.Faction]:
@@ -85,6 +86,7 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
             return new_state
         return None
 
+    @override
     def get_actions(self) -> Sequence[TicTacToeAction]:
         actions: list[TicTacToeAction] = []
         for r in range(3):

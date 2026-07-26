@@ -41,6 +41,10 @@ class IRepresentationState[TAction](Protocol):
         """Get the current initiative holder."""
         ...
 
+    def flip_initiative(self) -> None:
+        """Flips the current initiative holder."""
+        ...
+
     def update_state(self, gs: GameState) -> None:
         """Update the state to match the original game state."""
         ...

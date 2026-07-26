@@ -124,6 +124,10 @@ class UnabstractedState(IRepresentationState[Action]):
     def get_initiative(self) -> InitiativeState.Faction:
         return InitiativeSystem.get_initiative(self._gs)
 
+    @override
+    def flip_initiative(self) -> None:
+        InitiativeSystem.flip_initiative(self._gs)
+
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         # Regenerate the move candidate for each update

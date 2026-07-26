@@ -160,6 +160,10 @@ class AiAgent:
                     case PolicyConfig.MctsPolicy():
                         match policy_config.simulation_policy:
                             case "random":
+                                raise NotImplementedError(
+                                    "True random converges very slowly.\
+                                    This is disabled for MCTS!",
+                                )
                                 simulate_policy = RandomPolicy[Action]()
                             case "RH":
                                 simulate_policy = RandomHeuristicPolicy()
