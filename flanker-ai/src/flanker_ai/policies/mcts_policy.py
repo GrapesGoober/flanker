@@ -33,10 +33,12 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         max_iterations: int,
         max_simulate_length: int,
         simulate_policy: Literal["random"] | None,
+        score_factor: int,
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
         self._simulate_policy: Literal["random"] | None = simulate_policy
+        self._score_factor: int = score_factor
 
     def get_action(
         self,
@@ -61,13 +63,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             child = self._expand(leaf)
             value = self._simulate(child)
 
-            VALUE_MULTIPLIER = 10
-
             # Back propagate each node
             node: _MctsTreeNode[TAction] | None = child
             while node is not None:
                 node.total_visits += 1
-                node.total_value += value * VALUE_MULTIPLIER
+                node.total_value += value
                 node = node.parent
 
         # No valid actions at this root
@@ -149,13 +149,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
-        # TODO This assumes a score boundary for scaling
-        # Might want a more robust solution in future
-        MAX_ABS_SCORE = 6
 
         match self._simulate_policy:
             case None:
-                return node.state.get_score(MAXIMIZING_FACTION)
+                score = node.state.get_score(MAXIMIZING_FACTION)
+                return score / self._score_factor
             case "random":
                 # Make a copy so it doesn't mutate the node itself
                 current_state = node.state.copy()
@@ -186,10 +184,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
                         continue
 
                 match current_state.get_winner():
+                    # I can't use const MAXIMIZING_FACTION in match case
                     case InitiativeState.Faction.BLUE:
                         return 1
                     case InitiativeState.Faction.RED:
                         return -1
                     case None:
                         score = current_state.get_score(MAXIMIZING_FACTION)
-                        return score / MAX_ABS_SCORE
+                        return score / self._score_factor

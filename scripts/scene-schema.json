@@ -464,13 +464,18 @@
             }
           ],
           "title": "Simulation Policy"
+        },
+        "score_factor": {
+          "title": "Score Factor",
+          "type": "integer"
         }
       },
       "required": [
         "type",
         "max_iterations",
         "max_simulate_length",
-        "simulation_policy"
+        "simulation_policy",
+        "score_factor"
       ],
       "title": "MctsPolicy",
       "type": "object"

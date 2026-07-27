@@ -161,6 +161,7 @@ class AiAgent:
                             max_iterations=policy_config.max_iterations,
                             max_simulate_length=policy_config.max_simulate_length,
                             simulate_policy=policy_config.simulation_policy,
+                            score_factor=policy_config.score_factor,
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
