@@ -56,7 +56,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         for _ in range(self._max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
-            leaf = self._select_child_best_uct(root)
+            leaf = self._select_leaf_best_uct(root)
             child = self._expand(leaf)
             value = self._simulate(child)
 
@@ -69,13 +69,13 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
         # No valid actions at this root
         if not root.children:
-            return None, 0
+            return None, self._max_iterations
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
-        return best.action, 0
+        return best.action, self._max_iterations
 
-    def _select_child_best_uct(
+    def _select_leaf_best_uct(
         self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
@@ -86,10 +86,8 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         while (
             current_node.state.get_winner() == None  # Non-terminal
             and current_node.unexpanded_actions == []  # No actions unexpanded
-            and current_node.children  # Has children to select from
+            and current_node.children != []  # Has children to select from
         ):
-            assert current_node.children != None
-
             log_parent = math.log(current_node.total_visits)
 
             def uct(child: _MctsTreeNode[TAction]) -> float:
