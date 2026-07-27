@@ -44,13 +44,13 @@ class AiCachedRewardService:
         for _, transform, unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
-            rounded_down_position = Vec2(
-                int(transform.position.x), int(transform.position.y)
-            )
             combat_units.append(
                 CombatUnitKey(
-                    position=rounded_down_position,
-                    degrees=transform.degrees,
+                    position=(
+                        int(round(transform.position.x)),
+                        int(round(transform.position.y)),
+                    ),
+                    degrees=int(round(transform.degrees)),
                     faction=unit.faction,
                     firing_at=fire_controls.firing_at,
                 )
