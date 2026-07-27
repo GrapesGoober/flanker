@@ -236,3 +236,11 @@ class WaypointsState(IRepresentationState[Action]):
             points=points,
             path_tolerance=self._path_tolerance,
         )
+
+    @property
+    @override
+    def cached_reward(self) -> float | None: ...
+
+    @cached_reward.setter
+    @override
+    def cached_reward(self, value: float) -> None: ...

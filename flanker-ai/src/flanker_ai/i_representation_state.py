@@ -59,3 +59,11 @@ class IRepresentationState[TAction](Protocol):
     def update_state(self, gs: GameState) -> None:
         """Update the state to match the original game state."""
         ...
+
+    @property
+    def cached_reward(self) -> float | None:
+        """The cached reward given the current state, if exists."""
+        ...
+
+    @cached_reward.setter
+    def cached_reward(self, value: float) -> None: ...

@@ -150,3 +150,11 @@ class UnabstractedState(IRepresentationState[Action]):
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config
         )
+
+    @property
+    @override
+    def cached_reward(self) -> float | None: ...
+
+    @cached_reward.setter
+    @override
+    def cached_reward(self, value: float) -> None: ...
