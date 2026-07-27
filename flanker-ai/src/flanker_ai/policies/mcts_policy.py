@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass
 from typing import Literal
 
@@ -60,11 +61,13 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             child = self._expand(leaf)
             value = self._simulate(child)
 
+            VALUE_MULTIPLIER = 10
+
             # Back propagate each node
             node: _MctsTreeNode[TAction] | None = child
             while node is not None:
                 node.total_visits += 1
-                node.total_value += value
+                node.total_value += value * VALUE_MULTIPLIER
                 node = node.parent
 
         # No valid actions at this root
@@ -146,6 +149,10 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
+        # TODO This assumes a score boundary for scaling
+        # Might want a more robust solution in future
+        MAX_ABS_SCORE = 6
+
         match self._simulate_policy:
             case None:
                 return node.state.get_score(MAXIMIZING_FACTION)
@@ -166,8 +173,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
                     is_valid: bool = False
                     while possible_actions != []:
                         action = possible_actions.pop(
-                            0,
-                            # random.randrange(len(possible_actions)),
+                            random.randrange(len(possible_actions)),
                         )
                         is_valid = current_state.perform_action(action)
                         if is_valid:
@@ -179,4 +185,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
                         stagnate_counter += 1
                         continue
 
-                return current_state.get_score(MAXIMIZING_FACTION)
+                match current_state.get_winner():
+                    case InitiativeState.Faction.BLUE:
+                        return 1
+                    case InitiativeState.Faction.RED:
+                        return -1
+                    case None:
+                        score = current_state.get_score(MAXIMIZING_FACTION)
+                        return score / MAX_ABS_SCORE

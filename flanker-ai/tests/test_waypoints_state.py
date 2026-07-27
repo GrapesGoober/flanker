@@ -157,7 +157,7 @@ def get_agent(
                 max_iterations=10_000,
                 max_simulate_length=20,
                 # FIXME MCTS isn't optimal for waypoints state
-                simulation_policy=None,
+                simulation_policy="random",
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
