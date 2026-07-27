@@ -67,10 +67,14 @@ class AiCachedRewardService:
     ) -> dict[CacheKey, float]:
         if entities := gs.query(TranspositionTable):
             _, component = entities[0]
-            table = component.table
         else:
-            gs.add_entity(TranspositionTable(table := {}))
-        return table
+            gs.add_entity(
+                component := TranspositionTable(
+                    cache_hits=0,
+                    table={},
+                )
+            )
+        return component.table
 
     @staticmethod
     def get_reward(
