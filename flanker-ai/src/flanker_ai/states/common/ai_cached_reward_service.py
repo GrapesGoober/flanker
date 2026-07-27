@@ -56,6 +56,24 @@ class AiCachedRewardService:
     """Utility for a cached reward table."""
 
     @staticmethod
+    def init_empty_table(gs: GameState) -> None:
+        gs.add_entity(TranspositionTable(table={}))
+
+    @staticmethod
+    def get_transposition_table(
+        gs: GameState,
+    ) -> dict[CacheKey, float]:
+        if entities := gs.query(TranspositionTable):
+            _, component = entities[0]
+        else:
+            gs.add_entity(
+                component := TranspositionTable(
+                    table={},
+                )
+            )
+        return component.table
+
+    @staticmethod
     def get_key(
         gs: GameState,
     ) -> CacheKey:
@@ -105,20 +123,6 @@ class AiCachedRewardService:
             eliminations=tuple(eliminations),
             stalls=tuple(stalls),
         )
-
-    @staticmethod
-    def get_transposition_table(
-        gs: GameState,
-    ) -> dict[CacheKey, float]:
-        if entities := gs.query(TranspositionTable):
-            _, component = entities[0]
-        else:
-            gs.add_entity(
-                component := TranspositionTable(
-                    table={},
-                )
-            )
-        return component.table
 
     @staticmethod
     def get_reward(

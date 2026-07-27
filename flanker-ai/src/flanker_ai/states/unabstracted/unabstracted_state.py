@@ -147,6 +147,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
+        AiCachedRewardService.init_empty_table(self._gs)
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config
