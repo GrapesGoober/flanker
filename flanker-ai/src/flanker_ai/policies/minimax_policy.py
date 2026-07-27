@@ -61,7 +61,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             if branch == None:
                 continue
 
-            score = rs.cached_reward
+            score = branch.cached_reward
             if score == None:  # Reuse the cached reward if possible
                 score, _ = self._search(
                     rs=branch,
@@ -70,8 +70,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
                     beta=beta,
                     counter=counter,
                 )
-            else:
-                print("Cache hits!")
+                branch.cached_reward = score
 
             if maximizing:
                 if score > best_score:
