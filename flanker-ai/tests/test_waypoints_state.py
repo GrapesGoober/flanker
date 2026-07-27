@@ -156,6 +156,7 @@ def get_agent(
                 type="MctsPolicy",
                 max_iterations=10_000,
                 max_simulate_length=20,
+                # FIXME MCTS isn't optimal for waypoints state
                 simulation_policy=None,
             )
         case "Minimax":
