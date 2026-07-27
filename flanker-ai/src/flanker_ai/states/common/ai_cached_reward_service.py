@@ -4,8 +4,10 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
+    EliminationWinCondition,
     FireControls,
     InitiativeState,
+    StallLoseCondition,
     Transform,
 )
 from flanker_core.models.outcomes import FireEffect
@@ -22,9 +24,27 @@ class CombatUnitKey:
 
 
 @dataclass(frozen=True)
+class EliminationKey:
+    target_faction: InitiativeState.Faction
+    winning_faction: InitiativeState.Faction
+    units_to_eliminate: int
+    units_eliminated_counter: int
+
+
+@dataclass(frozen=True)
+class StallsKey:
+    counting_faction: InitiativeState.Faction
+    winning_faction: InitiativeState.Faction
+    stall_count: int
+    stall_limit: int
+
+
+@dataclass(frozen=True)
 class CacheKey:
     initiative: InitiativeState.Faction
     combat_units: tuple[CombatUnitKey, ...]
+    eliminations: tuple[EliminationKey, ...]
+    stalls: tuple[StallsKey, ...]
 
 
 @dataclass
@@ -57,9 +77,33 @@ class AiCachedRewardService:
                 )
             )
 
+        eliminations: list[EliminationKey] = []
+        for _, elimination in gs.query(EliminationWinCondition):
+            eliminations.append(
+                EliminationKey(
+                    target_faction=elimination.target_faction,
+                    winning_faction=elimination.winning_faction,
+                    units_to_eliminate=elimination.units_to_eliminate,
+                    units_eliminated_counter=elimination.units_eliminated_counter,
+                )
+            )
+
+        stalls: list[StallsKey] = []
+        for _, stall in gs.query(StallLoseCondition):
+            stalls.append(
+                StallsKey(
+                    counting_faction=stall.counting_faction,
+                    winning_faction=stall.winning_faction,
+                    stall_count=stall.stall_count,
+                    stall_limit=stall.stall_limit,
+                )
+            )
+
         return CacheKey(
             initiative=InitiativeSystem.get_initiative(gs),
             combat_units=tuple(combat_units),
+            eliminations=tuple(eliminations),
+            stalls=tuple(stalls),
         )
 
     @staticmethod
