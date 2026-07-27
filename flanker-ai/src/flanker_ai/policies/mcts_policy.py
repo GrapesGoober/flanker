@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Literal
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -30,10 +31,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         max_iterations: int,
         max_simulate_length: int,
-        simulate_policy: IPolicy[TAction],
+        simulate_policy: Literal["random"] | None,
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
+        self._simulate_policy: Literal["random"] | None = simulate_policy
 
     def get_action(
         self,
@@ -146,34 +148,37 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
+        match self._simulate_policy:
+            case None:
+                return node.state.get_score(MAXIMIZING_FACTION)
+            case "random":
+                # Make a copy so it doesn't mutate the node itself
+                current_state = node.state.copy()
 
-        # Make a copy so it doesn't mutate the node itself
-        current_state = node.state.copy()
+                # Run simulation until hit the max limit
+                stagnate_counter: int = 0
+                for _ in range(self._max_simulate_length):
+                    if current_state.get_winner() != None:
+                        break
+                    if stagnate_counter >= 2:
+                        break
 
-        # Run simulation until hit the max limit
-        stagnate_counter: int = 0
-        for _ in range(self._max_simulate_length):
-            if current_state.get_winner() != None:
-                break
-            if stagnate_counter >= 2:
-                break
+                    # Pick a legal action to perform
+                    possible_actions = list(current_state.get_actions())
+                    is_valid: bool = False
+                    while possible_actions != []:
+                        action = possible_actions.pop(
+                            0,
+                            # random.randrange(len(possible_actions)),
+                        )
+                        is_valid = current_state.perform_action(action)
+                        if is_valid:
+                            break
 
-            # Pick a legal action to perform
-            possible_actions = list(current_state.get_actions())
-            is_valid: bool = False
-            while possible_actions != []:
-                action = possible_actions.pop(
-                    0,
-                    # random.randrange(len(possible_actions)),
-                )
-                is_valid = current_state.perform_action(action)
-                if is_valid:
-                    break
+                    # If no valid action found, pass initiative
+                    if not is_valid:
+                        current_state.flip_initiative()
+                        stagnate_counter += 1
+                        continue
 
-            # If no valid action found, pass initiative
-            if not is_valid:
-                current_state.flip_initiative()
-                stagnate_counter += 1
-                continue
-
-        return current_state.get_score(MAXIMIZING_FACTION)
+                return current_state.get_score(MAXIMIZING_FACTION)

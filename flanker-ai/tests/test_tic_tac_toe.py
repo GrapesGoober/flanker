@@ -3,7 +3,6 @@ from typing import Literal
 import pytest
 from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
-from flanker_ai.policies.random_policy import RandomPolicy
 from flanker_ai.states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
 from flanker_ai.states.tic_tac_toe.tic_tac_toe_state import TicTacToeState
 from flanker_core.models.components import InitiativeState
@@ -53,7 +52,7 @@ def test_optimal_action(
             policy = MctsPolicy[TicTacToeAction](
                 max_iterations=10_000,
                 max_simulate_length=20,
-                simulate_policy=RandomPolicy(),
+                simulate_policy="random",
             )
 
     action, _ = policy.get_action(fixture)

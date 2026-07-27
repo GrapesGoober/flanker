@@ -16,7 +16,6 @@ from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.policies.random_policy import RandomPolicy
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -158,20 +157,10 @@ class AiAgent:
                             depth=policy_config.depth,
                         )
                     case PolicyConfig.MctsPolicy():
-                        match policy_config.simulation_policy:
-                            case "random":
-                                raise NotImplementedError(
-                                    "True random converges very slowly.\
-                                    This is disabled for MCTS!",
-                                )
-                                simulate_policy = RandomPolicy[Action]()
-                            case "RH":
-                                simulate_policy = RandomHeuristicPolicy()
-
                         policy = MctsPolicy[Action](
                             max_iterations=policy_config.max_iterations,
                             max_simulate_length=policy_config.max_simulate_length,
-                            simulate_policy=simulate_policy,
+                            simulate_policy=policy_config.simulation_policy,
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
