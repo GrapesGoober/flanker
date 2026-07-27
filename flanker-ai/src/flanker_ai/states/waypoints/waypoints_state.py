@@ -21,7 +21,9 @@ from flanker_core.models.actions import (
     PivotAction,
 )
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
+from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem, LosSystemOverrides
@@ -37,6 +39,10 @@ class WaypointsState(IRepresentationState[Action]):
     @override
     def get_initiative(self) -> InitiativeState.Faction:
         return InitiativeSystem.get_initiative(self.gs)
+
+    @override
+    def flip_initiative(self) -> None:
+        InitiativeSystem.flip_initiative(self.gs)
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -63,6 +69,20 @@ class WaypointsState(IRepresentationState[Action]):
             else:
                 score -= value
         return score
+
+    @override
+    def perform_action(self, action: Action) -> bool:
+        result = ActionSystem.perform(self.gs, action)
+        return not isinstance(result, InvalidAction)
+
+    @override
+    def copy(self) -> "WaypointsState":
+        new_waypoints_state = WaypointsState(
+            points=self._points,
+            path_tolerance=self._path_tolerance,
+        )
+        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        return new_waypoints_state
 
     @override
     def get_actions(self) -> list[Action]:

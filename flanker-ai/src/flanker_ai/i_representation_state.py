@@ -19,6 +19,17 @@ class IRepresentationState[TAction](Protocol):
         """Get possible actions from the current state. May not be legal."""
         ...
 
+    def copy(self) -> "IRepresentationState[TAction]":
+        """Copies the state."""
+        ...
+
+    def perform_action(self, action: TAction) -> bool:
+        """
+        Performs an action by mutating the state in place.
+        Returns whether the action was valid and performed.
+        """
+        ...
+
     def get_branches(
         self,
         action: TAction,
@@ -39,6 +50,10 @@ class IRepresentationState[TAction](Protocol):
 
     def get_initiative(self) -> InitiativeState.Faction:
         """Get the current initiative holder."""
+        ...
+
+    def flip_initiative(self) -> None:
+        """Flips the current initiative holder."""
         ...
 
     def update_state(self, gs: GameState) -> None:

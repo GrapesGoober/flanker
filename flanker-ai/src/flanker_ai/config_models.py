@@ -60,6 +60,31 @@ class PointsConfig:
     ]
 
 
+class PolicyConfig:
+
+    @dataclass
+    class MctsPolicy:
+        type: Literal["MctsPolicy"]
+        max_iterations: int
+        max_simulate_length: int
+        simulation_policy: Literal["random"] | None
+        score_factor: int
+
+    @dataclass
+    class MinimaxPolicy:
+        type: Literal["MinimaxPolicy"]
+        depth: int
+
+    @dataclass
+    class ExpectimaxPolicy:
+        type: Literal["ExpectimaxPolicy"]
+        depth: int
+
+    @dataclass
+    class RandomHeuristicPolicy:
+        type: Literal["RandomHeuristicPolicy"]
+
+
 @dataclass
 class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
@@ -76,10 +101,14 @@ class UnabstractedStateConfig:
 
 @dataclass
 class SearchPolicyConfig:
-    policy_type: Literal["Minimax", "Expectimax", "MCTS"]
+    policy: (
+        PolicyConfig.MinimaxPolicy
+        | PolicyConfig.ExpectimaxPolicy
+        | PolicyConfig.MctsPolicy
+    )
     state: WaypointsStateConfig | UnabstractedStateConfig
 
 
 @dataclass
 class HeuristicPolicyConfig:
-    policy_type: Literal["RandomHeuristic"]
+    policy: PolicyConfig.RandomHeuristicPolicy

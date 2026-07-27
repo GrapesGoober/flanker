@@ -41,7 +41,7 @@ if __name__ == "__main__":
         paths=[
             "./scenes/experiment-settings.json",
             "./scenes/experiment-scene-2.json",
-            "./scenes/experiment-blue-analysis.json",
+            "./scenes/experiment-blue-mcts.json",
             "./scenes/experiment-red-rh.json",
         ]
     )

@@ -5,6 +5,7 @@ from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     HeuristicPolicyConfig,
     PointsConfig,
+    PolicyConfig,
     SearchPolicyConfig,
     UnabstractedStateConfig,
     WaypointsStateConfig,
@@ -131,7 +132,7 @@ class AiAgent:
                 # TODO: need a better framework for rule-based policies.
                 # It should not take the same states as search based, since
                 # its use case is different.
-                policy = RandomHeuristicPolicy(gs)
+                policy = RandomHeuristicPolicy()
                 state = UnabstractedState(
                     gs=gs,
                     move_candidates_config=PointsConfig(
@@ -145,13 +146,23 @@ class AiAgent:
                     divide_moves_per_unit=False,
                 )
             case SearchPolicyConfig():
-                match config_component.config.policy_type:
-                    case "Expectimax":
-                        policy = ExpectimaxPolicy[Action](depth=4)
-                    case "Minimax":
-                        policy = MinimaxPolicy[Action](depth=4)
-                    case "MCTS":
-                        policy = MctsPolicy[Action](max_iterations=10_000)
+                policy_config = config_component.config.policy
+                match policy_config:
+                    case PolicyConfig.ExpectimaxPolicy():
+                        policy = ExpectimaxPolicy[Action](
+                            depth=policy_config.depth,
+                        )
+                    case PolicyConfig.MinimaxPolicy():
+                        policy = MinimaxPolicy[Action](
+                            depth=policy_config.depth,
+                        )
+                    case PolicyConfig.MctsPolicy():
+                        policy = MctsPolicy[Action](
+                            max_iterations=policy_config.max_iterations,
+                            max_simulate_length=policy_config.max_simulate_length,
+                            simulate_policy=policy_config.simulation_policy,
+                            score_factor=policy_config.score_factor,
+                        )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
                         # The unabstracted state uses lazy waypoint expansion

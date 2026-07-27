@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass
+from typing import Literal
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -26,8 +28,17 @@ class _MctsTreeNode[TAction]:
 
 class MctsPolicy[TAction](IPolicy[TAction]):
 
-    def __init__(self, max_iterations: int) -> None:
-        self._max_iterations = max_iterations
+    def __init__(
+        self,
+        max_iterations: int,
+        max_simulate_length: int,
+        simulate_policy: Literal["random"] | None,
+        score_factor: int,
+    ) -> None:
+        self._max_iterations: int = max_iterations
+        self._max_simulate_length: int = max_simulate_length
+        self._simulate_policy: Literal["random"] | None = simulate_policy
+        self._score_factor: int = score_factor
 
     def get_action(
         self,
@@ -48,7 +59,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         for _ in range(self._max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
-            leaf = self._select_child_best_uct(root)
+            leaf = self._select_leaf_best_uct(root)
             child = self._expand(leaf)
             value = self._simulate(child)
 
@@ -61,13 +72,13 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
         # No valid actions at this root
         if not root.children:
-            return None, 0
+            return None, self._max_iterations
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
-        return best.action, 0
+        return best.action, self._max_iterations
 
-    def _select_child_best_uct(
+    def _select_leaf_best_uct(
         self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
@@ -78,10 +89,8 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         while (
             current_node.state.get_winner() == None  # Non-terminal
             and current_node.unexpanded_actions == []  # No actions unexpanded
-            and current_node.children  # Has children to select from
+            and current_node.children != []  # Has children to select from
         ):
-            assert current_node.children != None
-
             log_parent = math.log(current_node.total_visits)
 
             def uct(child: _MctsTreeNode[TAction]) -> float:
@@ -140,7 +149,46 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
     ) -> float:
-        # TODO: Run a rollout until terminal and return reward from
-        # MAXIMIZING_FACTION's perspective. I'm using heuristic score
-        # for now. Configurable alternatives are possible.
-        return node.state.get_score(MAXIMIZING_FACTION)
+
+        match self._simulate_policy:
+            case None:
+                score = node.state.get_score(MAXIMIZING_FACTION)
+                return score / self._score_factor
+            case "random":
+                # Make a copy so it doesn't mutate the node itself
+                current_state = node.state.copy()
+
+                # Run simulation until hit the max limit
+                stagnate_counter: int = 0
+                for _ in range(self._max_simulate_length):
+                    if current_state.get_winner() != None:
+                        break
+                    if stagnate_counter >= 2:
+                        break
+
+                    # Pick a legal action to perform
+                    possible_actions = list(current_state.get_actions())
+                    is_valid: bool = False
+                    while possible_actions != []:
+                        action = possible_actions.pop(
+                            random.randrange(len(possible_actions)),
+                        )
+                        is_valid = current_state.perform_action(action)
+                        if is_valid:
+                            break
+
+                    # If no valid action found, pass initiative
+                    if not is_valid:
+                        current_state.flip_initiative()
+                        stagnate_counter += 1
+                        continue
+
+                match current_state.get_winner():
+                    # I can't use const MAXIMIZING_FACTION in match case
+                    case InitiativeState.Faction.BLUE:
+                        return 1
+                    case InitiativeState.Faction.RED:
+                        return -1
+                    case None:
+                        score = current_state.get_score(MAXIMIZING_FACTION)
+                        return score / self._score_factor

@@ -3434,7 +3434,9 @@
       "AiConfigComponent": {
         "faction": "BLUE",
         "config": {
-          "policy_type": "RandomHeuristic"
+          "policy": {
+            "type": "RandomHeuristicPolicy"
+          }
         }
       }
     },
@@ -3442,7 +3444,9 @@
       "AiConfigComponent": {
         "faction": "RED",
         "config": {
-          "policy_type": "RandomHeuristic"
+          "policy": {
+            "type": "RandomHeuristicPolicy"
+          }
         }
       }
     }

@@ -3,7 +3,9 @@
     "722332cc-99c2-41f0-9b60-96916cb9a726": {
       "AiConfigComponent": {
         "config": {
-          "policy_type": "RandomHeuristic"
+          "policy": {
+            "type": "RandomHeuristicPolicy"
+          }
         },
         "faction": "BLUE"
       }

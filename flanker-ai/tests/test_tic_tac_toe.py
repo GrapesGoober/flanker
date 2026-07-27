@@ -49,7 +49,12 @@ def test_optimal_action(
         case "Minimax":
             policy = MinimaxPolicy[TicTacToeAction](depth=1)
         case "MCTS":
-            policy = MctsPolicy[TicTacToeAction](max_iterations=10_000)
+            policy = MctsPolicy[TicTacToeAction](
+                max_iterations=10_000,
+                max_simulate_length=20,
+                simulate_policy="random",
+                score_factor=1,
+            )
 
     action, _ = policy.get_action(fixture)
     assert action != None

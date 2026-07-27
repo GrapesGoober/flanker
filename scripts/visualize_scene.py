@@ -7,6 +7,7 @@ from uuid import UUID
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import SearchPolicyConfig
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -223,7 +224,9 @@ def draw_move_candidates(
         for _, conf in gs.query(AiConfigComponent):
             if conf.faction != faction:
                 continue
-            if conf.config.policy_type != "Minimax":
+            if type(conf.config) != SearchPolicyConfig:
+                continue
+            if conf.config.policy.type != "MinimaxPolicy":
                 continue
             if conf.config.state.type != "UnabstractedStateConfig":
                 continue

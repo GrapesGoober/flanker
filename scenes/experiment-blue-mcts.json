@@ -1,11 +1,14 @@
 {
   "entities": {
-    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
       "AiConfigComponent": {
         "config": {
           "policy": {
-            "type": "MinimaxPolicy",
-            "depth": 4
+            "type": "MctsPolicy",
+            "max_iterations": 10000,
+            "max_simulate_length": 10,
+            "simulation_policy": "random",
+            "score_factor": 6
           },
           "state": {
             "type": "UnabstractedStateConfig",
@@ -29,7 +32,7 @@
             "divide_moves_per_unit": false
           }
         },
-        "faction": "RED"
+        "faction": "BLUE"
       }
     }
   }

@@ -37,8 +37,9 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
     def get_initiative(self) -> InitiativeState.Faction:
         return MARK_TO_FACTION[self.current_player]
 
-    def is_maximizing(self) -> bool:
-        return self.current_player == "O"
+    @override
+    def flip_initiative(self) -> None:
+        self.current_player = "X" if self.current_player == "O" else "O"
 
     @override
     def get_winner(self) -> Optional[InitiativeState.Faction]:
@@ -80,11 +81,24 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
         if self.board[action.row][action.column] is None:
             new_state = self._copy()
-            new_state.board[action.row][action.column] = self.current_player
-            new_state.current_player = "X" if self.current_player == "O" else "O"
+            new_state.perform_action(action)
             return new_state
         return None
 
+    @override
+    def perform_action(self, action: TicTacToeAction) -> bool:
+        if 0 <= action.row <= 3 and 0 <= action.column <= 3:
+            self.board[action.row][action.column] = self.current_player
+            self.current_player = "X" if self.current_player == "O" else "O"
+            return True
+        else:
+            return False
+
+    @override
+    def copy(self) -> "TicTacToeState":
+        return deepcopy(self)
+
+    @override
     def get_actions(self) -> Sequence[TicTacToeAction]:
         actions: list[TicTacToeAction] = []
         for r in range(3):

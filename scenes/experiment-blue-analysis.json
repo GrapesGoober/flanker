@@ -3,7 +3,10 @@
     "722332cc-99c2-41f0-9b60-96916cb9a726": {
       "AiConfigComponent": {
         "config": {
-          "policy_type": "Minimax",
+          "policy": {
+            "type": "MinimaxPolicy",
+            "depth": 4
+          },
           "state": {
             "type": "UnabstractedStateConfig",
             "move_candidates": {
