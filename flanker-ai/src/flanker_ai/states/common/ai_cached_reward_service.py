@@ -14,6 +14,7 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 
 @dataclass(frozen=True)
 class CombatUnitKey:
+    id: UUID
     position: tuple[int, int]
     degrees: int
     faction: InitiativeState.Faction
@@ -40,11 +41,12 @@ class AiCachedRewardService:
     ) -> CacheKey:
 
         combat_units: list[CombatUnitKey] = []
-        for _, transform, unit, fire_controls in gs.query(
+        for id, transform, unit, fire_controls in gs.query(
             Transform, CombatUnit, FireControls
         ):
             combat_units.append(
                 CombatUnitKey(
+                    id=id,
                     position=(
                         int(round(transform.position.x)),
                         int(round(transform.position.y)),
@@ -69,7 +71,6 @@ class AiCachedRewardService:
         else:
             gs.add_entity(
                 component := TranspositionTable(
-                    cache_hits=0,
                     table={},
                 )
             )
