@@ -9,14 +9,13 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.outcomes import FireEffect
-from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass(frozen=True)
 class CombatUnitKey:
-    position: Vec2
-    degrees: float
+    position: tuple[int, int]
+    degrees: int
     faction: InitiativeState.Faction
     firing_at: tuple[UUID, FireEffect] | None = None
 
