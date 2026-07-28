@@ -60,11 +60,14 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
                 continue  # Escapes; prevents expected_score=0 being used
             expected_score = 0
             for probability, branch in branches:
-                score, _ = self._search(
-                    state=branch,
-                    depth=depth - 1,
-                    counter=counter,
-                )
+                score = branch.cached_reward
+                if score == None:  # Reuse the cached reward if possible
+                    score, _ = self._search(
+                        state=branch,
+                        depth=depth - 1,
+                        counter=counter,
+                    )
+                    branch.cached_reward = score
                 expected_score += score * probability
             if state.get_initiative() == _MAXIMIZING_FACTION:
                 if expected_score > best_score:

@@ -60,13 +60,17 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             branch = rs.get_one_branch(action)
             if branch == None:
                 continue
-            score, _ = self._search(
-                rs=branch,
-                depth=depth - 1,
-                alpha=alpha,
-                beta=beta,
-                counter=counter,
-            )
+
+            score = branch.cached_reward
+            if score == None:  # Reuse the cached reward if possible
+                score, _ = self._search(
+                    rs=branch,
+                    depth=depth - 1,
+                    alpha=alpha,
+                    beta=beta,
+                    counter=counter,
+                )
+                branch.cached_reward = score
 
             if maximizing:
                 if score > best_score:

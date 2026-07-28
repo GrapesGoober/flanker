@@ -149,3 +149,11 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
             current_player=MARK_TO_FACTION[self.current_player],
             board=deepcopy(self.board),
         )
+
+    @property
+    @override
+    def cached_reward(self) -> float | None: ...
+
+    @cached_reward.setter
+    @override
+    def cached_reward(self, value: float) -> None: ...

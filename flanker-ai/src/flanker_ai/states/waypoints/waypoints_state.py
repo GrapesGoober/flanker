@@ -8,6 +8,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.states.common.ai_cached_reward_service import AiCachedRewardService
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
@@ -216,6 +217,7 @@ class WaypointsState(IRepresentationState[Action]):
     ) -> None:
 
         self.gs = deepcopy(gs)
+        AiCachedRewardService.init_empty_table(self.gs)
         self.gs.add_entity(
             LosSystemOverrides.GetLosFromLine(
                 method=WaypointsLosSystemOverrides.get_los_from_line,
@@ -236,3 +238,13 @@ class WaypointsState(IRepresentationState[Action]):
             points=points,
             path_tolerance=self._path_tolerance,
         )
+
+    @property
+    @override
+    def cached_reward(self) -> float | None:
+        return AiCachedRewardService.get_reward(self.gs)
+
+    @cached_reward.setter
+    @override
+    def cached_reward(self, value: float) -> None:
+        AiCachedRewardService.set_reward(self.gs, value)
