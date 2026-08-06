@@ -15,7 +15,7 @@ from matplotlib.axes import Axes
 
 
 def main() -> None:
-    gs = get_game_state(paths=["./scenes/visualize-los.json"])
+    gs = get_game_state(paths=["./scenes/visualize-polytope.json"])
 
     # Create a 3D figure and axis
     fig = plt.figure()  # type: ignore
