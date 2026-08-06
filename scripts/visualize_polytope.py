@@ -15,18 +15,17 @@ from matplotlib import pyplot as plt
 
 def main() -> None:
     gs = get_game_state(paths=["./scenes/visualize-los.json"])
-    plt.gca().invert_yaxis()
-
     draw_terrains(gs)
 
-    draw_los(
-        gs,
-        spotter_pos=Vec2(10, 10),
-        color="C0",
-        linestyle="--",
-    )
+    for x in range(0, 300, 10):
+        draw_los(
+            gs,
+            spotter_pos=Vec2(x, 10),
+            color="C0",
+            linestyle="--",
+        )
 
-    # plt.axis("equal") # type: ignore
+    plt.gca().invert_yaxis()
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")  # type: ignore
     plt.axis((0, 300, 300, 0))  # type: ignore
