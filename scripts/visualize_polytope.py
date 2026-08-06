@@ -3,6 +3,7 @@ from inspect import isclass
 from typing import Any
 from uuid import UUID
 
+import matplotlib.pyplot as plt
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -10,25 +11,37 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.transform_utils import TransformUtils
-from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 
 
 def main() -> None:
     gs = get_game_state(paths=["./scenes/visualize-los.json"])
-    draw_terrains(gs)
 
+    # Create a 3D figure and axis
+    fig = plt.figure()  # type: ignore
+    ax = fig.add_subplot(111, projection="3d")
+
+    # Draw terrains at z = 0 base plane
+    draw_terrains(gs, ax)
+
+    # Generate LOS polygons where z offset equals the x coordinate
     for x in range(0, 300, 10):
         draw_los(
             gs,
             spotter_pos=Vec2(x, 10),
+            z_offset=float(x),
+            ax=ax,
             color="C0",
-            linestyle="--",
+            linestyle="-",
         )
 
-    plt.gca().invert_yaxis()
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    plt.axis("off")  # type: ignore
-    plt.axis((0, 300, 300, 0))  # type: ignore
+    # Configure 3D space bounds to 300x300x300
+    ax.set_xlim(0, 300)  # type: ignore
+    ax.set_ylim(0, 300)  # type: ignore
+    ax.set_zlim(0, 300)  # type: ignore
+
+    # Invert Y-axis to match 2D screen coordinate conventions if desired
+    ax.invert_yaxis()
     plt.show()  # type: ignore
 
 
@@ -55,31 +68,30 @@ def get_game_state(
     return gs
 
 
-def visualize_polygon(
+def visualize_polygon_3d(
+    ax: Axes,
     verts: list[Vec2],
+    z_offset: float = 0.0,
     color: str = "C0",
-    fill_alpha: float = 0,
-    plot_alpha: float = 1,
+    plot_alpha: float = 1.0,
     linestyle: str = "-",
 ) -> None:
     xs = [v.x for v in verts]
     ys = [v.y for v in verts]
+    zs = [z_offset] * len(verts)
 
-    # plt.scatter(xs, ys, color=color)  # type: ignore
-    plt.fill(xs, ys, color=color, alpha=fill_alpha)  # type: ignore
-    plt.plot(  # type: ignore
+    ax.plot(  # type: ignore
         xs,
         ys,
+        zs,
         linestyle=linestyle,
         color=color,
         alpha=plot_alpha,
-        linewidth=3.0,
+        linewidth=1.5,
     )
-    plt.axis("equal")  # type: ignore
 
 
-def draw_terrains(gs: GameState) -> None:
-
+def draw_terrains(gs: GameState, ax: Axes) -> None:
     for _, terrain, transform in gs.query(
         components.TerrainFeature,
         components.Transform,
@@ -87,17 +99,20 @@ def draw_terrains(gs: GameState) -> None:
         vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
-        visualize_polygon(
-            vertices,
+        visualize_polygon_3d(
+            ax=ax,
+            verts=vertices,
+            z_offset=0.0,
             color="forestgreen",
-            fill_alpha=0,
-            plot_alpha=0.2,
+            plot_alpha=1.0,
         )
 
 
 def draw_los(
     gs: GameState,
     spotter_pos: Vec2,
+    z_offset: float,
+    ax: Axes,
     color: str = "C0",
     linestyle: str = "-",
 ) -> None:
@@ -105,10 +120,11 @@ def draw_los(
         gs=gs,
         spotter_pos=spotter_pos,
     )
-    visualize_polygon(
-        polygon,
+    visualize_polygon_3d(
+        ax=ax,
+        verts=polygon,
+        z_offset=z_offset,
         color=color,
-        fill_alpha=0.1,
         plot_alpha=0.3,
         linestyle=linestyle,
     )
