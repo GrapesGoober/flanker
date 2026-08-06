@@ -25,7 +25,7 @@ def main() -> None:
     draw_terrains(gs, ax)
 
     # Generate LOS polygons where z offset equals the x coordinate
-    for x in range(0, 300, 10):
+    for x in range(10, 290, 10):
         draw_los(
             gs,
             spotter_pos=Vec2(x, 10),
