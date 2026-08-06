@@ -42,6 +42,7 @@ def main() -> None:
 
     # Invert Y-axis to match 2D screen coordinate conventions if desired
     ax.invert_yaxis()
+    ax.axis("off")
     plt.show()  # type: ignore
 
 
