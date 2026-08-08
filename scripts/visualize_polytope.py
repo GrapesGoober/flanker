@@ -13,6 +13,7 @@ from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib.axes import Axes
+from matplotlib.lines import Line2D
 from matplotlib.widgets import CheckButtons, Slider
 
 # pyright: reportUnknownMemberType=false
@@ -126,7 +127,7 @@ def visualize_polygon_3d(
     color: str = "C0",
     plot_alpha: float = 1.0,
     linestyle: str = "-",
-) -> Any:
+) -> Line2D:
     xs = [v.x for v in verts]
     ys = [v.y for v in verts]
     zs = [z_offset] * len(verts)
@@ -163,8 +164,8 @@ def draw_los_polytope(
     los_polygons: dict[float, list[Vec2]],
     ax: Axes,
     color: str = "C0",
-) -> list[Any]:
-    lines: list[Any] = []
+) -> list[Line2D]:
+    lines: list[Line2D] = []
 
     for z_offset, polygon in los_polygons.items():
         line = visualize_polygon_3d(
