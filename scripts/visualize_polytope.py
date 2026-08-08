@@ -15,12 +15,14 @@ from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib.axes import Axes
 from matplotlib.widgets import CheckButtons, Slider
 
+# pyright: reportUnknownMemberType=false
+
 
 def main() -> None:
     gs = get_game_state(paths=["./scenes/visualize-polytope.json"])
 
     # Create a 3D figure and axis
-    fig = plt.figure()  # type: ignore
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
 
     # Draw terrains at z = 0 base plane
@@ -34,16 +36,16 @@ def main() -> None:
     los_plotlines = draw_los_polytope(los_polygons, ax, color="C0")
 
     x_markers = get_discontinuous_x_values(los_polygons)
-    ax.scatter3D(  # type: ignore
+    ax.scatter3D(
         xs=x_markers,
         ys=10,
         zs=0,
     )
 
     # Configure 3D space bounds to 300x300x300
-    ax.set_xlim(0, 300)  # type: ignore
-    ax.set_ylim(0, 300)  # type: ignore
-    ax.set_zlim(0, 300)  # type: ignore
+    ax.set_xlim(0, 300)
+    ax.set_ylim(0, 300)
+    ax.set_zlim(0, 300)
 
     # Invert Y-axis to match 2D screen coordinate conventions if desired
     ax.invert_yaxis()
@@ -52,10 +54,10 @@ def main() -> None:
     # --- UI ---
 
     # Slider for selecting the X value
-    slider_ax = fig.add_axes([0.20, 0.04, 0.60, 0.03])  # type: ignore
+    slider_ax = fig.add_axes((0.20, 0.04, 0.60, 0.03))
     x_values = list(los_polygons.keys())
     slider = Slider(
-        slider_ax,  # type: ignore
+        slider_ax,
         "X",
         valmin=x_values[0],
         valmax=x_values[-1],
@@ -64,9 +66,9 @@ def main() -> None:
     )
 
     # Checkbox for all-at-once mode
-    checkbox_ax = fig.add_axes([0.02, 0.04, 0.12, 0.08])  # type: ignore
+    checkbox_ax = fig.add_axes((0.02, 0.04, 0.12, 0.08))
     checkbox = CheckButtons(
-        checkbox_ax,  # type: ignore
+        checkbox_ax,
         ["Render all"],
         [True],
     )
@@ -85,13 +87,13 @@ def main() -> None:
             for x, line in zip(x_values, los_plotlines):
                 line.set_visible(x == selected_x)
 
-        fig.canvas.draw_idle()  # type: ignore
+        fig.canvas.draw_idle()
 
     slider.on_changed(update)
     checkbox.on_clicked(update)
 
     plt.tight_layout(pad=0)
-    plt.show()  # type: ignore
+    plt.show()
 
 
 def get_game_state(
@@ -129,7 +131,7 @@ def visualize_polygon_3d(
     ys = [v.y for v in verts]
     zs = [z_offset] * len(verts)
 
-    return ax.plot(  # type: ignore
+    return ax.plot(
         xs,
         ys,
         zs,
