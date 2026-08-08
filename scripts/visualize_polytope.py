@@ -1,5 +1,6 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from itertools import pairwise
 from typing import Any
 from uuid import UUID
 
@@ -27,12 +28,15 @@ def main() -> None:
     # Generate LOS polygons where z offset equals the x coordinate
     los_polygons: dict[float, list[Vec2]] = {}
     for x in range(10, 290, 10):
-        z = x  # The z offset is for each cross section
-        los_polygons[z] = LosSystem.get_los_polygon(
-            gs=gs,
-            spotter_pos=Vec2(x, 10),
-        )
+        los_polygons[x] = LosSystem.get_los_polygon(gs, Vec2(x, 10))
     draw_los_polytope(los_polygons, ax, color="C0")
+
+    x_markers = get_discontinuous_x_values(los_polygons)
+    ax.scatter3D(  # type: ignore
+        xs=x_markers,
+        ys=10,
+        zs=0,
+    )
 
     # Configure 3D space bounds to 300x300x300
     ax.set_xlim(0, 300)  # type: ignore
@@ -122,6 +126,19 @@ def draw_los_polytope(
             color=color,
             plot_alpha=0.3,
         )
+
+
+def get_discontinuous_x_values(
+    los_polygons: dict[float, list[Vec2]],
+) -> list[float]:
+    discontinuous_x: list[float] = []
+    for left, right in pairwise(los_polygons.items()):
+        _, polygon_left = left
+        z_offset_right, polygon_right = right
+        if len(polygon_left) != len(polygon_right):
+            discontinuous_x.append(z_offset_right)
+
+    return discontinuous_x
 
 
 if __name__ == "__main__":
