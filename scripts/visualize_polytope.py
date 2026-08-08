@@ -13,6 +13,7 @@ from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib.axes import Axes
+from matplotlib.widgets import CheckButtons, Slider
 
 
 def main() -> None:
@@ -29,7 +30,8 @@ def main() -> None:
     los_polygons: dict[float, list[Vec2]] = {}
     for x in range(10, 290, 10):
         los_polygons[x] = LosSystem.get_los_polygon(gs, Vec2(x, 10))
-    draw_los_polytope(los_polygons, ax, color="C0")
+
+    los_plotlines = draw_los_polytope(los_polygons, ax, color="C0")
 
     x_markers = get_discontinuous_x_values(los_polygons)
     ax.scatter3D(  # type: ignore
@@ -46,6 +48,48 @@ def main() -> None:
     # Invert Y-axis to match 2D screen coordinate conventions if desired
     ax.invert_yaxis()
     ax.axis("off")
+
+    # --- UI ---
+
+    # Slider for selecting the X value
+    slider_ax = fig.add_axes([0.20, 0.04, 0.60, 0.03])  # type: ignore
+    x_values = list(los_polygons.keys())
+    slider = Slider(
+        slider_ax,  # type: ignore
+        "X",
+        valmin=x_values[0],
+        valmax=x_values[-1],
+        valinit=x_values[0],
+        valstep=x_values,
+    )
+
+    # Checkbox for all-at-once mode
+    checkbox_ax = fig.add_axes([0.02, 0.04, 0.12, 0.08])  # type: ignore
+    checkbox = CheckButtons(
+        checkbox_ax,  # type: ignore
+        ["Render all"],
+        [True],
+    )
+
+    def update(_: Any) -> None:
+        render_all = checkbox.get_status()[0]
+
+        if render_all:
+            # Show every polygon
+            for line in los_plotlines:
+                line.set_visible(True)
+        else:
+            # Show only the polygon corresponding to the slider X
+            selected_x = slider.val
+
+            for x, line in zip(x_values, los_plotlines):
+                line.set_visible(x == selected_x)
+
+        fig.canvas.draw_idle()  # type: ignore
+
+    slider.on_changed(update)
+    checkbox.on_clicked(update)
+
     plt.tight_layout(pad=0)
     plt.show()  # type: ignore
 
@@ -80,12 +124,12 @@ def visualize_polygon_3d(
     color: str = "C0",
     plot_alpha: float = 1.0,
     linestyle: str = "-",
-) -> None:
+) -> Any:
     xs = [v.x for v in verts]
     ys = [v.y for v in verts]
     zs = [z_offset] * len(verts)
 
-    ax.plot(  # type: ignore
+    return ax.plot(  # type: ignore
         xs,
         ys,
         zs,
@@ -93,7 +137,7 @@ def visualize_polygon_3d(
         color=color,
         alpha=plot_alpha,
         linewidth=1.5,
-    )
+    )[0]
 
 
 def draw_terrains(gs: GameState, ax: Axes) -> None:
@@ -117,15 +161,20 @@ def draw_los_polytope(
     los_polygons: dict[float, list[Vec2]],
     ax: Axes,
     color: str = "C0",
-) -> None:
+) -> list[Any]:
+    lines: list[Any] = []
+
     for z_offset, polygon in los_polygons.items():
-        visualize_polygon_3d(
+        line = visualize_polygon_3d(
             ax=ax,
             verts=polygon,
             z_offset=z_offset,
             color=color,
             plot_alpha=0.3,
         )
+        lines.append(line)
+
+    return lines
 
 
 def get_discontinuous_x_values(
