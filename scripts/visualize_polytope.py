@@ -25,15 +25,14 @@ def main() -> None:
     draw_terrains(gs, ax)
 
     # Generate LOS polygons where z offset equals the x coordinate
+    los_polygons: dict[float, list[Vec2]] = {}
     for x in range(10, 290, 10):
-        draw_los(
-            gs,
+        z = x  # The z offset is for each cross section
+        los_polygons[z] = LosSystem.get_los_polygon(
+            gs=gs,
             spotter_pos=Vec2(x, 10),
-            z_offset=float(x),
-            ax=ax,
-            color="C0",
-            linestyle="-",
         )
+    draw_los_polytope(los_polygons, ax, color="C0")
 
     # Configure 3D space bounds to 300x300x300
     ax.set_xlim(0, 300)  # type: ignore
@@ -110,26 +109,19 @@ def draw_terrains(gs: GameState, ax: Axes) -> None:
         )
 
 
-def draw_los(
-    gs: GameState,
-    spotter_pos: Vec2,
-    z_offset: float,
+def draw_los_polytope(
+    los_polygons: dict[float, list[Vec2]],
     ax: Axes,
     color: str = "C0",
-    linestyle: str = "-",
 ) -> None:
-    polygon = LosSystem.get_los_polygon(
-        gs=gs,
-        spotter_pos=spotter_pos,
-    )
-    visualize_polygon_3d(
-        ax=ax,
-        verts=polygon,
-        z_offset=z_offset,
-        color=color,
-        plot_alpha=0.3,
-        linestyle=linestyle,
-    )
+    for z_offset, polygon in los_polygons.items():
+        visualize_polygon_3d(
+            ax=ax,
+            verts=polygon,
+            z_offset=z_offset,
+            color=color,
+            plot_alpha=0.3,
+        )
 
 
 if __name__ == "__main__":
