@@ -11,6 +11,7 @@ from flanker_core.models import components
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.utils.transform_utils import TransformUtils
+from matplotlib import rcParams
 from matplotlib.axes import Axes
 from matplotlib.colors import to_rgba
 from matplotlib.lines import Line2D
@@ -35,6 +36,7 @@ def main() -> None:
         hspace=0,
     )
     ax = fig.add_subplot(111, projection="3d")
+    rcParams["axes3d.mouserotationstyle"] = "azel"
 
     # Draw terrains at z = 0 base plane
     draw_terrains(gs, ax)
