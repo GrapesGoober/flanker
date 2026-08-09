@@ -32,14 +32,14 @@ def main() -> None:
     draw_terrains(gs, ax)
 
     # Generate LOS polygons
-    los_polytope = AiPolytopeService.get_los_polytope(gs)
-    poly3d_map: dict[Vec2, list[tuple[float, float, float]]] = {}
-    for key, polygon in los_polytope.items():
-        z_val = key.x  # Have it z-offset with x value
-        poly3d_map[key] = [(v.x, v.y, z_val) for v in polygon]
+    los_polytope = AiPolytopeService.get_los_polytope_fov_clipped(gs)
+    poly3d_map: dict[tuple[Vec2, float], list[tuple[float, float, float]]] = {}
+    for (key_vec, key_deg), polygon in los_polytope.items():
+        z_val = key_vec.x  # Have it z-offset with x value
+        poly3d_map[(key_vec, key_deg)] = [(v.x, v.y, z_val) for v in polygon]
 
     # Add LOS polygon slices to a collection
-    initial_verts = poly3d_map[Vec2(10, 10)]
+    initial_verts = poly3d_map[Vec2(10, 10), 0]
     los_collection = Poly3DCollection(
         [initial_verts],
         facecolors="none",  # Set to a color like "C0" if you want filled faces
@@ -55,10 +55,12 @@ def main() -> None:
     ax.axis("off")
 
     # Slider for selecting the x and y vakyes
-    x_slider_ax = fig.add_axes((0.20, 0.06, 0.60, 0.03))
-    y_slider_ax = fig.add_axes((0.20, 0.02, 0.60, 0.03))
-    x_values = [key.x for key in los_polytope.keys()]
-    y_values = [key.y for key in los_polytope.keys()]
+    x_slider_ax = fig.add_axes((0.30, 0.1, 0.60, 0.03))
+    y_slider_ax = fig.add_axes((0.30, 0.06, 0.60, 0.03))
+    deg_slider_ax = fig.add_axes((0.30, 0.02, 0.60, 0.03))
+    x_values = [key_vec.x for (key_vec, _) in los_polytope.keys()]
+    y_values = [key_vec.y for (key_vec, _) in los_polytope.keys()]
+    deg_values = [key_deg for (_, key_deg) in los_polytope.keys()]
     x_slider = Slider(
         x_slider_ax,
         "X",
@@ -75,12 +77,20 @@ def main() -> None:
         valinit=y_values[0],
         valstep=y_values,
     )
+    deg_slider = Slider(
+        deg_slider_ax,
+        "Degrees",
+        valmin=deg_values[0],
+        valmax=deg_values[-1],
+        valinit=deg_values[0],
+        valstep=deg_values,
+    )
 
     # Checkbox to render all x values
-    checkbox_ax = fig.add_axes((0.02, 0.04, 0.12, 0.08))
+    checkbox_ax = fig.add_axes((0.03, 0.04, 0.2, 0.08))
     checkbox_render_all_x = CheckButtons(
         checkbox_ax,
-        ["Render all"],
+        ["Render all X"],
         [False],
     )
 
@@ -88,17 +98,26 @@ def main() -> None:
     def update(_: Any) -> None:
         render_all_x = checkbox_render_all_x.get_status()[0]
         y_value = y_slider.val
+        deg_value = deg_slider.val
 
         if not render_all_x:
-            los_collection.set_verts([poly3d_map[Vec2(x_slider.val, y_value)]])
+            los_collection.set_verts(
+                [poly3d_map[Vec2(x_slider.val, y_value), deg_value]]
+            )
         else:
-            vertices = [poly for key, poly in poly3d_map.items() if key.y == y_value]
+            vertices = [
+                poly
+                for (key_vec, key_deg), poly in poly3d_map.items()
+                if key_vec.y == y_value
+                if key_deg == deg_value
+            ]
             los_collection.set_verts(vertices)
 
         fig.canvas.draw_idle()
 
     x_slider.on_changed(update)
     y_slider.on_changed(update)
+    deg_slider.on_changed(update)
     checkbox_render_all_x.on_clicked(update)
 
     plt.tight_layout(pad=0)
