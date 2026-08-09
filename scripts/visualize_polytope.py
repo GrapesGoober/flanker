@@ -36,6 +36,13 @@ def main() -> None:
         hspace=0,
     )
     ax = fig.add_subplot(111, projection="3d")
+
+    # Config my rendering preferences
+    ax.set_xlim(0, 300)
+    ax.set_ylim(0, 300)
+    ax.set_zlim(0, 300)
+    ax.invert_yaxis()
+    ax.axis("off")
     rcParams["axes3d.mouserotationstyle"] = "azel"
 
     # Draw terrains at z = 0 base plane
@@ -49,21 +56,14 @@ def main() -> None:
         for (key_vec, key_deg), polygon in los_polytope.items()
     }
 
-    # Add LOS polygon slices to a collection
+    # Add LOS polygon slices to draw
     initial_verts = poly3d_map[Vec2(10, 10), 0]
-    los_collection = Poly3DCollection(
+    polygon_collection = Poly3DCollection(
         [initial_verts],
         facecolors="none",  # Set to a color like "C0" if you want filled faces
         edgecolors=to_rgba("C0", alpha=0.5),
     )
-    ax.add_collection(los_collection)
-
-    # Config my rendering preferences
-    ax.set_xlim(0, 300)
-    ax.set_ylim(0, 300)
-    ax.set_zlim(0, 300)
-    ax.invert_yaxis()
-    ax.axis("off")
+    ax.add_collection(polygon_collection)
 
     # Slider for selecting the x and y vakyes
     x_slider_ax = fig.add_axes((0.40, 0.1, 0.50, 0.03))
@@ -105,14 +105,14 @@ def main() -> None:
         [False],
     )
 
-    # Redraw when slider is moved
+    # Redraw when controls is updated
     def update(_: Any) -> None:
         render_all_x = checkbox_render_all_x.get_status()[0]
         y_value = y_slider.val
         deg_value = deg_slider.val
 
         if not render_all_x:
-            los_collection.set_verts(
+            polygon_collection.set_verts(
                 [poly3d_map[Vec2(x_slider.val, y_value), deg_value]]
             )
         else:
@@ -122,7 +122,7 @@ def main() -> None:
                 if key_vec.y == y_value
                 if key_deg == deg_value
             ]
-            los_collection.set_verts(vertices)
+            polygon_collection.set_verts(vertices)
 
         fig.canvas.draw_idle()
 
