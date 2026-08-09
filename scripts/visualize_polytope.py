@@ -33,10 +33,11 @@ def main() -> None:
 
     # Generate LOS polygons
     los_polytope = AiPolytopeService.get_los_polytope_fov_clipped(gs)
-    poly3d_map: dict[tuple[Vec2, float], list[tuple[float, float, float]]] = {}
-    for (key_vec, key_deg), polygon in los_polytope.items():
-        z_val = key_vec.x  # Have it z-offset with x value
-        poly3d_map[(key_vec, key_deg)] = [(v.x, v.y, z_val) for v in polygon]
+    poly3d_map = {
+        # Have it use z-offset as the key's x value
+        (key_vec, key_deg): [(v.x, v.y, key_vec.x) for v in polygon]
+        for (key_vec, key_deg), polygon in los_polytope.items()
+    }
 
     # Add LOS polygon slices to a collection
     initial_verts = poly3d_map[Vec2(10, 10), 0]
