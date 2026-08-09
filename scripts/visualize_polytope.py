@@ -26,6 +26,14 @@ def main() -> None:
 
     # Create a 3D figure and axis
     fig = plt.figure()
+    fig.subplots_adjust(
+        left=0,
+        right=1,
+        bottom=0,
+        top=1,
+        wspace=0,
+        hspace=0,
+    )
     ax = fig.add_subplot(111, projection="3d")
 
     # Draw terrains at z = 0 base plane
@@ -56,9 +64,9 @@ def main() -> None:
     ax.axis("off")
 
     # Slider for selecting the x and y vakyes
-    x_slider_ax = fig.add_axes((0.30, 0.1, 0.60, 0.03))
-    y_slider_ax = fig.add_axes((0.30, 0.06, 0.60, 0.03))
-    deg_slider_ax = fig.add_axes((0.30, 0.02, 0.60, 0.03))
+    x_slider_ax = fig.add_axes((0.40, 0.1, 0.50, 0.03))
+    y_slider_ax = fig.add_axes((0.40, 0.06, 0.50, 0.03))
+    deg_slider_ax = fig.add_axes((0.40, 0.02, 0.50, 0.03))
     x_values = [key_vec.x for (key_vec, _) in los_polytope.keys()]
     y_values = [key_vec.y for (key_vec, _) in los_polytope.keys()]
     deg_values = [key_deg for (_, key_deg) in los_polytope.keys()]
@@ -121,7 +129,6 @@ def main() -> None:
     deg_slider.on_changed(update)
     checkbox_render_all_x.on_clicked(update)
 
-    plt.tight_layout(pad=0)
     plt.show()
 
 
