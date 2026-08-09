@@ -54,16 +54,26 @@ def main() -> None:
     ax.invert_yaxis()
     ax.axis("off")
 
-    # Slider for selecting the X value
-    slider_ax = fig.add_axes((0.20, 0.04, 0.60, 0.03))
+    # Slider for selecting the x and y vakyes
+    x_slider_ax = fig.add_axes((0.20, 0.06, 0.60, 0.03))
+    y_slider_ax = fig.add_axes((0.20, 0.02, 0.60, 0.03))
     x_values = [key.x for key in los_polytope.keys()]
+    y_values = [key.y for key in los_polytope.keys()]
     x_slider = Slider(
-        slider_ax,
+        x_slider_ax,
         "X",
         valmin=x_values[0],
         valmax=x_values[-1],
         valinit=x_values[0],
         valstep=x_values,
+    )
+    y_slider = Slider(
+        y_slider_ax,
+        "Y",
+        valmin=y_values[0],
+        valmax=y_values[-1],
+        valinit=y_values[0],
+        valstep=y_values,
     )
 
     # Checkbox to render all x values
@@ -77,15 +87,18 @@ def main() -> None:
     # Redraw when slider is moved
     def update(_: Any) -> None:
         render_all_x = checkbox_render_all_x.get_status()[0]
+        y_value = y_slider.val
+
         if not render_all_x:
-            los_collection.set_verts([poly3d_map[Vec2(x_slider.val, 10)]])
+            los_collection.set_verts([poly3d_map[Vec2(x_slider.val, y_value)]])
         else:
-            vertices = [poly for key, poly in poly3d_map.items() if key.y == 10]
+            vertices = [poly for key, poly in poly3d_map.items() if key.y == y_value]
             los_collection.set_verts(vertices)
 
         fig.canvas.draw_idle()
 
     x_slider.on_changed(update)
+    y_slider.on_changed(update)
     checkbox_render_all_x.on_clicked(update)
 
     plt.tight_layout(pad=0)
