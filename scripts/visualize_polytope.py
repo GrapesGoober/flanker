@@ -1,6 +1,5 @@
 from dataclasses import is_dataclass
 from inspect import isclass
-from itertools import pairwise
 from typing import Any
 from uuid import UUID
 
@@ -15,8 +14,10 @@ from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
 from matplotlib.widgets import CheckButtons, Slider
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # pyright: reportUnknownMemberType=false
+# pyright: reportMissingTypeStubs=false
 
 
 def main() -> None:
@@ -29,35 +30,35 @@ def main() -> None:
     # Draw terrains at z = 0 base plane
     draw_terrains(gs, ax)
 
-    # Generate LOS polygons where z offset equals the x coordinate
+    # Generate LOS polygons
     los_polytope = AiPolytopeService.get_los_polytope(gs)
+    poly3d_map: dict[tuple[float, float], list[tuple[float, float, float]]] = {}
+    for key, polygon in los_polytope.items():
+        z_val = key.x
+        poly3d_map[(key.x, key.y)] = [(v.x, v.y, z_val) for v in polygon]
 
-    # These plotlines are matplotlib objects for later set_visible control
-    los_plotlines = draw_los_polytope(los_polytope, ax, color="C0")
-
-    # Just visualizing discontinuous analysis. Doesn't seem so worthwhile.
-    x_markers = get_discontinuous_x_values(los_polytope)
-    ax.scatter3D(
-        xs=x_markers,
-        ys=10,
-        zs=0,
+    # Add LOS polygon slices to a collection
+    initial_verts = poly3d_map.get((10, 10), [])
+    los_collection = Poly3DCollection(
+        [initial_verts],
+        facecolors="none",  # Set to a color like "C0" if you want filled faces
+        edgecolors="C0",
+        linewidths=1.5,
+        alpha=0.8,
     )
+    ax.add_collection(los_collection)
 
-    # Configure 3D space bounds to 300x300x300
+    # Config my rendering preferences
     ax.set_xlim(0, 300)
     ax.set_ylim(0, 300)
     ax.set_zlim(0, 300)
-
-    # Invert Y-axis to match 2D screen coordinate conventions if desired
     ax.invert_yaxis()
     ax.axis("off")
-
-    # --- UI ---
 
     # Slider for selecting the X value
     slider_ax = fig.add_axes((0.20, 0.04, 0.60, 0.03))
     x_values = [key.x for key in los_polytope.keys()]
-    slider = Slider(
+    x_slider = Slider(
         slider_ax,
         "X",
         valmin=x_values[0],
@@ -66,32 +67,27 @@ def main() -> None:
         valstep=x_values,
     )
 
-    # Checkbox for all-at-once mode
+    # Checkbox to render all x values
     checkbox_ax = fig.add_axes((0.02, 0.04, 0.12, 0.08))
-    checkbox = CheckButtons(
+    checkbox_render_all_x = CheckButtons(
         checkbox_ax,
         ["Render all"],
-        [True],
+        [False],
     )
 
+    # Redraw when slider is moved
     def update(_: Any) -> None:
-        render_all = checkbox.get_status()[0]
-
-        if render_all:
-            # Show every polygon
-            for key, line in los_plotlines:
-                line.set_visible(key.y == 10)
+        render_all_x = checkbox_render_all_x.get_status()[0]
+        if not render_all_x:
+            los_collection.set_verts([poly3d_map[(x_slider.val, 10)]])
         else:
-            # Show only the polygon corresponding to the slider X
-            selected_x = slider.val
-
-            for key, line in los_plotlines:
-                line.set_visible(key.x == selected_x and key.y == 10)
+            vertices = [poly for key, poly in poly3d_map.items() if key[1] == 10]
+            los_collection.set_verts(vertices)
 
         fig.canvas.draw_idle()
 
-    slider.on_changed(update)
-    checkbox.on_clicked(update)
+    x_slider.on_changed(update)
+    checkbox_render_all_x.on_clicked(update)
 
     plt.tight_layout(pad=0)
     plt.show()
@@ -158,39 +154,6 @@ def draw_terrains(gs: GameState, ax: Axes) -> None:
             color="forestgreen",
             plot_alpha=1.0,
         )
-
-
-def draw_los_polytope(
-    los_polytope: dict[Vec2, list[Vec2]],
-    ax: Axes,
-    color: str = "C0",
-) -> list[tuple[Vec2, Line2D]]:
-    lines: list[tuple[Vec2, Line2D]] = []
-
-    for key, polygon in los_polytope.items():
-        line = visualize_polygon_3d(
-            ax=ax,
-            verts=polygon,
-            z_offset=key.x,
-            color=color,
-            plot_alpha=0.3,
-        )
-        lines.append((key, line))
-
-    return lines
-
-
-def get_discontinuous_x_values(
-    los_polytope: dict[Vec2, list[Vec2]],
-) -> list[float]:
-    discontinuous_x: list[float] = []
-    for left, right in pairwise(los_polytope.items()):
-        _, polygon_left = left
-        key, polygon_right = right
-        if len(polygon_left) != len(polygon_right):
-            discontinuous_x.append(key.x)
-
-    return discontinuous_x
 
 
 if __name__ == "__main__":
