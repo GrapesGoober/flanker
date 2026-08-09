@@ -12,6 +12,7 @@ from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib.axes import Axes
+from matplotlib.colors import to_rgba
 from matplotlib.lines import Line2D
 from matplotlib.widgets import CheckButtons, Slider
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -32,19 +33,17 @@ def main() -> None:
 
     # Generate LOS polygons
     los_polytope = AiPolytopeService.get_los_polytope(gs)
-    poly3d_map: dict[tuple[float, float], list[tuple[float, float, float]]] = {}
+    poly3d_map: dict[Vec2, list[tuple[float, float, float]]] = {}
     for key, polygon in los_polytope.items():
-        z_val = key.x
-        poly3d_map[(key.x, key.y)] = [(v.x, v.y, z_val) for v in polygon]
+        z_val = key.x  # Have it z-offset with x value
+        poly3d_map[key] = [(v.x, v.y, z_val) for v in polygon]
 
     # Add LOS polygon slices to a collection
-    initial_verts = poly3d_map.get((10, 10), [])
+    initial_verts = poly3d_map[Vec2(10, 10)]
     los_collection = Poly3DCollection(
         [initial_verts],
         facecolors="none",  # Set to a color like "C0" if you want filled faces
-        edgecolors="C0",
-        linewidths=1.5,
-        alpha=0.8,
+        edgecolors=to_rgba("C0", alpha=0.5),
     )
     ax.add_collection(los_collection)
 
@@ -79,9 +78,9 @@ def main() -> None:
     def update(_: Any) -> None:
         render_all_x = checkbox_render_all_x.get_status()[0]
         if not render_all_x:
-            los_collection.set_verts([poly3d_map[(x_slider.val, 10)]])
+            los_collection.set_verts([poly3d_map[Vec2(x_slider.val, 10)]])
         else:
-            vertices = [poly for key, poly in poly3d_map.items() if key[1] == 10]
+            vertices = [poly for key, poly in poly3d_map.items() if key.y == 10]
             los_collection.set_verts(vertices)
 
         fig.canvas.draw_idle()
