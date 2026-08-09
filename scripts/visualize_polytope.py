@@ -30,13 +30,13 @@ def main() -> None:
     draw_terrains(gs, ax)
 
     # Generate LOS polygons where z offset equals the x coordinate
-    los_polygons: dict[float, list[Vec2]] = {}
+    los_polytope: dict[Vec2, list[Vec2]] = {}
     for x in range(10, 290, 10):
-        los_polygons[x] = LosSystem.get_los_polygon(gs, Vec2(x, 10))
+        los_polytope[Vec2(x, y=10)] = LosSystem.get_los_polygon(gs, Vec2(x, 10))
 
-    los_plotlines = draw_los_polytope(los_polygons, ax, color="C0")
+    los_plotlines = draw_los_polytope(los_polytope, ax, color="C0")
 
-    x_markers = get_discontinuous_x_values(los_polygons)
+    x_markers = get_discontinuous_x_values(los_polytope)
     ax.scatter3D(
         xs=x_markers,
         ys=10,
@@ -56,7 +56,7 @@ def main() -> None:
 
     # Slider for selecting the X value
     slider_ax = fig.add_axes((0.20, 0.04, 0.60, 0.03))
-    x_values = list(los_polygons.keys())
+    x_values = [key.x for key in los_polytope.keys()]
     slider = Slider(
         slider_ax,
         "X",
@@ -161,17 +161,17 @@ def draw_terrains(gs: GameState, ax: Axes) -> None:
 
 
 def draw_los_polytope(
-    los_polygons: dict[float, list[Vec2]],
+    los_polytope: dict[Vec2, list[Vec2]],
     ax: Axes,
     color: str = "C0",
 ) -> list[Line2D]:
     lines: list[Line2D] = []
 
-    for z_offset, polygon in los_polygons.items():
+    for key, polygon in los_polytope.items():
         line = visualize_polygon_3d(
             ax=ax,
             verts=polygon,
-            z_offset=z_offset,
+            z_offset=key.x,
             color=color,
             plot_alpha=0.3,
         )
@@ -181,14 +181,14 @@ def draw_los_polytope(
 
 
 def get_discontinuous_x_values(
-    los_polygons: dict[float, list[Vec2]],
+    los_polytope: dict[Vec2, list[Vec2]],
 ) -> list[float]:
     discontinuous_x: list[float] = []
-    for left, right in pairwise(los_polygons.items()):
+    for left, right in pairwise(los_polytope.items()):
         _, polygon_left = left
-        z_offset_right, polygon_right = right
+        key, polygon_right = right
         if len(polygon_left) != len(polygon_right):
-            discontinuous_x.append(z_offset_right)
+            discontinuous_x.append(key.x)
 
     return discontinuous_x
 
