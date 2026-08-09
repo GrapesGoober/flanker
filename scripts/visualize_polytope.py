@@ -79,14 +79,14 @@ def main() -> None:
 
         if render_all:
             # Show every polygon
-            for line in los_plotlines:
-                line.set_visible(True)
+            for key, line in los_plotlines:
+                line.set_visible(key.y == 10)
         else:
             # Show only the polygon corresponding to the slider X
             selected_x = slider.val
 
-            for x, line in zip(x_values, los_plotlines):
-                line.set_visible(x == selected_x)
+            for key, line in los_plotlines:
+                line.set_visible(key.x == selected_x and key.y == 10)
 
         fig.canvas.draw_idle()
 
@@ -164,8 +164,8 @@ def draw_los_polytope(
     los_polytope: dict[Vec2, list[Vec2]],
     ax: Axes,
     color: str = "C0",
-) -> list[Line2D]:
-    lines: list[Line2D] = []
+) -> list[tuple[Vec2, Line2D]]:
+    lines: list[tuple[Vec2, Line2D]] = []
 
     for key, polygon in los_polytope.items():
         line = visualize_polygon_3d(
@@ -175,7 +175,7 @@ def draw_los_polytope(
             color=color,
             plot_alpha=0.3,
         )
-        lines.append(line)
+        lines.append((key, line))
 
     return lines
 

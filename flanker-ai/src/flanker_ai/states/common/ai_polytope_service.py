@@ -10,8 +10,9 @@ class AiPolytopeService:
     ) -> dict[Vec2, list[Vec2]]:
         los_polytope: dict[Vec2, list[Vec2]] = {}
         for x in range(10, 290, 10):
-            los_polytope[Vec2(x, y=10)] = LosSystem.get_los_polygon(
-                gs=gs,
-                spotter_pos=Vec2(x, 10),
-            )
+            for y in range(10, 290, 10):
+                los_polytope[Vec2(x, y)] = LosSystem.get_los_polygon(
+                    gs=gs,
+                    spotter_pos=Vec2(x, y),
+                )
         return los_polytope
