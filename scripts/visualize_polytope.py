@@ -6,11 +6,11 @@ from uuid import UUID
 
 import matplotlib.pyplot as plt
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.common.ai_polytope_service import AiPolytopeService
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib.axes import Axes
 from matplotlib.lines import Line2D
@@ -30,12 +30,12 @@ def main() -> None:
     draw_terrains(gs, ax)
 
     # Generate LOS polygons where z offset equals the x coordinate
-    los_polytope: dict[Vec2, list[Vec2]] = {}
-    for x in range(10, 290, 10):
-        los_polytope[Vec2(x, y=10)] = LosSystem.get_los_polygon(gs, Vec2(x, 10))
+    los_polytope = AiPolytopeService.get_los_polytope(gs)
 
+    # These plotlines are matplotlib objects for later set_visible control
     los_plotlines = draw_los_polytope(los_polytope, ax, color="C0")
 
+    # Just visualizing discontinuous analysis. Doesn't seem so worthwhile.
     x_markers = get_discontinuous_x_values(los_polytope)
     ax.scatter3D(
         xs=x_markers,
