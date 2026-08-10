@@ -153,11 +153,3 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
     @override
     def get_hashable_key(self) -> object:
         return NotImplementedError()
-
-    @property
-    @override
-    def cached_reward(self) -> float | None: ...
-
-    @cached_reward.setter
-    @override
-    def cached_reward(self, value: float) -> None: ...

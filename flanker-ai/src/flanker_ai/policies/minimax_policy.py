@@ -63,7 +63,6 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             if branch == None:
                 continue
 
-            # score = branch.cached_reward
             cache_key = branch.get_hashable_key()
             score = transposition_table.get(cache_key, None)
             if score == None:  # Reuse the cached reward if possible
@@ -75,7 +74,6 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
                     counter=counter,
                     transposition_table=transposition_table,
                 )
-                # branch.cached_reward = score
                 transposition_table[cache_key] = score
 
             if maximizing:

@@ -148,7 +148,6 @@ class UnabstractedState(IRepresentationState[Action]):
     @override
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
-        AiCachedRewardService.init_empty_table(self._gs)
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config
@@ -157,13 +156,3 @@ class UnabstractedState(IRepresentationState[Action]):
     @override
     def get_hashable_key(self) -> object:
         return AiCachedRewardService.get_key(self._gs)
-
-    @property
-    @override
-    def cached_reward(self) -> float | None:
-        return AiCachedRewardService.get_reward(self._gs)
-
-    @cached_reward.setter
-    @override
-    def cached_reward(self, value: float) -> None:
-        AiCachedRewardService.set_reward(self._gs, value)

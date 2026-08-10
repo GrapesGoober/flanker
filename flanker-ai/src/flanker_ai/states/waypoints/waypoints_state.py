@@ -217,7 +217,6 @@ class WaypointsState(IRepresentationState[Action]):
     ) -> None:
 
         self.gs = deepcopy(gs)
-        AiCachedRewardService.init_empty_table(self.gs)
         self.gs.add_entity(
             LosSystemOverrides.GetLosFromLine(
                 method=WaypointsLosSystemOverrides.get_los_from_line,
@@ -242,13 +241,3 @@ class WaypointsState(IRepresentationState[Action]):
     @override
     def get_hashable_key(self) -> object:
         return AiCachedRewardService.get_key(self.gs)
-
-    @property
-    @override
-    def cached_reward(self) -> float | None:
-        return AiCachedRewardService.get_reward(self.gs)
-
-    @cached_reward.setter
-    @override
-    def cached_reward(self, value: float) -> None:
-        AiCachedRewardService.set_reward(self.gs, value)

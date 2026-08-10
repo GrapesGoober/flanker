@@ -63,11 +63,3 @@ class IRepresentationState[TAction](Protocol):
     def get_hashable_key(self) -> object:
         """Returns a hashable key object usable for building a table."""
         ...
-
-    @property
-    def cached_reward(self) -> float | None:
-        """The cached reward given the current state, if exists."""
-        ...
-
-    @cached_reward.setter
-    def cached_reward(self, value: float) -> None: ...
