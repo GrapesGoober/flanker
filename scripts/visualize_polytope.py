@@ -5,46 +5,133 @@ from uuid import UUID
 
 import matplotlib.pyplot as plt
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.states.common.ai_polytope_service import AiPolytopeService
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.transform_utils import TransformUtils
+from matplotlib import rcParams
 from matplotlib.axes import Axes
+from matplotlib.colors import to_rgba
+from matplotlib.lines import Line2D
+from matplotlib.widgets import CheckButtons, Slider
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+# pyright: reportUnknownMemberType=false
+# pyright: reportMissingTypeStubs=false
 
 
 def main() -> None:
     gs = get_game_state(paths=["./scenes/visualize-polytope.json"])
 
     # Create a 3D figure and axis
-    fig = plt.figure()  # type: ignore
+    fig = plt.figure()
+    fig.subplots_adjust(
+        left=0,
+        right=1,
+        bottom=0,
+        top=1,
+        wspace=0,
+        hspace=0,
+    )
     ax = fig.add_subplot(111, projection="3d")
+
+    # Config my rendering preferences
+    ax.set_xlim(0, 300)
+    ax.set_ylim(0, 300)
+    ax.set_zlim(0, 300)
+    ax.invert_yaxis()
+    ax.axis("off")
+    rcParams["axes3d.mouserotationstyle"] = "azel"
 
     # Draw terrains at z = 0 base plane
     draw_terrains(gs, ax)
 
-    # Generate LOS polygons where z offset equals the x coordinate
-    for x in range(10, 290, 10):
-        draw_los(
-            gs,
-            spotter_pos=Vec2(x, 10),
-            z_offset=float(x),
-            ax=ax,
-            color="C0",
-            linestyle="-",
-        )
+    # Generate LOS polygons
+    los_polytope = AiPolytopeService.get_los_polytope_fov_clipped(gs)
+    poly3d_map = {
+        # Have it use z-offset as the key's x value
+        (key_vec, key_deg): [(v.x, v.y, key_vec.x) for v in polygon]
+        for (key_vec, key_deg), polygon in los_polytope.items()
+    }
 
-    # Configure 3D space bounds to 300x300x300
-    ax.set_xlim(0, 300)  # type: ignore
-    ax.set_ylim(0, 300)  # type: ignore
-    ax.set_zlim(0, 300)  # type: ignore
+    # Add LOS polygon slices to draw
+    initial_verts = poly3d_map[Vec2(10, 10), 0]
+    polygon_collection = Poly3DCollection(
+        [initial_verts],
+        facecolors="none",
+        edgecolors=to_rgba("C0", alpha=0.5),
+    )
+    ax.add_collection(polygon_collection)
 
-    # Invert Y-axis to match 2D screen coordinate conventions if desired
-    ax.invert_yaxis()
-    ax.axis("off")
-    plt.tight_layout(pad=0)
-    plt.show()  # type: ignore
+    # Slider for selecting the x and y values
+    x_slider_ax = fig.add_axes((0.40, 0.1, 0.50, 0.03))
+    y_slider_ax = fig.add_axes((0.40, 0.06, 0.50, 0.03))
+    deg_slider_ax = fig.add_axes((0.40, 0.02, 0.50, 0.03))
+    x_values = [key_vec.x for (key_vec, _) in los_polytope.keys()]
+    y_values = [key_vec.y for (key_vec, _) in los_polytope.keys()]
+    deg_values = [key_deg for (_, key_deg) in los_polytope.keys()]
+    x_slider = Slider(
+        x_slider_ax,
+        "X",
+        valmin=x_values[0],
+        valmax=x_values[-1],
+        valinit=x_values[0],
+        valstep=x_values,
+    )
+    y_slider = Slider(
+        y_slider_ax,
+        "Y",
+        valmin=y_values[0],
+        valmax=y_values[-1],
+        valinit=y_values[0],
+        valstep=y_values,
+    )
+    deg_slider = Slider(
+        deg_slider_ax,
+        "Degrees",
+        valmin=deg_values[0],
+        valmax=deg_values[-1],
+        valinit=deg_values[0],
+        valstep=deg_values,
+    )
+
+    # Checkbox to render all x values
+    checkbox_ax = fig.add_axes((0.03, 0.04, 0.2, 0.08))
+    checkbox_render_all_x = CheckButtons(
+        checkbox_ax,
+        ["Render all X"],
+        [False],
+    )
+
+    # Redraw when controls is updated
+    def update(_: Any) -> None:
+        render_all_x = checkbox_render_all_x.get_status()[0]
+        y_value = y_slider.val
+        deg_value = deg_slider.val
+
+        if not render_all_x:
+            polygon_collection.set_verts(
+                [poly3d_map[Vec2(x_slider.val, y_value), deg_value]]
+            )
+        else:
+            vertices = [
+                poly
+                for (key_vec, key_deg), poly in poly3d_map.items()
+                if key_vec.y == y_value
+                if key_deg == deg_value
+            ]
+            polygon_collection.set_verts(vertices)
+
+        fig.canvas.draw_idle()
+
+    x_slider.on_changed(update)
+    y_slider.on_changed(update)
+    deg_slider.on_changed(update)
+    checkbox_render_all_x.on_clicked(update)
+
+    plt.show()
 
 
 def get_game_state(
@@ -77,12 +164,12 @@ def visualize_polygon_3d(
     color: str = "C0",
     plot_alpha: float = 1.0,
     linestyle: str = "-",
-) -> None:
+) -> Line2D:
     xs = [v.x for v in verts]
     ys = [v.y for v in verts]
     zs = [z_offset] * len(verts)
 
-    ax.plot(  # type: ignore
+    return ax.plot(
         xs,
         ys,
         zs,
@@ -90,7 +177,7 @@ def visualize_polygon_3d(
         color=color,
         alpha=plot_alpha,
         linewidth=1.5,
-    )
+    )[0]
 
 
 def draw_terrains(gs: GameState, ax: Axes) -> None:
@@ -108,28 +195,6 @@ def draw_terrains(gs: GameState, ax: Axes) -> None:
             color="forestgreen",
             plot_alpha=1.0,
         )
-
-
-def draw_los(
-    gs: GameState,
-    spotter_pos: Vec2,
-    z_offset: float,
-    ax: Axes,
-    color: str = "C0",
-    linestyle: str = "-",
-) -> None:
-    polygon = LosSystem.get_los_polygon(
-        gs=gs,
-        spotter_pos=spotter_pos,
-    )
-    visualize_polygon_3d(
-        ax=ax,
-        verts=polygon,
-        z_offset=z_offset,
-        color=color,
-        plot_alpha=0.3,
-        linestyle=linestyle,
-    )
 
 
 if __name__ == "__main__":
