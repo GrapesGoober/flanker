@@ -65,7 +65,7 @@ def main() -> None:
     )
     ax.add_collection(polygon_collection)
 
-    # Slider for selecting the x and y vakyes
+    # Slider for selecting the x and y values
     x_slider_ax = fig.add_axes((0.40, 0.1, 0.50, 0.03))
     y_slider_ax = fig.add_axes((0.40, 0.06, 0.50, 0.03))
     deg_slider_ax = fig.add_axes((0.40, 0.02, 0.50, 0.03))
