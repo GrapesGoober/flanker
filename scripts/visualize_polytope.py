@@ -60,7 +60,7 @@ def main() -> None:
     initial_verts = poly3d_map[Vec2(10, 10), 0]
     polygon_collection = Poly3DCollection(
         [initial_verts],
-        facecolors="none",  # Set to a color like "C0" if you want filled faces
+        facecolors="none",
         edgecolors=to_rgba("C0", alpha=0.5),
     )
     ax.add_collection(polygon_collection)
