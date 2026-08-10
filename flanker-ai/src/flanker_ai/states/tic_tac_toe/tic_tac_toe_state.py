@@ -150,6 +150,10 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
             board=deepcopy(self.board),
         )
 
+    @override
+    def get_hashable_key(self) -> object:
+        return NotImplementedError()
+
     @property
     @override
     def cached_reward(self) -> float | None: ...

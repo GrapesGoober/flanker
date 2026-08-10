@@ -24,6 +24,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             alpha=-inf,
             beta=inf,
             counter=counter,
+            transposition_table={},
         )
         return action, next(counter) - 1
 
@@ -34,6 +35,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
         alpha: float,
         beta: float,
         counter: "count[int]",
+        transposition_table: dict[object, float],
     ) -> tuple[float, TAction | None]:
 
         next(counter)
@@ -61,7 +63,9 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             if branch == None:
                 continue
 
-            score = branch.cached_reward
+            # score = branch.cached_reward
+            cache_key = branch.get_hashable_key()
+            score = transposition_table.get(cache_key, None)
             if score == None:  # Reuse the cached reward if possible
                 score, _ = self._search(
                     rs=branch,
@@ -69,8 +73,10 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
                     alpha=alpha,
                     beta=beta,
                     counter=counter,
+                    transposition_table=transposition_table,
                 )
-                branch.cached_reward = score
+                # branch.cached_reward = score
+                transposition_table[cache_key] = score
 
             if maximizing:
                 if score > best_score:

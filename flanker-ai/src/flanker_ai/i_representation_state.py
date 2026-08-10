@@ -60,6 +60,10 @@ class IRepresentationState[TAction](Protocol):
         """Update the state to match the original game state."""
         ...
 
+    def get_hashable_key(self) -> object:
+        """Returns a hashable key object usable for building a table."""
+        ...
+
     @property
     def cached_reward(self) -> float | None:
         """The cached reward given the current state, if exists."""

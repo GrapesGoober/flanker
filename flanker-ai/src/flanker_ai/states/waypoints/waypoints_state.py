@@ -239,6 +239,10 @@ class WaypointsState(IRepresentationState[Action]):
             path_tolerance=self._path_tolerance,
         )
 
+    @override
+    def get_hashable_key(self) -> object:
+        return AiCachedRewardService.get_key(self.gs)
+
     @property
     @override
     def cached_reward(self) -> float | None:

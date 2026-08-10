@@ -145,6 +145,7 @@ class UnabstractedState(IRepresentationState[Action]):
     def flip_initiative(self) -> None:
         InitiativeSystem.flip_initiative(self._gs)
 
+    @override
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         AiCachedRewardService.init_empty_table(self._gs)
@@ -152,6 +153,10 @@ class UnabstractedState(IRepresentationState[Action]):
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config
         )
+
+    @override
+    def get_hashable_key(self) -> object:
+        return AiCachedRewardService.get_key(self._gs)
 
     @property
     @override
