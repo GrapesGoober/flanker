@@ -47,11 +47,6 @@ class CacheKey:
     stalls: tuple[StallsKey, ...]
 
 
-@dataclass
-class TranspositionTable:
-    table: dict[CacheKey, float]
-
-
 class AiCachedRewardService:
     """Utility for a cached reward table."""
 
