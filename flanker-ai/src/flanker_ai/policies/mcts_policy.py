@@ -121,7 +121,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         legal_action = node.unexpanded_actions.pop()
         child_state = node.state.get_one_branch(legal_action)
         if child_state is None:
-            return node
+            raise Exception("Action invalid!")
 
         child = _MctsTreeNode(
             state=child_state,

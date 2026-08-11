@@ -13,6 +13,7 @@ from flanker_core.models.actions import (
     PivotAction,
     PivotActionResult,
 )
+from flanker_core.models.components import Transform
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
@@ -95,4 +96,11 @@ class ActionSystem:
                     attacker_id=action.unit_id,
                     target_id=action.target_id,
                 )
+                if invalid_reason == None:
+                    target_transform = gs.get_component(action.target_id, Transform)
+                    invalid_reason = MoveSystem.validate_move(
+                        gs=gs,
+                        unit_id=action.unit_id,
+                        to=target_transform.position,
+                    )
         return not isinstance(invalid_reason, InvalidAction)
