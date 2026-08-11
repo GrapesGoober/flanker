@@ -117,18 +117,10 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         if node.unexpanded_actions == []:
             return node
 
-        # Some actions are illegal. Need to use a legal action.
         # Find the first legal action and its resulting state
-        legal_action: TAction | None = None
-        child_state: IRepresentationState[TAction] | None = None
-        while node.unexpanded_actions != []:
-            legal_action = node.unexpanded_actions.pop()
-            child_state = node.state.get_one_branch(legal_action)
-            if child_state is not None and legal_action is not None:
-                break  # Found it!
-
-        # No expandable legal action found
-        if child_state is None or legal_action is None:
+        legal_action = node.unexpanded_actions.pop()
+        child_state = node.state.get_one_branch(legal_action)
+        if child_state is None:
             return node
 
         child = _MctsTreeNode(
