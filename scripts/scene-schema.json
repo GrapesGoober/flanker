@@ -460,7 +460,8 @@
               "type": "string"
             },
             {
-              "type": "null"
+              "const": "rh",
+              "type": "string"
             }
           ],
           "title": "Simulation Policy"

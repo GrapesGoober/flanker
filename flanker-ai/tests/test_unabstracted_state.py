@@ -153,11 +153,10 @@ def get_agent(
         case "MCTS":
             policy = PolicyConfig.MctsPolicy(
                 type="MctsPolicy",
-                max_iterations=10_000,
-                max_simulate_length=20,
-                # FIXME MCTS simulation is inconsistent
-                simulation_policy=None,
-                score_factor=2,
+                max_iterations=1_000,
+                max_simulate_length=10,
+                simulation_policy="rh",
+                score_factor=1,
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
