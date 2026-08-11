@@ -8,7 +8,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_cached_reward_service import AiCacheKeyService
+from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
