@@ -131,7 +131,7 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
     @override
     def update_state(self, gs: GameState) -> None:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     # ---------- Utility ----------
 
@@ -152,4 +152,4 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
     @override
     def get_hashable_key(self) -> object:
-        return NotImplementedError()
+        return str(self)
