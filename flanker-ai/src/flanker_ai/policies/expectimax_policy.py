@@ -21,7 +21,12 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         Returns the best actions sequence given a current game state.
         """
         counter = count(0)
-        _, action = self._search(rs, self._depth, counter)
+        _, action = self._search(
+            state=rs,
+            depth=self._depth,
+            counter=counter,
+            transposition_table={},
+        )
         return action, next(counter) - 1
 
     def _search(
@@ -29,6 +34,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
         state: IRepresentationState[TAction],
         depth: int,
         counter: "count[int]",
+        transposition_table: dict[object, float],
     ) -> tuple[float, TAction | None]:
         """
         Returns (best_score, best_action)
@@ -60,14 +66,17 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
                 continue  # Escapes; prevents expected_score=0 being used
             expected_score = 0
             for probability, branch in branches:
-                score = branch.cached_reward
+
+                cache_key = branch.get_hashable_key()
+                score = transposition_table.get(cache_key, None)
                 if score == None:  # Reuse the cached reward if possible
                     score, _ = self._search(
                         state=branch,
                         depth=depth - 1,
                         counter=counter,
+                        transposition_table=transposition_table,
                     )
-                    branch.cached_reward = score
+                    transposition_table[cache_key] = score
                 expected_score += score * probability
             if state.get_initiative() == _MAXIMIZING_FACTION:
                 if expected_score > best_score:

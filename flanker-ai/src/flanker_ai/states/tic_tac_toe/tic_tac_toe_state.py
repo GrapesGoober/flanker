@@ -131,7 +131,7 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
 
     @override
     def update_state(self, gs: GameState) -> None:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     # ---------- Utility ----------
 
@@ -150,10 +150,6 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
             board=deepcopy(self.board),
         )
 
-    @property
     @override
-    def cached_reward(self) -> float | None: ...
-
-    @cached_reward.setter
-    @override
-    def cached_reward(self, value: float) -> None: ...
+    def get_hashable_key(self) -> object:
+        return str(self)

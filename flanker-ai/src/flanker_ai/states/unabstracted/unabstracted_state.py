@@ -8,7 +8,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_cached_reward_service import AiCachedRewardService
+from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -145,20 +145,14 @@ class UnabstractedState(IRepresentationState[Action]):
     def flip_initiative(self) -> None:
         InitiativeSystem.flip_initiative(self._gs)
 
+    @override
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
-        AiCachedRewardService.init_empty_table(self._gs)
         # Regenerate the move candidate for each update
         self.move_candidates = AiPointsExpansionService.get_points(
             self._gs, self._move_candidates_config
         )
 
-    @property
     @override
-    def cached_reward(self) -> float | None:
-        return AiCachedRewardService.get_reward(self._gs)
-
-    @cached_reward.setter
-    @override
-    def cached_reward(self, value: float) -> None:
-        AiCachedRewardService.set_reward(self._gs, value)
+    def get_hashable_key(self) -> object:
+        return AiCacheKeyService.get_key(self._gs)
