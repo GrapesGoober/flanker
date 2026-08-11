@@ -12,6 +12,7 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 
 
@@ -24,6 +25,7 @@ class AiActionService:
         move_candidates: list[Vec2],
         divide_moves_per_unit: bool,
     ) -> Sequence[Action]:
+        """Returns a legal actions given the current state and move candidates."""
 
         # Build a list of combat units
         friendly_ids: list[UUID] = []
@@ -51,6 +53,7 @@ class AiActionService:
             divide_moves_per_unit=divide_moves_per_unit,
         )
 
+        actions = [action for action in actions if ActionSystem.is_legal(gs, action)]
         return actions
 
     @staticmethod
