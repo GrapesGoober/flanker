@@ -8,7 +8,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_cached_reward_service import AiCachedRewardService
+from flanker_ai.states.common.ai_cached_reward_service import AiCacheKeyService
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
@@ -240,4 +240,4 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_hashable_key(self) -> object:
-        return AiCachedRewardService.get_key(self.gs)
+        return AiCacheKeyService.get_key(self.gs)

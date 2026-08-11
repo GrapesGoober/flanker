@@ -8,7 +8,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
-from flanker_ai.states.common.ai_cached_reward_service import AiCachedRewardService
+from flanker_ai.states.common.ai_cached_reward_service import AiCacheKeyService
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -155,4 +155,4 @@ class UnabstractedState(IRepresentationState[Action]):
 
     @override
     def get_hashable_key(self) -> object:
-        return AiCachedRewardService.get_key(self._gs)
+        return AiCacheKeyService.get_key(self._gs)

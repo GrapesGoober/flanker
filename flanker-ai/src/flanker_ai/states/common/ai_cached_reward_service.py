@@ -47,13 +47,17 @@ class CacheKey:
     stalls: tuple[StallsKey, ...]
 
 
-class AiCachedRewardService:
-    """Utility for a cached reward table."""
+class AiCacheKeyService:
+    """Utility for creating a cache key of a game state."""
 
     @staticmethod
     def get_key(
         gs: GameState,
     ) -> CacheKey:
+        """
+        Get a hashable cache key given this game state. This key is
+        a unique representation of the game state.
+        """
 
         combat_units: list[CombatUnitKey] = []
         for id, transform, unit, fire_controls in gs.query(
