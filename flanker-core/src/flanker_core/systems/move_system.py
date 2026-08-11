@@ -27,7 +27,7 @@ class MoveSystem:
     """Static system class for handling movement action of combat units."""
 
     @staticmethod
-    def _validate_move(
+    def validate_move(
         gs: GameState,
         unit_id: UUID,
         to: Vec2,
@@ -105,7 +105,7 @@ class MoveSystem:
         Atomic move operation for a unit. Orients and moves unit
         in that direction with reactive fire. Doesn't flip initiative.
         """
-        if (reason := MoveSystem._validate_move(gs, unit_id, to)) != True:
+        if (reason := MoveSystem.validate_move(gs, unit_id, to)) != True:
             return reason
 
         transform = gs.get_component(unit_id, Transform)
