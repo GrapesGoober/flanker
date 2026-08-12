@@ -46,34 +46,11 @@ class RandomHeuristicPolicy(IPolicy[Action]):
                     move_actions.append(action)
 
         # If any fire actions are valid, perform it first
-        action = self._pick_valid_action(rs, fire_actions)
-        if action is not None:
-            return action, len(fire_actions)
+        if fire_actions != []:
+            return random.choice(fire_actions), len(fire_actions)
 
         # If any move actions are valid, perform it last
-        action = self._pick_valid_action(rs, move_actions)
-        return action, len(move_actions)
+        if move_actions != []:
+            return random.choice(move_actions), len(move_actions)
 
-    def _pick_valid_action(
-        self,
-        rs: IRepresentationState[Action],
-        candidates: list[Action],
-    ) -> Action | None:
-        """Randomly pick a valid action."""
-        remaining = candidates.copy()
-        while remaining:
-            action = random.choice(remaining)
-            remaining.remove(action)
-
-            branches = rs.get_branches(action)
-            if branches == []:
-                continue  # Invalid action has no branching
-            _, branch = max(branches, key=lambda b: b[0])
-
-            # Reject losing actions
-            if branch.get_winner() not in [None, rs.get_initiative()]:
-                continue
-
-            return action
-
-        return None
+        return None, 0

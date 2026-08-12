@@ -178,6 +178,9 @@ class WaypointsState(IRepresentationState[Action]):
                     )
                 )
 
+        actions = [
+            action for action in actions if ActionSystem.is_legal(self.gs, action)
+        ]
         return actions
 
     @override

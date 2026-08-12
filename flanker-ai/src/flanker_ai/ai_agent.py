@@ -1,5 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass
+from typing import Any
 
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -16,6 +17,7 @@ from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
+from flanker_ai.policies.random_policy import RandomPolicy
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
@@ -157,10 +159,16 @@ class AiAgent:
                             depth=policy_config.depth,
                         )
                     case PolicyConfig.MctsPolicy():
+                        match policy_config.simulation_policy:
+                            case "random":
+                                simulate_policy = RandomPolicy[Any]()
+                            case "rh":
+                                simulate_policy = RandomHeuristicPolicy()
+
                         policy = MctsPolicy[Action](
                             max_iterations=policy_config.max_iterations,
                             max_simulate_length=policy_config.max_simulate_length,
-                            simulate_policy=policy_config.simulation_policy,
+                            simulate_policy=simulate_policy,
                             score_factor=policy_config.score_factor,
                         )
                 match config_component.config.state:

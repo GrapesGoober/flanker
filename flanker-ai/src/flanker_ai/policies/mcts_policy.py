@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import math
-import random
 from dataclasses import dataclass
-from typing import Literal
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -32,12 +30,12 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         max_iterations: int,
         max_simulate_length: int,
-        simulate_policy: Literal["random"] | None,
+        simulate_policy: IPolicy[TAction],
         score_factor: int,
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
-        self._simulate_policy: Literal["random"] | None = simulate_policy
+        self._simulate_policy: IPolicy[TAction] = simulate_policy
         self._score_factor: int = score_factor
 
     def get_action(
@@ -119,19 +117,11 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         if node.unexpanded_actions == []:
             return node
 
-        # Some actions are illegal. Need to use a legal action.
         # Find the first legal action and its resulting state
-        legal_action: TAction | None = None
-        child_state: IRepresentationState[TAction] | None = None
-        while node.unexpanded_actions != []:
-            legal_action = node.unexpanded_actions.pop()
-            child_state = node.state.get_one_branch(legal_action)
-            if child_state is not None and legal_action is not None:
-                break  # Found it!
-
-        # No expandable legal action found
-        if child_state is None or legal_action is None:
-            return node
+        legal_action = node.unexpanded_actions.pop()
+        child_state = node.state.get_one_branch(legal_action)
+        if child_state is None:
+            raise Exception("Action invalid!")
 
         child = _MctsTreeNode(
             state=child_state,
@@ -150,45 +140,33 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         node: _MctsTreeNode[TAction],
     ) -> float:
 
-        match self._simulate_policy:
+        # Make a copy so it doesn't mutate the node itself
+        current_state = node.state.copy()
+
+        # Run simulation until hit the max limit
+        stagnate_counter: int = 0
+        for _ in range(self._max_simulate_length):
+            if current_state.get_winner() != None:
+                break
+            if stagnate_counter >= 2:
+                break
+
+            # Pick a legal action to perform
+            action, _ = self._simulate_policy.get_action(current_state)
+
+            # If no legal action found, pass initiative
+            if action == None:
+                current_state.flip_initiative()
+                stagnate_counter += 1
+                continue
+
+            current_state.perform_action(action)
+
+        match current_state.get_winner():
+            # I can't use const MAXIMIZING_FACTION in match case
+            case InitiativeState.Faction.BLUE:
+                return 1
+            case InitiativeState.Faction.RED:
+                return 0
             case None:
-                score = node.state.get_score(MAXIMIZING_FACTION)
-                return score / self._score_factor
-            case "random":
-                # Make a copy so it doesn't mutate the node itself
-                current_state = node.state.copy()
-
-                # Run simulation until hit the max limit
-                stagnate_counter: int = 0
-                for _ in range(self._max_simulate_length):
-                    if current_state.get_winner() != None:
-                        break
-                    if stagnate_counter >= 2:
-                        break
-
-                    # Pick a legal action to perform
-                    possible_actions = list(current_state.get_actions())
-                    is_valid: bool = False
-                    while possible_actions != []:
-                        action = possible_actions.pop(
-                            random.randrange(len(possible_actions)),
-                        )
-                        is_valid = current_state.perform_action(action)
-                        if is_valid:
-                            break
-
-                    # If no valid action found, pass initiative
-                    if not is_valid:
-                        current_state.flip_initiative()
-                        stagnate_counter += 1
-                        continue
-
-                match current_state.get_winner():
-                    # I can't use const MAXIMIZING_FACTION in match case
-                    case InitiativeState.Faction.BLUE:
-                        return 1
-                    case InitiativeState.Faction.RED:
-                        return -1
-                    case None:
-                        score = current_state.get_score(MAXIMIZING_FACTION)
-                        return score / self._score_factor
+                return 0

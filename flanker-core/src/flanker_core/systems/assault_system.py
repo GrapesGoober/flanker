@@ -22,7 +22,7 @@ class AssaultSystem:
     """Static system class for handling assault action of combat units."""
 
     @staticmethod
-    def _validate_assault_action(
+    def validate_assault_action(
         gs: GameState,
         attacker_id: UUID,
         target_id: UUID,
@@ -69,7 +69,7 @@ class AssaultSystem:
     ) -> AssaultActionResult | InvalidAction:
         """Mutator method performs assault action with reactive fire."""
         # Check assault action valid
-        if invalid_reason := AssaultSystem._validate_assault_action(
+        if invalid_reason := AssaultSystem.validate_assault_action(
             gs, attacker_id, target_id
         ):
             return invalid_reason
