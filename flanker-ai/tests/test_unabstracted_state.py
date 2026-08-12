@@ -111,6 +111,14 @@ def fixture() -> Fixture:
         )
     )
     gs.add_entity(
+        EliminationWinCondition(
+            target_faction=InitiativeState.Faction.BLUE,
+            winning_faction=InitiativeState.Faction.RED,
+            units_to_eliminate=2,
+            units_eliminated_counter=0,
+        )
+    )
+    gs.add_entity(
         StallLoseCondition(
             counting_faction=InitiativeState.Faction.BLUE,
             winning_faction=InitiativeState.Faction.RED,
@@ -153,8 +161,8 @@ def get_agent(
         case "MCTS":
             policy = PolicyConfig.MctsPolicy(
                 type="MctsPolicy",
-                max_iterations=1_000,
-                max_simulate_length=10,
+                max_iterations=100,
+                max_simulate_length=20,
                 simulation_policy="rh",
                 score_factor=1,
             )
