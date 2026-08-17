@@ -171,7 +171,7 @@ def get_game_state(
 
 
 def get_results(experiment: ExperimentConfig) -> ExperimentResult:
-    file_path = f"./scripts/experiment_results/{experiment.name}.json"
+    file_path = f"./scripts/experiment-results/{experiment.name}.json"
     if not Path(file_path).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
