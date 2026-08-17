@@ -25,7 +25,7 @@ FOLDER = "./scripts/experiment-results/"
 
 
 def main() -> None:
-    blue_configs = ["grid", "analysis", "rh"]
+    blue_configs = ["grid", "analysis", "rh", "mcts"]
     red_configs = ["rh"]
     scenes = ["scene-1", "scene-2"]
     FONTSIZE = 20

@@ -60,6 +60,7 @@ def main() -> None:
         },
         blue_configs={
             "blue-analysis": "./scenes/experiment-blue-analysis.json",
+            "blue-mcts": "./scenes/experiment-blue-mcts.json",
             "blue-grid": "./scenes/experiment-blue-grid.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
@@ -71,7 +72,7 @@ def main() -> None:
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=100,
+        n_matches=200,
         max_processes=14,
     )
     run_experiment_set(my_run)

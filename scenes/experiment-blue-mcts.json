@@ -5,10 +5,10 @@
         "config": {
           "policy": {
             "type": "MctsPolicy",
-            "max_iterations": 10000,
-            "max_simulate_length": 10,
-            "simulation_policy": null,
-            "score_factor": 6
+            "max_iterations": 1000,
+            "max_simulate_length": 20,
+            "simulation_policy": "rh",
+            "score_factor": 1
           },
           "state": {
             "type": "UnabstractedStateConfig",
