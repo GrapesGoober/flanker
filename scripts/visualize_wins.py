@@ -4,6 +4,8 @@ from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
 from pydantic import BaseModel
 
+# pyright: reportUnknownMemberType=false
+
 
 class MatchResult(BaseModel):
     winner: InitiativeState.Faction | None
@@ -19,8 +21,12 @@ class ExperimentResult(BaseModel):
     match_results: list[MatchResult]
 
 
+FOLDER = "./scripts/experiment-results/"
+
+
 def main() -> None:
-    configs = ["grid", "analysis", "rh"]
+    blue_configs = ["grid", "analysis", "rh"]
+    red_configs = ["rh"]
     scenes = ["scene-1", "scene-2"]
     FONTSIZE = 20
 
@@ -31,22 +37,22 @@ def main() -> None:
     for idx, scene_name in enumerate(scenes):
         ax = axes[idx]
         win_rates = get_win_rates(
-            blue_configs=configs,
-            red_configs=configs,
+            blue_configs=blue_configs,
+            red_configs=red_configs,
             scene_name=scene_name,
         )
 
         ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
 
-        ax.set_xticks(range(len(configs)))  # type: ignore
-        ax.set_xticklabels(configs, fontsize=FONTSIZE)  # type: ignore
+        ax.set_xticks(range(len(red_configs)))  # type: ignore
+        ax.set_xticklabels(red_configs, fontsize=FONTSIZE)  # type: ignore
         ax.set_xlabel("Red", fontsize=FONTSIZE)  # type: ignore
         ax.set_title(scene_name, fontsize=FONTSIZE)  # type: ignore
 
         if idx == 0:
             ax.set_ylabel("Blue", fontsize=FONTSIZE)  # type: ignore
-            ax.set_yticks(range(len(configs)))  # type: ignore
-            ax.set_yticklabels(configs, fontsize=FONTSIZE)  # type: ignore
+            ax.set_yticks(range(len(blue_configs)))  # type: ignore
+            ax.set_yticklabels(blue_configs, fontsize=FONTSIZE)  # type: ignore
         else:
             ax.set_yticks([])  # type: ignore
 
@@ -64,11 +70,12 @@ def main() -> None:
                 )
 
     plt.tight_layout()
-    plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
+    # plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
+    plt.show()
 
 
 def get_results(experiment_name: str) -> ExperimentResult:
-    file_path = f"./scripts/experiment_results/{experiment_name}.json"
+    file_path = f"{FOLDER}{experiment_name}.json"
     with open(file_path, "r") as f:
         file_data = f.read()
         if file_data == "":
