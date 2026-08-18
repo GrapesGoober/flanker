@@ -1,3 +1,2 @@
 __pycache__
-*.prof
-scripts/experiment-results/*
+scripts/outputs/*
