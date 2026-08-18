@@ -34,6 +34,8 @@ from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
+# pyright: reportUnknownMemberType=false
+
 
 def get_game_state(
     paths: list[str],
@@ -427,7 +429,7 @@ def visualize_pruning(gs: GameState) -> None:
             continue
         points_x = [coords.x for coords in points]
         points_y = [coords.y for coords in points]
-        plt.scatter(  # type: ignore
+        plt.scatter(
             points_x,
             points_y,
             color=color,
@@ -441,17 +443,17 @@ if __name__ == "__main__":
 
     gs = get_game_state(
         paths=[
-            "./scenes/visualize-los.json"
-            # "./scenes/experiment-settings.json",
-            # "./scenes/experiment-scene-2.json",
-            # "./scenes/experiment-blue-analysis.json",
+            # "./scenes/visualize-los.json"
+            "./scenes/experiment-settings.json",
+            "./scenes/experiment-scene-1.json",
+            "./scenes/experiment-blue-analysis.json",
         ]
     )
 
     # visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/visualize-los.png"
+    screenshot = "./scripts/experiment-scene-1.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -463,24 +465,24 @@ if __name__ == "__main__":
 
     # draw_terrains(gs)
     # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    # draw_move_candidates(
-    #     gs,
-    #     InitiativeState.Faction.BLUE,
-    #     draw_lines=False,
-    #     draw_initial=True,
-    # )
+    draw_move_candidates(
+        gs,
+        InitiativeState.Faction.BLUE,
+        draw_lines=False,
+        draw_initial=True,
+    )
 
     # Draw LOS for each combat unit
     if True:
         for id, unit in gs.query(CombatUnit):
-            if unit.faction == InitiativeState.Faction.BLUE:
-                draw_combat_unit_los_cone(
-                    gs,
-                    unit_id=id,
-                    color="C0",
-                    linestyle="--",
-                    draw_as_cone=True,
-                )
+            # if unit.faction == InitiativeState.Faction.BLUE:
+            #     draw_combat_unit_los_cone(
+            #         gs,
+            #         unit_id=id,
+            #         color="C0",
+            #         linestyle="--",
+            #         draw_as_cone=True,
+            #     )
 
             if unit.faction == InitiativeState.Faction.RED:
                 draw_combat_unit_los_cone(
@@ -491,9 +493,9 @@ if __name__ == "__main__":
                     draw_as_cone=True,
                 )
 
-    # plt.axis("equal") # type: ignore
+    # plt.axis("equal")
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    plt.axis("off")  # type: ignore
-    plt.axis((0, 300, 300, 0))  # type: ignore
-    plt.savefig("visualize-los", dpi=300)  # type: ignore
-    plt.show()  # type: ignore
+    plt.axis("off")
+    plt.axis((0, 300, 300, 0))
+    # plt.savefig("visualize-los", dpi=300)
+    plt.show()

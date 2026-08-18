@@ -49,6 +49,9 @@ class ExperimentSetConfig:
     max_processes: int
 
 
+FOLDER = "./scripts/experiment-results/"
+
+
 def main() -> None:
     my_run = ExperimentSetConfig(
         scene_configs={
@@ -57,18 +60,19 @@ def main() -> None:
         },
         blue_configs={
             "blue-analysis": "./scenes/experiment-blue-analysis.json",
+            "blue-mcts": "./scenes/experiment-blue-mcts.json",
             "blue-grid": "./scenes/experiment-blue-grid.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
-            "red-analysis": "./scenes/experiment-red-analysis.json",
-            "red-grid": "./scenes/experiment-red-grid.json",
+            # "red-analysis": "./scenes/experiment-red-analysis.json",
+            # "red-grid": "./scenes/experiment-red-grid.json",
             "red-rh": "./scenes/experiment-red-rh.json",
         },
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=400,
+        n_matches=200,
         max_processes=14,
     )
     run_experiment_set(my_run)
@@ -171,7 +175,7 @@ def get_game_state(
 
 
 def get_results(experiment: ExperimentConfig) -> ExperimentResult:
-    file_path = f"./scripts/experiment_results/{experiment.name}.json"
+    file_path = f"{FOLDER}{experiment.name}.json"
     if not Path(file_path).is_file():
         blue_config: AiConfigComponent | None = None
         red_config: AiConfigComponent | None = None
@@ -204,7 +208,7 @@ def save_results(
     experiment: ExperimentConfig,
     result: ExperimentResult,
 ) -> None:
-    file_path = f"./scripts/experiment_results/{experiment.name}.json"
+    file_path = f"{FOLDER}{experiment.name}.json"
     with open(file_path, "w") as f:
         f.write(result.model_dump_json(indent=2))
 
