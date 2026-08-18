@@ -19,9 +19,9 @@
                 "offset": 10.0
               },
               "use_combat_unit_positions": true,
-              "expansions": [
+              "filters": [
                 {
-                  "type": "FlagPrune"
+                  "type": "LosSignaturesFilter"
                 }
               ]
             },

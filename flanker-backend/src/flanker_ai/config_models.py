@@ -28,7 +28,7 @@ class PointsConfig:
 
     @dataclass
     class LosSignaturesFilter:
-        type: Literal["FlagPrune"]
+        type: Literal["LosSignaturesFilter"]
 
     initial_points: Grid | HandDrawn | Random
     filters: list[LosSignaturesFilter]
