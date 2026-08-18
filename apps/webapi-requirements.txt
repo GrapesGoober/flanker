@@ -1,4 +1,4 @@
 fastapi
 numpy==2.2.*
 numba==0.61.*
-./flanker-backend
+../flanker-backend
