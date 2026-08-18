@@ -28,8 +28,24 @@ class AiPointsFilterService:
                         waypoints=points,
                         flag_waypoints=flag_waypoints,
                     )
-                case _:
-                    raise NotImplementedError()
+                case PointsConfig.IngressLosSignaturesFilter():
+                    # returns both LOS filtered waypoints and ingress waypoints
+                    flag_waypoints: list[Vec2] = [
+                        transform.position
+                        for _, _, transform in gs.query(CombatUnit, Transform)
+                    ]
+                    los_filtered = AiPointsFilterService._filter_by_los(
+                        gs=gs,
+                        waypoints=points,
+                        flag_waypoints=flag_waypoints,
+                    )
+                    ingress_filtered = AiPointsFilterService._filter_by_ingress(
+                        gs=gs,
+                        waypoints=points,
+                        target_waypoints=los_filtered,
+                        ingress_fov=90,
+                    )
+                    points = ingress_filtered + los_filtered
 
         points = AiPointsFilterService._filter_colocated(points)
         return points

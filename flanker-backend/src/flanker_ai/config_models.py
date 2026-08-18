@@ -30,8 +30,12 @@ class PointsConfig:
     class LosSignaturesFilter:
         type: Literal["LosSignaturesFilter"]
 
+    @dataclass
+    class IngressLosSignaturesFilter:
+        type: Literal["IngressLosSignaturesFilter"]
+
     initial_points: Grid | HandDrawn | Random
-    filters: list[LosSignaturesFilter]
+    filters: list[LosSignaturesFilter | IngressLosSignaturesFilter]
 
 
 @dataclass
