@@ -445,7 +445,7 @@ if __name__ == "__main__":
         paths=[
             # "./scenes/visualize-los.json"
             "./scenes/experiment-settings.json",
-            "./scenes/experiment-scene-1.json",
+            "./scenes/experiment-scene-2.json",
             "./scenes/experiment-blue-analysis.json",
         ]
     )
@@ -453,7 +453,7 @@ if __name__ == "__main__":
     # visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/screenshots/experiment-scene-1.png"
+    screenshot = "./scripts/screenshots/experiment-scene-2.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -469,7 +469,7 @@ if __name__ == "__main__":
         gs,
         InitiativeState.Faction.BLUE,
         draw_lines=False,
-        draw_initial=True,
+        draw_initial=False,
     )
 
     # Draw LOS for each combat unit
