@@ -42,32 +42,57 @@ class AiPointsFilterService:
     ) -> list[Vec2]:
         """
         Removes waypoints that has duplicate flag values. The current flags
-        used are intervisibility with other waypoints.
+        used are LOS intervisibility with other waypoints.
         """
 
-        def _get_los_flags(
-            gs: GameState,
-            waypoint: Vec2,
-            flag_waypoints: list[Vec2],
-        ) -> dict[Vec2, bool]:
+        unique_waypoints: list[Vec2] = []
+        seen_flags: set[int] = set()
+        for waypoint in waypoints:
             waypoint_los_polygon = LosSystem.get_los_polygon(gs, waypoint)
-            return {
+            flags = {
                 other_waypoint: PolygonUtils.is_inside(
                     point=other_waypoint, polygon=waypoint_los_polygon
                 )
                 for other_waypoint in flag_waypoints
             }
-
-        unique_waypoints: set[Vec2] = set()
-        seen_flags: set[int] = set()
-        for waypoint in waypoints:
-            flags = _get_los_flags(gs, waypoint, flag_waypoints)
             # Flags are not hashable by default, so hash this in a dedicated step
             hashed_flags: int = hash(frozenset(flags.items()))
             if hashed_flags not in seen_flags:
                 seen_flags.add(hashed_flags)
-                unique_waypoints.add(waypoint)
-        return list(unique_waypoints)
+                unique_waypoints.append(waypoint)
+        return unique_waypoints
+
+    @staticmethod
+    def _filter_by_ingress(
+        gs: GameState,
+        waypoints: list[Vec2],
+        target_waypoints: list[Vec2],
+        ingress_fov: float,
+    ) -> list[Vec2]:
+
+        ingress_waypoints: list[Vec2] = []
+        seen_signatures: set[tuple[bool, ...]] = set()
+        for ingress_candidate in waypoints:
+            for target_waypoint in target_waypoints:
+                ingress_angle = ingress_candidate.angle_to(target_waypoint)
+                target_los_polygon = LosSystem.get_los_polygon(gs, target_waypoint)
+                fov_clipped_los = PolygonUtils.clip_by_fov_cone(
+                    polyline=target_los_polygon,
+                    center_point=target_waypoint,
+                    heading_degree=ingress_angle,
+                    fov_degree=ingress_fov,
+                )
+                signature: tuple[bool, ...] = tuple(
+                    [
+                        PolygonUtils.is_inside(transform.position, fov_clipped_los)
+                        for _, _, transform in gs.query(CombatUnit, Transform)
+                    ]
+                )
+                if signature not in seen_signatures:
+                    ingress_waypoints.append(ingress_candidate)
+                    seen_signatures.add(signature)
+
+        return ingress_waypoints
 
     @staticmethod
     def _filter_colocated(
