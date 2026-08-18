@@ -142,7 +142,6 @@ class AiAgent:
                             type="Random",
                             count=10,
                         ),
-                        use_combat_unit_positions=False,
                         expansions=[],
                     ),
                     divide_moves_per_unit=False,

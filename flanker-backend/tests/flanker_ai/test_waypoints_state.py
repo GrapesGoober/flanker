@@ -185,7 +185,6 @@ def get_agent(
                             type="HandDrawnConfig",
                             points=fixture.waypoint_coordinates,
                         ),
-                        use_combat_unit_positions=False,
                         expansions=[],
                     ),
                     path_tolerance=3,

@@ -44,21 +44,16 @@ class AiPointsExpansionService:
                     count=initial_points_config.count,
                 )
 
-        # Include combat unit to help with expansion
-        if config.use_combat_unit_positions == True:
-            for _, _, transform in gs.query(CombatUnit, Transform):
-                waypoints.append(transform.position)
-
         # Expands the points given the config
         for expansion_config in config.expansions:
             waypoints = AiPointsExpansionService._filter_colocated(waypoints)
             match expansion_config:
                 case PointsConfig.FlagPruneConfig():
                     # Use combat unit positions as flags
-                    flag_waypoints: list[Vec2] = []
-                    if config.use_combat_unit_positions == True:
-                        for _, _, transform in gs.query(CombatUnit, Transform):
-                            flag_waypoints.append(transform.position)
+                    flag_waypoints: list[Vec2] = [
+                        transform.position
+                        for _, _, transform in gs.query(CombatUnit, Transform)
+                    ]
                     waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
                         gs=gs,
                         waypoints=waypoints,

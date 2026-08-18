@@ -31,7 +31,6 @@ class PointsConfig:
         type: Literal["FlagPrune"]
 
     initial_points: GridConfig | HandDrawnConfig | RandomConfig
-    use_combat_unit_positions: bool
     expansions: list[FlagPruneConfig]
 
 

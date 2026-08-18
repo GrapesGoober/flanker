@@ -184,7 +184,6 @@ def get_agent(
                             type="HandDrawnConfig",
                             points=move_candidate_points,
                         ),
-                        use_combat_unit_positions=False,
                         expansions=[],
                     ),
                     divide_moves_per_unit=False,
