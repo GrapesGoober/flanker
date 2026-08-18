@@ -33,7 +33,7 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 - Install Node.js dependencies:
 
   ```
-  cd webui
+  cd ./apps/webui
   npm install
   ```
 
