@@ -18,8 +18,8 @@ from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.policies.random_policy import RandomPolicy
-from flanker_ai.states.common.ai_points_expansion_service import (
-    AiPointsExpansionService,
+from flanker_ai.states.common.ai_points_filter_service import (
+    AiPointsFilterService,
 )
 from flanker_ai.states.common.ai_points_initialize_service import (
     AiPointsInitializeService,
@@ -175,10 +175,10 @@ class AiAgent:
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
-                        # The unabstracted state uses lazy waypoint expansion
+                        # The unabstracted state uses lazy move candidate filtering
                         state_config = config_component.config.state
                         state = UnabstractedState(
-                            gs,
+                            gs=gs,
                             move_candidates_config=state_config.move_candidates,
                             divide_moves_per_unit=state_config.divide_moves_per_unit,
                         )
@@ -189,7 +189,7 @@ class AiAgent:
                         waypoints = AiPointsInitializeService.get_initial_points(
                             gs, state_config.waypoints
                         )
-                        waypoints = AiPointsExpansionService.filter_points(
+                        waypoints = AiPointsFilterService.filter_points(
                             gs, state_config.waypoints, waypoints
                         )
                         state = WaypointsState(

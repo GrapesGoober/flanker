@@ -8,8 +8,8 @@ import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import SearchPolicyConfig
-from flanker_ai.states.common.ai_points_expansion_service import (
-    AiPointsExpansionService,
+from flanker_ai.states.common.ai_points_filter_service import (
+    AiPointsFilterService,
 )
 from flanker_ai.states.common.ai_points_initialize_service import (
     AiPointsInitializeService,
@@ -320,7 +320,7 @@ def visualize_expansion(gs: GameState) -> None:
         linestyle="--",
     )
 
-    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+    waypoints = AiPointsFilterService.expand_waypoints_line_based(
         gs=gs,
         initial_waypoints=waypoints,
         tolerance=10,
@@ -393,7 +393,7 @@ def visualize_pruning(gs: GameState) -> None:
         Vec2(233, 200),
     ]
 
-    expanded_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+    expanded_waypoints = AiPointsFilterService.expand_waypoints_line_based(
         gs=gs,
         initial_waypoints=waypoints,
         tolerance=10,
@@ -411,7 +411,7 @@ def visualize_pruning(gs: GameState) -> None:
         Vec2(233, 100),
     ]
 
-    pruned_waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
+    pruned_waypoints = AiPointsFilterService.prune_waypoints_by_flags(
         gs=gs,
         waypoints=expanded_waypoints,
         flag_waypoints=flag_waypoints,

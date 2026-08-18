@@ -10,12 +10,7 @@ from flanker_core.utils.polygon_utils import PolygonUtils
 from flanker_core.utils.transform_utils import TransformUtils
 
 
-class AiPointsExpansionService:
-    """
-    AI state-agnositic service that generates a set of point positions
-    using in-game terrain. These points can be used as a discrete finite
-    set of game-relavant coordinates.
-    """
+class AiPointsFilterService:
 
     @staticmethod
     def filter_points(
@@ -24,7 +19,7 @@ class AiPointsExpansionService:
         points: list[Vec2],
     ) -> list[Vec2]:
         for filter_config in config.filters:
-            points = AiPointsExpansionService._filter_colocated(points)
+            points = AiPointsFilterService._filter_colocated(points)
             match filter_config:
                 case PointsConfig.LosSignaturesFilter():
                     # Use combat unit positions as flags
@@ -32,7 +27,7 @@ class AiPointsExpansionService:
                         transform.position
                         for _, _, transform in gs.query(CombatUnit, Transform)
                     ]
-                    points = AiPointsExpansionService.prune_waypoints_by_flags(
+                    points = AiPointsFilterService.prune_waypoints_by_flags(
                         gs=gs,
                         waypoints=points,
                         flag_waypoints=flag_waypoints,
@@ -40,7 +35,7 @@ class AiPointsExpansionService:
                 case _:
                     raise NotImplementedError()
 
-        points = AiPointsExpansionService._filter_colocated(points)
+        points = AiPointsFilterService._filter_colocated(points)
         return points
 
     @staticmethod
@@ -163,7 +158,7 @@ class AiPointsExpansionService:
         unique_waypoints: set[Vec2] = set()
         seen_flags: set[int] = set()
         for waypoint in waypoints:
-            flags = AiPointsExpansionService._get_flags(gs, waypoint, flag_waypoints)
+            flags = AiPointsFilterService._get_flags(gs, waypoint, flag_waypoints)
             # Flags are not hashable by default, so hash this in a dedicated step
             hashed_flags: int = hash(frozenset(flags.items()))
             if hashed_flags not in seen_flags:

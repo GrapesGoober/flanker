@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 import pytest
-from flanker_ai.states.common.ai_points_expansion_service import (
-    AiPointsExpansionService,
+from flanker_ai.states.common.ai_points_filter_service import (
+    AiPointsFilterService,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
@@ -78,7 +78,7 @@ def fixture() -> Fixture:
 
 
 def test_one_iteration(fixture: Fixture) -> None:
-    new_waypoints = AiPointsExpansionService.expand_waypoints_line_based(
+    new_waypoints = AiPointsFilterService.expand_waypoints_line_based(
         gs=fixture.gs,
         initial_waypoints=fixture.waypoints_coodinates,
         tolerance=0,
