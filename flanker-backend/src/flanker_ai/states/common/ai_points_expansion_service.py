@@ -43,8 +43,6 @@ class AiPointsExpansionService:
                     gs=gs,
                     count=initial_points_config.count,
                 )
-            case PointsConfig.VoronoiConfig():
-                raise NotImplementedError()
 
         # Include combat unit to help with expansion
         if config.use_combat_unit_positions == True:
@@ -55,14 +53,6 @@ class AiPointsExpansionService:
         for expansion_config in config.expansions:
             waypoints = AiPointsExpansionService._filter_colocated(waypoints)
             match expansion_config:
-                case PointsConfig.LineBasedExpansionConfig():
-                    waypoints = AiPointsExpansionService.expand_waypoints_line_based(
-                        gs=gs,
-                        initial_waypoints=waypoints,
-                        tolerance=expansion_config.tolerance,
-                    )
-                case PointsConfig.PolygonalExpansionConfig():
-                    raise NotImplementedError()
                 case PointsConfig.FlagPruneConfig():
                     # Use combat unit positions as flags
                     flag_waypoints: list[Vec2] = []
@@ -74,24 +64,8 @@ class AiPointsExpansionService:
                         waypoints=waypoints,
                         flag_waypoints=flag_waypoints,
                     )
-                case PointsConfig.WeightsPruneConfig():
-                    # Use combat unit positions as flags
-                    flag_waypoints: list[Vec2] = []
-                    if config.use_combat_unit_positions == True:
-                        for _, _, transform in gs.query(CombatUnit, Transform):
-                            flag_waypoints.append(transform.position)
-                    flagged_waypoints = AiPointsExpansionService._filter_colocated(
-                        AiPointsExpansionService.prune_waypoints_by_flags(
-                            gs=gs,
-                            waypoints=waypoints,
-                            flag_waypoints=flag_waypoints,
-                        )
-                    )
-                    waypoints = AiPointsExpansionService.prune_waypoints_by_weight(
-                        waypoints=waypoints,
-                        remaining_size=expansion_config.remaining_size,
-                        flagged_waypoints=flagged_waypoints,
-                    )
+                case _:
+                    raise NotImplementedError()
 
         waypoints = AiPointsExpansionService._filter_colocated(waypoints)
         return waypoints

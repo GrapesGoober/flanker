@@ -27,37 +27,12 @@ class PointsConfig:
         count: int
 
     @dataclass
-    class VoronoiConfig:
-        type: Literal["VoronoiConfig"]
-
-    @dataclass
-    class LineBasedExpansionConfig:
-        type: Literal["LineBased"]
-        tolerance: float
-
-    @dataclass
-    class PolygonalExpansionConfig:
-        type: Literal["Polygonal"]
-
-    @dataclass
     class FlagPruneConfig:
         type: Literal["FlagPrune"]
 
-    @dataclass
-    class WeightsPruneConfig:
-        type: Literal["WeightsPrune"]
-        remaining_size: int
-
-    initial_points: GridConfig | HandDrawnConfig | VoronoiConfig | RandomConfig
+    initial_points: GridConfig | HandDrawnConfig | RandomConfig
     use_combat_unit_positions: bool
-    expansions: list[
-        (
-            LineBasedExpansionConfig
-            | PolygonalExpansionConfig
-            | FlagPruneConfig
-            | WeightsPruneConfig
-        )
-    ]
+    expansions: list[FlagPruneConfig]
 
 
 class PolicyConfig:
