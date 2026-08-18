@@ -49,7 +49,7 @@ class ExperimentSetConfig:
     max_processes: int
 
 
-FOLDER = "./scripts/experiment-results/"
+FOLDER = "./scripts/outputs/experiment-results/"
 
 
 def main() -> None:

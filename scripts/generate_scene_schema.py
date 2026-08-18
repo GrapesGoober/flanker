@@ -21,5 +21,5 @@ def get_component_types() -> list[type[Any]]:
 if __name__ == "__main__":
     component_types = get_component_types()
     schema = Serializer.get_entities_json_schema(component_types)
-    with open("./scripts/scene-schema.json", "w") as f:
+    with open("./scripts/outputs/scene-schema.json", "w") as f:
         f.write(schema)

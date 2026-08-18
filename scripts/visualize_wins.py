@@ -21,7 +21,7 @@ class ExperimentResult(BaseModel):
     match_results: list[MatchResult]
 
 
-FOLDER = "./scripts/experiment-results/"
+FOLDER = "./scripts/outputs/experiment-results/"
 
 
 def main() -> None:

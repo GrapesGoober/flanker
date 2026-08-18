@@ -50,6 +50,6 @@ if __name__ == "__main__":
     # import pstats
 
     # cProfile.run("calculate_visibility()", sort="tottime", filename="perftest.prof")
-    # p = pstats.Stats("./scripts/perftest.prof")
+    # p = pstats.Stats("./scripts/outputs/perftest.prof")
     # p.sort_stats("tottime")
     # p.print_stats(20)

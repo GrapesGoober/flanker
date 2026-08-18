@@ -21,7 +21,6 @@ from flanker_core.models.actions import (
     PivotActionResult,
 )
 from flanker_core.models.components import InitiativeState
-
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AiWaypointConfigRequest,

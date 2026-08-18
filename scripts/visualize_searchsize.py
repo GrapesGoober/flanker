@@ -164,7 +164,7 @@ def plot_hist(
     CUTOFF = 200_000
     BINS_COUNT = 20
     Y_LIMIT = 0.5
-    FILE_NAME = "searchsizes-comparison.png"
+    FILE_NAME = "./scripts/outputs/searchsizes-comparison.png"
 
     print(f"Bin width is {CUTOFF/BINS_COUNT}")
 
@@ -207,7 +207,7 @@ def plot_hist(
 def get_results(
     experiment_name: str,
 ) -> ExperimentResult:
-    file_path = f"./scripts/experiment_results/{experiment_name}.json"
+    file_path = f"./scripts/outputs/experiment-results/{experiment_name}.json"
     with open(file_path, "r") as f:
         file_data = f.read()
         if file_data == "":

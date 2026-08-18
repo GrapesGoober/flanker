@@ -453,7 +453,7 @@ if __name__ == "__main__":
     # visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/experiment-scene-1.png"
+    screenshot = "./scripts/screenshots/experiment-scene-1.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -497,5 +497,5 @@ if __name__ == "__main__":
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")
     plt.axis((0, 300, 300, 0))
-    # plt.savefig("visualize-los", dpi=300)
+    # plt.savefig("./scripts/outputs/visualize-los", dpi=300)
     plt.show()
