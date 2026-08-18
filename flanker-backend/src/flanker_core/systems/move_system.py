@@ -1,4 +1,3 @@
-import math
 from typing import Literal
 from uuid import UUID
 
@@ -109,7 +108,6 @@ class MoveSystem:
             return reason
 
         transform = gs.get_component(unit_id, Transform)
-        move_direction = (to - transform.position).normalized()
 
         interrupt_candidates = MoveSystem.get_interrupt_candidates(gs, unit_id, to)
 
@@ -126,8 +124,7 @@ class MoveSystem:
             fire_controls.firing_at = None
 
         # Set orientation towards move direction
-        angle_rad = math.atan2(move_direction.y, move_direction.x)
-        transform.degrees = math.degrees(angle_rad)
+        transform.degrees = transform.position.angle_to(to)
 
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
