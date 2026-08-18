@@ -453,7 +453,7 @@ if __name__ == "__main__":
     # visualize_pruning(gs)
     # visualize_expansion(gs)
 
-    screenshot = "./scripts/experiment-scene-1.png"
+    screenshot = "./scripts/screenshots/experiment-scene-1.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
