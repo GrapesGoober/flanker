@@ -1,9 +1,6 @@
 from itertools import pairwise
 
 from flanker_ai.config_models import PointsConfig
-from flanker_ai.states.common.ai_waypoints_initialize_service import (
-    AiWaypointsInitializeService,
-)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -21,49 +18,30 @@ class AiPointsExpansionService:
     """
 
     @staticmethod
-    def get_points(
+    def filter_points(
         gs: GameState,
         config: PointsConfig,
+        points: list[Vec2],
     ) -> list[Vec2]:
-
-        # Creates initial points given the config
-        waypoints: list[Vec2]
-        initial_points_config = config.initial_points
-        match initial_points_config:
-            case PointsConfig.HandDrawn():
-                waypoints = initial_points_config.points
-            case PointsConfig.Grid():
-                waypoints = AiWaypointsInitializeService.get_grid_coordinates(
-                    gs=gs,
-                    spacing=initial_points_config.spacing,
-                    offset=initial_points_config.offset,
-                )
-            case PointsConfig.Random():
-                waypoints = AiWaypointsInitializeService.get_random_coordinates(
-                    gs=gs,
-                    count=initial_points_config.count,
-                )
-
-        # Expands the points given the config
-        for expansion_config in config.filters:
-            waypoints = AiPointsExpansionService._filter_colocated(waypoints)
-            match expansion_config:
+        for filter_config in config.filters:
+            points = AiPointsExpansionService._filter_colocated(points)
+            match filter_config:
                 case PointsConfig.LosSignaturesFilter():
                     # Use combat unit positions as flags
                     flag_waypoints: list[Vec2] = [
                         transform.position
                         for _, _, transform in gs.query(CombatUnit, Transform)
                     ]
-                    waypoints = AiPointsExpansionService.prune_waypoints_by_flags(
+                    points = AiPointsExpansionService.prune_waypoints_by_flags(
                         gs=gs,
-                        waypoints=waypoints,
+                        waypoints=points,
                         flag_waypoints=flag_waypoints,
                     )
                 case _:
                     raise NotImplementedError()
 
-        waypoints = AiPointsExpansionService._filter_colocated(waypoints)
-        return waypoints
+        points = AiPointsExpansionService._filter_colocated(points)
+        return points
 
     @staticmethod
     def expand_waypoints_line_based(
