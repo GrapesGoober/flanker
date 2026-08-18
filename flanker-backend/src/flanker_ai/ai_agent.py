@@ -21,8 +21,8 @@ from flanker_ai.policies.random_policy import RandomPolicy
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
-from flanker_ai.states.common.ai_waypoints_initialize_service import (
-    AiWaypointsInitializeService,
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
 )
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
@@ -186,7 +186,7 @@ class AiAgent:
                         state_config = config_component.config.state
                         # TODO Waypoints state doesn't yet have lazy
                         # waypoint expansion, so it just takes waypoints
-                        waypoints = AiWaypointsInitializeService.get_initial_points(
+                        waypoints = AiPointsInitializeService.get_initial_points(
                             gs, state_config.waypoints
                         )
                         waypoints = AiPointsExpansionService.filter_points(

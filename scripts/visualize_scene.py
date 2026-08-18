@@ -11,8 +11,8 @@ from flanker_ai.config_models import SearchPolicyConfig
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
-from flanker_ai.states.common.ai_waypoints_initialize_service import (
-    AiWaypointsInitializeService,
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
 )
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
@@ -235,7 +235,7 @@ def draw_move_candidates(
             points_conf = conf.config.state.move_candidates.initial_points
             if points_conf.type != "GridConfig":
                 continue
-            waypoints = AiWaypointsInitializeService.get_grid_coordinates(
+            waypoints = AiPointsInitializeService.get_grid_coordinates(
                 gs=gs,
                 spacing=points_conf.spacing,
                 offset=points_conf.offset,

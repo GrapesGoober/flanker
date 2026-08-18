@@ -12,8 +12,8 @@ from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
 from flanker_ai.states.common.ai_points_expansion_service import (
     AiPointsExpansionService,
 )
-from flanker_ai.states.common.ai_waypoints_initialize_service import (
-    AiWaypointsInitializeService,
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
@@ -43,13 +43,13 @@ class UnabstractedState(IRepresentationState[Action]):
             case PointsConfig.HandDrawn():
                 init_points = initial_points_config.points
             case PointsConfig.Grid():
-                init_points = AiWaypointsInitializeService.get_grid_coordinates(
+                init_points = AiPointsInitializeService.get_grid_coordinates(
                     gs=gs,
                     spacing=initial_points_config.spacing,
                     offset=initial_points_config.offset,
                 )
             case PointsConfig.Random():
-                init_points = AiWaypointsInitializeService.get_random_coordinates(
+                init_points = AiPointsInitializeService.get_random_coordinates(
                     gs=gs,
                     count=initial_points_config.count,
                 )
