@@ -19,6 +19,7 @@ from flanker_core.models import components
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
+    Transform,
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
@@ -237,7 +238,7 @@ def draw_move_candidates(
 
         points_x = [waypoint.x for waypoint in waypoints]
         points_y = [waypoint.y for waypoint in waypoints]
-        plt.scatter(  # type: ignore
+        plt.scatter(
             points_x,
             points_y,
             color="C0",
@@ -256,7 +257,7 @@ def draw_move_candidates(
     move_candidates = agent.rs.move_candidates
     points_x = [coords.x for coords in move_candidates]
     points_y = [coords.y for coords in move_candidates]
-    plt.scatter(  # type: ignore
+    plt.scatter(
         points_x,
         points_y,
         color="C1",
@@ -264,15 +265,33 @@ def draw_move_candidates(
         s=80,
     )
 
-    # for point in move_candidates:
-    #     plt.text(  # type: ignore
-    #         point.x,
-    #         point.y,
-    #         str(f"({round(point.x, 2)}, {round(point.y, 2)})"),
-    #         fontsize=8,
-    #         ha="left",
-    #         va="bottom",
-    #     )
+    for point in move_candidates:
+        plt.text(
+            point.x,
+            point.y,
+            f"({round(point.x, 2)}, {round(point.y, 2)})",
+            fontsize=8,
+            ha="left",
+            va="bottom",
+        )
+
+        signature: list[str] = []
+        for _, _, transform in gs.query(CombatUnit, Transform):
+            has_los = LosSystem.has_los(
+                gs,
+                spotter_pos=transform.position,
+                target_pos=point,
+            )
+            signature.append("1" if has_los else "0")
+
+        plt.text(
+            point.x,
+            point.y,
+            f"({",".join(signature)})",
+            fontsize=8,
+            ha="left",
+            va="top",
+        )
 
     if draw_lines:
         segments = [
