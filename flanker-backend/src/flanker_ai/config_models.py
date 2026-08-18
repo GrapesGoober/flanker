@@ -34,6 +34,20 @@ class PointsConfig:
     expansions: list[FlagPruneConfig]
 
 
+@dataclass
+class WaypointsStateConfig:
+    type: Literal["WaypointsStateConfig"]
+    waypoints: PointsConfig
+    path_tolerance: float
+
+
+@dataclass
+class UnabstractedStateConfig:
+    type: Literal["UnabstractedStateConfig"]
+    move_candidates: PointsConfig
+    divide_moves_per_unit: bool
+
+
 class PolicyConfig:
 
     @dataclass
@@ -57,20 +71,6 @@ class PolicyConfig:
     @dataclass
     class RandomHeuristicPolicy:
         type: Literal["RandomHeuristicPolicy"]
-
-
-@dataclass
-class WaypointsStateConfig:
-    type: Literal["WaypointsStateConfig"]
-    waypoints: PointsConfig
-    path_tolerance: float
-
-
-@dataclass
-class UnabstractedStateConfig:
-    type: Literal["UnabstractedStateConfig"]
-    move_candidates: PointsConfig
-    divide_moves_per_unit: bool
 
 
 @dataclass
