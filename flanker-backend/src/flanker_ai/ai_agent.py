@@ -138,11 +138,11 @@ class AiAgent:
                 state = UnabstractedState(
                     gs=gs,
                     move_candidates_config=PointsConfig(
-                        initial_points=PointsConfig.RandomConfig(
+                        initial_points=PointsConfig.Random(
                             type="Random",
                             count=10,
                         ),
-                        expansions=[],
+                        filters=[],
                     ),
                     divide_moves_per_unit=False,
                 )

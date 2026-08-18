@@ -70,7 +70,7 @@ class AiService:
             if not isinstance(config_component.config.state, WaypointsStateConfig):
                 continue
             points_config = config_component.config.state.waypoints
-            if not isinstance(points_config, PointsConfig.HandDrawnConfig):
+            if not isinstance(points_config, PointsConfig.HandDrawn):
                 continue
             points_config.points = request.points
 

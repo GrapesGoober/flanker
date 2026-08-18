@@ -30,25 +30,25 @@ class AiPointsExpansionService:
         waypoints: list[Vec2]
         initial_points_config = config.initial_points
         match initial_points_config:
-            case PointsConfig.HandDrawnConfig():
+            case PointsConfig.HandDrawn():
                 waypoints = initial_points_config.points
-            case PointsConfig.GridConfig():
+            case PointsConfig.Grid():
                 waypoints = AiWaypointsInitializeService.get_grid_coordinates(
                     gs=gs,
                     spacing=initial_points_config.spacing,
                     offset=initial_points_config.offset,
                 )
-            case PointsConfig.RandomConfig():
+            case PointsConfig.Random():
                 waypoints = AiWaypointsInitializeService.get_random_coordinates(
                     gs=gs,
                     count=initial_points_config.count,
                 )
 
         # Expands the points given the config
-        for expansion_config in config.expansions:
+        for expansion_config in config.filters:
             waypoints = AiPointsExpansionService._filter_colocated(waypoints)
             match expansion_config:
-                case PointsConfig.FlagPruneConfig():
+                case PointsConfig.LosSignaturesFilter():
                     # Use combat unit positions as flags
                     flag_waypoints: list[Vec2] = [
                         transform.position

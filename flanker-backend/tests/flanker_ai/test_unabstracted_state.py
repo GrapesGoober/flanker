@@ -180,11 +180,11 @@ def get_agent(
                 state=UnabstractedStateConfig(
                     type="UnabstractedStateConfig",
                     move_candidates=PointsConfig(
-                        initial_points=PointsConfig.HandDrawnConfig(
+                        initial_points=PointsConfig.HandDrawn(
                             type="HandDrawnConfig",
                             points=move_candidate_points,
                         ),
-                        expansions=[],
+                        filters=[],
                     ),
                     divide_moves_per_unit=False,
                 ),

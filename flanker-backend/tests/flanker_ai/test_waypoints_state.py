@@ -181,11 +181,11 @@ def get_agent(
                 state=WaypointsStateConfig(
                     type="WaypointsStateConfig",
                     waypoints=PointsConfig(
-                        initial_points=PointsConfig.HandDrawnConfig(
+                        initial_points=PointsConfig.HandDrawn(
                             type="HandDrawnConfig",
                             points=fixture.waypoint_coordinates,
                         ),
-                        expansions=[],
+                        filters=[],
                     ),
                     path_tolerance=3,
                 ),

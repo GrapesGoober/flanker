@@ -11,27 +11,27 @@ from flanker_core.models.vec2 import Vec2
 @dataclass
 class PointsConfig:
     @dataclass
-    class GridConfig:
+    class Grid:
         type: Literal["GridConfig"]
         spacing: float
         offset: float
 
     @dataclass
-    class HandDrawnConfig:
+    class HandDrawn:
         type: Literal["HandDrawnConfig"]
         points: list[Vec2]
 
     @dataclass
-    class RandomConfig:
+    class Random:
         type: Literal["Random"]
         count: int
 
     @dataclass
-    class FlagPruneConfig:
+    class LosSignaturesFilter:
         type: Literal["FlagPrune"]
 
-    initial_points: GridConfig | HandDrawnConfig | RandomConfig
-    expansions: list[FlagPruneConfig]
+    initial_points: Grid | HandDrawn | Random
+    filters: list[LosSignaturesFilter]
 
 
 @dataclass
