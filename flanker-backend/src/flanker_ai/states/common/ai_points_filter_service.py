@@ -85,6 +85,7 @@ class AiPointsFilterService:
         target_waypoints: list[Vec2],
         ingress_fov: float,
     ) -> list[Vec2]:
+        """Get a list of distinct ingress nodes that satisfies target waypoints."""
 
         ingress_waypoints: list[Vec2] = []
         seen_signatures: set[tuple[bool, ...]] = set()
