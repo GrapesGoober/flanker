@@ -12,17 +12,12 @@
             "move_candidates": {
               "initial_points": {
                 "type": "GridConfig",
-                "spacing": 140.0,
+                "spacing": 10,
                 "offset": 10.0
               },
-              "use_combat_unit_positions": true,
-              "expansions": [
+              "filters": [
                 {
-                  "type": "LineBased",
-                  "tolerance": 10
-                },
-                {
-                  "type": "FlagPrune"
+                  "type": "LosSignaturesFilter"
                 }
               ]
             },

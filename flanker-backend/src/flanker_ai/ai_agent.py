@@ -18,8 +18,11 @@ from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.policies.random_policy import RandomPolicy
-from flanker_ai.states.common.ai_points_expansion_service import (
-    AiPointsExpansionService,
+from flanker_ai.states.common.ai_points_filter_service import (
+    AiPointsFilterService,
+)
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
 )
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
@@ -138,12 +141,11 @@ class AiAgent:
                 state = UnabstractedState(
                     gs=gs,
                     move_candidates_config=PointsConfig(
-                        initial_points=PointsConfig.RandomConfig(
+                        initial_points=PointsConfig.Random(
                             type="Random",
                             count=10,
                         ),
-                        use_combat_unit_positions=False,
-                        expansions=[],
+                        filters=[],
                     ),
                     divide_moves_per_unit=False,
                 )
@@ -173,10 +175,10 @@ class AiAgent:
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
-                        # The unabstracted state uses lazy waypoint expansion
+                        # The unabstracted state uses lazy move candidate filtering
                         state_config = config_component.config.state
                         state = UnabstractedState(
-                            gs,
+                            gs=gs,
                             move_candidates_config=state_config.move_candidates,
                             divide_moves_per_unit=state_config.divide_moves_per_unit,
                         )
@@ -184,9 +186,11 @@ class AiAgent:
                         state_config = config_component.config.state
                         # TODO Waypoints state doesn't yet have lazy
                         # waypoint expansion, so it just takes waypoints
-                        waypoints = AiPointsExpansionService.get_points(
-                            gs=gs,
-                            config=state_config.waypoints,
+                        waypoints = AiPointsInitializeService.get_initial_points(
+                            gs, state_config.waypoints
+                        )
+                        waypoints = AiPointsFilterService.filter_points(
+                            gs, state_config.waypoints, waypoints
                         )
                         state = WaypointsState(
                             points=waypoints,

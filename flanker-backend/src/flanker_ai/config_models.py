@@ -11,53 +11,45 @@ from flanker_core.models.vec2 import Vec2
 @dataclass
 class PointsConfig:
     @dataclass
-    class GridConfig:
+    class Grid:
         type: Literal["GridConfig"]
         spacing: float
         offset: float
 
     @dataclass
-    class HandDrawnConfig:
+    class HandDrawn:
         type: Literal["HandDrawnConfig"]
         points: list[Vec2]
 
     @dataclass
-    class RandomConfig:
+    class Random:
         type: Literal["Random"]
         count: int
 
     @dataclass
-    class VoronoiConfig:
-        type: Literal["VoronoiConfig"]
+    class LosSignaturesFilter:
+        type: Literal["LosSignaturesFilter"]
 
     @dataclass
-    class LineBasedExpansionConfig:
-        type: Literal["LineBased"]
-        tolerance: float
+    class IngressLosSignaturesFilter:
+        type: Literal["IngressLosSignaturesFilter"]
 
-    @dataclass
-    class PolygonalExpansionConfig:
-        type: Literal["Polygonal"]
+    initial_points: Grid | HandDrawn | Random
+    filters: list[LosSignaturesFilter | IngressLosSignaturesFilter]
 
-    @dataclass
-    class FlagPruneConfig:
-        type: Literal["FlagPrune"]
 
-    @dataclass
-    class WeightsPruneConfig:
-        type: Literal["WeightsPrune"]
-        remaining_size: int
+@dataclass
+class WaypointsStateConfig:
+    type: Literal["WaypointsStateConfig"]
+    waypoints: PointsConfig
+    path_tolerance: float
 
-    initial_points: GridConfig | HandDrawnConfig | VoronoiConfig | RandomConfig
-    use_combat_unit_positions: bool
-    expansions: list[
-        (
-            LineBasedExpansionConfig
-            | PolygonalExpansionConfig
-            | FlagPruneConfig
-            | WeightsPruneConfig
-        )
-    ]
+
+@dataclass
+class UnabstractedStateConfig:
+    type: Literal["UnabstractedStateConfig"]
+    move_candidates: PointsConfig
+    divide_moves_per_unit: bool
 
 
 class PolicyConfig:
@@ -83,20 +75,6 @@ class PolicyConfig:
     @dataclass
     class RandomHeuristicPolicy:
         type: Literal["RandomHeuristicPolicy"]
-
-
-@dataclass
-class WaypointsStateConfig:
-    type: Literal["WaypointsStateConfig"]
-    waypoints: PointsConfig
-    path_tolerance: float
-
-
-@dataclass
-class UnabstractedStateConfig:
-    type: Literal["UnabstractedStateConfig"]
-    move_candidates: PointsConfig
-    divide_moves_per_unit: bool
 
 
 @dataclass

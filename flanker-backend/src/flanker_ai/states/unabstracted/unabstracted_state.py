@@ -9,8 +9,11 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
-from flanker_ai.states.common.ai_points_expansion_service import (
-    AiPointsExpansionService,
+from flanker_ai.states.common.ai_points_filter_service import (
+    AiPointsFilterService,
+)
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
@@ -35,6 +38,22 @@ class UnabstractedState(IRepresentationState[Action]):
     ) -> None:
         self._gs = gs
         self._move_candidates_config = move_candidates_config
+        initial_points_config = move_candidates_config.initial_points
+        match initial_points_config:
+            case PointsConfig.HandDrawn():
+                init_points = initial_points_config.points
+            case PointsConfig.Grid():
+                init_points = AiPointsInitializeService.get_grid_coordinates(
+                    gs=gs,
+                    spacing=initial_points_config.spacing,
+                    offset=initial_points_config.offset,
+                )
+            case PointsConfig.Random():
+                init_points = AiPointsInitializeService.get_random_coordinates(
+                    gs=gs,
+                    count=initial_points_config.count,
+                )
+        self._initial_move_candidates: list[Vec2] = init_points
         self.move_candidates: list[Vec2] = []
         self._divide_moves_per_unit = divide_moves_per_unit
 
@@ -148,9 +167,11 @@ class UnabstractedState(IRepresentationState[Action]):
     @override
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
-        # Regenerate the move candidate for each update
-        self.move_candidates = AiPointsExpansionService.get_points(
-            self._gs, self._move_candidates_config
+        # Regenerate the move candidates for each update
+        self.move_candidates = AiPointsFilterService.filter_points(
+            gs=self._gs,
+            config=self._move_candidates_config,
+            points=self._initial_move_candidates,
         )
 
     @override
