@@ -134,7 +134,7 @@ class PolygonUtils:
         right_intersects = IntersectUtils.get_intersects(
             line=(center_point, right_ray), polyline=polyline
         )
-        if len(left_intersects) == 0 or len(right_intersects):
+        if len(left_intersects) == 0 or len(right_intersects) == 0:
             raise ValueError("No FOV-clipping edges found!")
         left_point = min(
             left_intersects,
