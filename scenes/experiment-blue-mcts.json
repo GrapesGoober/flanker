@@ -20,7 +20,7 @@
               },
               "filters": [
                 {
-                  "type": "LosSignaturesFilter"
+                  "type": "IngressLosSignaturesFilter"
                 }
               ]
             },
