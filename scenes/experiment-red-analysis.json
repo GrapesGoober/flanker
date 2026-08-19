@@ -13,7 +13,7 @@
               "initial_points": {
                 "type": "GridConfig",
                 "spacing": 10.0,
-                "offset": 10.0
+                "offset": 11
               },
               "filters": [
                 {
