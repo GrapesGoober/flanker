@@ -18,7 +18,6 @@
                 "spacing": 10,
                 "offset": 10.0
               },
-              "use_combat_unit_positions": true,
               "filters": [
                 {
                   "type": "LosSignaturesFilter"
