@@ -117,7 +117,7 @@ def draw_combat_unit_los_cone(
     visualize_polygon(
         polygon,
         color=color,
-        fill_alpha=0.1,
+        fill_alpha=0.05,
         plot_alpha=0.3,
         linestyle=linestyle,
     )
@@ -335,14 +335,14 @@ if __name__ == "__main__":
     # Draw LOS for each combat unit
     if True:
         for id, unit in gs.query(CombatUnit):
-            # if unit.faction == InitiativeState.Faction.BLUE:
-            #     draw_combat_unit_los_cone(
-            #         gs,
-            #         unit_id=id,
-            #         color="C0",
-            #         linestyle="--",
-            #         draw_as_cone=True,
-            #     )
+            if unit.faction == InitiativeState.Faction.BLUE:
+                draw_combat_unit_los_cone(
+                    gs,
+                    unit_id=id,
+                    color="C0",
+                    linestyle="--",
+                    draw_as_cone=False,
+                )
 
             if unit.faction == InitiativeState.Faction.RED:
                 draw_combat_unit_los_cone(
@@ -350,7 +350,7 @@ if __name__ == "__main__":
                     unit_id=id,
                     color="C1",
                     linestyle="--",
-                    draw_as_cone=True,
+                    draw_as_cone=False,
                 )
 
     # plt.axis("equal")
