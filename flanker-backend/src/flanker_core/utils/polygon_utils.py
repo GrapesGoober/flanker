@@ -128,16 +128,20 @@ class PolygonUtils:
         right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degree / 2)
 
         # Choose the two first intersection points of this FOV cone
+        left_intersects = IntersectUtils.get_intersects(
+            line=(center_point, left_ray), polyline=polyline
+        )
+        right_intersects = IntersectUtils.get_intersects(
+            line=(center_point, right_ray), polyline=polyline
+        )
+        if len(left_intersects) == 0 or len(right_intersects) == 0:
+            raise ValueError("No FOV-clipping edges found!")
         left_point = min(
-            IntersectUtils.get_intersects(
-                line=(center_point, left_ray), polyline=polyline
-            ),
+            left_intersects,
             key=lambda point: (center_point - point).length(),
         )
         right_point = min(
-            IntersectUtils.get_intersects(
-                line=(center_point, right_ray), polyline=polyline
-            ),
+            right_intersects,
             key=lambda point: (center_point - point).length(),
         )
 

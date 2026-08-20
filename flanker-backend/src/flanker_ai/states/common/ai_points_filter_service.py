@@ -85,11 +85,16 @@ class AiPointsFilterService:
         target_waypoints: list[Vec2],
         ingress_fov: float,
     ) -> list[Vec2]:
+        """Get a list of distinct ingress nodes that satisfies target waypoints."""
 
         ingress_waypoints: list[Vec2] = []
-        seen_signatures: set[tuple[bool, ...]] = set()
-        for ingress_candidate in waypoints:
-            for target_waypoint in target_waypoints:
+        # For each target waypoint, find all unique ingress waypoints.
+        for target_waypoint in target_waypoints:
+            seen_signatures: set[tuple[bool, ...]] = set()
+            # Have it search and pick from existing nodes first before picking
+            # from the total waypoints pool.
+            candidate_pool = ingress_waypoints + target_waypoints + waypoints
+            for ingress_candidate in candidate_pool:
                 ingress_angle = ingress_candidate.angle_to(target_waypoint)
                 target_los_polygon = LosSystem.get_los_polygon(gs, target_waypoint)
                 fov_clipped_los = PolygonUtils.clip_by_fov_cone(

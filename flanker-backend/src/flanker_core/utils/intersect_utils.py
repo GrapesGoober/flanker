@@ -19,7 +19,7 @@ class IntersectUtils:
         """
 
         if len(polyline) < 2:
-            return set()
+            raise ValueError("Polyline must have at least 2 vertices.")
 
         # Convert to np arrays and let the compiled function compute
         intersections = IntersectUtils._njit_get_intersect(
