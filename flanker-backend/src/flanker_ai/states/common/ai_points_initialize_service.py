@@ -48,10 +48,9 @@ class AiPointsInitializeService:
     ) -> list[Vec2]:
 
         # Grab the map boundary
-        mask = TerrainFeature.Flag.BOUNDARY
         boundary_vertices: list[Vec2] = []
         for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
+            if terrain.flag & TerrainFeature.Flag.BOUNDARY:
                 boundary_vertices = TransformUtils.apply(
                     terrain.vertices,
                     transform,

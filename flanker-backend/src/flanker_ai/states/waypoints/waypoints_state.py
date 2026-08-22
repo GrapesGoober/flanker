@@ -238,9 +238,9 @@ class WaypointsState(IRepresentationState[Action]):
             ),
         )
 
+        # Consider a new list with combat units positions
         points: list[Vec2] = list(self._waypoints)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
-            # Add new waypoints for each combat units
             if transform.position not in points:
                 points.append(transform.position)
 

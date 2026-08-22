@@ -192,23 +192,18 @@ def draw_waypoints(
                 ]
             )
 
-        # Draw LOS polygon for each waypoint
-        full_polygon = LosSystem.get_los_polygon(
-            gs=gs,
-            spotter_pos=point.position,
-        )
-        visualize_polygon(full_polygon, color="C0", fill_alpha=0.02, plot_alpha=0.05)
-
-    # draw_graph(
-    #     points_x,
-    #     points_y,
-    #     segments,
-    #     color="C0",
-    #     linewidth=1,
-    #     alpha=0.05,
-    # )
+    draw_graph(
+        points_x,
+        points_y,
+        segments,
+        color="C0",
+        linewidth=1,
+        alpha=0.05,
+    )
 
 
+# TODO: refactor this to handle both unabstracted and waypoints state.
+# Do this by using the method get_actions(), and visualize THAT
 def draw_move_candidates(
     gs: GameState,
     faction: InitiativeState.Faction,
@@ -309,11 +304,12 @@ if __name__ == "__main__":
             # "./scenes/visualize-los.json"
             "./scenes/experiment-settings.json",
             "./scenes/experiment-scene-2.json",
-            "./scenes/experiment-blue-analysis.json",
+            # "./scenes/experiment-blue-analysis.json",
+            "./scenes/experiment-blue-waypoints.json",
         ]
     )
 
-    screenshot = "./scripts/screenshots/experiment-scene-2.png"
+    screenshot = None  # "./scripts/screenshots/experiment-scene-2.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -324,13 +320,13 @@ if __name__ == "__main__":
         plt.gca().invert_yaxis()
 
     # draw_terrains(gs)
-    # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(
-        gs,
-        InitiativeState.Faction.BLUE,
-        draw_lines=False,
-        draw_initial=False,
-    )
+    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
+    # draw_move_candidates(
+    #     gs,
+    #     InitiativeState.Faction.BLUE,
+    #     draw_lines=False,
+    #     draw_initial=False,
+    # )
 
     # Draw LOS for each combat unit
     if True:
