@@ -1,28 +1,19 @@
 from dataclasses import is_dataclass
 from inspect import isclass
-from itertools import product
 from typing import Any
 from uuid import UUID
 
 import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import SearchPolicyConfig
-from flanker_ai.states.common.ai_points_filter_service import (
-    AiPointsFilterService,
-)
-from flanker_ai.states.common.ai_points_initialize_service import (
-    AiPointsInitializeService,
-)
-from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
-    Transform,
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
@@ -210,91 +201,18 @@ def draw_waypoints(
 def draw_move_candidates(
     gs: GameState,
     faction: InitiativeState.Faction,
-    draw_lines: bool,
-    draw_initial: bool,
 ) -> None:
 
-    if draw_initial:
-        waypoints: list[Vec2] = []
-        for _, conf in gs.query(AiConfigComponent):
-            if conf.faction != faction:
-                continue
-            if type(conf.config) != SearchPolicyConfig:
-                continue
-            if conf.config.policy.type != "MinimaxPolicy":
-                continue
-            if conf.config.state.type != "UnabstractedStateConfig":
-                continue
-            points_conf = conf.config.state.move_candidates_pool
-            filter_conf = conf.config.state.move_candidates_filter
-
-            waypoints = AiPointsInitializeService.get_initial_points(gs, points_conf)
-            waypoints = AiPointsFilterService.filter_points(gs, filter_conf, waypoints)
-
-        points_x = [waypoint.x for waypoint in waypoints]
-        points_y = [waypoint.y for waypoint in waypoints]
-        plt.scatter(
-            points_x,
-            points_y,
-            color="C0",
-            marker="o",
-            s=80,
-        )
-
     agent = AiAgent.get_agent(gs, faction)
-
-    assert isinstance(
-        agent.rs, UnabstractedState
-    ), "Method draw_move_candidates can only be used with unabstracted state"
-
     agent.rs.update_state(gs)
 
-    move_candidates = agent.rs.move_candidates
-    points_x = [coords.x for coords in move_candidates]
-    points_y = [coords.y for coords in move_candidates]
-    plt.scatter(
-        points_x,
-        points_y,
-        color="C1",
-        marker="s",
-        s=80,
-    )
+    actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
+    unit_id = actions[0].unit_id if actions else None
+    moves: list[Vec2] = [a.to for a in actions if a.unit_id == unit_id]
 
-    for point in move_candidates:
-        plt.text(
-            point.x,
-            point.y,
-            f"({round(point.x, 2)}, {round(point.y, 2)})",
-            fontsize=8,
-            ha="left",
-            va="bottom",
-        )
-
-        signature: list[str] = []
-        for _, _, transform in gs.query(CombatUnit, Transform):
-            has_los = LosSystem.has_los(
-                gs,
-                spotter_pos=transform.position,
-                target_pos=point,
-            )
-            signature.append("1" if has_los else "0")
-
-        plt.text(
-            point.x,
-            point.y,
-            f"({",".join(signature)})",
-            fontsize=8,
-            ha="left",
-            va="top",
-        )
-
-    if draw_lines:
-        segments = [
-            ((p1.x, p1.y), (p2.x, p2.y))
-            for p1, p2 in product(move_candidates, repeat=2)
-        ]
-        lc = LineCollection(segments, colors="C0", linewidths=1, alpha=0.1)
-        plt.gca().add_collection(lc)
+    points_x = [v.x for v in moves]
+    points_y = [v.y for v in moves]
+    plt.scatter(points_x, points_y, color="C1", marker="s", s=60)  # type: ignore
 
 
 if __name__ == "__main__":
@@ -319,14 +237,9 @@ if __name__ == "__main__":
     else:
         plt.gca().invert_yaxis()
 
-    # draw_terrains(gs)
-    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    # draw_move_candidates(
-    #     gs,
-    #     InitiativeState.Faction.BLUE,
-    #     draw_lines=False,
-    #     draw_initial=False,
-    # )
+    draw_terrains(gs)
+    # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
+    draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 
     # Draw LOS for each combat unit
     if True:
