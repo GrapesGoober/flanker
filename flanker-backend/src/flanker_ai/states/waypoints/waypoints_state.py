@@ -98,11 +98,18 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> Sequence[Action]:
-
+        occupied_waypoints = {
+            transform.position
+            for _, _, transform in self.gs.query(CombatUnit, Transform)
+        }
         return AiActionService.get_actions(
             gs=self.gs,
             initiative=InitiativeSystem.get_initiative(self.gs),
-            move_candidates=self._move_candidates,
+            move_candidates=[
+                move_candidate
+                for move_candidate in self._move_candidates
+                if move_candidate not in occupied_waypoints
+            ],
             divide_moves_per_unit=False,
         )
 
@@ -164,17 +171,9 @@ class WaypointsState(IRepresentationState[Action]):
             if transform.position not in points:
                 points.append(transform.position)
 
-        occupied_waypoints = {
-            transform.position
-            for _, _, transform in self.gs.query(CombatUnit, Transform)
-        }
-        self._move_candidates = [
-            move_candidate
-            for move_candidate in AiPointsFilterService.filter_points(
-                self.gs, self._move_filter_config, self._waypoints
-            )
-            if move_candidate not in occupied_waypoints
-        ]
+        self._move_candidates = AiPointsFilterService.filter_points(
+            self.gs, self._move_filter_config, self._waypoints
+        )
 
         WaypointsGraph.set_waypoints(
             gs=self.gs,
