@@ -18,12 +18,6 @@ from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.policies.random_policy import RandomPolicy
-from flanker_ai.states.common.ai_points_filter_service import (
-    AiPointsFilterService,
-)
-from flanker_ai.states.common.ai_points_initialize_service import (
-    AiPointsInitializeService,
-)
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -184,16 +178,8 @@ class AiAgent:
                         )
                     case WaypointsStateConfig():
                         state_config = config_component.config.state
-                        # TODO Waypoints state doesn't yet have lazy
-                        # waypoint expansion, so it just takes waypoints
-                        waypoints = AiPointsInitializeService.get_initial_points(
-                            gs, state_config.waypoints
-                        )
-                        waypoints = AiPointsFilterService.filter_points(
-                            gs, state_config.waypoints, waypoints
-                        )
                         state = WaypointsState(
-                            points=waypoints,
+                            points_config=state_config.waypoints,
                             path_tolerance=state_config.path_tolerance,
                         )
 

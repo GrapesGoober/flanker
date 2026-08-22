@@ -3,12 +3,16 @@ from copy import deepcopy
 from typing import override
 from uuid import UUID
 
+from flanker_ai.config_models import PointsConfig
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
+)
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
@@ -32,9 +36,16 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class WaypointsState(IRepresentationState[Action]):
-    def __init__(self, points: list[Vec2], path_tolerance: float) -> None:
+    def __init__(
+        self,
+        points_config: PointsConfig,
+        path_tolerance: float,
+    ) -> None:
         self.gs = GameState()
-        self._points = points
+        self._points_config = points_config
+        self._points = AiPointsInitializeService.get_initial_points(
+            self.gs, points_config
+        )
         self._path_tolerance = path_tolerance
 
     @override
@@ -79,7 +90,7 @@ class WaypointsState(IRepresentationState[Action]):
     @override
     def copy(self) -> "WaypointsState":
         new_waypoints_state = WaypointsState(
-            points=self._points,
+            points_config=self._points_config,
             path_tolerance=self._path_tolerance,
         )
         new_waypoints_state.gs = AiBranchingService.copy(self.gs)
@@ -189,7 +200,7 @@ class WaypointsState(IRepresentationState[Action]):
         state_branches: list[tuple[float, WaypointsState]] = []
         for probability, new_state in branches:
             new_waypoints_state = WaypointsState(
-                points=self._points,
+                points_config=self._points_config,
                 path_tolerance=self._path_tolerance,
             )
             new_waypoints_state.gs = new_state
@@ -203,7 +214,7 @@ class WaypointsState(IRepresentationState[Action]):
             return None
         branch = AiBranchAbstractionService.pick_branch(branches, action)
         new_waypoints_state = WaypointsState(
-            points=self._points,
+            points_config=self._points_config,
             path_tolerance=self._path_tolerance,
         )
         new_waypoints_state.gs = branch

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
+from flanker_ai.config_models import PointsConfig
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
@@ -103,7 +104,13 @@ def fixture() -> Fixture:
     ]
 
     state = WaypointsState(
-        points=waypoint_positions,
+        points_config=PointsConfig(
+            initial_points=PointsConfig.HandDrawn(
+                type="HandDrawnConfig",
+                points=waypoint_positions,
+            ),
+            filters=[],
+        ),
         path_tolerance=20,
     )
 
