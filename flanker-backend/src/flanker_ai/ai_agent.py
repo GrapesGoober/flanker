@@ -134,13 +134,11 @@ class AiAgent:
                 policy = RandomHeuristicPolicy()
                 state = UnabstractedState(
                     gs=gs,
-                    move_candidates_config=PointsConfig(
-                        initial_points=PointsConfig.Random(
-                            type="Random",
-                            count=10,
-                        ),
-                        filters=[],
+                    move_pool_config=PointsConfig.Random(
+                        type="Random",
+                        count=10,
                     ),
+                    move_filter_config=[],
                     divide_moves_per_unit=False,
                 )
             case SearchPolicyConfig():
@@ -173,13 +171,15 @@ class AiAgent:
                         state_config = config_component.config.state
                         state = UnabstractedState(
                             gs=gs,
-                            move_candidates_config=state_config.move_candidates,
+                            move_pool_config=state_config.move_candidates_pool,
+                            move_filter_config=state_config.move_candidates_filter,
                             divide_moves_per_unit=state_config.divide_moves_per_unit,
                         )
                     case WaypointsStateConfig():
                         state_config = config_component.config.state
                         state = WaypointsState(
-                            points_config=state_config.waypoints,
+                            waypoints_config=state_config.waypoints,
+                            move_filter_config=state_config.move_candidates_filter,
                             path_tolerance=state_config.path_tolerance,
                         )
 

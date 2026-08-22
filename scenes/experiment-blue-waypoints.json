@@ -11,17 +11,15 @@
             "type": "WaypointsStateConfig",
             "path_tolerance": 10,
             "waypoints": {
-              "initial_points": {
-                "type": "GridConfig",
-                "spacing": 33.333,
-                "offset": 34
-              },
-              "filters": [
-                {
-                  "type": "LosSignaturesFilter"
-                }
-              ]
+              "type": "GridConfig",
+              "spacing": 33.333,
+              "offset": 34
             },
+            "move_candidates_filter": [
+              {
+                "type": "LosSignaturesFilter"
+              }
+            ],
             "divide_moves_per_unit": false
           }
         },

@@ -9,18 +9,16 @@
           },
           "state": {
             "type": "UnabstractedStateConfig",
-            "move_candidates": {
-              "initial_points": {
-                "type": "GridConfig",
-                "spacing": 10.0,
-                "offset": 11
-              },
-              "filters": [
-                {
-                  "type": "LosSignaturesFilter"
-                }
-              ]
+            "move_candidates_pool": {
+              "type": "GridConfig",
+              "spacing": 10.0,
+              "offset": 11
             },
+            "move_candidates_filter": [
+              {
+                "type": "LosSignaturesFilter"
+              }
+            ],
             "divide_moves_per_unit": false
           }
         },

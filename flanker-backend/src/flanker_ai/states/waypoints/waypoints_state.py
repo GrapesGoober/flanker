@@ -2,7 +2,7 @@ from copy import deepcopy
 from typing import override
 from uuid import UUID
 
-from flanker_ai.config_models import PointsConfig
+from flanker_ai.config_models import FILTER_CONFIG, INITIAL_POINTS_CONFIG
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
@@ -38,14 +38,15 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 class WaypointsState(IRepresentationState[Action]):
     def __init__(
         self,
-        points_config: PointsConfig,
+        waypoints_config: INITIAL_POINTS_CONFIG,
+        move_filter_config: list[FILTER_CONFIG],
         path_tolerance: float,
     ) -> None:
         self.gs = GameState()
-        self._points_config = points_config
-        self._waypoints = AiPointsInitializeService.get_initial_points(
-            self.gs, points_config
-        )
+        self._waypoints_config = waypoints_config
+        self._move_filter_config = move_filter_config
+        # Can't initialize waypoints without a game state
+        self._waypoints = []
         self._path_tolerance = path_tolerance
 
     @override
@@ -90,7 +91,8 @@ class WaypointsState(IRepresentationState[Action]):
     @override
     def copy(self) -> "WaypointsState":
         new_waypoints_state = WaypointsState(
-            points_config=self._points_config,
+            waypoints_config=self._waypoints_config,
+            move_filter_config=self._move_filter_config,
             path_tolerance=self._path_tolerance,
         )
         new_waypoints_state.gs = AiBranchingService.copy(self.gs)
@@ -176,7 +178,7 @@ class WaypointsState(IRepresentationState[Action]):
             # ):
 
             for move_position in AiPointsFilterService.filter_points(
-                self.gs, self._points_config, self._waypoints
+                self.gs, self._move_filter_config, self._waypoints
             ):
                 if move_position in occupied_waypoints:
                     continue
@@ -198,7 +200,8 @@ class WaypointsState(IRepresentationState[Action]):
         state_branches: list[tuple[float, WaypointsState]] = []
         for probability, new_state in branches:
             new_waypoints_state = WaypointsState(
-                points_config=self._points_config,
+                waypoints_config=self._waypoints_config,
+                move_filter_config=self._move_filter_config,
                 path_tolerance=self._path_tolerance,
             )
             new_waypoints_state.gs = new_state
@@ -212,7 +215,8 @@ class WaypointsState(IRepresentationState[Action]):
             return None
         branch = AiBranchAbstractionService.pick_branch(branches, action)
         new_waypoints_state = WaypointsState(
-            points_config=self._points_config,
+            waypoints_config=self._waypoints_config,
+            move_filter_config=self._move_filter_config,
             path_tolerance=self._path_tolerance,
         )
         new_waypoints_state.gs = branch
@@ -236,6 +240,10 @@ class WaypointsState(IRepresentationState[Action]):
             LosSystemOverrides.HasLos(
                 method=WaypointsLosSystemOverrides.has_los,
             ),
+        )
+
+        self._waypoints = AiPointsInitializeService.get_initial_points(
+            self.gs, self._waypoints_config
         )
 
         # Consider a new list with combat units positions

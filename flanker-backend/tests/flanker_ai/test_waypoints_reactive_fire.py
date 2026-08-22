@@ -104,13 +104,11 @@ def fixture() -> Fixture:
     ]
 
     state = WaypointsState(
-        points_config=PointsConfig(
-            initial_points=PointsConfig.HandDrawn(
-                type="HandDrawnConfig",
-                points=waypoint_positions,
-            ),
-            filters=[],
+        waypoints_config=PointsConfig.HandDrawn(
+            type="HandDrawnConfig",
+            points=waypoint_positions,
         ),
+        move_filter_config=[],
         path_tolerance=20,
     )
 

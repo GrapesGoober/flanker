@@ -1,6 +1,6 @@
 import random
 
-from flanker_ai.config_models import PointsConfig
+from flanker_ai.config_models import INITIAL_POINTS_CONFIG, PointsConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -17,25 +17,24 @@ class AiPointsInitializeService:
     @staticmethod
     def get_initial_points(
         gs: GameState,
-        config: PointsConfig,
+        config: INITIAL_POINTS_CONFIG,
     ) -> list[Vec2]:
         """Creates initial points given the config."""
 
         waypoints: list[Vec2]
-        initial_points_config = config.initial_points
-        match initial_points_config:
+        match config:
             case PointsConfig.HandDrawn():
-                waypoints = initial_points_config.points
+                waypoints = config.points
             case PointsConfig.Grid():
                 waypoints = AiPointsInitializeService.get_grid_coordinates(
                     gs=gs,
-                    spacing=initial_points_config.spacing,
-                    offset=initial_points_config.offset,
+                    spacing=config.spacing,
+                    offset=config.offset,
                 )
             case PointsConfig.Random():
                 waypoints = AiPointsInitializeService.get_random_coordinates(
                     gs=gs,
-                    count=initial_points_config.count,
+                    count=config.count,
                 )
 
         return waypoints

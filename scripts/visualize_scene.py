@@ -8,6 +8,9 @@ import matplotlib.image as mpimg
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import SearchPolicyConfig
+from flanker_ai.states.common.ai_points_filter_service import (
+    AiPointsFilterService,
+)
 from flanker_ai.states.common.ai_points_initialize_service import (
     AiPointsInitializeService,
 )
@@ -222,14 +225,11 @@ def draw_move_candidates(
                 continue
             if conf.config.state.type != "UnabstractedStateConfig":
                 continue
-            points_conf = conf.config.state.move_candidates.initial_points
-            if points_conf.type != "GridConfig":
-                continue
-            waypoints = AiPointsInitializeService.get_grid_coordinates(
-                gs=gs,
-                spacing=points_conf.spacing,
-                offset=points_conf.offset,
-            )
+            points_conf = conf.config.state.move_candidates_pool
+            filter_conf = conf.config.state.move_candidates_filter
+
+            waypoints = AiPointsInitializeService.get_initial_points(gs, points_conf)
+            waypoints = AiPointsFilterService.filter_points(gs, filter_conf, waypoints)
 
         points_x = [waypoint.x for waypoint in waypoints]
         points_y = [waypoint.y for waypoint in waypoints]

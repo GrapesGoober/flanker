@@ -3,10 +3,6 @@ from typing import Literal
 
 from flanker_core.models.vec2 import Vec2
 
-# TODO: this is using string literal type discriminator
-# Is this needed? Should it be removed? What cleaner options are available?
-# Yo, check this out https://pydantic.dev/docs/validation/latest/concepts/unions/.
-
 
 @dataclass
 class PointsConfig:
@@ -34,21 +30,26 @@ class PointsConfig:
     class IngressLosSignaturesFilter:
         type: Literal["IngressLosSignaturesFilter"]
 
-    initial_points: Grid | HandDrawn | Random
-    filters: list[LosSignaturesFilter | IngressLosSignaturesFilter]
+
+INITIAL_POINTS_CONFIG = PointsConfig.Grid | PointsConfig.HandDrawn | PointsConfig.Random
+FILTER_CONFIG = (
+    PointsConfig.LosSignaturesFilter | PointsConfig.IngressLosSignaturesFilter
+)
 
 
 @dataclass
 class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
-    waypoints: PointsConfig
+    waypoints: INITIAL_POINTS_CONFIG
+    move_candidates_filter: list[FILTER_CONFIG]
     path_tolerance: float
 
 
 @dataclass
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
-    move_candidates: PointsConfig
+    move_candidates_pool: INITIAL_POINTS_CONFIG
+    move_candidates_filter: list[FILTER_CONFIG]
     divide_moves_per_unit: bool
 
 

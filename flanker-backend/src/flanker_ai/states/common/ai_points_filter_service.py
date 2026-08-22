@@ -1,4 +1,4 @@
-from flanker_ai.config_models import PointsConfig
+from flanker_ai.config_models import FILTER_CONFIG, PointsConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import CombatUnit, Transform
 from flanker_core.models.vec2 import Vec2
@@ -11,10 +11,10 @@ class AiPointsFilterService:
     @staticmethod
     def filter_points(
         gs: GameState,
-        config: PointsConfig,
+        filter_configs: list[FILTER_CONFIG],
         points: list[Vec2],
     ) -> list[Vec2]:
-        for filter_config in config.filters:
+        for filter_config in filter_configs:
             points = AiPointsFilterService._filter_colocated(points)
             match filter_config:
                 case PointsConfig.LosSignaturesFilter():

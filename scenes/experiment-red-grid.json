@@ -9,14 +9,12 @@
           },
           "state": {
             "type": "UnabstractedStateConfig",
-            "move_candidates": {
-              "initial_points": {
-                "type": "GridConfig",
-                "spacing": 140.0,
-                "offset": 10.0
-              },
-              "filters": []
+            "move_candidates_pool": {
+              "type": "GridConfig",
+              "spacing": 140.0,
+              "offset": 10.0
             },
+            "move_candidates_filter": [],
             "divide_moves_per_unit": false
           }
         },
