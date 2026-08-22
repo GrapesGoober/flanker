@@ -1,6 +1,6 @@
 import random
 
-from flanker_ai.config_models import INITIAL_POINTS_CONFIG, PointsConfig
+from flanker_ai.config_models import PointsConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
@@ -17,7 +17,7 @@ class AiPointsInitializeService:
     @staticmethod
     def get_initial_points(
         gs: GameState,
-        config: INITIAL_POINTS_CONFIG,
+        config: PointsConfig.ALL,
     ) -> list[Vec2]:
         """Creates initial points given the config."""
 

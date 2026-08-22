@@ -2,7 +2,10 @@ from copy import deepcopy
 from typing import override
 from uuid import UUID
 
-from flanker_ai.config_models import FILTER_CONFIG, INITIAL_POINTS_CONFIG
+from flanker_ai.config_models import (
+    FilterConfig,
+    PointsConfig,
+)
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
@@ -38,8 +41,8 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 class WaypointsState(IRepresentationState[Action]):
     def __init__(
         self,
-        waypoints_config: INITIAL_POINTS_CONFIG,
-        move_filter_config: list[FILTER_CONFIG],
+        waypoints_config: PointsConfig.ALL,
+        move_filter_config: list[FilterConfig.ALL],
         path_tolerance: float,
     ) -> None:
         self.gs = GameState()

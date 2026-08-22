@@ -1,7 +1,10 @@
 from copy import deepcopy
 from typing import Sequence, override
 
-from flanker_ai.config_models import FILTER_CONFIG, INITIAL_POINTS_CONFIG
+from flanker_ai.config_models import (
+    FilterConfig,
+    PointsConfig,
+)
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
@@ -33,8 +36,8 @@ class UnabstractedState(IRepresentationState[Action]):
     def __init__(
         self,
         gs: GameState,
-        move_pool_config: INITIAL_POINTS_CONFIG,
-        move_filter_config: list[FILTER_CONFIG],
+        move_pool_config: PointsConfig.ALL,
+        move_filter_config: list[FilterConfig.ALL],
         divide_moves_per_unit: bool,
     ) -> None:
         self._gs = gs

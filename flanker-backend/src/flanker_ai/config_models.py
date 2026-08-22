@@ -4,7 +4,6 @@ from typing import Literal
 from flanker_core.models.vec2 import Vec2
 
 
-@dataclass
 class PointsConfig:
     @dataclass
     class Grid:
@@ -22,6 +21,11 @@ class PointsConfig:
         type: Literal["Random"]
         count: int
 
+    ALL = Grid | HandDrawn | Random
+
+
+class FilterConfig:
+
     @dataclass
     class LosSignaturesFilter:
         type: Literal["LosSignaturesFilter"]
@@ -30,26 +34,22 @@ class PointsConfig:
     class IngressLosSignaturesFilter:
         type: Literal["IngressLosSignaturesFilter"]
 
-
-INITIAL_POINTS_CONFIG = PointsConfig.Grid | PointsConfig.HandDrawn | PointsConfig.Random
-FILTER_CONFIG = (
-    PointsConfig.LosSignaturesFilter | PointsConfig.IngressLosSignaturesFilter
-)
+    ALL = LosSignaturesFilter | IngressLosSignaturesFilter
 
 
 @dataclass
 class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
-    waypoints: INITIAL_POINTS_CONFIG
-    move_candidates_filter: list[FILTER_CONFIG]
+    waypoints: PointsConfig.ALL
+    move_candidates_filter: list[FilterConfig.ALL]
     path_tolerance: float
 
 
 @dataclass
 class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
-    move_candidates_pool: INITIAL_POINTS_CONFIG
-    move_candidates_filter: list[FILTER_CONFIG]
+    move_candidates_pool: PointsConfig.ALL
+    move_candidates_filter: list[FilterConfig.ALL]
     divide_moves_per_unit: bool
 
 
