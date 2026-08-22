@@ -28,8 +28,6 @@ from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-_MAX_ACTION_PER_INITIATIVE = 20
-
 
 @dataclass
 class AiActionResult:
@@ -59,7 +57,7 @@ class AiAgent:
         self.rs: IRepresentationState[Action] = rs
 
     def play_initiative(
-        self,
+        self, max_action_per_initiative: int = 10
     ) -> list[AiActionResult]:
         """Have the agent play the entire initiative."""
         if InitiativeSystem.get_initiative(self.gs) != self.faction:
@@ -73,7 +71,7 @@ class AiAgent:
                 break
 
             # Check redundant moves (stop search)
-            if halt_counter > _MAX_ACTION_PER_INITIATIVE:
+            if halt_counter > max_action_per_initiative:
                 InitiativeSystem.flip_initiative(self.gs)
                 break
 
@@ -163,7 +161,6 @@ class AiAgent:
                             max_iterations=policy_config.max_iterations,
                             max_simulate_length=policy_config.max_simulate_length,
                             simulate_policy=simulate_policy,
-                            score_factor=policy_config.score_factor,
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():

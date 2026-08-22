@@ -54,7 +54,6 @@ def test_optimal_action(
                 max_iterations=10_000,
                 max_simulate_length=20,
                 simulate_policy=RandomPolicy[TicTacToeAction](),
-                score_factor=1,
             )
 
     action, _ = policy.get_action(fixture)

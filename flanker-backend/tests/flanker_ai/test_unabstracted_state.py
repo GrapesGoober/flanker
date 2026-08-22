@@ -164,7 +164,6 @@ def get_agent(
                 max_iterations=100,
                 max_simulate_length=20,
                 simulation_policy="rh",
-                score_factor=1,
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
