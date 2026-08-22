@@ -1,4 +1,3 @@
-import random
 from copy import deepcopy
 from typing import override
 from uuid import UUID
@@ -10,6 +9,7 @@ from flanker_ai.states.common.ai_branch_abstraction_service import (
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
+from flanker_ai.states.common.ai_points_filter_service import AiPointsFilterService
 from flanker_ai.states.common.ai_points_initialize_service import (
     AiPointsInitializeService,
 )
@@ -43,7 +43,7 @@ class WaypointsState(IRepresentationState[Action]):
     ) -> None:
         self.gs = GameState()
         self._points_config = points_config
-        self._points = AiPointsInitializeService.get_initial_points(
+        self._waypoints = AiPointsInitializeService.get_initial_points(
             self.gs, points_config
         )
         self._path_tolerance = path_tolerance
@@ -166,22 +166,20 @@ class WaypointsState(IRepresentationState[Action]):
 
             # Adds move actions last, for best alpha-beta pruning.
             # Have friendly units move to non-occupied waypoints
-            occupied_waypoint_ids: set[int] = {
-                WaypointsGraph.get_waypoint_id(self.gs, transform.position)
+            occupied_waypoints: set[Vec2] = {
+                transform.position
                 for _, _, transform in self.gs.query(CombatUnit, Transform)
             }
-            available_waypoints: list[int] = [
-                waypoint_id
-                for waypoint_id in friendly_waypoint.movable_paths.keys()
-                if waypoint_id not in occupied_waypoint_ids
-            ]
 
-            # Randomly filter move waypoints to reduce branching factor
-            for move_to_id in random.sample(
-                population=available_waypoints,
-                k=min(9, len(available_waypoints)),
+            # for move_position in AiPointsFilterService.filter_points(
+            #     self.gs, self._points_config, self._waypoints
+            # ):
+
+            for move_position in AiPointsFilterService.filter_points(
+                self.gs, self._points_config, self._waypoints
             ):
-                move_position = waypoints[move_to_id].position
+                if move_position in occupied_waypoints:
+                    continue
                 actions.append(
                     MoveAction(
                         unit_id=friendly_id,
@@ -240,7 +238,7 @@ class WaypointsState(IRepresentationState[Action]):
             ),
         )
 
-        points: list[Vec2] = list(self._points)
+        points: list[Vec2] = list(self._waypoints)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             # Add new waypoints for each combat units
             if transform.position not in points:
