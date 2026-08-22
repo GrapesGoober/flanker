@@ -44,6 +44,7 @@ class WaypointsState(IRepresentationState[Action]):
         self._move_filter_config = move_filter_config
         # Can't initialize waypoints without a game state
         self._waypoints = []
+        self._move_candidates = []
         self._path_tolerance = path_tolerance
 
     @override
@@ -97,23 +98,11 @@ class WaypointsState(IRepresentationState[Action]):
 
     @override
     def get_actions(self) -> Sequence[Action]:
-        # TODO make this filtering per-update, not per-ply
-        move_candidates = AiPointsFilterService.filter_points(
-            self.gs, self._move_filter_config, self._waypoints
-        )
-        occupied_waypoints = {
-            transform.position
-            for _, _, transform in self.gs.query(CombatUnit, Transform)
-        }
-        move_candidates = [
-            move_candidate
-            for move_candidate in move_candidates
-            if move_candidate not in occupied_waypoints
-        ]
+
         return AiActionService.get_actions(
             gs=self.gs,
             initiative=InitiativeSystem.get_initiative(self.gs),
-            move_candidates=move_candidates,
+            move_candidates=self._move_candidates,
             divide_moves_per_unit=False,
         )
 
@@ -174,6 +163,18 @@ class WaypointsState(IRepresentationState[Action]):
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             if transform.position not in points:
                 points.append(transform.position)
+
+        occupied_waypoints = {
+            transform.position
+            for _, _, transform in self.gs.query(CombatUnit, Transform)
+        }
+        self._move_candidates = [
+            move_candidate
+            for move_candidate in AiPointsFilterService.filter_points(
+                self.gs, self._move_filter_config, self._waypoints
+            )
+            if move_candidate not in occupied_waypoints
+        ]
 
         WaypointsGraph.set_waypoints(
             gs=self.gs,

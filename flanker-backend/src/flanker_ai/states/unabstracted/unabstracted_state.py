@@ -46,7 +46,7 @@ class UnabstractedState(IRepresentationState[Action]):
         self._initial_move_candidates = AiPointsInitializeService.get_initial_points(
             gs, move_pool_config
         )
-        self.move_candidates: list[Vec2] = []
+        self._move_candidates: list[Vec2] = []
         self._divide_moves_per_unit = divide_moves_per_unit
 
     @override
@@ -80,7 +80,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return AiActionService.get_actions(
             gs=self._gs,
             initiative=self.get_initiative(),
-            move_candidates=self.move_candidates,
+            move_candidates=self._move_candidates,
             divide_moves_per_unit=self._divide_moves_per_unit,
         )
 
@@ -110,7 +110,7 @@ class UnabstractedState(IRepresentationState[Action]):
                 move_filter_config=self._move_filter_config,
                 divide_moves_per_unit=self._divide_moves_per_unit,
             )
-            new_state.move_candidates = self.move_candidates
+            new_state._move_candidates = self._move_candidates
             state_branches.append((prob, new_state))
         return state_branches
 
@@ -144,7 +144,7 @@ class UnabstractedState(IRepresentationState[Action]):
             move_filter_config=self._move_filter_config,
             divide_moves_per_unit=self._divide_moves_per_unit,
         )
-        new_state.move_candidates = self.move_candidates
+        new_state._move_candidates = self._move_candidates
         return new_state
 
     @override
@@ -163,7 +163,7 @@ class UnabstractedState(IRepresentationState[Action]):
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         # Regenerate the move candidates for each update
-        self.move_candidates = AiPointsFilterService.filter_points(
+        self._move_candidates = AiPointsFilterService.filter_points(
             gs=self._gs,
             filter_configs=self._move_filter_config,
             points=self._initial_move_candidates,
