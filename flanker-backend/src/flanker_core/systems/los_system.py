@@ -262,10 +262,6 @@ class LosSystem:
                     vertices.append(vertices[0])
                     # Ignore the terrain entity if the spotter is inside it,
                     # this allows spotter to see-out of a terrain
-                    if (
-                        PolygonUtils.is_inside(spotter_pos, vertices)
-                        # This rule doesn't apply to boundary terrain
-                        and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
-                    ):
+                    if PolygonUtils.is_inside(spotter_pos, vertices):
                         continue
                 yield (id, vertices)

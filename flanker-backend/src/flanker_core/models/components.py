@@ -103,7 +103,6 @@ class TerrainFeature:
         DRIVABLE = auto()
         WATER = auto()
         HILL = auto()
-        BOUNDARY = auto()
 
 
 @dataclass

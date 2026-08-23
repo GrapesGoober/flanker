@@ -6,6 +6,7 @@ from flanker_core.models.actions import MoveActionResult, PivotActionResult
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
+    MapBoundary,
     MoveControls,
     TerrainFeature,
     Transform,
@@ -48,17 +49,24 @@ class MoveSystem:
             case MoveControls.MoveType.FOOT:
                 movable_mask = TerrainFeature.Flag.WALKABLE
 
-        # If it moves across invalid terrain, it is considered invalid
+        invalid_obstacles: list[list[Vec2]] = []
+        for _, boundary in gs.query(MapBoundary):
+            vertices = list(boundary.vertices) + [boundary.vertices[0]]
+            invalid_obstacles.append(vertices)
+
         for _, terrain, terrain_transform in gs.query(TerrainFeature, Transform):
             if (terrain.flag & movable_mask) != 0:
                 continue
             vertices = TransformUtils.apply(terrain.vertices, terrain_transform)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
+            invalid_obstacles.append(vertices)
 
+        # Check if doesn't move through invalid obstacles
+        for obstacle in invalid_obstacles:
             intersections = IntersectUtils.get_intersects(
                 line=(transform.position, to),
-                polyline=vertices,
+                polyline=obstacle,
             )
             if len(intersections) != 0:
                 return InvalidAction.BAD_COORDS
