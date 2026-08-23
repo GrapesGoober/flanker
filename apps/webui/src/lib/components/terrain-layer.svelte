@@ -61,6 +61,21 @@
 			<path d={GetClosedPath(vertices)} class="building" />
 		{/if}
 	{/each}
+
+	<mask id="outsideBoundary">
+		<!-- Mask coloring: white is visible, black is hidden -->
+		<rect x="-500%" y="-500%" width="1000%" height="1000%" fill="white" />
+		<path d={GetClosedPath(props.mapData.boundary)} fill="black" />
+	</mask>
+
+	<rect
+		x="-500%"
+		y="-500%"
+		width="1000%"
+		height="1000%"
+		fill="url(#diagonalStripes)"
+		mask="url(#outsideBoundary)"
+	/>
 </svg>
 
 <style lang="less">
