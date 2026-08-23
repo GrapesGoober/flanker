@@ -42,7 +42,6 @@ class WaypointsState(IRepresentationState[Action]):
         self.gs = GameState()
         self._waypoints_config = waypoints_config
         self._move_filter_config = move_filter_config
-        # Can't initialize waypoints without a game state
         self._waypoints = []
         self._move_candidates = []
         self._path_tolerance = path_tolerance

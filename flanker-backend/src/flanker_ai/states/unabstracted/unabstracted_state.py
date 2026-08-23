@@ -42,9 +42,6 @@ class UnabstractedState(IRepresentationState[Action]):
         self._gs = gs
         self._move_pool_config = move_pool_config
         self._move_filter_config = move_filter_config
-        self._initial_move_candidates = AiPointsInitializeService.get_initial_points(
-            gs, move_pool_config
-        )
         self._move_candidates: list[Vec2] = []
 
     @override
@@ -157,10 +154,13 @@ class UnabstractedState(IRepresentationState[Action]):
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         # Regenerate the move candidates for each update
+        initial_move_candidates = AiPointsInitializeService.get_initial_points(
+            gs, self._move_pool_config
+        )
         self._move_candidates = AiPointsFilterService.filter_points(
             gs=self._gs,
             filter_configs=self._move_filter_config,
-            points=self._initial_move_candidates,
+            points=initial_move_candidates,
         )
 
     @override
