@@ -5,7 +5,6 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import (
     Obstacle,
@@ -91,19 +90,26 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
-        intersects = TerrainSystem.get_intersect(
-            gs=gs,
-            start=spotter_pos,
-            end=target_pos,
-            mask=TerrainFeature.Flag.OPAQUE,
-        )
+        # Get all intersected terrains
+        intersects_id: list[UUID] = []
+        for id, terrain, transform in gs.query(TerrainFeature, Transform):
+            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
+                continue
+            vertices = TransformUtils.apply(terrain.vertices, transform)
+            if terrain.is_closed_loop:
+                vertices.append(vertices[0])
+            intersections = IntersectUtils.get_intersects(
+                line=(spotter_pos, target_pos),
+                polyline=vertices,
+            )
+            for _ in intersections:
+                intersects_id.append(id)
 
         # Check each intersection; allow see into and out of terrain.
         passed_one_terrain = False
-        for intersect in intersects:
+        for terrain_id in intersects_id:
 
             # Prep terrain vertices
-            terrain_id = intersect.terrain_id
             terrain = gs.get_component(terrain_id, TerrainFeature)
             terrain_transform = gs.get_component(terrain_id, Transform)
             vertices = TransformUtils.apply(
