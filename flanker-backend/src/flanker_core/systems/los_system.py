@@ -3,7 +3,7 @@ from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import (
@@ -254,7 +254,11 @@ class LosSystem:
         spotter_pos: Vec2,
         mask: int = TerrainFeature.Flag.OPAQUE,
     ) -> Iterable[tuple[UUID, list[Vec2]]]:
-        """Yields only relevant terrains and its transformed vertices."""
+        """Yields relevant terrains and its transformed vertices."""
+        for id, boundary in gs.query(MapBoundary):
+            vertices = list(boundary.vertices) + [boundary.vertices[0]]
+            yield (id, vertices)
+
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = TransformUtils.apply(terrain.vertices, transform)

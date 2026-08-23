@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pytest
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
+    MapBoundary,
     TerrainFeature,
     Transform,
 )
@@ -48,7 +49,7 @@ def fixture() -> Fixture:
     # 2000x2000 boundary
     gs.add_entity(
         Transform(position=Vec2(0, 0), degrees=0),
-        TerrainFeature(
+        MapBoundary(
             vertices=[
                 Vec2(-1000, -1000),
                 Vec2(1000, -1000),
@@ -56,7 +57,6 @@ def fixture() -> Fixture:
                 Vec2(-1000, 1000),
                 Vec2(-1000, -1000),
             ],
-            flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
         ),
     )
 
