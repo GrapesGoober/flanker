@@ -42,8 +42,8 @@ class WaypointsState(IRepresentationState[Action]):
         self.gs = GameState()
         self._waypoints_config = waypoints_config
         self._move_filter_config = move_filter_config
-        self._waypoints = []
-        self._move_candidates = []
+        self._waypoints: list[Vec2] = []
+        self._move_candidates: list[Vec2] = []
         self._path_tolerance = path_tolerance
 
     @override
@@ -93,6 +93,8 @@ class WaypointsState(IRepresentationState[Action]):
             path_tolerance=self._path_tolerance,
         )
         new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        new_waypoints_state._waypoints = self._waypoints
+        new_waypoints_state._move_candidates = self._move_candidates
         return new_waypoints_state
 
     @override
@@ -122,6 +124,8 @@ class WaypointsState(IRepresentationState[Action]):
                 path_tolerance=self._path_tolerance,
             )
             new_waypoints_state.gs = new_state
+            new_waypoints_state._waypoints = self._waypoints
+            new_waypoints_state._move_candidates = self._move_candidates
             state_branches.append((probability, new_waypoints_state))
         return state_branches
 
@@ -137,6 +141,8 @@ class WaypointsState(IRepresentationState[Action]):
             path_tolerance=self._path_tolerance,
         )
         new_waypoints_state.gs = branch
+        new_waypoints_state._waypoints = self._waypoints
+        new_waypoints_state._move_candidates = self._move_candidates
         return new_waypoints_state
 
     @override
