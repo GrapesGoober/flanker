@@ -21,7 +21,6 @@ from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
 from flanker_core.utils.transform_utils import TransformUtils
 from matplotlib import pyplot as plt
-from matplotlib.collections import LineCollection
 
 # pyright: reportUnknownMemberType=false
 
@@ -117,27 +116,6 @@ def draw_combat_unit_los_cone(
     )
 
 
-def draw_graph(
-    points_x: list[float],
-    points_y: list[float],
-    segments: list[list[tuple[float, float]]],
-    color: str,
-    linewidth: float,
-    alpha: float,
-) -> None:
-
-    # draw nodes
-    plt.scatter(points_x, points_y, color=color, s=40)  # type: ignore
-
-    # Draw ID
-    # for x, y, id_ in zip(points_x, points_y, ids):
-    #     plt.text(x, y, str(id_), fontsize=6, ha="left", va="bottom")  # type: ignore
-
-    # draw visibility graph
-    lc = LineCollection(segments, colors=color, linewidths=linewidth, alpha=alpha)
-    plt.gca().add_collection(lc)
-
-
 def draw_waypoints(
     gs: GameState,
     faction: InitiativeState.Faction,
@@ -186,14 +164,7 @@ def draw_waypoints(
                 ]
             )
 
-    draw_graph(
-        points_x,
-        points_y,
-        segments,
-        color="C0",
-        linewidth=1,
-        alpha=0.05,
-    )
+    plt.scatter(points_x, points_y, color="C0", s=40)
 
 
 # TODO: refactor this to handle both unabstracted and waypoints state.
@@ -238,7 +209,7 @@ if __name__ == "__main__":
         plt.gca().invert_yaxis()
 
     draw_terrains(gs)
-    # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
+    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
     draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 
     # Draw LOS for each combat unit
