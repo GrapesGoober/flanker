@@ -57,6 +57,8 @@ class PolygonUtils:
     ) -> list[Vec2]:
         """
         Returns a polygon of all reachable region from the center point.
+        The reachable criteria returns the last reachable point from a sorted
+        list of given obstacle intersections.
         """
 
         vertices = PolygonUtils._get_relevant_vertices(obstacles)

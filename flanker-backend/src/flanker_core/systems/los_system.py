@@ -92,7 +92,7 @@ class LosSystem:
 
         # Check each intersection; allow see into and out-from terrain.
         passed_one_terrain = False
-        for _, vertices in LosSystem._get_terrains(gs, spotter_pos):
+        for _, vertices in LosSystem._get_obstacles(gs, spotter_pos):
 
             # Ignore spotter's terrain (allow to see out-from terrain)
             if PolygonUtils.is_inside(point=spotter_pos, polygon=vertices):
@@ -222,24 +222,48 @@ class LosSystem:
     ) -> list[Vec2]:
         """Helper method for `get_los_polygon`. Generates a new LOS polygon."""
 
-        terrains = LosSystem._get_terrains(gs, spotter_pos)
-        obstacles: list[Obstacle[UUID]] = []
-        for terrain_id, vertices in terrains:
-            obstacles.append(
-                Obstacle(
-                    polyline=vertices,
-                    metadata=terrain_id,
-                )
+        obstacles: list[Obstacle[UUID]] = [
+            Obstacle(
+                polyline=vertices,
+                metadata=id,
             )
+            for id, vertices in LosSystem._get_obstacles(gs, spotter_pos)
+        ]
 
         def criteria(
             intersects: list[ObstacleIntersection[UUID]],
         ) -> Vec2:
+
+            # Filter any intersects outside of the map boundary
+            boundary_indices: list[int] = []
+            for index, intersect in enumerate(intersects):
+                entity_id = intersect.obstacle.metadata
+                boundary = gs.try_component(entity_id, MapBoundary)
+                if boundary != None:
+                    boundary_indices.append(index)
+
+            intersects_to_consider = intersects
+            if boundary_indices != []:
+                # Exclude points outside the last seen boundaries
+                intersects_to_consider = intersects[: boundary_indices[-1]]
+                # Exclude the boundary points themselves
+                intersects_to_consider = [
+                    intersect
+                    for intersect in intersects_to_consider
+                    if intersect not in boundary_indices
+                ]
+                # ...except for the last one. Include the last seen boundary.
+                intersects_to_consider.append(intersects[boundary_indices[-1]])
+
             # Selects the second point to allow see-into terrain
-            if len(intersects) > 1:
-                new_point = intersects[1].point
+            if len(intersects_to_consider) > 1:
+                new_point = intersects_to_consider[1].point
+            elif len(intersects_to_consider) == 1:
+                new_point = intersects_to_consider[0].point
             else:
-                new_point = intersects[0].point
+                raise ValueError(
+                    "No intersections found; is given point inside boundary?"
+                )
             return new_point
 
         return PolygonUtils.get_reachable_polygon(
@@ -249,7 +273,7 @@ class LosSystem:
         )
 
     @staticmethod
-    def _get_terrains(
+    def _get_obstacles(
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = TerrainFeature.Flag.OPAQUE,
