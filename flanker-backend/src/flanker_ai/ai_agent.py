@@ -131,7 +131,6 @@ class AiAgent:
                 # its use case is different.
                 policy = RandomHeuristicPolicy()
                 state = UnabstractedState(
-                    gs=gs,
                     move_pool_config=PointsConfig.Random(
                         type="Random",
                         count=10,
@@ -166,7 +165,6 @@ class AiAgent:
                         # The unabstracted state uses lazy move candidate filtering
                         state_config = config_component.config.state
                         state = UnabstractedState(
-                            gs=gs,
                             move_pool_config=state_config.move_candidates_pool,
                             move_filter_config=state_config.move_candidates_filter,
                         )

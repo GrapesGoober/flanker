@@ -86,13 +86,19 @@ class WaypointsState(IRepresentationState[Action]):
         return not isinstance(result, InvalidAction)
 
     @override
-    def copy(self) -> "WaypointsState":
+    def copy(
+        self,
+        new_state: GameState | None = None,
+    ) -> "WaypointsState":
         new_waypoints_state = WaypointsState(
             waypoints_config=self._waypoints_config,
             move_filter_config=self._move_filter_config,
             path_tolerance=self._path_tolerance,
         )
-        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        if new_state == None:
+            new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        else:
+            new_waypoints_state.gs = new_state
         new_waypoints_state._waypoints = self._waypoints
         new_waypoints_state._move_candidates = self._move_candidates
         return new_waypoints_state
@@ -117,15 +123,8 @@ class WaypointsState(IRepresentationState[Action]):
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
         branches = AiBranchingService.get_action_branches(self.gs, action)
         state_branches: list[tuple[float, WaypointsState]] = []
-        for probability, new_state in branches:
-            new_waypoints_state = WaypointsState(
-                waypoints_config=self._waypoints_config,
-                move_filter_config=self._move_filter_config,
-                path_tolerance=self._path_tolerance,
-            )
-            new_waypoints_state.gs = new_state
-            new_waypoints_state._waypoints = self._waypoints
-            new_waypoints_state._move_candidates = self._move_candidates
+        for probability, branch in branches:
+            new_waypoints_state = self.copy(new_state=branch)
             state_branches.append((probability, new_waypoints_state))
         return state_branches
 
@@ -135,14 +134,7 @@ class WaypointsState(IRepresentationState[Action]):
         if branches == []:
             return None
         branch = AiBranchAbstractionService.pick_branch(branches, action)
-        new_waypoints_state = WaypointsState(
-            waypoints_config=self._waypoints_config,
-            move_filter_config=self._move_filter_config,
-            path_tolerance=self._path_tolerance,
-        )
-        new_waypoints_state.gs = branch
-        new_waypoints_state._waypoints = self._waypoints
-        new_waypoints_state._move_candidates = self._move_candidates
+        new_waypoints_state = self.copy(new_state=branch)
         return new_waypoints_state
 
     @override

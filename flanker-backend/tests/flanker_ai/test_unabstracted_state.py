@@ -188,7 +188,9 @@ def get_agent(
         ),
     )
 
-    return AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+    agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+    agent.rs.update_state(gs)
+    return agent
 
 
 def test_branching_total_prob(fixture: Fixture) -> None:

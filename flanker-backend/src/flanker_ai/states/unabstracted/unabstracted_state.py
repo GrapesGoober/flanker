@@ -35,11 +35,10 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 class UnabstractedState(IRepresentationState[Action]):
     def __init__(
         self,
-        gs: GameState,
         move_pool_config: PointsConfig.ALL,
         move_filter_config: list[FilterConfig.ALL],
     ) -> None:
-        self._gs = gs
+        self._gs = GameState()
         self._move_pool_config = move_pool_config
         self._move_filter_config = move_filter_config
         self._move_candidates: list[Vec2] = []
@@ -98,12 +97,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
         state_branches: list[tuple[float, UnabstractedState]] = []
         for prob, branch in branches:
-            new_state = UnabstractedState(
-                gs=branch,
-                move_pool_config=self._move_pool_config,
-                move_filter_config=self._move_filter_config,
-            )
-            new_state._move_candidates = self._move_candidates
+            new_state = self.copy(new_gs=branch)
             state_branches.append((prob, new_state))
         return state_branches
 
@@ -113,13 +107,19 @@ class UnabstractedState(IRepresentationState[Action]):
         return not isinstance(result, InvalidAction)
 
     @override
-    def copy(self) -> "UnabstractedState":
-        gs_copy = AiBranchingService.copy(self._gs)
-        return UnabstractedState(
-            gs=gs_copy,
+    def copy(
+        self,
+        new_gs: GameState | None = None,
+    ) -> "UnabstractedState":
+        if new_gs == None:
+            new_gs = AiBranchingService.copy(self._gs)
+        new_state = UnabstractedState(
             move_pool_config=self._move_pool_config,
             move_filter_config=self._move_filter_config,
         )
+        new_state._move_candidates = self._move_candidates
+        new_state._gs = new_gs
+        return new_state
 
     @override
     def get_one_branch(
@@ -130,12 +130,7 @@ class UnabstractedState(IRepresentationState[Action]):
         if branches == []:
             return None
         branch = AiBranchAbstractionService.pick_branch(branches, action)
-        new_state = UnabstractedState(
-            gs=branch,
-            move_pool_config=self._move_pool_config,
-            move_filter_config=self._move_filter_config,
-        )
-        new_state._move_candidates = self._move_candidates
+        new_state = self.copy(new_gs=branch)
         return new_state
 
     @override
