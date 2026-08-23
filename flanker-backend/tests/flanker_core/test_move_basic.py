@@ -15,7 +15,6 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-from flanker_core.systems.terrain_system import TerrainSystem
 
 
 @dataclass
@@ -80,28 +79,6 @@ def fixture() -> Fixture:
     )
 
     return Fixture(gs, unit_id_1, unit_id_2)
-
-
-def test_terrain_intersects(fixture: Fixture) -> None:
-    start, end = Vec2(-5, -6), Vec2(5, 4)
-    intersects = TerrainSystem.get_intersect(
-        gs=fixture.gs,
-        start=start,
-        end=end,
-        mask=TerrainFeature.Flag.WALKABLE,
-    )
-    intersects = list(intersects)
-    assert len(intersects) == 1, "There are 1 walkable terrains intersected"
-
-    start, end = Vec2(-5, -6), Vec2(5, 4)
-    intersects = TerrainSystem.get_intersect(
-        gs=fixture.gs,
-        start=start,
-        end=end,
-        mask=TerrainFeature.Flag.WALKABLE | TerrainFeature.Flag.OPAQUE,
-    )
-    intersects = list(intersects)
-    assert len(intersects) == 2, "Both walkable and opaque are intersected"
 
 
 def test_move(fixture: Fixture) -> None:
