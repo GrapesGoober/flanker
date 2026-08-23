@@ -76,7 +76,7 @@ class LosSystem:
         return abs(angle_diff) <= fov / 2
 
     @staticmethod
-    def has_los(
+    def has_los(  # TODO: should this be refactored to reuse LOS criteria?
         gs: GameState,
         spotter_pos: Vec2,
         target_pos: Vec2,
