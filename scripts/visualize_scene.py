@@ -167,8 +167,6 @@ def draw_waypoints(
     plt.scatter(points_x, points_y, color="C0", s=40)
 
 
-# TODO: refactor this to handle both unabstracted and waypoints state.
-# Do this by using the method get_actions(), and visualize THAT
 def draw_move_candidates(
     gs: GameState,
     faction: InitiativeState.Faction,
