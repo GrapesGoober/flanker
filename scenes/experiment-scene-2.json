@@ -77,14 +77,7 @@
       "AssaultControls": {}
     },
     "b139e1d9-7df9-4148-a8db-137df1c0fa7c": {
-      "Transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "degrees": 0.0
-      },
-      "TerrainFeature": {
+      "MapBoundary": {
         "vertices": [
           {
             "x": 0.0,
@@ -102,9 +95,7 @@
             "x": 0.0,
             "y": 300.0
           }
-        ],
-        "is_closed_loop": true,
-        "flag": 33
+        ]
       }
     },
     "98d17c40-e635-4360-938a-31daf9105ee0": {

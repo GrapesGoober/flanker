@@ -12,14 +12,7 @@
       }
     },
     "cc1b3b14-d3df-42bc-9437-2edd234440b8": {
-      "Transform": {
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "degrees": 0
-      },
-      "TerrainFeature": {
+      "MapBoundary": {
         "vertices": [
           {
             "x": 0,
@@ -37,9 +30,7 @@
             "x": 0,
             "y": 300
           }
-        ],
-        "is_closed_loop": true,
-        "flag": 33
+        ]
       }
     },
     "7b0e4a68-bcd7-4ae8-a47c-66593aa55664": {

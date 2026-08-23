@@ -107,6 +107,16 @@ class TerrainFeature:
 
 
 @dataclass
+class MapBoundary:
+    """
+    Singleton map boundary. Actions and LOS are validated to be
+    inside this map boundary.
+    """
+
+    vertices: list[Vec2]
+
+
+@dataclass
 class EliminationWinCondition:
     """
     Represents the elimination winning condition for a given faction.
