@@ -137,7 +137,6 @@ class AiAgent:
                         count=10,
                     ),
                     move_filter_config=[],
-                    divide_moves_per_unit=False,
                 )
             case SearchPolicyConfig():
                 policy_config = config_component.config.policy
@@ -170,7 +169,6 @@ class AiAgent:
                             gs=gs,
                             move_pool_config=state_config.move_candidates_pool,
                             move_filter_config=state_config.move_candidates_filter,
-                            divide_moves_per_unit=state_config.divide_moves_per_unit,
                         )
                     case WaypointsStateConfig():
                         state_config = config_component.config.state

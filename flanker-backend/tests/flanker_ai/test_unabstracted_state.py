@@ -183,7 +183,6 @@ def get_agent(
                         points=move_candidate_points,
                     ),
                     move_candidates_filter=[],
-                    divide_moves_per_unit=False,
                 ),
             ),
         ),

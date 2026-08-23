@@ -21,8 +21,7 @@
               {
                 "type": "LosSignaturesFilter"
               }
-            ],
-            "divide_moves_per_unit": false
+            ]
           }
         },
         "faction": "BLUE"

@@ -38,7 +38,6 @@ class UnabstractedState(IRepresentationState[Action]):
         gs: GameState,
         move_pool_config: PointsConfig.ALL,
         move_filter_config: list[FilterConfig.ALL],
-        divide_moves_per_unit: bool,
     ) -> None:
         self._gs = gs
         self._move_pool_config = move_pool_config
@@ -47,7 +46,6 @@ class UnabstractedState(IRepresentationState[Action]):
             gs, move_pool_config
         )
         self._move_candidates: list[Vec2] = []
-        self._divide_moves_per_unit = divide_moves_per_unit
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -81,7 +79,6 @@ class UnabstractedState(IRepresentationState[Action]):
             gs=self._gs,
             initiative=self.get_initiative(),
             move_candidates=self._move_candidates,
-            divide_moves_per_unit=self._divide_moves_per_unit,
         )
 
     @override
@@ -108,7 +105,6 @@ class UnabstractedState(IRepresentationState[Action]):
                 gs=branch,
                 move_pool_config=self._move_pool_config,
                 move_filter_config=self._move_filter_config,
-                divide_moves_per_unit=self._divide_moves_per_unit,
             )
             new_state._move_candidates = self._move_candidates
             state_branches.append((prob, new_state))
@@ -126,7 +122,6 @@ class UnabstractedState(IRepresentationState[Action]):
             gs=gs_copy,
             move_pool_config=self._move_pool_config,
             move_filter_config=self._move_filter_config,
-            divide_moves_per_unit=self._divide_moves_per_unit,
         )
 
     @override
@@ -142,7 +137,6 @@ class UnabstractedState(IRepresentationState[Action]):
             gs=branch,
             move_pool_config=self._move_pool_config,
             move_filter_config=self._move_filter_config,
-            divide_moves_per_unit=self._divide_moves_per_unit,
         )
         new_state._move_candidates = self._move_candidates
         return new_state

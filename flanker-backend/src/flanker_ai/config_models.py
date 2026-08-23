@@ -50,7 +50,6 @@ class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
     move_candidates_pool: PointsConfig.ALL
     move_candidates_filter: list[FilterConfig.ALL]
-    divide_moves_per_unit: bool
 
 
 class PolicyConfig:

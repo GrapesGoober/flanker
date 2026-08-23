@@ -14,8 +14,7 @@
               "spacing": 140.0,
               "offset": 10.0
             },
-            "move_candidates_filter": [],
-            "divide_moves_per_unit": false
+            "move_candidates_filter": []
           }
         },
         "faction": "BLUE"

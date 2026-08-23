@@ -110,7 +110,6 @@ class WaypointsState(IRepresentationState[Action]):
                 for move_candidate in self._move_candidates
                 if move_candidate not in occupied_waypoints
             ],
-            divide_moves_per_unit=False,
         )
 
     @override
