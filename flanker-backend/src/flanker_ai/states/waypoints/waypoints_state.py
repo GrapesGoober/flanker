@@ -164,17 +164,15 @@ class WaypointsState(IRepresentationState[Action]):
         self._waypoints = AiPointsInitializeService.get_initial_points(
             self.gs, self._waypoints_config
         )
+        self._move_candidates = AiPointsFilterService.filter_points(
+            self.gs, self._move_filter_config, self._waypoints
+        )
 
         # Consider a new list with combat units positions
         points: list[Vec2] = list(self._waypoints)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
             if transform.position not in points:
                 points.append(transform.position)
-
-        self._move_candidates = AiPointsFilterService.filter_points(
-            self.gs, self._move_filter_config, self._waypoints
-        )
-
         WaypointsGraph.set_waypoints(
             gs=self.gs,
             points=points,
