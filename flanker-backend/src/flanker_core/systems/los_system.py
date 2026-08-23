@@ -90,50 +90,28 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
-        # Get all intersected terrains
-        intersects_id: list[UUID] = []
-        for id, terrain, transform in gs.query(TerrainFeature, Transform):
+        # Check each intersection; allow see into and out-from terrain.
+        passed_one_terrain = False
+        for _, terrain, transform in gs.query(TerrainFeature, Transform):
             if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
                 continue
             vertices = TransformUtils.apply(terrain.vertices, transform)
             if terrain.is_closed_loop:
                 vertices.append(vertices[0])
-            intersections = IntersectUtils.get_intersects(
-                line=(spotter_pos, target_pos),
-                polyline=vertices,
-            )
-            for _ in intersections:
-                intersects_id.append(id)
 
-        # Check each intersection; allow see into and out of terrain.
-        passed_one_terrain = False
-        for terrain_id in intersects_id:
-
-            # Prep terrain vertices
-            terrain = gs.get_component(terrain_id, TerrainFeature)
-            terrain_transform = gs.get_component(terrain_id, Transform)
-            vertices = TransformUtils.apply(
-                vec_list=terrain.vertices,
-                transform=terrain_transform,
-            )
-
-            # Ignore count spotter's terrain (allow to see out)
-            if terrain.is_closed_loop:
-                vertices.append(vertices[0])
-                if PolygonUtils.is_inside(
-                    point=spotter_pos,
-                    polygon=vertices,
-                ):
-                    continue
-
-            # Count terrain
-            if not passed_one_terrain:
-                passed_one_terrain = True
+            # Ignore spotter's terrain (allow to see out-from terrain)
+            if PolygonUtils.is_inside(point=spotter_pos, polygon=vertices):
                 continue
 
-            # Can only see into one polygon
-            if passed_one_terrain:
-                return False
+            # Count whether it passes one terrain
+            for _ in IntersectUtils.get_intersects(
+                line=(spotter_pos, target_pos),
+                polyline=vertices,
+            ):
+                if passed_one_terrain:
+                    return False
+                passed_one_terrain = True
+
         return True
 
     @staticmethod
