@@ -25,6 +25,11 @@
 			<path d="M1,5 L5,1" class="field-stroke" />
 		</pattern>
 	</defs>
+	<defs>
+		<pattern id="boundaryDiagonalStripes" patternUnits="userSpaceOnUse" width="12" height="12">
+			<path d="M2,10 L10,2" class="boundary-stroke" />
+		</pattern>
+	</defs>
 
 	<!-- Road's boarders need to be drawn separately -->
 	{#each FilterRoads() as road}
@@ -73,13 +78,14 @@
 		y="-500%"
 		width="1000%"
 		height="1000%"
-		fill="url(#diagonalStripes)"
+		fill="url(#boundaryDiagonalStripes)"
 		mask="url(#outsideBoundary)"
 	/>
 </svg>
 
 <style lang="less">
 	@stroke-width: 0.75;
+	@boundary-stroke-width: 2;
 	@road-width: 5;
 
 	.road-border {
@@ -114,6 +120,11 @@
 	.field-stroke {
 		stroke: #bebebe;
 		stroke-width: @stroke-width;
+		stroke-linecap: round;
+	}
+	.boundary-stroke {
+		stroke: #bebebe;
+		stroke-width: @boundary-stroke-width;
 		stroke-linecap: round;
 	}
 	.building {
