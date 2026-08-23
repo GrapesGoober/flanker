@@ -4,7 +4,6 @@ from uuid import UUID
 
 from fastapi import Body, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-
 from webapi.action_service import ActionService
 from webapi.ai_service import AiService
 from webapi.logging_service import LoggingService
@@ -14,6 +13,7 @@ from webapi.models import (
     AiWaypointConfigRequest,
     GameViewState,
     GameViewStateResponse,
+    MapViewState,
     TerrainModel,
 )
 from webapi.scene_service import SceneService
@@ -61,13 +61,13 @@ async def get_units(
     return SceneService.get_view_state(gs)
 
 
-@app.post("/api/terrain")
-async def get_terrain(
+@app.post("/api/map")
+async def get_map(
     state: str = Body(...),
-) -> list[TerrainModel]:
-    """Get all terrain tiles for the current game state."""
+) -> MapViewState:
+    """Get map data from a scene."""
     gs = SceneService.deserialize(state)
-    return TerrainService.get_terrains(gs)
+    return TerrainService.get_map(gs)
 
 
 @app.post("/api/perform")

@@ -1,11 +1,10 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-
 from webapi.components import TerrainTypeTag
-from webapi.models import TerrainModel
+from webapi.models import MapViewState, TerrainModel
 
 
 class TerrainService:
@@ -45,6 +44,17 @@ class TerrainService:
                 )
             )
         return terrains
+
+    @staticmethod
+    def get_map(gs: GameState) -> MapViewState:
+        return MapViewState(
+            terrains=TerrainService.get_terrains(gs),
+            boundary=[
+                vertex
+                for _, boundary in gs.query(MapBoundary)
+                for vertex in boundary.vertices
+            ],
+        )
 
     @staticmethod
     def add_terrain(

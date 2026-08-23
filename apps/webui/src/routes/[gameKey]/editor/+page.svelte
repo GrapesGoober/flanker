@@ -68,7 +68,7 @@
 </script>
 
 {#snippet mapSvgSnippet()}
-	<TerrainLayer terrainData={controller.terrainData} />
+	<TerrainLayer mapData={controller.mapData} />
 	{#each controller.combatUnitsData.squads as squad}
 		<RifleSquad rifleSquadData={squad} />
 	{/each}

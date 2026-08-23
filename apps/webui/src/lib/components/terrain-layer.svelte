@@ -1,21 +1,21 @@
 <script lang="ts">
-	import type { TerrainModel } from '$lib/api';
+	import type { MapViewState, TerrainModel } from '$lib/api';
 	import { TreeTriangle } from '$lib/components';
 	import {
 		GetClosedPath,
 		GetSmoothedClosedPath,
 		GetSmoothedPath,
-		generatePointsInsidePolygon
+		generatePointsInsidePolygon,
+		transform
 	} from '$lib/map-utils';
-	import { transform } from '$lib/map-utils';
 
 	type Props = {
-		terrainData: TerrainModel[];
+		mapData: MapViewState;
 	};
 	let props: Props = $props();
 	// Road's boarders need to be drawn separately
 	function FilterRoads(): TerrainModel[] {
-		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
+		return props.mapData.terrains.filter((feature) => feature.terrainType === 'ROAD');
 	}
 </script>
 
@@ -33,7 +33,7 @@
 	{/each}
 
 	<!-- Draw each polygons -->
-	{#each props.terrainData as terrain}
+	{#each props.mapData.terrains as terrain}
 		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		{#if terrain.terrainType == 'FOREST'}
 			<!-- Forest has separate dashed border (so that it rests inside) -->
@@ -55,7 +55,7 @@
 	{/each}
 
 	<!-- Buildings drawn on top of other polygons -->
-	{#each props.terrainData as terrain}
+	{#each props.mapData.terrains as terrain}
 		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		{#if terrain.terrainType == 'BUILDING'}
 			<path d={GetClosedPath(vertices)} class="building" />

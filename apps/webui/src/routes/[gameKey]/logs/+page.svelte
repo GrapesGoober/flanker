@@ -5,7 +5,7 @@
 	Handles log navigation and map rendering.
 	*/
 	import { page } from '$app/state';
-	import { GetLogs, GetTerrainData, type ActionLog, type TerrainModel } from '$lib/api';
+	import { GetLogs, GetMapData, type ActionLog, type MapViewState } from '$lib/api';
 	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { loadGameLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
@@ -14,21 +14,24 @@
 	let map: SvgMap | null = $state(null);
 	let logData: ActionLog[] = $state([]);
 	let index: number = $state(0);
-	let terrain: TerrainModel[] = $state([]);
+	let mapData: MapViewState = $state({
+		terrains: [],
+		boundary: []
+	});
 	let action: ActionLog | null = $derived(logData[index] ?? null);
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
 		const gameKey: string = page.params['gameKey'] as string;
 		const gameStateJson = loadGameLocal(gameKey);
-		terrain = await GetTerrainData(gameStateJson);
+		mapData = await GetMapData(gameStateJson);
 		logData = await GetLogs(gameStateJson);
 	});
 </script>
 
 <!-- Map and log view layers for current log index -->
 {#snippet mapSvgSnippet()}
-	<TerrainLayer terrainData={terrain} />
+	<TerrainLayer {mapData} />
 	<LogViewLayer {logData} {index}></LogViewLayer>
 {/snippet}
 <!-- Log index input for navigation -->

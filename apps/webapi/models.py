@@ -48,6 +48,32 @@ class GameViewStateResponse(BaseModel, CamelCaseConfig):
     json_state: str
 
 
+class TerrainModel(BaseModel, CamelCaseConfig):
+    """Represents a view of terrain feature in the game."""
+
+    terrain_id: UUID
+    position: Vec2
+    degrees: float
+    vertices: list[Vec2]
+    terrain_type: "Types"
+
+    class Types(Enum):
+        """Supported terrain types."""
+
+        FOREST = "FOREST"
+        ROAD = "ROAD"
+        FIELD = "FIELD"
+        WATER = "WATER"
+        BUILDING = "BUILDING"
+
+
+class MapViewState(BaseModel, CamelCaseConfig):
+    """Simplified view model of the game map."""
+
+    terrains: list[TerrainModel]
+    boundary: list[Vec2]
+
+
 class MoveActionRequest(BaseModel, CamelCaseConfig):
     """Request model for a unit's move action."""
 
@@ -78,25 +104,6 @@ class PivotActionRequest(BaseModel, CamelCaseConfig):
     action_type: Literal["PivotActionRequest"] = "PivotActionRequest"
     unit_id: UUID
     to: Vec2
-
-
-class TerrainModel(BaseModel, CamelCaseConfig):
-    """Represents a view of terrain feature in the game."""
-
-    terrain_id: UUID
-    position: Vec2
-    degrees: float
-    vertices: list[Vec2]
-    terrain_type: "Types"
-
-    class Types(Enum):
-        """Supported terrain types."""
-
-        FOREST = "FOREST"
-        ROAD = "ROAD"
-        FIELD = "FIELD"
-        WATER = "WATER"
-        BUILDING = "BUILDING"
 
 
 class MoveActionLog(BaseModel, CamelCaseConfig):
