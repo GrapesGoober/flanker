@@ -31,12 +31,10 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         max_iterations: int,
         max_simulate_length: int,
         simulate_policy: IPolicy[TAction],
-        score_factor: int,
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
         self._simulate_policy: IPolicy[TAction] = simulate_policy
-        self._score_factor: int = score_factor
 
     def get_action(
         self,

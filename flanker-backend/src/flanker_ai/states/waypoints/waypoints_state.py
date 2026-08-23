@@ -1,40 +1,49 @@
-import random
 from copy import deepcopy
-from typing import override
-from uuid import UUID
+from typing import Sequence, override
 
+from flanker_ai.config_models import (
+    FilterConfig,
+    PointsConfig,
+)
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.states.common.ai_branching_service import AiBranchingService
 from flanker_ai.states.common.ai_cache_key_service import AiCacheKeyService
+from flanker_ai.states.common.ai_points_filter_service import AiPointsFilterService
+from flanker_ai.states.common.ai_points_initialize_service import (
+    AiPointsInitializeService,
+)
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_los_system_overrides import (
     WaypointsLosSystemOverrides,
 )
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import (
-    Action,
-    AssaultAction,
-    FireAction,
-    MoveAction,
-    PivotAction,
-)
+from flanker_core.models.actions import Action
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.los_system import LosSystem, LosSystemOverrides
+from flanker_core.systems.los_system import LosSystemOverrides
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class WaypointsState(IRepresentationState[Action]):
-    def __init__(self, points: list[Vec2], path_tolerance: float) -> None:
+    def __init__(
+        self,
+        waypoints_config: PointsConfig.ALL,
+        move_filter_config: list[FilterConfig.ALL],
+        path_tolerance: float,
+    ) -> None:
         self.gs = GameState()
-        self._points = points
+        self._waypoints_config = waypoints_config
+        self._move_filter_config = move_filter_config
+        self._waypoints: list[Vec2] = []
+        self._move_candidates: list[Vec2] = []
         self._path_tolerance = path_tolerance
 
     @override
@@ -77,122 +86,45 @@ class WaypointsState(IRepresentationState[Action]):
         return not isinstance(result, InvalidAction)
 
     @override
-    def copy(self) -> "WaypointsState":
+    def copy(
+        self,
+        new_state: GameState | None = None,
+    ) -> "WaypointsState":
         new_waypoints_state = WaypointsState(
-            points=self._points,
+            waypoints_config=self._waypoints_config,
+            move_filter_config=self._move_filter_config,
             path_tolerance=self._path_tolerance,
         )
-        new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        if new_state == None:
+            new_waypoints_state.gs = AiBranchingService.copy(self.gs)
+        else:
+            new_waypoints_state.gs = new_state
+        new_waypoints_state._waypoints = self._waypoints
+        new_waypoints_state._move_candidates = self._move_candidates
         return new_waypoints_state
 
     @override
-    def get_actions(self) -> list[Action]:
-        # FIXME TODO The waypoints-state isn't using AiActionService for its action space.
-        # This is because at the time I didn't plan to use the waypoints-state yet,
-        # and that this action space isn't compatible with the new move candidate waypoints.
-        # They should share the same code. Maybe waypoints-prune before sample MoveActions?
-
-        actions: list[Action] = []
-        waypoints = WaypointsGraph.get_waypoints(self.gs)
-
-        # Aggregate a list of friendly and enemy units separately
-        # instead of inside the big loop. This keeps time complexity low.
-        friendly_ids: list[UUID] = []
-        enemy_ids: list[UUID] = []
-        for combat_unit_id, combat_unit in self.gs.query(CombatUnit):
-            if combat_unit.faction == self.get_initiative():
-                friendly_ids.append(combat_unit_id)
-            if combat_unit.faction != self.get_initiative():
-                enemy_ids.append(combat_unit_id)
-
-        for friendly_id in friendly_ids:
-            friendly_transform = self.gs.get_component(friendly_id, Transform)
-            friendly_waypoint_id = WaypointsGraph.get_waypoint_id(
-                gs=self.gs,
-                position=friendly_transform.position,
-            )
-            friendly_waypoint = waypoints[friendly_waypoint_id]
-
-            # Adds assault & fire actions for each friendly-enemy permutation
-            for enemy_id in enemy_ids:
-                actions.append(
-                    FireAction(
-                        unit_id=friendly_id,
-                        target_id=enemy_id,
-                    )
-                )
-                actions.append(
-                    AssaultAction(
-                        unit_id=friendly_id,
-                        target_id=enemy_id,
-                    )
-                )
-
-            # Add move and pivot actions.
-            # For pivot actions, have it pivot towards enemies only.
-            # This is generalized action filter to reduce branching factor.
-            for enemy_id in enemy_ids:
-                enemy_transform = self.gs.get_component(enemy_id, Transform)
-                enemy_waypoint_id = WaypointsGraph.get_waypoint_id(
-                    gs=self.gs,
-                    position=enemy_transform.position,
-                )
-                # if already looking there, no need to pivot again
-                if LosSystem.in_fov(
-                    Transform(friendly_waypoint.position, friendly_transform.degrees),
-                    enemy_transform.position,
-                ):
-                    continue
-                # If the target isn't in LOS, don't need to pivot.
-                if enemy_waypoint_id not in friendly_waypoint.visible_nodes:
-                    continue
-                actions.append(
-                    PivotAction(
-                        unit_id=friendly_id,
-                        to=enemy_transform.position,
-                    )
-                )
-
-            # Adds move actions last, for best alpha-beta pruning.
-            # Have friendly units move to non-occupied waypoints
-            occupied_waypoint_ids: set[int] = {
-                WaypointsGraph.get_waypoint_id(self.gs, transform.position)
-                for _, _, transform in self.gs.query(CombatUnit, Transform)
-            }
-            available_waypoints: list[int] = [
-                waypoint_id
-                for waypoint_id in friendly_waypoint.movable_paths.keys()
-                if waypoint_id not in occupied_waypoint_ids
-            ]
-
-            # Randomly filter move waypoints to reduce branching factor
-            for move_to_id in random.sample(
-                population=available_waypoints,
-                k=min(9, len(available_waypoints)),
-            ):
-                move_position = waypoints[move_to_id].position
-                actions.append(
-                    MoveAction(
-                        unit_id=friendly_id,
-                        to=move_position,
-                    )
-                )
-
-        actions = [
-            action for action in actions if ActionSystem.is_legal(self.gs, action)
-        ]
-        return actions
+    def get_actions(self) -> Sequence[Action]:
+        occupied_waypoints = {
+            transform.position
+            for _, _, transform in self.gs.query(CombatUnit, Transform)
+        }
+        return AiActionService.get_actions(
+            gs=self.gs,
+            initiative=InitiativeSystem.get_initiative(self.gs),
+            move_candidates=[
+                move_candidate
+                for move_candidate in self._move_candidates
+                if move_candidate not in occupied_waypoints
+            ],
+        )
 
     @override
     def get_branches(self, action: Action) -> list[tuple[float, "WaypointsState"]]:
         branches = AiBranchingService.get_action_branches(self.gs, action)
         state_branches: list[tuple[float, WaypointsState]] = []
-        for probability, new_state in branches:
-            new_waypoints_state = WaypointsState(
-                points=self._points,
-                path_tolerance=self._path_tolerance,
-            )
-            new_waypoints_state.gs = new_state
+        for probability, branch in branches:
+            new_waypoints_state = self.copy(new_state=branch)
             state_branches.append((probability, new_waypoints_state))
         return state_branches
 
@@ -202,11 +134,7 @@ class WaypointsState(IRepresentationState[Action]):
         if branches == []:
             return None
         branch = AiBranchAbstractionService.pick_branch(branches, action)
-        new_waypoints_state = WaypointsState(
-            points=self._points,
-            path_tolerance=self._path_tolerance,
-        )
-        new_waypoints_state.gs = branch
+        new_waypoints_state = self.copy(new_state=branch)
         return new_waypoints_state
 
     @override
@@ -229,12 +157,18 @@ class WaypointsState(IRepresentationState[Action]):
             ),
         )
 
-        points: list[Vec2] = list(self._points)
+        self._waypoints = AiPointsInitializeService.get_initial_points(
+            self.gs, self._waypoints_config
+        )
+        self._move_candidates = AiPointsFilterService.filter_points(
+            self.gs, self._move_filter_config, self._waypoints
+        )
+
+        # Consider a new list with combat units positions
+        points: list[Vec2] = list(self._waypoints)
         for _, transform, _ in self.gs.query(Transform, CombatUnit):
-            # Add new waypoints for each combat units
             if transform.position not in points:
                 points.append(transform.position)
-
         WaypointsGraph.set_waypoints(
             gs=self.gs,
             points=points,

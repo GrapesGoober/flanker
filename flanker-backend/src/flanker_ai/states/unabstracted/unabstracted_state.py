@@ -1,7 +1,10 @@
 from copy import deepcopy
 from typing import Sequence, override
 
-from flanker_ai.config_models import PointsConfig
+from flanker_ai.config_models import (
+    FilterConfig,
+    PointsConfig,
+)
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
@@ -32,30 +35,13 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 class UnabstractedState(IRepresentationState[Action]):
     def __init__(
         self,
-        gs: GameState,
-        move_candidates_config: PointsConfig,
-        divide_moves_per_unit: bool,
+        move_pool_config: PointsConfig.ALL,
+        move_filter_config: list[FilterConfig.ALL],
     ) -> None:
-        self._gs = gs
-        self._move_candidates_config = move_candidates_config
-        initial_points_config = move_candidates_config.initial_points
-        match initial_points_config:
-            case PointsConfig.HandDrawn():
-                init_points = initial_points_config.points
-            case PointsConfig.Grid():
-                init_points = AiPointsInitializeService.get_grid_coordinates(
-                    gs=gs,
-                    spacing=initial_points_config.spacing,
-                    offset=initial_points_config.offset,
-                )
-            case PointsConfig.Random():
-                init_points = AiPointsInitializeService.get_random_coordinates(
-                    gs=gs,
-                    count=initial_points_config.count,
-                )
-        self._initial_move_candidates: list[Vec2] = init_points
-        self.move_candidates: list[Vec2] = []
-        self._divide_moves_per_unit = divide_moves_per_unit
+        self._gs = GameState()
+        self._move_pool_config = move_pool_config
+        self._move_filter_config = move_filter_config
+        self._move_candidates: list[Vec2] = []
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -88,8 +74,7 @@ class UnabstractedState(IRepresentationState[Action]):
         return AiActionService.get_actions(
             gs=self._gs,
             initiative=self.get_initiative(),
-            move_candidates=self.move_candidates,
-            divide_moves_per_unit=self._divide_moves_per_unit,
+            move_candidates=self._move_candidates,
         )
 
     @override
@@ -112,12 +97,7 @@ class UnabstractedState(IRepresentationState[Action]):
 
         state_branches: list[tuple[float, UnabstractedState]] = []
         for prob, branch in branches:
-            new_state = UnabstractedState(
-                gs=branch,
-                move_candidates_config=self._move_candidates_config,
-                divide_moves_per_unit=self._divide_moves_per_unit,
-            )
-            new_state.move_candidates = self.move_candidates
+            new_state = self.copy(new_gs=branch)
             state_branches.append((prob, new_state))
         return state_branches
 
@@ -127,13 +107,19 @@ class UnabstractedState(IRepresentationState[Action]):
         return not isinstance(result, InvalidAction)
 
     @override
-    def copy(self) -> "UnabstractedState":
-        gs_copy = AiBranchingService.copy(self._gs)
-        return UnabstractedState(
-            gs=gs_copy,
-            move_candidates_config=self._move_candidates_config,
-            divide_moves_per_unit=self._divide_moves_per_unit,
+    def copy(
+        self,
+        new_gs: GameState | None = None,
+    ) -> "UnabstractedState":
+        if new_gs == None:
+            new_gs = AiBranchingService.copy(self._gs)
+        new_state = UnabstractedState(
+            move_pool_config=self._move_pool_config,
+            move_filter_config=self._move_filter_config,
         )
+        new_state._move_candidates = self._move_candidates
+        new_state._gs = new_gs
+        return new_state
 
     @override
     def get_one_branch(
@@ -144,12 +130,7 @@ class UnabstractedState(IRepresentationState[Action]):
         if branches == []:
             return None
         branch = AiBranchAbstractionService.pick_branch(branches, action)
-        new_state = UnabstractedState(
-            gs=branch,
-            move_candidates_config=self._move_candidates_config,
-            divide_moves_per_unit=self._divide_moves_per_unit,
-        )
-        new_state.move_candidates = self.move_candidates
+        new_state = self.copy(new_gs=branch)
         return new_state
 
     @override
@@ -168,10 +149,13 @@ class UnabstractedState(IRepresentationState[Action]):
     def update_state(self, gs: GameState) -> None:
         self._gs = deepcopy(gs)
         # Regenerate the move candidates for each update
-        self.move_candidates = AiPointsFilterService.filter_points(
+        initial_move_candidates = AiPointsInitializeService.get_initial_points(
+            gs, self._move_pool_config
+        )
+        self._move_candidates = AiPointsFilterService.filter_points(
             gs=self._gs,
-            config=self._move_candidates_config,
-            points=self._initial_move_candidates,
+            filter_configs=self._move_filter_config,
+            points=initial_move_candidates,
         )
 
     @override

@@ -18,12 +18,6 @@ from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.policies.random_policy import RandomPolicy
-from flanker_ai.states.common.ai_points_filter_service import (
-    AiPointsFilterService,
-)
-from flanker_ai.states.common.ai_points_initialize_service import (
-    AiPointsInitializeService,
-)
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -33,8 +27,6 @@ from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-
-_MAX_ACTION_PER_INITIATIVE = 20
 
 
 @dataclass
@@ -65,7 +57,7 @@ class AiAgent:
         self.rs: IRepresentationState[Action] = rs
 
     def play_initiative(
-        self,
+        self, max_action_per_initiative: int = 10
     ) -> list[AiActionResult]:
         """Have the agent play the entire initiative."""
         if InitiativeSystem.get_initiative(self.gs) != self.faction:
@@ -79,7 +71,7 @@ class AiAgent:
                 break
 
             # Check redundant moves (stop search)
-            if halt_counter > _MAX_ACTION_PER_INITIATIVE:
+            if halt_counter > max_action_per_initiative:
                 InitiativeSystem.flip_initiative(self.gs)
                 break
 
@@ -139,15 +131,11 @@ class AiAgent:
                 # its use case is different.
                 policy = RandomHeuristicPolicy()
                 state = UnabstractedState(
-                    gs=gs,
-                    move_candidates_config=PointsConfig(
-                        initial_points=PointsConfig.Random(
-                            type="Random",
-                            count=10,
-                        ),
-                        filters=[],
+                    move_pool_config=PointsConfig.Random(
+                        type="Random",
+                        count=10,
                     ),
-                    divide_moves_per_unit=False,
+                    move_filter_config=[],
                 )
             case SearchPolicyConfig():
                 policy_config = config_component.config.policy
@@ -171,29 +159,20 @@ class AiAgent:
                             max_iterations=policy_config.max_iterations,
                             max_simulate_length=policy_config.max_simulate_length,
                             simulate_policy=simulate_policy,
-                            score_factor=policy_config.score_factor,
                         )
                 match config_component.config.state:
                     case UnabstractedStateConfig():
                         # The unabstracted state uses lazy move candidate filtering
                         state_config = config_component.config.state
                         state = UnabstractedState(
-                            gs=gs,
-                            move_candidates_config=state_config.move_candidates,
-                            divide_moves_per_unit=state_config.divide_moves_per_unit,
+                            move_pool_config=state_config.move_candidates_pool,
+                            move_filter_config=state_config.move_candidates_filter,
                         )
                     case WaypointsStateConfig():
                         state_config = config_component.config.state
-                        # TODO Waypoints state doesn't yet have lazy
-                        # waypoint expansion, so it just takes waypoints
-                        waypoints = AiPointsInitializeService.get_initial_points(
-                            gs, state_config.waypoints
-                        )
-                        waypoints = AiPointsFilterService.filter_points(
-                            gs, state_config.waypoints, waypoints
-                        )
                         state = WaypointsState(
-                            points=waypoints,
+                            waypoints_config=state_config.waypoints,
+                            move_filter_config=state_config.move_candidates_filter,
                             path_tolerance=state_config.path_tolerance,
                         )
 

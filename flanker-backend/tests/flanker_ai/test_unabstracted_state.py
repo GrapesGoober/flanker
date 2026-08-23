@@ -164,7 +164,6 @@ def get_agent(
                 max_iterations=100,
                 max_simulate_length=20,
                 simulation_policy="rh",
-                score_factor=1,
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
@@ -179,20 +178,19 @@ def get_agent(
                 policy=policy,
                 state=UnabstractedStateConfig(
                     type="UnabstractedStateConfig",
-                    move_candidates=PointsConfig(
-                        initial_points=PointsConfig.HandDrawn(
-                            type="HandDrawnConfig",
-                            points=move_candidate_points,
-                        ),
-                        filters=[],
+                    move_candidates_pool=PointsConfig.HandDrawn(
+                        type="HandDrawnConfig",
+                        points=move_candidate_points,
                     ),
-                    divide_moves_per_unit=False,
+                    move_candidates_filter=[],
                 ),
             ),
         ),
     )
 
-    return AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+    agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+    agent.rs.update_state(gs)
+    return agent
 
 
 def test_branching_total_prob(fixture: Fixture) -> None:

@@ -165,7 +165,6 @@ def get_agent(
                 max_iterations=100,
                 max_simulate_length=20,
                 simulation_policy="rh",
-                score_factor=1,
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
@@ -180,13 +179,11 @@ def get_agent(
                 policy=policy,
                 state=WaypointsStateConfig(
                     type="WaypointsStateConfig",
-                    waypoints=PointsConfig(
-                        initial_points=PointsConfig.HandDrawn(
-                            type="HandDrawnConfig",
-                            points=fixture.waypoint_coordinates,
-                        ),
-                        filters=[],
+                    waypoints=PointsConfig.HandDrawn(
+                        type="HandDrawnConfig",
+                        points=fixture.waypoint_coordinates,
                     ),
+                    move_candidates_filter=[],
                     path_tolerance=3,
                 ),
             ),

@@ -1,4 +1,3 @@
-from itertools import batched
 from typing import Sequence
 from uuid import UUID
 
@@ -23,7 +22,6 @@ class AiActionService:
         gs: GameState,
         initiative: InitiativeState.Faction,
         move_candidates: list[Vec2],
-        divide_moves_per_unit: bool,
     ) -> Sequence[Action]:
         """Returns a legal actions given the current state and move candidates."""
 
@@ -50,7 +48,6 @@ class AiActionService:
         actions += AiActionService.get_move_actions(
             friendly_ids=friendly_ids,
             move_candidates=move_candidates,
-            divide_moves_per_unit=divide_moves_per_unit,
         )
 
         actions = [action for action in actions if ActionSystem.is_legal(gs, action)]
@@ -120,26 +117,14 @@ class AiActionService:
     def get_move_actions(
         friendly_ids: list[UUID],
         move_candidates: list[Vec2],
-        divide_moves_per_unit: bool,
     ) -> list[MoveAction]:
         actions: list[MoveAction] = []
-        if divide_moves_per_unit == True:
-            divided_moves = batched(move_candidates, len(friendly_ids))
-            for friendly_id, move_batch in zip(friendly_ids, divided_moves):
-                for move_position in move_batch:
-                    actions.append(
-                        MoveAction(
-                            unit_id=friendly_id,
-                            to=move_position,
-                        )
+        for friendly_id in friendly_ids:
+            for move_position in move_candidates:
+                actions.append(
+                    MoveAction(
+                        unit_id=friendly_id,
+                        to=move_position,
                     )
-        else:
-            for friendly_id in friendly_ids:
-                for move_position in move_candidates:
-                    actions.append(
-                        MoveAction(
-                            unit_id=friendly_id,
-                            to=move_position,
-                        )
-                    )
+                )
         return actions
