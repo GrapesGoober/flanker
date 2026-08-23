@@ -234,32 +234,30 @@ class LosSystem:
             intersects: list[ObstacleIntersection[UUID]],
         ) -> Vec2:
 
-            # Filter any intersects outside of the map boundary
-            boundary_indices: list[int] = []
-            for index, intersect in enumerate(intersects):
+            # Selects points that are not boundaries.
+            points_in_bound: list[Vec2] = []
+            last_boundary_index: int = -1
+            last_boundary: Vec2 | None = None
+            for intersect in intersects:
                 entity_id = intersect.obstacle.metadata
                 boundary = gs.try_component(entity_id, MapBoundary)
-                if boundary != None:
-                    boundary_indices.append(index)
+                if boundary == None:  # Not a boundary
+                    points_in_bound.append(intersect.point)
+                else:  # Is a boundary
+                    last_boundary_index = len(points_in_bound)
+                    last_boundary = intersect.point
 
-            intersects_to_consider = intersects
-            if boundary_indices != []:
-                # Exclude points outside the last seen boundaries
-                intersects_to_consider = intersects[: boundary_indices[-1]]
-                # Exclude the boundary points themselves
-                intersects_to_consider = [
-                    intersect
-                    for intersect in intersects_to_consider
-                    if intersect not in boundary_indices
-                ]
-                # ...except for the last one. Include the last seen boundary.
-                intersects_to_consider.append(intersects[boundary_indices[-1]])
+            # Select points only within boundary, and reinclude boundary itself
+            points_in_bound = points_in_bound[:last_boundary_index]
+            if last_boundary is not None:
+                points_in_bound.append(last_boundary)
 
-            # Selects the second point to allow see-into terrain
-            if len(intersects_to_consider) > 1:
-                new_point = intersects_to_consider[1].point
-            elif len(intersects_to_consider) == 1:
-                new_point = intersects_to_consider[0].point
+            # Selects the second (or first) point to satisfy LOS rule.
+            # Allow see-into terrain if possible, otherwise use first point.
+            if len(points_in_bound) > 1:
+                new_point = points_in_bound[1]
+            elif len(points_in_bound) == 1:
+                new_point = points_in_bound[0]
             else:
                 raise ValueError(
                     "No intersections found; is given point inside boundary?"
