@@ -92,12 +92,7 @@ class LosSystem:
 
         # Check each intersection; allow see into and out-from terrain.
         passed_one_terrain = False
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if (terrain.flag & TerrainFeature.Flag.OPAQUE) == 0:
-                continue
-            vertices = TransformUtils.apply(terrain.vertices, transform)
-            if terrain.is_closed_loop:
-                vertices.append(vertices[0])
+        for _, vertices in LosSystem._get_terrains(gs, spotter_pos):
 
             # Ignore spotter's terrain (allow to see out-from terrain)
             if PolygonUtils.is_inside(point=spotter_pos, polygon=vertices):
@@ -229,11 +224,11 @@ class LosSystem:
 
         terrains = LosSystem._get_terrains(gs, spotter_pos)
         obstacles: list[Obstacle[UUID]] = []
-        for terrain in terrains:
+        for terrain_id, vertices in terrains:
             obstacles.append(
                 Obstacle(
-                    polyline=terrain.vertices,
-                    metadata=terrain.terrain_id,
+                    polyline=vertices,
+                    metadata=terrain_id,
                 )
             )
 
@@ -258,7 +253,7 @@ class LosSystem:
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = TerrainFeature.Flag.OPAQUE,
-    ) -> Iterable[_Terrain]:
+    ) -> Iterable[tuple[UUID, list[Vec2]]]:
         """Yields only relevant terrains and its transformed vertices."""
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
@@ -273,4 +268,4 @@ class LosSystem:
                         and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
                     ):
                         continue
-                yield _Terrain(terrain_id=id, vertices=vertices)
+                yield (id, vertices)
