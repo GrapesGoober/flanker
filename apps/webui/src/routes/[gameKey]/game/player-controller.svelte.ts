@@ -1,10 +1,10 @@
 import {
-	GetTerrainData,
+	GetMapData,
 	GetUnitStatesData,
 	performActionAsync,
 	type GameViewState,
+	type MapViewState,
 	type RifleSquadData,
-	type TerrainModel,
 	type Vec2
 } from '$lib/api';
 import { loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
@@ -21,7 +21,10 @@ Manages player state, unit selection, actions (move, fire, assault), and game da
 Handles validation and updates for gameplay interactions.
 */
 export class PlayerController {
-	terrainData: TerrainModel[] = $state([]);
+	mapData: MapViewState = $state({
+		terrains: [],
+		boundary: []
+	});
 	viewState: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
@@ -45,7 +48,7 @@ export class PlayerController {
 		this.gameKey = gameKey;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		this.terrainData = await GetTerrainData(gameStateJson);
+		this.mapData = await GetMapData(gameStateJson);
 		this.viewState = await GetUnitStatesData(gameStateJson);
 		this.isFetching = false;
 	}

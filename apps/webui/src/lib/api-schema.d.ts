@@ -64,7 +64,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/terrain": {
+    "/api/map": {
         parameters: {
             query?: never;
             header?: never;
@@ -74,10 +74,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get Terrain
-         * @description Get all terrain tiles for the current game state.
+         * Get Map
+         * @description Get map data from a scene.
          */
-        post: operations["get_terrain_api_terrain_post"];
+        post: operations["get_map_api_map_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -233,8 +233,8 @@ export interface components {
              */
             logType: "AssaultActionLog";
             body: components["schemas"]["AssaultActionRequest"];
-            outcome?: components["schemas"]["AssaultOutcomes"] | null;
-            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
+            outcome: components["schemas"]["AssaultOutcomes"] | null;
+            reactiveFireOutcome: components["schemas"]["FireOutcomes"] | null;
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -303,7 +303,7 @@ export interface components {
              */
             logType: "FireActionLog";
             body: components["schemas"]["FireActionRequest"];
-            outcome?: components["schemas"]["FireOutcomes"] | null;
+            outcome: components["schemas"]["FireOutcomes"] | null;
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -365,6 +365,16 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * MapViewState
+         * @description Simplified view model of the game map.
+         */
+        MapViewState: {
+            /** Terrains */
+            terrains: components["schemas"]["TerrainModel"][];
+            /** Boundary */
+            boundary: components["schemas"]["Vec2"][];
+        };
         /** MoveActionLog */
         MoveActionLog: {
             /**
@@ -373,7 +383,7 @@ export interface components {
              */
             logType: "MoveActionLog";
             body: components["schemas"]["MoveActionRequest"];
-            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
+            reactiveFireOutcome: components["schemas"]["FireOutcomes"] | null;
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -407,7 +417,7 @@ export interface components {
              */
             logType: "PivotActionLog";
             body: components["schemas"]["PivotActionRequest"];
-            reactiveFireOutcome?: components["schemas"]["FireOutcomes"] | null;
+            reactiveFireOutcome: components["schemas"]["FireOutcomes"] | null;
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -445,7 +455,7 @@ export interface components {
             /** Isfriendly */
             isFriendly: boolean;
             /** Firingat */
-            firingAt?: [
+            firingAt: [
                 string,
                 components["schemas"]["FireEffect"]
             ] | null;
@@ -486,8 +496,15 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
-        /** Vec2 */
+        /**
+         * Vec2
+         * @description 2D vector class for basic vector operations
+         */
         Vec2: {
             /** X */
             x: number;
@@ -587,7 +604,7 @@ export interface operations {
             };
         };
     };
-    get_terrain_api_terrain_post: {
+    get_map_api_map_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -606,7 +623,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TerrainModel"][];
+                    "application/json": components["schemas"]["MapViewState"];
                 };
             };
             /** @description Validation Error */

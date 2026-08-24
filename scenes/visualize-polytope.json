@@ -1,14 +1,7 @@
 {
   "entities": {
     "e7ca1ee2-0167-46c4-92e1-ebd2b014b339": {
-      "Transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0
-        },
-        "degrees": 0.0
-      },
-      "TerrainFeature": {
+      "MapBoundary": {
         "vertices": [
           {
             "x": 0.0,
@@ -26,9 +19,7 @@
             "x": 0.0,
             "y": 300.0
           }
-        ],
-        "is_closed_loop": true,
-        "flag": 33
+        ]
       }
     },
     "41d0c39c-b1b3-4115-b7a2-cc56a8d6a321": {

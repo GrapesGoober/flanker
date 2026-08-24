@@ -103,7 +103,16 @@ class TerrainFeature:
         DRIVABLE = auto()
         WATER = auto()
         HILL = auto()
-        BOUNDARY = auto()
+
+
+@dataclass
+class MapBoundary:
+    """
+    Singleton map boundary. Actions and LOS are validated to be
+    inside this map boundary.
+    """
+
+    vertices: list[Vec2]
 
 
 @dataclass

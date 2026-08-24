@@ -21,6 +21,7 @@ from flanker_core.models.components import (
     EliminationWinCondition,
     FireControls,
     InitiativeState,
+    MapBoundary,
     MoveControls,
     StallLoseCondition,
     TerrainFeature,
@@ -93,15 +94,13 @@ def fixture() -> Fixture:
     )
     # 40x40 boundary
     gs.add_entity(
-        Transform(position=Vec2(0, 0), degrees=0),
-        TerrainFeature(
+        MapBoundary(
             vertices=[
                 Vec2(-20, -20),
                 Vec2(20, -20),
                 Vec2(20, 20),
                 Vec2(-20, 20),
             ],
-            flag=TerrainFeature.Flag.BOUNDARY | TerrainFeature.Flag.OPAQUE,
         ),
     )
 

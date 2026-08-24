@@ -29,7 +29,7 @@
 
 <svg overflow="visible">
 	<!-- Draw each polygons -->
-	{#each props.controller.terrainData as terrain}
+	{#each props.controller.mapData.terrains as terrain}
 		{@const selectedClass = isSelected(terrain) ? 'selected-terrain' : ''}
 		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		<!-- svelte-ignore a11y_click_events_have_key_events -->

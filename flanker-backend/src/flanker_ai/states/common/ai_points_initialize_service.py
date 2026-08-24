@@ -2,10 +2,9 @@ import random
 
 from flanker_ai.config_models import PointsConfig
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import MapBoundary
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.polygon_utils import PolygonUtils
-from flanker_core.utils.transform_utils import TransformUtils
 
 
 class AiPointsInitializeService:
@@ -45,21 +44,7 @@ class AiPointsInitializeService:
         spacing: float,
         offset: float,
     ) -> list[Vec2]:
-
-        # Grab the map boundary
-        boundary_vertices: list[Vec2] = []
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & TerrainFeature.Flag.BOUNDARY:
-                boundary_vertices = TransformUtils.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
-
-        if len(boundary_vertices) < 3:
-            raise ValueError("Can't generate coordinates; boundary terrain missing!")
-
+        boundary_vertices = AiPointsInitializeService._get_map_boundary(gs)
         # Generates waypoints at spacing within boundary
         min_x = min(v.x for v in boundary_vertices) + offset
         max_x = max(v.x for v in boundary_vertices)
@@ -85,16 +70,7 @@ class AiPointsInitializeService:
         gs: GameState,
         count: int,
     ) -> list[Vec2]:
-        boundary_vertices: list[Vec2] = []
-        mask = TerrainFeature.Flag.BOUNDARY
-        for _, terrain, transform in gs.query(TerrainFeature, Transform):
-            if terrain.flag & mask:
-                boundary_vertices = TransformUtils.apply(
-                    terrain.vertices,
-                    transform,
-                )
-                if terrain.is_closed_loop:
-                    boundary_vertices.append(boundary_vertices[0])
+        boundary_vertices = AiPointsInitializeService._get_map_boundary(gs)
         min_x = int(min(v.x for v in boundary_vertices))
         max_x = int(max(v.x for v in boundary_vertices))
         min_y = int(min(v.y for v in boundary_vertices))
@@ -112,3 +88,16 @@ class AiPointsInitializeService:
                 continue
             move_candidates.append(move_candidate)
         return move_candidates
+
+    @staticmethod
+    def _get_map_boundary(gs: GameState) -> list[Vec2]:
+        # Grab the map boundary
+        boundary_vertices: list[Vec2] = [
+            vertex
+            for _, boundary in gs.query(MapBoundary)
+            for vertex in boundary.vertices
+        ]
+        boundary_vertices.append(boundary_vertices[0])
+        if len(boundary_vertices) < 3:
+            raise ValueError("Can't generate coordinates; map boundary missing!")
+        return boundary_vertices

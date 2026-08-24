@@ -1,21 +1,21 @@
 <script lang="ts">
-	import type { TerrainModel } from '$lib/api';
+	import type { MapViewState, TerrainModel } from '$lib/api';
 	import { TreeTriangle } from '$lib/components';
 	import {
 		GetClosedPath,
 		GetSmoothedClosedPath,
 		GetSmoothedPath,
-		generatePointsInsidePolygon
+		generatePointsInsidePolygon,
+		transform
 	} from '$lib/map-utils';
-	import { transform } from '$lib/map-utils';
 
 	type Props = {
-		terrainData: TerrainModel[];
+		mapData: MapViewState;
 	};
 	let props: Props = $props();
 	// Road's boarders need to be drawn separately
 	function FilterRoads(): TerrainModel[] {
-		return props.terrainData.filter((feature) => feature.terrainType === 'ROAD');
+		return props.mapData.terrains.filter((feature) => feature.terrainType === 'ROAD');
 	}
 </script>
 
@@ -23,6 +23,11 @@
 	<defs>
 		<pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="6" height="6">
 			<path d="M1,5 L5,1" class="field-stroke" />
+		</pattern>
+	</defs>
+	<defs>
+		<pattern id="boundaryDiagonalStripes" patternUnits="userSpaceOnUse" width="12" height="12">
+			<path d="M2,10 L10,2" class="boundary-stroke" />
 		</pattern>
 	</defs>
 
@@ -33,7 +38,7 @@
 	{/each}
 
 	<!-- Draw each polygons -->
-	{#each props.terrainData as terrain}
+	{#each props.mapData.terrains as terrain}
 		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		{#if terrain.terrainType == 'FOREST'}
 			<!-- Forest has separate dashed border (so that it rests inside) -->
@@ -55,16 +60,32 @@
 	{/each}
 
 	<!-- Buildings drawn on top of other polygons -->
-	{#each props.terrainData as terrain}
+	{#each props.mapData.terrains as terrain}
 		{@const vertices = transform(terrain.vertices, terrain.position, terrain.degrees)}
 		{#if terrain.terrainType == 'BUILDING'}
 			<path d={GetClosedPath(vertices)} class="building" />
 		{/if}
 	{/each}
+
+	<mask id="outsideBoundary">
+		<!-- Mask coloring: white is visible, black is hidden -->
+		<rect x="-500%" y="-500%" width="1000%" height="1000%" fill="white" />
+		<path d={GetClosedPath(props.mapData.boundary)} fill="black" />
+	</mask>
+
+	<rect
+		x="-500%"
+		y="-500%"
+		width="1000%"
+		height="1000%"
+		fill="url(#boundaryDiagonalStripes)"
+		mask="url(#outsideBoundary)"
+	/>
 </svg>
 
 <style lang="less">
 	@stroke-width: 0.75;
+	@boundary-stroke-width: 2;
 	@road-width: 5;
 
 	.road-border {
@@ -99,6 +120,11 @@
 	.field-stroke {
 		stroke: #bebebe;
 		stroke-width: @stroke-width;
+		stroke-linecap: round;
+	}
+	.boundary-stroke {
+		stroke: #bebebe;
+		stroke-width: @boundary-stroke-width;
 		stroke-linecap: round;
 	}
 	.building {

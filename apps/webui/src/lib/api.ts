@@ -12,6 +12,7 @@ export type TerrainType = components['schemas']['Types'];
 export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse = components['schemas']['GameViewStateResponse'];
+export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 
 export type MoveActionRequest = components['schemas']['MoveActionRequest'];
@@ -52,8 +53,8 @@ export async function GetGameStateJSON(sceneNames: string[]): Promise<string> {
 }
 
 /** Get terrain data for the current game. */
-export async function GetTerrainData(jsonState: string): Promise<TerrainModel[]> {
-	const { data, error } = await client.POST('/api/terrain', {
+export async function GetMapData(jsonState: string): Promise<MapViewState> {
+	const { data, error } = await client.POST('/api/map', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));

@@ -6,6 +6,7 @@ from flanker_core.models.actions import MoveActionResult, PivotActionResult
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
+    MapBoundary,
     MoveControls,
     TerrainFeature,
     Transform,
@@ -16,7 +17,8 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-from flanker_core.systems.terrain_system import TerrainSystem
+from flanker_core.utils.intersect_utils import IntersectUtils
+from flanker_core.utils.transform_utils import TransformUtils
 
 # This is a bandaid fix for LOS polygon imprecision
 _MOVE_INTERRUPT_ATOL = 5
@@ -42,12 +44,31 @@ class MoveSystem:
             return InvalidAction.NO_INITIATIVE
 
         # Check move action though correct terrain type
-        terrain_type = 0
+        movable_mask = 0
         match move_controls.move_type:
             case MoveControls.MoveType.FOOT:
-                terrain_type = TerrainFeature.Flag.WALKABLE
-        for intersect in TerrainSystem.get_intersect(gs, transform.position, to):
-            if not (intersect.terrain.flag & terrain_type):
+                movable_mask = TerrainFeature.Flag.WALKABLE
+
+        invalid_obstacles: list[list[Vec2]] = []
+        for _, boundary in gs.query(MapBoundary):
+            vertices = list(boundary.vertices) + [boundary.vertices[0]]
+            invalid_obstacles.append(vertices)
+
+        for _, terrain, terrain_transform in gs.query(TerrainFeature, Transform):
+            if (terrain.flag & movable_mask) != 0:
+                continue
+            vertices = TransformUtils.apply(terrain.vertices, terrain_transform)
+            if terrain.is_closed_loop:
+                vertices.append(vertices[0])
+            invalid_obstacles.append(vertices)
+
+        # Check if doesn't move through invalid obstacles
+        for obstacle in invalid_obstacles:
+            intersections = IntersectUtils.get_intersects(
+                line=(transform.position, to),
+                polyline=obstacle,
+            )
+            if len(intersections) != 0:
                 return InvalidAction.BAD_COORDS
 
         return True

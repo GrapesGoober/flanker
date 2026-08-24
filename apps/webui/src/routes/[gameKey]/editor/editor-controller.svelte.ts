@@ -1,12 +1,13 @@
 import {
 	AddTerrainData,
 	DeleteTerrainData,
-	GetTerrainData,
+	GetMapData,
 	GetUnitStatesData,
 	UpdateTerrainData,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
 	type GameViewState,
+	type MapViewState,
 	type TerrainModel,
 	type TerrainType,
 	type Vec2
@@ -26,7 +27,10 @@ type EditorControllerState =
  * Handles terrain data, selection, drawing mode, and state transitions.
  */
 export class EditorController {
-	terrainData: TerrainModel[] = $state([]);
+	mapData: MapViewState = $state({
+		terrains: [],
+		boundary: []
+	});
 	combatUnitsData: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
@@ -51,7 +55,7 @@ export class EditorController {
 	/** Refreshes terrain data from the API. */
 	async refreshData() {
 		const gameStateJson = this.getGameStateJson();
-		this.terrainData = await GetTerrainData(gameStateJson);
+		this.mapData = await GetMapData(gameStateJson);
 		this.combatUnitsData = await GetUnitStatesData(gameStateJson);
 	}
 
@@ -104,7 +108,7 @@ export class EditorController {
 			const viewState = await UpdateTerrainData(gameStateJson, this.state.terrain);
 			this.updateGameStateJson(viewState.jsonState);
 			await this.refreshData();
-			const selectedTerrain = this.terrainData.find((i) => i.terrainId === terrain.terrainId);
+			const selectedTerrain = this.mapData.terrains.find((i) => i.terrainId === terrain.terrainId);
 			if (selectedTerrain != undefined) {
 				this.state = {
 					type: 'selected',

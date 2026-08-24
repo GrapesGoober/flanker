@@ -3,9 +3,8 @@ from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import TerrainFeature, Transform
+from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from flanker_core.systems.terrain_system import TerrainSystem
 from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import (
     Obstacle,
@@ -77,7 +76,7 @@ class LosSystem:
         return abs(angle_diff) <= fov / 2
 
     @staticmethod
-    def has_los(
+    def has_los(  # TODO: should this be refactored to reuse LOS criteria?
         gs: GameState,
         spotter_pos: Vec2,
         target_pos: Vec2,
@@ -91,43 +90,23 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
-        intersects = TerrainSystem.get_intersect(
-            gs=gs,
-            start=spotter_pos,
-            end=target_pos,
-            mask=TerrainFeature.Flag.OPAQUE,
-        )
-
-        # Check each intersection; allow see into and out of terrain.
+        # Check each intersection; allow see into and out-from terrain.
         passed_one_terrain = False
-        for intersect in intersects:
+        for _, vertices in LosSystem._get_obstacles(gs, spotter_pos):
 
-            # Prep terrain vertices
-            terrain_id = intersect.terrain_id
-            terrain = gs.get_component(terrain_id, TerrainFeature)
-            terrain_transform = gs.get_component(terrain_id, Transform)
-            vertices = TransformUtils.apply(
-                vec_list=terrain.vertices,
-                transform=terrain_transform,
-            )
-
-            # Ignore count spotter's terrain (allow to see out)
-            if terrain.is_closed_loop:
-                vertices.append(vertices[0])
-                if PolygonUtils.is_inside(
-                    point=spotter_pos,
-                    polygon=vertices,
-                ):
-                    continue
-
-            # Count terrain
-            if not passed_one_terrain:
-                passed_one_terrain = True
+            # Ignore spotter's terrain (allow to see out-from terrain)
+            if PolygonUtils.is_inside(point=spotter_pos, polygon=vertices):
                 continue
 
-            # Can only see into one polygon
-            if passed_one_terrain:
-                return False
+            # Count whether it passes one terrain
+            for _ in IntersectUtils.get_intersects(
+                line=(spotter_pos, target_pos),
+                polyline=vertices,
+            ):
+                if passed_one_terrain:
+                    return False
+                passed_one_terrain = True
+
         return True
 
     @staticmethod
@@ -243,24 +222,46 @@ class LosSystem:
     ) -> list[Vec2]:
         """Helper method for `get_los_polygon`. Generates a new LOS polygon."""
 
-        terrains = LosSystem._get_terrains(gs, spotter_pos)
-        obstacles: list[Obstacle[UUID]] = []
-        for terrain in terrains:
-            obstacles.append(
-                Obstacle(
-                    polyline=terrain.vertices,
-                    metadata=terrain.terrain_id,
-                )
+        obstacles: list[Obstacle[UUID]] = [
+            Obstacle(
+                polyline=vertices,
+                metadata=id,
             )
+            for id, vertices in LosSystem._get_obstacles(gs, spotter_pos)
+        ]
 
         def criteria(
             intersects: list[ObstacleIntersection[UUID]],
         ) -> Vec2:
-            # Selects the second point to allow see-into terrain
-            if len(intersects) > 1:
-                new_point = intersects[1].point
+
+            # Selects points that are not boundaries.
+            points_in_bound: list[Vec2] = []
+            last_boundary_index: int = -1
+            last_boundary: Vec2 | None = None
+            for intersect in intersects:
+                entity_id = intersect.obstacle.metadata
+                boundary = gs.try_component(entity_id, MapBoundary)
+                if boundary == None:  # Not a boundary
+                    points_in_bound.append(intersect.point)
+                else:  # Is a boundary
+                    last_boundary_index = len(points_in_bound)
+                    last_boundary = intersect.point
+
+            # Select points only within boundary, and reinclude boundary itself
+            points_in_bound = points_in_bound[:last_boundary_index]
+            if last_boundary is not None:
+                points_in_bound.append(last_boundary)
+
+            # Selects the second (or first) point to satisfy LOS rule.
+            # Allow see-into terrain if possible, otherwise use first point.
+            if len(points_in_bound) > 1:
+                new_point = points_in_bound[1]
+            elif len(points_in_bound) == 1:
+                new_point = points_in_bound[0]
             else:
-                new_point = intersects[0].point
+                raise ValueError(
+                    "No intersections found; is given point inside boundary?"
+                )
             return new_point
 
         return PolygonUtils.get_reachable_polygon(
@@ -270,12 +271,16 @@ class LosSystem:
         )
 
     @staticmethod
-    def _get_terrains(
+    def _get_obstacles(
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = TerrainFeature.Flag.OPAQUE,
-    ) -> Iterable[_Terrain]:
-        """Yields only relevant terrains and its transformed vertices."""
+    ) -> Iterable[tuple[UUID, list[Vec2]]]:
+        """Yields relevant terrains and its transformed vertices."""
+        for id, boundary in gs.query(MapBoundary):
+            vertices = list(boundary.vertices) + [boundary.vertices[0]]
+            yield (id, vertices)
+
         for id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = TransformUtils.apply(terrain.vertices, transform)
@@ -283,10 +288,6 @@ class LosSystem:
                     vertices.append(vertices[0])
                     # Ignore the terrain entity if the spotter is inside it,
                     # this allows spotter to see-out of a terrain
-                    if (
-                        PolygonUtils.is_inside(spotter_pos, vertices)
-                        # This rule doesn't apply to boundary terrain
-                        and (terrain.flag & TerrainFeature.Flag.BOUNDARY) == 0
-                    ):
+                    if PolygonUtils.is_inside(spotter_pos, vertices):
                         continue
-                yield _Terrain(terrain_id=id, vertices=vertices)
+                yield (id, vertices)

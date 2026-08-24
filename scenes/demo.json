@@ -10,14 +10,7 @@
         "units_to_eliminate": 1,
         "units_eliminated_counter": 0
       },
-      "Transform": {
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "degrees": 0
-      },
-      "TerrainFeature": {
+      "MapBoundary": {
         "vertices": [
           {
             "x": 0,
@@ -35,9 +28,7 @@
             "x": 0,
             "y": 500
           }
-        ],
-        "is_closed_loop": true,
-        "flag": 33
+        ]
       }
     },
     "13de4ab7-4f11-4266-8533-dd23fbd30769": {
