@@ -91,38 +91,45 @@ class WaypointsGraph:
         path_tolerance: float,
     ) -> None:
         waypoints = WaypointsGraph.get_waypoints(gs)
+
+        # Create neighboring relationships for each waypoint
+        waypoint_neighbors: dict[int, list[int]] = {}
+        for waypoint_id, waypoint in waypoints.items():
+            waypoint_neighbors[waypoint_id] = [
+                neighbor_id
+                for neighbor_id, neighbor_waypoint in waypoints.items()
+                if (neighbor_waypoint.position - waypoint.position).length()
+                < path_tolerance
+            ]
+
+        # For each waypoint pair, find an approximate waypoints path
+        # Just greedily search for speed
         for waypoint_id, waypoint in waypoints.items():
             for move_id, move_waypoint in waypoints.items():
-                move_from = waypoint.position
-                move_to = move_waypoint.position
-                move_distance = (move_to - move_from).length()
-                direction = (move_to - move_from).normalized()
+                path: list[int] = [waypoint_id]
+                current_id = waypoint_id
+                visited: set[int] = {current_id}
 
-                # Define a set of nodes that forms the best path for this move
-                path: list[tuple[int, float]] = []
-                for path_id, path_waypoint in waypoints.items():
-                    t = (path_waypoint.position - move_from).dot(direction)
-                    if path_id in [waypoint_id, move_id]:
-                        path.append((path_id, t))
-                        continue
-                    if t < 0:
-                        continue
-                    if t > move_distance:
-                        continue
-                    distance_to_line = (
-                        (path_waypoint.position - move_from) - (direction * t)
-                    ).length()
-                    if distance_to_line > path_tolerance:
-                        continue
-                    path.append((path_id, t))
+                while current_id != move_id:
+                    neighbors = [
+                        neighbor_id
+                        for neighbor_id in waypoint_neighbors[current_id]
+                        if neighbor_id not in visited
+                    ]
+                    if neighbors == []:
+                        break
 
-                def sort_key(node_entry: tuple[int, float]) -> float:
-                    _, t = node_entry
-                    return t
+                    current_id = min(
+                        neighbors,
+                        key=lambda neighbor_id: (
+                            waypoints[neighbor_id].position - move_waypoint.position
+                        ).length(),
+                    )
+                    visited.add(current_id)
+                    path.append(current_id)
 
-                waypoint.movable_paths[move_id] = list(
-                    [id for id, _ in sorted(path, key=sort_key)]
-                )
+                if current_id == move_id:
+                    waypoint.movable_paths[move_id] = path
 
     @staticmethod
     def _add_visibility_relationships(
