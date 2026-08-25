@@ -15,6 +15,7 @@ class WaypointNode:
 
 @dataclass
 class _WaypointsGraphComponent:
+    waypoint_positions: dict[tuple[int, int], int]
     waypoints: dict[int, WaypointNode]
 
 
@@ -41,7 +42,19 @@ class WaypointsGraph:
         position: Vec2,
     ) -> int:
         """Returns a waypoint ID from coerced position."""
-        waypoints = WaypointsGraph.get_waypoints(gs)
+        if entities := gs.query(_WaypointsGraphComponent):
+            _, component = entities[0]
+        else:
+            gs.add_entity(component := _WaypointsGraphComponent({}, {}))
+        waypoints = component.waypoints
+        waypoint_positions = component.waypoint_positions
+
+        # Use the waypoint lookup table if the position exists
+        rounded_position = (int(position.x), int(position.y))
+        if rounded_position in waypoint_positions:
+            return waypoint_positions[rounded_position]
+
+        # If position doesn't exist, use expensive linear search
         coerced_waypoint_id = min(
             waypoints.keys(),
             key=lambda idx: abs((position - waypoints[idx].position).length()),
@@ -69,7 +82,7 @@ class WaypointsGraph:
         if entities := gs.query(_WaypointsGraphComponent):
             _, component = entities[0]
         else:
-            gs.add_entity(component := _WaypointsGraphComponent({}))
+            gs.add_entity(component := _WaypointsGraphComponent({}, {}))
         waypoints = component.waypoints
         waypoints.clear()
 
@@ -80,6 +93,12 @@ class WaypointsGraph:
                 visible_nodes=set(),
                 movable_paths={},
             )
+
+        # Create a lookup table for waypoint positions
+        component.waypoint_positions = {
+            (int(waypoint.position.x), int(waypoint.position.y)): waypoint_id
+            for waypoint_id, waypoint in waypoints.items()
+        }
 
         # Add relationships between nodes
         WaypointsGraph._add_visibility_relationships(gs)
