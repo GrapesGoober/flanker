@@ -26,15 +26,21 @@ class WaypointsGraph:
     """
 
     @staticmethod
+    def _get_waypoints_graph(
+        gs: GameState,
+    ) -> _WaypointsGraphComponent:
+        if entities := gs.query(_WaypointsGraphComponent):
+            _, graph_component = entities[0]
+            return graph_component
+        else:
+            raise ValueError("Waypoints not configured in this game state.")
+
+    @staticmethod
     def get_waypoints(
         gs: GameState,
     ) -> dict[int, WaypointNode]:
         """Get a configured waypoints dictionary"""
-        if entities := gs.query(_WaypointsGraphComponent):
-            _, component = entities[0]
-            return component.waypoints
-        else:
-            raise ValueError("Waypoints not configured in this game state.")
+        return WaypointsGraph._get_waypoints_graph(gs).waypoints
 
     @staticmethod
     def get_waypoint_id(
@@ -42,22 +48,17 @@ class WaypointsGraph:
         position: Vec2,
     ) -> int:
         """Returns a waypoint ID from coerced position."""
-        if entities := gs.query(_WaypointsGraphComponent):
-            _, component = entities[0]
-        else:
-            gs.add_entity(component := _WaypointsGraphComponent({}, {}))
-        waypoints = component.waypoints
-        waypoint_positions = component.waypoint_positions
+        graph = WaypointsGraph._get_waypoints_graph(gs)
 
         # Use the waypoint lookup table if the position exists
         rounded_position = (int(position.x), int(position.y))
-        if rounded_position in waypoint_positions:
-            return waypoint_positions[rounded_position]
+        if rounded_position in graph.waypoint_positions:
+            return graph.waypoint_positions[rounded_position]
 
         # If position doesn't exist, use expensive linear search
         coerced_waypoint_id = min(
-            waypoints.keys(),
-            key=lambda idx: abs((position - waypoints[idx].position).length()),
+            graph.waypoints.keys(),
+            key=lambda idx: (position - graph.waypoints[idx].position).length(),
         )
         return coerced_waypoint_id
 
@@ -96,7 +97,10 @@ class WaypointsGraph:
 
         # Create a lookup table for waypoint positions
         component.waypoint_positions = {
-            (int(waypoint.position.x), int(waypoint.position.y)): waypoint_id
+            (
+                int(waypoint.position.x),
+                int(waypoint.position.y),
+            ): waypoint_id
             for waypoint_id, waypoint in waypoints.items()
         }
 
