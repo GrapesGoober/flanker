@@ -134,7 +134,6 @@ def draw_waypoints(
 
     print("Drawing waypoints...")
 
-    segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
     points_y: list[float] = []
     ids: list[int] = []
@@ -153,16 +152,6 @@ def draw_waypoints(
         points_x.append(point.position.x)
         points_y.append(point.position.y)
         ids.append(id)
-
-        for visible_node_id in point.visible_nodes:
-            visible_node = waypoints[visible_node_id]
-
-            segments.append(
-                [
-                    (point.position.x, point.position.y),
-                    (visible_node.position.x, visible_node.position.y),
-                ]
-            )
 
     plt.scatter(points_x, points_y, color="C0", s=40)
 
