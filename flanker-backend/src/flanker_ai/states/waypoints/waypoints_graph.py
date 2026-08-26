@@ -126,7 +126,7 @@ class WaypointsGraph:
             ]
 
         # For each waypoint pair, find an approximate waypoints path
-        # Just greedily search for speed
+        # Just greedily search for simplicity
         for waypoint_id, waypoint in waypoints.items():
             for move_id, move_waypoint in waypoints.items():
                 path: list[int] = [waypoint_id]
