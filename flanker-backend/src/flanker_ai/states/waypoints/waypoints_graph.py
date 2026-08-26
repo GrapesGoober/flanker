@@ -130,7 +130,6 @@ class WaypointsGraph:
         for waypoint_id, waypoint in waypoints.items():
             for move_id, move_waypoint in waypoints.items():
                 path: list[int] = [waypoint_id]
-                path_distance: float = 0.0
                 current_id = waypoint_id
                 visited: set[int] = {current_id}
 
@@ -143,27 +142,17 @@ class WaypointsGraph:
                     if neighbors == []:
                         break
 
-                    def score(neighbor_id: int) -> float:
+                    def distance_cost(neighbor_id: int) -> float:
                         neighbor = waypoints[neighbor_id]
-
-                        # Distance from the current node to the candidate.
                         new_node_distance = (
                             neighbor.position - waypoints[current_id].position
                         ).length()
-
-                        # Estimated distance remaining after moving to the candidate.
                         leftover_distance = (
                             neighbor.position - move_waypoint.position
                         ).length()
+                        return new_node_distance + leftover_distance
 
-                        # Total estimated cost of choosing this candidate.
-                        return path_distance + new_node_distance + leftover_distance
-
-                    next_id = min(neighbors, key=score)
-
-                    path_distance += (
-                        waypoints[next_id].position - waypoints[current_id].position
-                    ).length()
+                    next_id = min(neighbors, key=distance_cost)
 
                     current_id = next_id
                     visited.add(current_id)
