@@ -166,6 +166,15 @@ def draw_waypoints(
             xs.append(position.x)
             ys.append(position.y)
         plt.plot(xs, ys, color="C2", linewidth=2)
+        direct_path_xs = [
+            waypoints[move_from].position.x,
+            waypoints[move_to].position.x,
+        ]
+        direct_path_ys = [
+            waypoints[move_from].position.y,
+            waypoints[move_to].position.y,
+        ]
+        plt.plot(direct_path_xs, direct_path_ys, color="C3", linewidth=2)
 
 
 def draw_move_candidates(
