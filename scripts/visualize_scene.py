@@ -119,6 +119,7 @@ def draw_combat_unit_los_cone(
 def draw_waypoints(
     gs: GameState,
     faction: InitiativeState.Faction,
+    draw_path: tuple[int, int],
     draw_ids: bool = False,
 ) -> None:
 
@@ -134,7 +135,6 @@ def draw_waypoints(
 
     print("Drawing waypoints...")
 
-    segments: list[list[tuple[float, float]]] = []
     points_x: list[float] = []
     points_y: list[float] = []
     ids: list[int] = []
@@ -154,17 +154,27 @@ def draw_waypoints(
         points_y.append(point.position.y)
         ids.append(id)
 
-        for visible_node_id in point.visible_nodes:
-            visible_node = waypoints[visible_node_id]
-
-            segments.append(
-                [
-                    (point.position.x, point.position.y),
-                    (visible_node.position.x, visible_node.position.y),
-                ]
-            )
-
     plt.scatter(points_x, points_y, color="C0", s=40)
+
+    if draw_path:
+        xs: list[float] = []
+        ys: list[float] = []
+        move_from, move_to = draw_path
+        path_nodes = waypoints[move_from].movable_paths[move_to]
+        for path_node in path_nodes:
+            position = waypoints[path_node].position
+            xs.append(position.x)
+            ys.append(position.y)
+        plt.plot(xs, ys, color="C2", linewidth=2)
+        direct_path_xs = [
+            waypoints[move_from].position.x,
+            waypoints[move_to].position.x,
+        ]
+        direct_path_ys = [
+            waypoints[move_from].position.y,
+            waypoints[move_to].position.y,
+        ]
+        plt.plot(direct_path_xs, direct_path_ys, color="C3", linewidth=2)
 
 
 def draw_move_candidates(
@@ -196,7 +206,7 @@ if __name__ == "__main__":
         ]
     )
 
-    screenshot = None  # "./scripts/screenshots/experiment-scene-2.png"
+    screenshot = "./scripts/screenshots/experiment-scene-2.png"
     if screenshot:
         img = mpimg.imread(screenshot)  # type: ignore
         plt.imshow(  # type: ignore
@@ -206,12 +216,12 @@ if __name__ == "__main__":
     else:
         plt.gca().invert_yaxis()
 
-    draw_terrains(gs)
-    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True)
-    draw_move_candidates(gs, InitiativeState.Faction.BLUE)
+    # draw_terrains(gs)
+    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True, draw_path=(65, 22))
+    # draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 
     # Draw LOS for each combat unit
-    if True:
+    if False:
         for id, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
                 draw_combat_unit_los_cone(
@@ -235,5 +245,5 @@ if __name__ == "__main__":
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.axis("off")
     plt.axis((0, 300, 300, 0))
-    # plt.savefig("./scripts/outputs/visualize-los", dpi=300)
+    plt.savefig("./scripts/outputs/visualize-waypoints", dpi=300)
     plt.show()

@@ -25,6 +25,8 @@ class AiBranchAbstractionService:
                 unit_right = branch_right.try_component(action.unit_id, CombatUnit)
                 if unit_left != unit_right:
                     continue
+                if (unit_left, unit_right) == (None, None):
+                    return (left_id, right_id)
 
                 # Filter on unit status equality
                 left_unit_status = FireSystem.get_status(branch_left, action.unit_id)

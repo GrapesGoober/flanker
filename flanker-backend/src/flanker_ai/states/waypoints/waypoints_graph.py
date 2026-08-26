@@ -15,6 +15,7 @@ class WaypointNode:
 
 @dataclass
 class _WaypointsGraphComponent:
+    waypoint_positions: dict[tuple[int, int], int]
     waypoints: dict[int, WaypointNode]
 
 
@@ -25,15 +26,21 @@ class WaypointsGraph:
     """
 
     @staticmethod
+    def _get_waypoints_graph(
+        gs: GameState,
+    ) -> _WaypointsGraphComponent:
+        if entities := gs.query(_WaypointsGraphComponent):
+            _, graph_component = entities[0]
+            return graph_component
+        else:
+            raise ValueError("Waypoints not configured in this game state.")
+
+    @staticmethod
     def get_waypoints(
         gs: GameState,
     ) -> dict[int, WaypointNode]:
         """Get a configured waypoints dictionary"""
-        if entities := gs.query(_WaypointsGraphComponent):
-            _, component = entities[0]
-            return component.waypoints
-        else:
-            raise ValueError("Waypoints not configured in this game state.")
+        return WaypointsGraph._get_waypoints_graph(gs).waypoints
 
     @staticmethod
     def get_waypoint_id(
@@ -41,10 +48,17 @@ class WaypointsGraph:
         position: Vec2,
     ) -> int:
         """Returns a waypoint ID from coerced position."""
-        waypoints = WaypointsGraph.get_waypoints(gs)
+        graph = WaypointsGraph._get_waypoints_graph(gs)
+
+        # Use the waypoint lookup table if the position exists
+        rounded_position = (int(position.x), int(position.y))
+        if rounded_position in graph.waypoint_positions:
+            return graph.waypoint_positions[rounded_position]
+
+        # If position doesn't exist, use expensive linear search
         coerced_waypoint_id = min(
-            waypoints.keys(),
-            key=lambda idx: abs((position - waypoints[idx].position).length()),
+            graph.waypoints.keys(),
+            key=lambda idx: (position - graph.waypoints[idx].position).length(),
         )
         return coerced_waypoint_id
 
@@ -69,7 +83,7 @@ class WaypointsGraph:
         if entities := gs.query(_WaypointsGraphComponent):
             _, component = entities[0]
         else:
-            gs.add_entity(component := _WaypointsGraphComponent({}))
+            gs.add_entity(component := _WaypointsGraphComponent({}, {}))
         waypoints = component.waypoints
         waypoints.clear()
 
@@ -81,6 +95,15 @@ class WaypointsGraph:
                 movable_paths={},
             )
 
+        # Create a lookup table for waypoint positions
+        component.waypoint_positions = {
+            (
+                int(waypoint.position.x),
+                int(waypoint.position.y),
+            ): waypoint_id
+            for waypoint_id, waypoint in waypoints.items()
+        }
+
         # Add relationships between nodes
         WaypointsGraph._add_visibility_relationships(gs)
         WaypointsGraph._add_path_relationships(gs, path_tolerance)
@@ -91,38 +114,52 @@ class WaypointsGraph:
         path_tolerance: float,
     ) -> None:
         waypoints = WaypointsGraph.get_waypoints(gs)
+
+        # Create neighboring relationships for each waypoint
+        waypoint_neighbors: dict[int, list[int]] = {}
+        for waypoint_id, waypoint in waypoints.items():
+            waypoint_neighbors[waypoint_id] = [
+                neighbor_id
+                for neighbor_id, neighbor_waypoint in waypoints.items()
+                if (neighbor_waypoint.position - waypoint.position).length()
+                < path_tolerance
+            ]
+
+        # For each waypoint pair, find an approximate waypoints path
+        # Just greedily search for simplicity
         for waypoint_id, waypoint in waypoints.items():
             for move_id, move_waypoint in waypoints.items():
-                move_from = waypoint.position
-                move_to = move_waypoint.position
-                move_distance = (move_to - move_from).length()
-                direction = (move_to - move_from).normalized()
+                path: list[int] = [waypoint_id]
+                current_id = waypoint_id
+                visited: set[int] = {current_id}
 
-                # Define a set of nodes that forms the best path for this move
-                path: list[tuple[int, float]] = []
-                for path_id, path_waypoint in waypoints.items():
-                    t = (path_waypoint.position - move_from).dot(direction)
-                    if path_id in [waypoint_id, move_id]:
-                        path.append((path_id, t))
-                        continue
-                    if t < 0:
-                        continue
-                    if t > move_distance:
-                        continue
-                    distance_to_line = (
-                        (path_waypoint.position - move_from) - (direction * t)
-                    ).length()
-                    if distance_to_line > path_tolerance:
-                        continue
-                    path.append((path_id, t))
+                while current_id != move_id:
+                    neighbors = [
+                        neighbor_id
+                        for neighbor_id in waypoint_neighbors[current_id]
+                        if neighbor_id not in visited
+                    ]
+                    if neighbors == []:
+                        break
 
-                def sort_key(node_entry: tuple[int, float]) -> float:
-                    _, t = node_entry
-                    return t
+                    def distance_cost(neighbor_id: int) -> float:
+                        neighbor = waypoints[neighbor_id]
+                        new_node_distance = (
+                            neighbor.position - waypoints[current_id].position
+                        ).length()
+                        leftover_distance = (
+                            neighbor.position - move_waypoint.position
+                        ).length()
+                        return new_node_distance + leftover_distance
 
-                waypoint.movable_paths[move_id] = list(
-                    [id for id, _ in sorted(path, key=sort_key)]
-                )
+                    next_id = min(neighbors, key=distance_cost)
+
+                    current_id = next_id
+                    visited.add(current_id)
+                    path.append(current_id)
+
+                if current_id == move_id:
+                    waypoint.movable_paths[move_id] = path
 
     @staticmethod
     def _add_visibility_relationships(

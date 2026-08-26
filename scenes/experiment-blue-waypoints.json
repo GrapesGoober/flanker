@@ -9,7 +9,7 @@
           },
           "state": {
             "type": "WaypointsStateConfig",
-            "path_tolerance": 10,
+            "path_tolerance": 65.667,
             "waypoints": {
               "type": "GridConfig",
               "spacing": 33.333,

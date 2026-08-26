@@ -183,7 +183,7 @@ def get_agent(
                         points=fixture.waypoint_coordinates,
                     ),
                     move_candidates_filter=[],
-                    path_tolerance=3,
+                    path_tolerance=20,
                 ),
             ),
         )
@@ -200,13 +200,16 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
     ), "Configured agent's state representation must be waypoints state."
     rs.update_state(fixture.gs)
     waypoints = WaypointsGraph.get_waypoints(rs.gs)
+
+    # The pathing is arbitrary, since node's neighbors are not
+    # fully defined. Should this be modelled?
     assert waypoints[5].movable_paths[3] == [5, 3]
     assert waypoints[5].movable_paths[2] == [5, 2]
-    assert waypoints[5].movable_paths[7] == [5, 6, 0, 7]
-    assert waypoints[5].movable_paths[8] == [5, 6, 0, 7, 8]
-    assert waypoints[3].movable_paths[7] == [3, 7]
-    assert waypoints[3].movable_paths[8] == [3, 7, 8]
-    assert waypoints[3].movable_paths[4] == [3, 5, 6, 4]
+    assert waypoints[5].movable_paths[7] == [5, 0, 7]
+    assert waypoints[5].movable_paths[8] == [5, 0, 7, 8]
+    assert waypoints[3].movable_paths[7] == [3, 2, 7]
+    assert waypoints[3].movable_paths[8] == [3, 2, 7, 8]
+    assert waypoints[3].movable_paths[4] in ([3, 5, 4], [3, 6, 4], [3, 5, 6, 4])
     assert waypoints[2].movable_paths[1] == [2, 0, 1]
 
 
