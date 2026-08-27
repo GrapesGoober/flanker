@@ -86,6 +86,10 @@ class WaypointsState(IRepresentationState[Action]):
         return not isinstance(result, InvalidAction)
 
     @override
+    def is_legal(self, action: Action) -> bool:
+        return ActionSystem.is_legal(self.gs, action)
+
+    @override
     def copy(
         self,
         new_state: GameState | None = None,
@@ -104,7 +108,7 @@ class WaypointsState(IRepresentationState[Action]):
         return new_waypoints_state
 
     @override
-    def get_actions(self) -> Sequence[Action]:
+    def get_actions(self, is_legal_only: bool = True) -> Sequence[Action]:
         occupied_waypoints = {
             transform.position
             for _, _, transform in self.gs.query(CombatUnit, Transform)
@@ -117,6 +121,7 @@ class WaypointsState(IRepresentationState[Action]):
                 for move_candidate in self._move_candidates
                 if move_candidate not in occupied_waypoints
             ],
+            check_legal=is_legal_only,
         )
 
     @override

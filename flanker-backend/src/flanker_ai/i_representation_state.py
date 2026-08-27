@@ -15,7 +15,7 @@ class IRepresentationState[TAction](Protocol):
         """Implements objective scoring given a maximizer."""
         ...
 
-    def get_actions(self) -> Sequence[TAction]:
+    def get_actions(self, is_legal_only: bool = True) -> Sequence[TAction]:
         """Get legal actions from the current state."""
         ...
 
@@ -28,6 +28,10 @@ class IRepresentationState[TAction](Protocol):
         Performs an action by mutating the state in place.
         Returns whether the action was valid and performed.
         """
+        ...
+
+    def is_legal(self, action: TAction) -> bool:
+        """Checks whether the action is legal."""
         ...
 
     def get_branches(

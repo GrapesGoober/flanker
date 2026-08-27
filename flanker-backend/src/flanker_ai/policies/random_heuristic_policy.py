@@ -31,7 +31,7 @@ class RandomHeuristicPolicy(IPolicy[Action]):
         if winner is not None:
             return None, 0
 
-        actions = list(rs.get_actions())
+        actions = list(rs.get_actions(is_legal_only=False))
         if not actions:
             return None, 0
 
@@ -46,11 +46,15 @@ class RandomHeuristicPolicy(IPolicy[Action]):
                     move_actions.append(action)
 
         # If any fire actions are valid, perform it first
-        if fire_actions != []:
-            return random.choice(fire_actions), len(fire_actions)
+        random.shuffle(fire_actions)
+        for action in fire_actions:
+            if rs.is_legal(action):
+                return action, len(fire_actions)
 
         # If any move actions are valid, perform it last
-        if move_actions != []:
-            return random.choice(move_actions), len(move_actions)
+        random.shuffle(move_actions)
+        for action in move_actions:
+            if rs.is_legal(action):
+                return action, len(move_actions)
 
         return None, 0

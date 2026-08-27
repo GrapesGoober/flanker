@@ -70,12 +70,20 @@ class UnabstractedState(IRepresentationState[Action]):
         return score
 
     @override
-    def get_actions(self) -> Sequence[Action]:
+    def get_actions(
+        self,
+        is_legal_only: bool = True,
+    ) -> Sequence[Action]:
         return AiActionService.get_actions(
             gs=self._gs,
             initiative=self.get_initiative(),
             move_candidates=self._move_candidates,
+            check_legal=is_legal_only,
         )
+
+    @override
+    def is_legal(self, action: Action) -> bool:
+        return ActionSystem.is_legal(self._gs, action)
 
     @override
     def get_branches(
