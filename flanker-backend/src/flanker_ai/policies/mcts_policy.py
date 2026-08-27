@@ -87,11 +87,12 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         node: _MctsTreeNode[TAction],
         value: int,
+        n_visits: int = 1,
     ) -> None:
         nodes: list[_MctsTreeNode[TAction]] = [node]
         while len(nodes) != 0:
             current_node = nodes.pop()
-            current_node.total_visits += 1
+            current_node.total_visits += n_visits
             current_node.total_value += value
             nodes += current_node.parents
 
