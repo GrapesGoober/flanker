@@ -16,11 +16,14 @@ class RandomPolicy[TAction](IPolicy[TAction]):
         if winner is not None:
             return None, 0
 
-        actions = list(rs.get_actions())
+        actions = list(rs.get_actions(is_legal_only=False))
         if not actions:
             return None, 0
 
-        if actions != []:
-            return random.choice(actions), len(actions)
+        # Perform the first legal action
+        random.shuffle(actions)
+        for action in actions:
+            if rs.is_legal(action):
+                return action, len(actions)
 
         return None, 0

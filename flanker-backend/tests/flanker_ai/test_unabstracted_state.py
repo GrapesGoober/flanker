@@ -160,7 +160,7 @@ def get_agent(
         case "MCTS":
             policy = PolicyConfig.MctsPolicy(
                 type="MctsPolicy",
-                max_iterations=100,
+                max_iterations=200,
                 max_simulate_length=20,
                 simulation_policy="rh",
             )

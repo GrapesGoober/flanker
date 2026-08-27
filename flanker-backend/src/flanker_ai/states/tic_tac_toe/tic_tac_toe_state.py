@@ -99,7 +99,10 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
         return deepcopy(self)
 
     @override
-    def get_actions(self) -> Sequence[TicTacToeAction]:
+    def get_actions(
+        self,
+        is_legal_only: bool = True,
+    ) -> Sequence[TicTacToeAction]:
         actions: list[TicTacToeAction] = []
         for r in range(3):
             for c in range(3):
@@ -111,6 +114,10 @@ class TicTacToeState(IRepresentationState[TicTacToeAction]):
                         )
                     )
         return actions
+
+    @override
+    def is_legal(self, action: TicTacToeAction) -> bool:
+        return 1 <= action.row <= 3 and 1 <= action.column <= 3
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
