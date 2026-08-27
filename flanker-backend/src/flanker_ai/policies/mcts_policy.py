@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 
@@ -19,7 +17,7 @@ class _MctsTreeNode[TAction]:
     unexpanded_actions: list[TAction]  # All actions, some are illegal.
 
     total_visits: int  # N(v) total number of visits
-    total_value: float  # Q(v) total simulation reward of all visited children
+    total_value: int  # Q(v) total simulation reward of all visited children
 
     action: TAction | None
 
@@ -35,6 +33,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
         self._simulate_policy: IPolicy[TAction] = simulate_policy
+        self._transposition_table: dict[object, _MctsTreeNode[TAction]] = {}
 
     def get_action(
         self,
