@@ -60,12 +60,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             value = self._simulate(child)
 
             # Back propagate each node
-            nodes: list[_MctsTreeNode[TAction]] = [child]
-            while len(nodes) != 0:
-                node = nodes.pop()
-                node.total_visits += 1
-                node.total_value += value
-                nodes += node.parents
+            self._backpropagate(child, value)
 
         # No valid actions at this root
         if not root.children:
@@ -82,12 +77,23 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         self,
         root: _MctsTreeNode[TAction],
     ) -> int:
-        if not root.children:
+        if root.children == []:
             return 0
-
         return 1 + max(
             (self._get_tree_depth(child) for child in root.children),
         )
+
+    def _backpropagate(
+        self,
+        node: _MctsTreeNode[TAction],
+        value: int,
+    ) -> None:
+        nodes: list[_MctsTreeNode[TAction]] = [node]
+        while len(nodes) != 0:
+            current_node = nodes.pop()
+            current_node.total_visits += 1
+            current_node.total_value += value
+            nodes += current_node.parents
 
     def _select_leaf_best_uct(
         self,
@@ -151,7 +157,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
     def _simulate(
         self,
         node: _MctsTreeNode[TAction],
-    ) -> float:
+    ) -> int:
 
         # Make a copy so it doesn't mutate the node itself
         current_state = node.state.copy()
