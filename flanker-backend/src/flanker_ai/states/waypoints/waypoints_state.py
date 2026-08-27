@@ -121,7 +121,7 @@ class WaypointsState(IRepresentationState[Action]):
                 for move_candidate in self._move_candidates
                 if move_candidate not in occupied_waypoints
             ],
-            check_legal=is_legal_only,
+            is_legal_only=is_legal_only,
         )
 
     @override

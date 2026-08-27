@@ -22,7 +22,7 @@ class AiActionService:
         gs: GameState,
         initiative: InitiativeState.Faction,
         move_candidates: list[Vec2],
-        check_legal: bool,
+        is_legal_only: bool,
     ) -> Sequence[Action]:
         """Returns a legal actions given the current state and move candidates."""
 
@@ -51,7 +51,7 @@ class AiActionService:
             move_candidates=move_candidates,
         )
 
-        if check_legal:
+        if is_legal_only:
             actions = [
                 action for action in actions if ActionSystem.is_legal(gs, action)
             ]

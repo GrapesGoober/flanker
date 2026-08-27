@@ -78,7 +78,7 @@ class UnabstractedState(IRepresentationState[Action]):
             gs=self._gs,
             initiative=self.get_initiative(),
             move_candidates=self._move_candidates,
-            check_legal=is_legal_only,
+            is_legal_only=is_legal_only,
         )
 
     @override
