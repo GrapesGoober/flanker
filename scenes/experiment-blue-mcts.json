@@ -7,8 +7,7 @@
             "type": "MctsPolicy",
             "max_iterations": 1000,
             "max_simulate_length": 20,
-            "simulation_policy": "rh",
-            "score_factor": 1
+            "simulation_policy": "rh"
           },
           "state": {
             "type": "UnabstractedStateConfig",
