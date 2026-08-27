@@ -61,7 +61,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
             # Back propagate each node
             nodes: list[_MctsTreeNode[TAction]] = [child]
-            while len(nodes) is not 0:
+            while len(nodes) != 0:
                 node = nodes.pop()
                 node.total_visits += 1
                 node.total_value += value
@@ -71,9 +71,23 @@ class MctsPolicy[TAction](IPolicy[TAction]):
         if not root.children:
             return None, self._max_iterations
 
+        # I'm not considering this metric in output yet
+        print(f"{self._get_tree_depth(root)=}")
+
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
         return best.action, self._max_iterations
+
+    def _get_tree_depth(
+        self,
+        root: _MctsTreeNode[TAction],
+    ) -> int:
+        if not root.children:
+            return 0
+
+        return 1 + max(
+            (self._get_tree_depth(child) for child in root.children),
+        )
 
     def _select_leaf_best_uct(
         self,
