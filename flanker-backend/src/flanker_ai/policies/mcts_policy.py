@@ -13,7 +13,7 @@ MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 @dataclass
 class _MctsTreeNode[TAction]:
     state: IRepresentationState[TAction]
-    parent: "_MctsTreeNode[TAction] | None"
+    parents: list["_MctsTreeNode[TAction]"]
 
     children: list["_MctsTreeNode[TAction]"]
     unexpanded_actions: list[TAction]  # All actions, some are illegal.
@@ -42,7 +42,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
     ) -> tuple[TAction | None, int]:
         root = _MctsTreeNode(
             state=rs,
-            parent=None,
+            parents=[],
             children=[],
             unexpanded_actions=list(rs.get_actions()),
             total_visits=0,
@@ -60,11 +60,12 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             value = self._simulate(child)
 
             # Back propagate each node
-            node: _MctsTreeNode[TAction] | None = child
-            while node is not None:
+            nodes: list[_MctsTreeNode[TAction]] = [child]
+            while len(nodes) is not 0:
+                node = nodes.pop()
                 node.total_visits += 1
                 node.total_value += value
-                node = node.parent
+                nodes += node.parents
 
         # No valid actions at this root
         if not root.children:
@@ -123,7 +124,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
         child = _MctsTreeNode(
             state=child_state,
-            parent=node,
+            parents=[node],
             children=[],
             action=legal_action,
             unexpanded_actions=list(child_state.get_actions()),
