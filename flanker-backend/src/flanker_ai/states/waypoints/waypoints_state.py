@@ -108,7 +108,10 @@ class WaypointsState(IRepresentationState[Action]):
         return new_waypoints_state
 
     @override
-    def get_actions(self, is_legal_only: bool = True) -> Sequence[Action]:
+    def get_actions(
+        self,
+        is_legal_only: bool = True,
+    ) -> Sequence[Action]:
         occupied_waypoints = {
             transform.position
             for _, _, transform in self.gs.query(CombatUnit, Transform)
