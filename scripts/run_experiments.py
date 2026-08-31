@@ -10,6 +10,7 @@ class ExperimentConfig(BaseModel):
     url: str
     scenes: list[str]
     parallelization: int
+    size_to_run: int
 
 
 @dataclass
@@ -35,11 +36,11 @@ def main() -> None:
             config=config,
             scene_data=scene_data,
         )
-        for _ in range(config.parallelization)
+        for _ in range(config.size_to_run)
     ]
 
     with ThreadPoolExecutor(
-        max_workers=len(requests_to_send),
+        max_workers=config.parallelization,
     ) as executor:
         for _ in executor.map(
             send_ai_play_request,
