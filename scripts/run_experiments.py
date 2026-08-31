@@ -8,6 +8,8 @@ from pydantic import BaseModel
 
 class ExperimentConfig(BaseModel):
     url: str
+    scenes: list[str]
+    parallelization: int
 
 
 @dataclass
@@ -22,32 +24,29 @@ def main() -> None:
     # r = requests.get(f"{config.url}/api/scenes")
     # print(r.text)
 
-    scenes = [
-        "experiment-settings",
-        "experiment-scene-1",
-        "experiment-blue-analysis",
-        "experiment-red-analysis",
-    ]
-
-    r = requests.get(f"{config.url}/api/scenes/json", params={"sceneNames": scenes})
+    r = requests.get(
+        f"{config.url}/api/scenes/json",
+        params={"sceneNames": config.scenes},
+    )
     scene_data = r.json()
-
-    WORKERS = 10
 
     requests_to_send = [
         AiPlayRequest(
             config=config,
             scene_data=scene_data,
         )
-        for _ in range(WORKERS)
+        for _ in range(config.parallelization)
     ]
 
-    with ThreadPoolExecutor(max_workers=len(requests_to_send)) as executor:
-        for result in executor.map(
+    with ThreadPoolExecutor(
+        max_workers=len(requests_to_send),
+    ) as executor:
+        for _ in executor.map(
             send_ai_play_request,
             requests_to_send,
         ):
-            print(result.json())
+            print("done!")
+            # print(result.json())
 
 
 def get_config() -> ExperimentConfig:
@@ -55,7 +54,10 @@ def get_config() -> ExperimentConfig:
         return ExperimentConfig(**json.loads(f.read()))
 
 
-def send_ai_play_request(request: AiPlayRequest) -> requests.Response:
+def send_ai_play_request(
+    request: AiPlayRequest,
+) -> requests.Response:
+    print("running!")
     r = requests.post(
         f"{request.config.url}/api/ai-play",
         data=request.scene_data,
