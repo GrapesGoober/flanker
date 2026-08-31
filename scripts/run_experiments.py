@@ -11,22 +11,22 @@ class ExperimentConfig(BaseModel):
 def main() -> None:
     config = get_config()
 
-    r = requests.get(f"{config.url}/api/scenes")
-    print(r.text)
+    # r = requests.get(f"{config.url}/api/scenes")
+    # print(r.text)
 
-    # scenes = [
-    #     "experiment-settings",
-    #     "experiment-scene-1",
-    #     "experiment-blue-rh",
-    #     "experiment-red-rh",
-    # ]
+    scenes = [
+        "experiment-settings",
+        "experiment-scene-1",
+        "experiment-blue-rh",
+        "experiment-red-rh",
+    ]
 
-    # r = requests.get(f"{config.url}/api/scenes/json", params={"sceneNames": scenes})
-    # scene_data = r.text
+    r = requests.get(f"{config.url}/api/scenes/json", params={"sceneNames": scenes})
+    scene_data = r.json()
     # print(scene_data)
 
-    # r = requests.post(f"{config.url}/api/ai-play", data={"state": scene_data})
-    # print(r.text)
+    r = requests.post(f"{config.url}/api/ai-play", data=scene_data)
+    print(r.json())
 
 
 def get_config() -> ExperimentConfig:
