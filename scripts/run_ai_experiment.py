@@ -4,7 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
 from inspect import isclass
 from itertools import product
-from multiprocessing.pool import Pool
+from multiprocessing.pool import Pool, ThreadPool
 from pathlib import Path
 from typing import Any, Iterable
 from uuid import UUID
@@ -57,7 +57,7 @@ class ExperimentSetConfig:
     red_configs: dict[str, str]
     match_settings: dict[str, str]
     n_matches: int
-    max_processes: int
+    max_workers: int
 
 
 class CamelCaseConfig:
@@ -101,7 +101,7 @@ def main() -> None:
             "experiment": "./scenes/experiment-settings.json",
         },
         n_matches=5,
-        max_processes=1,
+        max_workers=1,
     )
     run_experiment_set(my_run)
 
@@ -126,13 +126,13 @@ def run_experiment_set(
     ]
     run_experiments(
         experiments,
-        n_processes=experiment_set.max_processes,
+        max_workers=experiment_set.max_workers,
     )
 
 
 def run_experiments(
     experiments: list[ExperimentConfig],
-    n_processes: int,
+    max_workers: int,
 ) -> None:
     # Create a list of matches to work on
     matches: list[tuple[GameState, ExperimentConfig]] = []
@@ -147,7 +147,8 @@ def run_experiments(
     random.shuffle(matches)
 
     # Run this in parallel
-    with Pool(processes=n_processes) as p:
+    pool_type: type[Pool] | type[ThreadPool] = ThreadPool
+    with pool_type(processes=max_workers) as p:
         results = p.imap_unordered(run_match_cloud, matches)
         for match_result in results:
             result, experiment = match_result
