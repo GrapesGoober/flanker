@@ -8,7 +8,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
-class AiMatchResult:
+class _AiMatchResult:
     runtime: float
     action_results: list[AiActionResult]
     winner: InitiativeState.Faction | None
@@ -22,7 +22,7 @@ class AiMatch:
     @staticmethod
     def run_match(
         gs: GameState,
-    ) -> AiMatchResult:
+    ) -> _AiMatchResult:
         """Runs the given game match with 2 AIs and returns results."""
 
         # Sets up a match
@@ -52,7 +52,7 @@ class AiMatch:
                 break
 
         runtime = perf_counter() - start_time
-        return AiMatchResult(
+        return _AiMatchResult(
             runtime=runtime,
             action_results=action_results,
             winner=winner,

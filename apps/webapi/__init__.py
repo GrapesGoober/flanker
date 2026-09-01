@@ -1,4 +1,3 @@
-from timeit import timeit
 from typing import NoReturn
 from uuid import UUID
 
@@ -11,6 +10,7 @@ from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
     ActionRequest,
+    AiMatchResponse,
     AiWaypointConfigRequest,
     GameViewState,
     GameViewStateResponse,
@@ -95,11 +95,9 @@ async def get_logs(
 @app.post("/api/ai-play")
 async def run_match(
     state: str = Body(...),
-) -> GameViewStateResponse:
+) -> AiMatchResponse:
     gs = SceneService.deserialize(state)
-    exec_time = timeit(lambda: AiService.run_match(gs), number=1)
-    print(f"Execution time: {exec_time:.6f} seconds")
-    return SceneService.get_view_state_response(gs)
+    return AiService.run_match(gs)
 
 
 @app.post("/api/ai-config-waypoints")

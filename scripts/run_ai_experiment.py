@@ -9,7 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent
-from flanker_ai.ai_match import AiMatch, AiMatchResult
+from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -137,7 +137,7 @@ def run_match(
 ) -> tuple[MatchResult, ExperimentConfig]:
     gs, experiment = match
     print(f"Running match {experiment.name}")
-    result: AiMatchResult = AiMatch.run_match(gs)
+    result = AiMatch.run_match(gs)
     return (
         MatchResult(
             winner=result.winner,
