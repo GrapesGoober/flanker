@@ -1,4 +1,3 @@
-import json
 import random
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
@@ -6,7 +5,7 @@ from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool, ThreadPool
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Literal
 from uuid import UUID
 
 import requests
@@ -30,24 +29,7 @@ class MatchResult(BaseModel):
 
 class ExperimentResult(BaseModel):
     n_matches: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
     match_results: list[MatchResult]
-
-
-class ExperimentRunConfig(BaseModel):
-    url: str
-    scenes: list[str]
-    parallelization: int
-    size_to_run: int
-
-
-@dataclass
-class ExperimentConfig:
-    experiment_run_config: ExperimentRunConfig
-    name: str
-    gs: GameState
-    n_matches: int
 
 
 @dataclass
@@ -58,6 +40,21 @@ class ExperimentSetConfig:
     match_settings: dict[str, str]
     n_matches: int
     max_workers: int
+
+
+@dataclass
+class ExperimentConfig:
+    name: str
+    gs: GameState
+    n_matches: int
+
+
+@dataclass
+class MatchConfig:
+    name: str
+    gs: GameState
+    n_matches: int
+    target: Literal["local"] | str
 
 
 class CamelCaseConfig:
@@ -77,17 +74,16 @@ class AiMatchResponse(BaseModel, CamelCaseConfig):
     red_search_sizes: list[int]
 
 
-FOLDER = "./scripts/outputs/experiment-results/"
-
-
 def main() -> None:
-    my_run = ExperimentSetConfig(
+    results_root_path = "./scripts/outputs/experiment-results/"
+
+    experiment_set = ExperimentSetConfig(
         scene_configs={
             "scene-1": "./scenes/experiment-scene-1.json",
             "scene-2": "./scenes/experiment-scene-2.json",
         },
         blue_configs={
-            "blue-analysis": "./scenes/experiment-blue-analysis.json",
+            # "blue-analysis": "./scenes/experiment-blue-analysis.json",
             # "blue-mcts": "./scenes/experiment-blue-mcts.json",
             # "blue-grid": "./scenes/experiment-blue-grid.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
@@ -101,21 +97,86 @@ def main() -> None:
             "experiment": "./scenes/experiment-settings.json",
         },
         n_matches=100,
-        max_workers=50,
+        max_workers=14,
     )
-    run_experiment_set(my_run)
+    experiments = get_experiments(experiment_set)
+    matches = get_matches(experiments, results_root_path)
+    random.shuffle(matches)
+
+    # Run this in parallel
+    pool_type: type[Pool] | type[ThreadPool] = Pool
+    with pool_type(processes=experiment_set.max_workers) as p:
+        results = p.imap_unordered(run_match, matches)
+        for match_result in results:
+            result, match = match_result
+            print(f"    {match.name} done, tallying")
+            experiment_result = get_results(
+                experiment_name=match.name,
+                results_root_path=results_root_path,
+            )
+            if experiment_result.n_matches == match.n_matches:
+                continue
+            match_results = experiment_result.match_results
+            match_results.append(result)
+            experiment_result.n_matches = len(match_results)
+            save_results(
+                experiment_name=match.name,
+                result=experiment_result,
+                results_root_path=results_root_path,
+            )
 
 
-def run_experiment_set(
+def run_match(
+    match: MatchConfig,
+) -> tuple[MatchResult, MatchConfig]:
+    print(f"Running match {match.name}")
+
+    # Run locally if config says so
+    if match.target == "local":
+        result = AiMatch.run_match(match.gs)
+        return (
+            MatchResult(
+                winner=result.winner,
+                total_runtime=result.runtime,
+                blue_search_sizes=result.blue_search_sizes,
+                red_search_sizes=result.red_search_sizes,
+            ),
+            match,
+        )
+
+    # Otherwise, assume the match.target is a Flanker WebAPI URL
+    else:
+        scene_data = Serializer.serialize(
+            entities=match.gs.dump(),
+            component_types=list(get_component_types()),
+        )
+        r = requests.post(
+            f"{match.target}/api/ai-play",
+            data=scene_data,
+        )
+        if 300 <= r.status_code <= 600:
+            raise Exception(f"Request had {r.status_code} error: {r.text}")
+        response = AiMatchResponse(**r.json())
+
+        return (
+            MatchResult(
+                winner=response.winner,
+                total_runtime=response.total_runtime,
+                blue_search_sizes=response.blue_search_sizes,
+                red_search_sizes=response.red_search_sizes,
+            ),
+            match,
+        )
+
+
+def get_experiments(
     experiment_set: ExperimentSetConfig,
-) -> None:
-
-    experiments: list[ExperimentConfig] = [
+) -> list[ExperimentConfig]:
+    return [
         ExperimentConfig(
             name="-".join(name for name, _ in combination),
             gs=get_game_state(list(path for _, path in combination)),
             n_matches=experiment_set.n_matches,
-            experiment_run_config=get_config(),
         )
         for combination in product(
             experiment_set.scene_configs.items(),
@@ -124,89 +185,34 @@ def run_experiment_set(
             experiment_set.match_settings.items(),
         )
     ]
-    run_experiments(
-        experiments,
-        max_workers=experiment_set.max_workers,
-    )
 
 
-def run_experiments(
+def get_matches(
     experiments: list[ExperimentConfig],
-    max_workers: int,
-) -> None:
-    # Create a list of matches to work on
-    matches: list[tuple[GameState, ExperimentConfig]] = []
+    results_root_path: str,
+) -> list[MatchConfig]:
+    matches: list[MatchConfig] = []
     for experiment in experiments:
-        current_tally = get_results(experiment)
-        remaining_matches = max(0, experiment.n_matches - current_tally.n_matches)
+        current_tally = get_results(
+            experiment.name,
+            results_root_path,
+        )
+        remaining_matches = max(
+            0,
+            experiment.n_matches - current_tally.n_matches,
+        )
         gs = deepcopy(experiment.gs)
         for _ in range(remaining_matches):
-            matches.append((gs, experiment))
+            matches.append(
+                MatchConfig(
+                    name=experiment.name,
+                    gs=gs,
+                    n_matches=experiment.n_matches,
+                    target="local",
+                )
+            )
 
-    # Randomize to run evenly across all matches
-    random.shuffle(matches)
-
-    # Run this in parallel
-    pool_type: type[Pool] | type[ThreadPool] = ThreadPool
-    with pool_type(processes=max_workers) as p:
-        results = p.imap_unordered(run_match_cloud, matches)
-        for match_result in results:
-            result, experiment = match_result
-            print(f"    {experiment.name} done, tallying")
-            experiment_result = get_results(experiment)
-            if experiment_result.n_matches == experiment.n_matches:
-                continue
-            match_results = experiment_result.match_results
-            match_results.append(result)
-            experiment_result.n_matches = len(match_results)
-            save_results(experiment, experiment_result)
-
-
-def run_match(
-    match: tuple[GameState, ExperimentConfig],
-) -> tuple[MatchResult, ExperimentConfig]:
-    gs, experiment = match
-    print(f"Running match {experiment.name}")
-    result = AiMatch.run_match(gs)
-    return (
-        MatchResult(
-            winner=result.winner,
-            total_runtime=result.runtime,
-            blue_search_sizes=result.blue_search_sizes,
-            red_search_sizes=result.red_search_sizes,
-        ),
-        experiment,
-    )
-
-
-def run_match_cloud(
-    match: tuple[GameState, ExperimentConfig],
-) -> tuple[MatchResult, ExperimentConfig]:
-    gs, experiment = match
-    print(f"Running match {experiment.name}")
-
-    scene_data = Serializer.serialize(
-        entities=gs.dump(),
-        component_types=list(get_component_types()),
-    )
-
-    r = requests.post(
-        f"{experiment.experiment_run_config.url}/api/ai-play",
-        data=scene_data,
-    )
-    if 300 <= r.status_code <= 600:
-        raise Exception(f"Request had {r.status_code} error: {r.text}")
-    response = AiMatchResponse(**r.json())
-
-    return (
-        MatchResult(
-            winner=response.winner,
-            total_runtime=response.total_runtime,
-            blue_search_sizes=response.blue_search_sizes,
-            red_search_sizes=response.red_search_sizes,
-        ),
-        experiment,
-    )
+    return matches
 
 
 def get_game_state(
@@ -236,25 +242,14 @@ def get_component_types() -> Iterable[type]:
     yield AiConfigComponent
 
 
-def get_results(experiment: ExperimentConfig) -> ExperimentResult:
-    file_path = f"{FOLDER}{experiment.name}.json"
+def get_results(
+    experiment_name: str,
+    results_root_path: str,
+) -> ExperimentResult:
+    file_path = f"{results_root_path}{experiment_name}.json"
     if not Path(file_path).is_file():
-        blue_config: AiConfigComponent | None = None
-        red_config: AiConfigComponent | None = None
-        for _, config in experiment.gs.query(AiConfigComponent):
-            if config.faction == InitiativeState.Faction.BLUE:
-                blue_config = config
-            if config.faction == InitiativeState.Faction.RED:
-                red_config = config
-        if blue_config == None:
-            raise Exception("AI config is missing for BLUE.")
-        if red_config == None:
-            raise Exception("AI config is missing for RED.")
-
         return ExperimentResult(
             n_matches=0,
-            blue_config=blue_config,
-            red_config=red_config,
             match_results=[],
         )
 
@@ -267,17 +262,13 @@ def get_results(experiment: ExperimentConfig) -> ExperimentResult:
 
 
 def save_results(
-    experiment: ExperimentConfig,
+    experiment_name: str,
     result: ExperimentResult,
+    results_root_path: str,
 ) -> None:
-    file_path = f"{FOLDER}{experiment.name}.json"
+    file_path = f"{results_root_path}{experiment_name}.json"
     with open(file_path, "w") as f:
         f.write(result.model_dump_json(indent=2))
-
-
-def get_config() -> ExperimentRunConfig:
-    with open("./scripts/configs/experiment-config.json", "r") as f:
-        return ExperimentRunConfig(**json.loads(f.read()))
 
 
 if __name__ == "__main__":
