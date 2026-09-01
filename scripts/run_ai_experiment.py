@@ -240,6 +240,7 @@ def get_component_types() -> Iterable[type]:
     yield AiConfigComponent
 
 
+# TODO: add a separated create_result_file method
 def get_results(
     experiment_name: str,
     results_root_path: str,
