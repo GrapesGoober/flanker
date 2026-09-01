@@ -1,3 +1,4 @@
+import json
 import random
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
@@ -32,8 +33,7 @@ class ExperimentResult(BaseModel):
     match_results: list[MatchResult]
 
 
-@dataclass
-class ExperimentSetConfig:
+class ExperimentSetConfig(BaseModel):
     scene_configs: dict[str, str]
     blue_configs: dict[str, str]
     red_configs: dict[str, str]
@@ -77,27 +77,8 @@ class AiMatchResponse(BaseModel, CamelCaseConfig):
 def main() -> None:
     results_root_path = "./scripts/outputs/experiment-results/"
 
-    experiment_set = ExperimentSetConfig(
-        scene_configs={
-            "scene-1": "./scenes/experiment-scene-1.json",
-            "scene-2": "./scenes/experiment-scene-2.json",
-        },
-        blue_configs={
-            # "blue-analysis": "./scenes/experiment-blue-analysis.json",
-            # "blue-mcts": "./scenes/experiment-blue-mcts.json",
-            # "blue-grid": "./scenes/experiment-blue-grid.json",
-            "blue-rh": "./scenes/experiment-blue-rh.json",
-        },
-        red_configs={
-            # "red-analysis": "./scenes/experiment-red-analysis.json",
-            # "red-grid": "./scenes/experiment-red-grid.json",
-            "red-rh": "./scenes/experiment-red-rh.json",
-        },
-        match_settings={
-            "experiment": "./scenes/experiment-settings.json",
-        },
-        n_matches=100,
-        max_workers=14,
+    experiment_set = get_config(
+        config_path="./scripts/configs/experiment-config.json",
     )
     experiments = get_experiments(experiment_set)
     matches = get_matches(experiments, results_root_path)
@@ -124,6 +105,11 @@ def main() -> None:
                 result=experiment_result,
                 results_root_path=results_root_path,
             )
+
+
+def get_config(config_path: str) -> ExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return ExperimentSetConfig(**json.loads(f.read()))
 
 
 def run_match(
