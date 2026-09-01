@@ -22,6 +22,22 @@ from pydantic.alias_generators import to_camel
 
 
 class MatchResult(BaseModel):
+    """Match result model for each recorded match run."""
+
+    winner: InitiativeState.Faction | None
+    total_runtime: float
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
+
+
+class MatchResultApiResponse(BaseModel):
+    """Response model from WebAPI, kept separate from MatchResult."""
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
     winner: InitiativeState.Faction | None
     total_runtime: float
     blue_search_sizes: list[int]
@@ -29,11 +45,15 @@ class MatchResult(BaseModel):
 
 
 class ExperimentResult(BaseModel):
+    """Result of an experiment run containing its match results."""
+
     n_matches: int
     match_results: list[MatchResult]
 
 
 class ExperimentSetConfig(BaseModel):
+    """Input config model for entire experiment-set run."""
+
     scene_configs: dict[str, str]
     blue_configs: dict[str, str]
     red_configs: dict[str, str]
@@ -45,6 +65,8 @@ class ExperimentSetConfig(BaseModel):
 
 @dataclass
 class ExperimentConfig:
+    """Input config model for running a many matches."""
+
     name: str
     gs: GameState
     n_matches: int
@@ -53,27 +75,12 @@ class ExperimentConfig:
 
 @dataclass
 class MatchConfig:
+    """Input config model for running a single match."""
+
     name: str
     gs: GameState
     n_matches: int
     target: Literal["local"] | str
-
-
-class CamelCaseConfig:
-    model_config = ConfigDict(
-        alias_generator=to_camel,
-        populate_by_name=True,
-        from_attributes=True,
-    )
-
-
-class AiMatchResponse(BaseModel, CamelCaseConfig):
-    """Response model from WebAPI."""
-
-    winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
 
 
 def main() -> None:
@@ -130,15 +137,6 @@ def run_match(
     # Run locally if config says so
     if match_config.target == "local":
         result = AiMatch.run_match(match_config.gs)
-        return (
-            MatchResult(
-                winner=result.winner,
-                total_runtime=result.runtime,
-                blue_search_sizes=result.blue_search_sizes,
-                red_search_sizes=result.red_search_sizes,
-            ),
-            match_config,
-        )
 
     # Otherwise, assume the match.target is a Flanker WebAPI URL
     else:
@@ -152,17 +150,17 @@ def run_match(
         )
         if 300 <= r.status_code <= 600:
             raise Exception(f"Request had {r.status_code} error: {r.text}")
-        response = AiMatchResponse(**r.json())
+        result = MatchResultApiResponse(**r.json())
 
-        return (
-            MatchResult(
-                winner=response.winner,
-                total_runtime=response.total_runtime,
-                blue_search_sizes=response.blue_search_sizes,
-                red_search_sizes=response.red_search_sizes,
-            ),
-            match_config,
-        )
+    return (
+        MatchResult(
+            winner=result.winner,
+            total_runtime=result.total_runtime,
+            blue_search_sizes=result.blue_search_sizes,
+            red_search_sizes=result.red_search_sizes,
+        ),
+        match_config,
+    )
 
 
 def get_experiments(
