@@ -63,7 +63,8 @@ def send_ai_play_request(
         f"{request.config.url}/api/ai-play",
         data=request.scene_data,
     )
-    r.raise_for_status()
+    if 300 <= r.status_code <= 600:
+        raise Exception(f"Request had {r.status_code} error: {r.text}")
     return r
 
 

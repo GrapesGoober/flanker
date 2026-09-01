@@ -4,6 +4,7 @@ from uuid import UUID
 
 from fastapi import Body, FastAPI, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 from webapi.action_service import ActionService
 from webapi.ai_service import AiService
 from webapi.logging_service import LoggingService
@@ -33,8 +34,9 @@ id_counter = 0
 
 
 @app.exception_handler(ValueError)
-async def value_error_handler(_: Request, exc: ValueError) -> NoReturn:
-    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc)
+@app.exception_handler(ValidationError)
+async def value_error_handler(_: Request, exc: Exception) -> NoReturn:
+    raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
 
 
 @app.get("/api/scenes")
