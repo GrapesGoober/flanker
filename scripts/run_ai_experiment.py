@@ -102,7 +102,7 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
-    # Run this in parallel
+    # Run and record all matches
     with pool_type(processes=experiment_set.max_workers) as p:
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
