@@ -1,3 +1,4 @@
+import json
 import random
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
@@ -5,9 +6,10 @@ from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 from uuid import UUID
 
+import requests
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
@@ -15,7 +17,8 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
 class MatchResult(BaseModel):
@@ -32,8 +35,16 @@ class ExperimentResult(BaseModel):
     match_results: list[MatchResult]
 
 
+class ExperimentRunConfig(BaseModel):
+    url: str
+    scenes: list[str]
+    parallelization: int
+    size_to_run: int
+
+
 @dataclass
 class ExperimentConfig:
+    experiment_run_config: ExperimentRunConfig
     name: str
     gs: GameState
     n_matches: int
@@ -49,6 +60,23 @@ class ExperimentSetConfig:
     max_processes: int
 
 
+class CamelCaseConfig:
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class AiMatchResponse(BaseModel, CamelCaseConfig):
+    """Response model from WebAPI."""
+
+    winner: InitiativeState.Faction | None
+    total_runtime: float
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
+
+
 FOLDER = "./scripts/outputs/experiment-results/"
 
 
@@ -59,9 +87,9 @@ def main() -> None:
             "scene-2": "./scenes/experiment-scene-2.json",
         },
         blue_configs={
-            "blue-analysis": "./scenes/experiment-blue-analysis.json",
-            "blue-mcts": "./scenes/experiment-blue-mcts.json",
-            "blue-grid": "./scenes/experiment-blue-grid.json",
+            # "blue-analysis": "./scenes/experiment-blue-analysis.json",
+            # "blue-mcts": "./scenes/experiment-blue-mcts.json",
+            # "blue-grid": "./scenes/experiment-blue-grid.json",
             "blue-rh": "./scenes/experiment-blue-rh.json",
         },
         red_configs={
@@ -72,8 +100,8 @@ def main() -> None:
         match_settings={
             "experiment": "./scenes/experiment-settings.json",
         },
-        n_matches=200,
-        max_processes=14,
+        n_matches=5,
+        max_processes=1,
     )
     run_experiment_set(my_run)
 
@@ -87,6 +115,7 @@ def run_experiment_set(
             name="-".join(name for name, _ in combination),
             gs=get_game_state(list(path for _, path in combination)),
             n_matches=experiment_set.n_matches,
+            experiment_run_config=get_config(),
         )
         for combination in product(
             experiment_set.scene_configs.items(),
@@ -119,7 +148,7 @@ def run_experiments(
 
     # Run this in parallel
     with Pool(processes=n_processes) as p:
-        results = p.imap_unordered(run_match, matches)
+        results = p.imap_unordered(run_match_cloud, matches)
         for match_result in results:
             result, experiment = match_result
             print(f"    {experiment.name} done, tallying")
@@ -149,15 +178,40 @@ def run_match(
     )
 
 
+def run_match_cloud(
+    match: tuple[GameState, ExperimentConfig],
+) -> tuple[MatchResult, ExperimentConfig]:
+    gs, experiment = match
+    print(f"Running match {experiment.name}")
+
+    scene_data = Serializer.serialize(
+        entities=gs.dump(),
+        component_types=list(get_component_types()),
+    )
+
+    r = requests.post(
+        f"{experiment.experiment_run_config.url}/api/ai-play",
+        data=scene_data,
+    )
+    if 300 <= r.status_code <= 600:
+        raise Exception(f"Request had {r.status_code} error: {r.text}")
+    response = AiMatchResponse(**r.json())
+
+    return (
+        MatchResult(
+            winner=response.winner,
+            total_runtime=response.total_runtime,
+            blue_search_sizes=response.blue_search_sizes,
+            red_search_sizes=response.red_search_sizes,
+        ),
+        experiment,
+    )
+
+
 def get_game_state(
     paths: list[str],
 ) -> GameState:
-    component_types: list[type[Any]] = []
-    component_types.append(AiConfigComponent)
-    for _, cls in vars(components).items():
-        if isclass(cls) and is_dataclass(cls):
-            component_types.append(cls)
-
+    component_types = list(get_component_types())
     entities: dict[UUID, Any] = {}
     for path in paths:
         with open(path, "r") as f:
@@ -172,6 +226,13 @@ def get_game_state(
     AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
     AiAgent.get_agent(gs, InitiativeState.Faction.RED)
     return gs
+
+
+def get_component_types() -> Iterable[type]:
+    for _, cls in vars(components).items():
+        if isclass(cls) and is_dataclass(cls):
+            yield cls
+    yield AiConfigComponent
 
 
 def get_results(experiment: ExperimentConfig) -> ExperimentResult:
@@ -211,6 +272,11 @@ def save_results(
     file_path = f"{FOLDER}{experiment.name}.json"
     with open(file_path, "w") as f:
         f.write(result.model_dump_json(indent=2))
+
+
+def get_config() -> ExperimentRunConfig:
+    with open("./scripts/configs/experiment-config.json", "r") as f:
+        return ExperimentRunConfig(**json.loads(f.read()))
 
 
 if __name__ == "__main__":
