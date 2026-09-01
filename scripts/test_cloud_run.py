@@ -3,7 +3,26 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import requests
-from pydantic import BaseModel
+from flanker_core.models.components import InitiativeState
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
+
+
+class CamelCaseConfig:
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class AiMatchResponse(BaseModel, CamelCaseConfig):
+    """Response model from WebAPI."""
+
+    winner: InitiativeState.Faction | None
+    total_runtime: float
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
 
 
 class ExperimentConfig(BaseModel):
@@ -42,12 +61,12 @@ def main() -> None:
     with ThreadPoolExecutor(
         max_workers=config.parallelization,
     ) as executor:
-        for _ in executor.map(
+        for result in executor.map(
             send_ai_play_request,
             requests_to_send,
         ):
-            print("done!")
-            # print(result.json())
+            response = AiMatchResponse(**result.json())
+            print(response)
 
 
 def get_config() -> ExperimentConfig:
