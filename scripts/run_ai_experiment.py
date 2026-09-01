@@ -40,6 +40,7 @@ class ExperimentSetConfig(BaseModel):
     match_settings: dict[str, str]
     n_matches: int
     max_workers: int
+    target: Literal["local"] | str
 
 
 @dataclass
@@ -47,6 +48,7 @@ class ExperimentConfig:
     name: str
     gs: GameState
     n_matches: int
+    target: Literal["local"] | str
 
 
 @dataclass
@@ -84,24 +86,32 @@ def main() -> None:
     matches = get_matches(experiments, results_root_path)
     random.shuffle(matches)
 
+    # For local, parallelize using CPU.
+    # For running this in cloud, concurrent using threads.
+    pool_type: type[Pool] | type[ThreadPool]
+    match experiment_set.target:
+        case "local":
+            pool_type = Pool
+        case _:
+            pool_type = ThreadPool
+
     # Run this in parallel
-    pool_type: type[Pool] | type[ThreadPool] = Pool
     with pool_type(processes=experiment_set.max_workers) as p:
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
-            result, match = match_result
-            print(f"    {match.name} done, tallying")
+            result, match_config = match_result
+            print(f"    {match_config.name} done, tallying")
             experiment_result = get_results(
-                experiment_name=match.name,
+                experiment_name=match_config.name,
                 results_root_path=results_root_path,
             )
-            if experiment_result.n_matches == match.n_matches:
+            if experiment_result.n_matches == match_config.n_matches:
                 continue
             match_results = experiment_result.match_results
             match_results.append(result)
             experiment_result.n_matches = len(match_results)
             save_results(
-                experiment_name=match.name,
+                experiment_name=match_config.name,
                 result=experiment_result,
                 results_root_path=results_root_path,
             )
@@ -113,13 +123,13 @@ def get_config(config_path: str) -> ExperimentSetConfig:
 
 
 def run_match(
-    match: MatchConfig,
+    match_config: MatchConfig,
 ) -> tuple[MatchResult, MatchConfig]:
-    print(f"Running match {match.name}")
+    print(f"Running match {match_config.name}")
 
     # Run locally if config says so
-    if match.target == "local":
-        result = AiMatch.run_match(match.gs)
+    if match_config.target == "local":
+        result = AiMatch.run_match(match_config.gs)
         return (
             MatchResult(
                 winner=result.winner,
@@ -127,17 +137,17 @@ def run_match(
                 blue_search_sizes=result.blue_search_sizes,
                 red_search_sizes=result.red_search_sizes,
             ),
-            match,
+            match_config,
         )
 
     # Otherwise, assume the match.target is a Flanker WebAPI URL
     else:
         scene_data = Serializer.serialize(
-            entities=match.gs.dump(),
+            entities=match_config.gs.dump(),
             component_types=list(get_component_types()),
         )
         r = requests.post(
-            f"{match.target}/api/ai-play",
+            f"{match_config.target}/api/ai-play",
             data=scene_data,
         )
         if 300 <= r.status_code <= 600:
@@ -151,7 +161,7 @@ def run_match(
                 blue_search_sizes=response.blue_search_sizes,
                 red_search_sizes=response.red_search_sizes,
             ),
-            match,
+            match_config,
         )
 
 
@@ -163,6 +173,7 @@ def get_experiments(
             name="-".join(name for name, _ in combination),
             gs=get_game_state(list(path for _, path in combination)),
             n_matches=experiment_set.n_matches,
+            target=experiment_set.target,
         )
         for combination in product(
             experiment_set.scene_configs.items(),
@@ -194,7 +205,7 @@ def get_matches(
                     name=experiment.name,
                     gs=gs,
                     n_matches=experiment.n_matches,
-                    target="local",
+                    target=experiment.target,
                 )
             )
 
