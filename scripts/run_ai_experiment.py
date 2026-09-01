@@ -149,7 +149,10 @@ def run_match(
             data=scene_data,
         )
         if 300 <= r.status_code <= 600:
-            raise Exception(f"Request had {r.status_code} error: {r.text}")
+            print(f"Request had {r.status_code} error: {r.text}")
+            print(f"Rerunning {match_config.name}")
+            return run_match(match_config)
+
         result = MatchResultApiResponse(**r.json())
 
     return (
