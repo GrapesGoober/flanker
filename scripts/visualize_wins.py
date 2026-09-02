@@ -1,16 +1,64 @@
+import json
+from itertools import product
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+from experiment_models import ExperimentResult, ExperimentSetConfig
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
-
-from scripts.experiment_models import ExperimentResult
 
 # pyright: reportUnknownMemberType=false
 
 
-FOLDER = "./scripts/outputs/experiment-results/"
-
-
 def main() -> None:
+    results_root_path = "./scripts/outputs/experiment-results/"
+
+    experiment_set = get_config(
+        config_path="./scripts/configs/experiment-config.json",
+    )
+    experiment_results = {
+        name: get_results(name, results_root_path)
+        for name in get_experiment_names(experiment_set)
+    }
+    ...
+
+
+def get_config(config_path: str) -> ExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return ExperimentSetConfig(**json.loads(f.read()))
+
+
+def get_experiment_names(
+    experiment_set: ExperimentSetConfig,
+) -> list[str]:
+    return [
+        "-".join(name for name in combination)
+        for combination in product(
+            experiment_set.scene_configs,
+            experiment_set.blue_configs,
+            experiment_set.red_configs,
+            experiment_set.match_settings,
+        )
+    ]
+
+
+def get_results(
+    experiment_name: str,
+    results_root_path: str,
+) -> ExperimentResult:
+    file_path = f"{results_root_path}{experiment_name}.json"
+    if not Path(file_path).is_file():
+        raise Exception(f"Results file for {experiment_name} does not exist")
+
+    with open(file_path, "r") as f:
+        # This file reading is unreliable... need better file IO?
+        file_data = f.read()
+        if file_data == "":
+            raise Exception(f"{file_path} file empty?!")
+        return ExperimentResult.model_validate_json(file_data)
+
+
+def old_main() -> None:
     blue_configs = ["grid", "analysis", "rh", "mcts"]
     red_configs = ["rh"]
     scenes = ["scene-1", "scene-2"]
@@ -26,6 +74,7 @@ def main() -> None:
             blue_configs=blue_configs,
             red_configs=red_configs,
             scene_name=scene_name,
+            results_root_path="./scripts/outputs/experiment-results/",
         )
 
         ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
@@ -60,19 +109,11 @@ def main() -> None:
     plt.show()
 
 
-def get_results(experiment_name: str) -> ExperimentResult:
-    file_path = f"{FOLDER}{experiment_name}.json"
-    with open(file_path, "r") as f:
-        file_data = f.read()
-        if file_data == "":
-            raise Exception(f"{file_path} file fmpty?!")
-        return ExperimentResult.model_validate_json(file_data)
-
-
 def get_win_rates(
     blue_configs: list[str],
     red_configs: list[str],
     scene_name: str,
+    results_root_path: str,
 ) -> list[list[float]]:
     win_rates: list[list[float]] = []
 
@@ -81,7 +122,8 @@ def get_win_rates(
         win_rates.append(cells)
         for red in red_configs:
             match_results = get_results(
-                f"{scene_name}-blue-{blue}-red-{red}-experiment"
+                experiment_name=f"{scene_name}-blue-{blue}-red-{red}-experiment",
+                results_root_path=results_root_path,
             ).match_results
             blue_wins = sum(
                 match_result.winner == InitiativeState.Faction.BLUE
