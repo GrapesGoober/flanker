@@ -48,6 +48,16 @@ class GameViewStateResponse(BaseModel, CamelCaseConfig):
     json_state: str
 
 
+class AiMatchResponse(BaseModel, CamelCaseConfig):
+    """Response model for AI match contains match result and final game state."""
+
+    winner: InitiativeState.Faction | None
+    total_runtime: float
+    blue_search_sizes: list[int]
+    red_search_sizes: list[int]
+    json_state: str
+
+
 class TerrainModel(BaseModel, CamelCaseConfig):
     """Represents a view of terrain feature in the game."""
 

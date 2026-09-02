@@ -1,0 +1,13 @@
+FROM python:3.13
+
+WORKDIR /code
+
+COPY ./apps/webapi-docker-requirements.txt /code/requirements.txt
+COPY ./flanker-backend /code/flanker-backend
+
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+COPY ./apps/webapi /code/webapi
+COPY ./scenes /code/scenes
+
+CMD ["fastapi", "run", "webapi", "--port", "8000"]

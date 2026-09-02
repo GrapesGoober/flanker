@@ -23,6 +23,7 @@ from flanker_core.models.actions import (
 from flanker_core.models.components import InitiativeState
 from webapi.logging_service import LoggingService
 from webapi.models import (
+    AiMatchResponse,
     AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
@@ -48,14 +49,17 @@ class AiService:
         AiService._log_ai_action_results(gs, action_results)
 
     @staticmethod
-    def run_match(gs: GameState) -> None:
+    def run_match(gs: GameState) -> AiMatchResponse:
         """Runs a match where 2 AI agents plays against each other."""
         result = AiMatch.run_match(gs)
         AiService._log_ai_action_results(gs, result.action_results)
-        if result.winner == None:
-            print(f"No winner; draw")
-        else:
-            print(f"Winner is {result.winner}")
+        return AiMatchResponse(
+            winner=result.winner,
+            total_runtime=result.total_runtime,
+            blue_search_sizes=result.blue_search_sizes,
+            red_search_sizes=result.red_search_sizes,
+            json_state=SceneService.serialize(gs),
+        )
 
     @staticmethod
     def set_ai_waypoints_coordinates(
