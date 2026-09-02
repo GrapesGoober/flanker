@@ -48,6 +48,8 @@ class ExperimentResult(BaseModel):
     """Result of an experiment run containing its match results."""
 
     n_matches: int
+    blue_config: AiConfigComponent
+    red_config: AiConfigComponent
     match_results: list[MatchResult]
 
 
@@ -90,6 +92,10 @@ def main() -> None:
         config_path="./scripts/configs/experiment-config.json",
     )
     experiments = get_experiments(experiment_set)
+
+    for experiment in experiments:
+        init_results_file(experiment, results_root_path)
+
     matches = get_matches(experiments, results_root_path)
     random.shuffle(matches)
 
@@ -240,23 +246,48 @@ def get_component_types() -> Iterable[type]:
     yield AiConfigComponent
 
 
-# TODO: add a separated create_result_file method
+def init_results_file(
+    experiment_config: ExperimentConfig,
+    results_root_path: str,
+) -> None:
+    file_path = f"{results_root_path}{experiment_config.name}.json"
+
+    blue_config: AiConfigComponent | None = None
+    red_config: AiConfigComponent | None = None
+    for _, ai_config in experiment_config.gs.query(AiConfigComponent):
+        match ai_config.faction:
+            case InitiativeState.Faction.BLUE:
+                blue_config = ai_config
+            case InitiativeState.Faction.RED:
+                red_config = ai_config
+
+    if blue_config == None or red_config == None:
+        raise Exception(f"AI configs missing!")
+
+    with open(file_path, "w") as f:
+        f.write(
+            ExperimentResult(
+                n_matches=0,
+                blue_config=blue_config,
+                red_config=red_config,
+                match_results=[],
+            ).model_dump_json(indent=2)
+        )
+
+
 def get_results(
     experiment_name: str,
     results_root_path: str,
 ) -> ExperimentResult:
     file_path = f"{results_root_path}{experiment_name}.json"
     if not Path(file_path).is_file():
-        return ExperimentResult(
-            n_matches=0,
-            match_results=[],
-        )
+        raise Exception(f"Results file for {experiment_name} does not exist")
 
     with open(file_path, "r") as f:
         # This file reading is unreliable... need better file IO?
         file_data = f.read()
         if file_data == "":
-            raise Exception(f"{file_path} file fmpty?!")
+            raise Exception(f"{file_path} file empty?!")
         return ExperimentResult.model_validate_json(file_data)
 
 
