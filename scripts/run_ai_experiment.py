@@ -56,10 +56,11 @@ class ExperimentResult(BaseModel):
 class ExperimentSetConfig(BaseModel):
     """Input config model for entire experiment-set run."""
 
-    scene_configs: dict[str, str]
-    blue_configs: dict[str, str]
-    red_configs: dict[str, str]
-    match_settings: dict[str, str]
+    scene_files: dict[str, str]
+    scene_configs: list[str]
+    blue_configs: list[str]
+    red_configs: list[str]
+    match_settings: list[str]
     n_matches: int
     max_workers: int
     target: Literal["local"] | str
@@ -177,16 +178,18 @@ def get_experiments(
 ) -> list[ExperimentConfig]:
     return [
         ExperimentConfig(
-            name="-".join(name for name, _ in combination),
-            gs=get_game_state(list(path for _, path in combination)),
+            name="-".join(name for name in combination),
+            gs=get_game_state(
+                [experiment_set.scene_files[name] for name in combination]
+            ),
             n_matches=experiment_set.n_matches,
             target=experiment_set.target,
         )
         for combination in product(
-            experiment_set.scene_configs.items(),
-            experiment_set.blue_configs.items(),
-            experiment_set.red_configs.items(),
-            experiment_set.match_settings.items(),
+            experiment_set.scene_configs,
+            experiment_set.blue_configs,
+            experiment_set.red_configs,
+            experiment_set.match_settings,
         )
     ]
 
@@ -252,6 +255,11 @@ def init_results_file(
 ) -> None:
     file_path = f"{results_root_path}{experiment_config.name}.json"
 
+    # If data already exists, avoid rerunning (need a manual file delete)
+    if Path(file_path).is_file():
+        return
+
+    # Record AI configs as metadata
     blue_config: AiConfigComponent | None = None
     red_config: AiConfigComponent | None = None
     for _, ai_config in experiment_config.gs.query(AiConfigComponent):
@@ -260,10 +268,10 @@ def init_results_file(
                 blue_config = ai_config
             case InitiativeState.Faction.RED:
                 red_config = ai_config
-
     if blue_config == None or red_config == None:
         raise Exception(f"AI configs missing!")
 
+    # Save file
     with open(file_path, "w") as f:
         f.write(
             ExperimentResult(
