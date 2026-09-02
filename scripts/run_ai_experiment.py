@@ -10,6 +10,11 @@ from typing import Any, Iterable, Literal
 from uuid import UUID
 
 import requests
+from experiment_models import (
+    ExperimentResult,
+    ExperimentSetConfig,
+    MatchResult,
+)
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
@@ -21,16 +26,27 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-class MatchResult(BaseModel):
-    """Match result model for each recorded match run."""
+@dataclass
+class _ExperimentConfig:
+    """Input config model for running a many matches."""
 
-    winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
+    name: str
+    gs: GameState
+    n_matches: int
+    target: Literal["local"] | str
 
 
-class MatchResultApiResponse(BaseModel):
+@dataclass
+class _MatchConfig:
+    """Input config model for running a single match."""
+
+    name: str
+    gs: GameState
+    n_matches: int
+    target: Literal["local"] | str
+
+
+class _MatchResultApiResponse(BaseModel):
     """Response model from WebAPI, kept separate from MatchResult."""
 
     model_config = ConfigDict(
@@ -42,48 +58,6 @@ class MatchResultApiResponse(BaseModel):
     total_runtime: float
     blue_search_sizes: list[int]
     red_search_sizes: list[int]
-
-
-class ExperimentResult(BaseModel):
-    """Result of an experiment run containing its match results."""
-
-    n_matches: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
-    match_results: list[MatchResult]
-
-
-class ExperimentSetConfig(BaseModel):
-    """Input config model for entire experiment-set run."""
-
-    scene_files: dict[str, str]
-    scene_configs: list[str]
-    blue_configs: list[str]
-    red_configs: list[str]
-    match_settings: list[str]
-    n_matches: int
-    max_workers: int
-    target: Literal["local"] | str
-
-
-@dataclass
-class ExperimentConfig:
-    """Input config model for running a many matches."""
-
-    name: str
-    gs: GameState
-    n_matches: int
-    target: Literal["local"] | str
-
-
-@dataclass
-class MatchConfig:
-    """Input config model for running a single match."""
-
-    name: str
-    gs: GameState
-    n_matches: int
-    target: Literal["local"] | str
 
 
 def main() -> None:
@@ -137,8 +111,8 @@ def get_config(config_path: str) -> ExperimentSetConfig:
 
 
 def run_match(
-    match_config: MatchConfig,
-) -> tuple[MatchResult, MatchConfig]:
+    match_config: _MatchConfig,
+) -> tuple[MatchResult, _MatchConfig]:
     print(f"Running match {match_config.name}")
 
     # Run locally if config says so
@@ -160,7 +134,7 @@ def run_match(
             print(f"Rerunning {match_config.name}")
             return run_match(match_config)
 
-        result = MatchResultApiResponse(**r.json())
+        result = _MatchResultApiResponse(**r.json())
 
     return (
         MatchResult(
@@ -175,9 +149,9 @@ def run_match(
 
 def get_experiments(
     experiment_set: ExperimentSetConfig,
-) -> list[ExperimentConfig]:
+) -> list[_ExperimentConfig]:
     return [
-        ExperimentConfig(
+        _ExperimentConfig(
             name="-".join(name for name in combination),
             gs=get_game_state(
                 [experiment_set.scene_files[name] for name in combination]
@@ -195,10 +169,10 @@ def get_experiments(
 
 
 def get_matches(
-    experiments: list[ExperimentConfig],
+    experiments: list[_ExperimentConfig],
     results_root_path: str,
-) -> list[MatchConfig]:
-    matches: list[MatchConfig] = []
+) -> list[_MatchConfig]:
+    matches: list[_MatchConfig] = []
     for experiment in experiments:
         current_tally = get_results(
             experiment.name,
@@ -211,7 +185,7 @@ def get_matches(
         gs = deepcopy(experiment.gs)
         for _ in range(remaining_matches):
             matches.append(
-                MatchConfig(
+                _MatchConfig(
                     name=experiment.name,
                     gs=gs,
                     n_matches=experiment.n_matches,
@@ -250,7 +224,7 @@ def get_component_types() -> Iterable[type]:
 
 
 def init_results_file(
-    experiment_config: ExperimentConfig,
+    experiment_config: _ExperimentConfig,
     results_root_path: str,
 ) -> None:
     file_path = f"{results_root_path}{experiment_config.name}.json"

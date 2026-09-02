@@ -3,24 +3,10 @@ from itertools import product
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from flanker_ai.components import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
-from pydantic import BaseModel
 
-
-class MatchResult(BaseModel):
-    winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
-
-
-class ExperimentResult(BaseModel):
-    n_matches: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
-    match_results: list[MatchResult]
+from scripts.experiment_models import ExperimentResult
 
 
 def main() -> None:

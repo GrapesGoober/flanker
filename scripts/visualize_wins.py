@@ -1,24 +1,10 @@
 import matplotlib.pyplot as plt
-from flanker_ai.components import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from matplotlib.axes import Axes
-from pydantic import BaseModel
+
+from scripts.experiment_models import ExperimentResult
 
 # pyright: reportUnknownMemberType=false
-
-
-class MatchResult(BaseModel):
-    winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
-
-
-class ExperimentResult(BaseModel):
-    n_matches: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
-    match_results: list[MatchResult]
 
 
 FOLDER = "./scripts/outputs/experiment-results/"
