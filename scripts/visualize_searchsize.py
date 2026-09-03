@@ -6,12 +6,8 @@ import pandas as pd
 from experiment_models import ExperimentResult, ExperimentSetConfig
 from plotnine import (
     aes,
-    element_text,
-    facet_wrap,
     geom_histogram,
     ggplot,
-    labs,
-    theme,
 )
 
 
