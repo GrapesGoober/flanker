@@ -14,13 +14,12 @@ class MatchResult(BaseModel):
     red_search_sizes: list[int]
 
 
-class ExperimentResult(BaseModel):
-    """Result of an experiment run containing its match results."""
+class ExperimentMetadata(BaseModel):
+    """Metadata of an experiment run."""
 
     n_matches: int
     blue_config: AiConfigComponent
     red_config: AiConfigComponent
-    match_results: list[MatchResult]
 
 
 class ExperimentSetConfig(BaseModel):

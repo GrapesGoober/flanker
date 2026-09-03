@@ -1,8 +1,9 @@
 from itertools import product
 from pathlib import Path
+from typing import Iterable
 
 import pandas as pd
-from experiment_models import ExperimentResult, ExperimentSetConfig
+from experiment_models import ExperimentSetConfig, MatchResult
 from plotnine import (
     aes,
     geom_histogram,
@@ -16,10 +17,12 @@ def main() -> None:
     experiment_set = get_config(
         config_path="./scripts/configs/experiment-config.json",
     )
-    experiment_results_by_name = {
-        name: get_experiment_result(
-            experiment_name=name,
-            results_root_path="./scripts/outputs/experiment-results/",
+    experiment_results_by_name: dict[str, list[MatchResult]] = {
+        name: list(
+            get_experiment_result(
+                experiment_name=name,
+                results_root_path="./scripts/outputs/experiment-results/",
+            )
         )
         for name in get_experiment_names(experiment_set)
     }
@@ -43,7 +46,7 @@ def main() -> None:
                 "-".join(
                     [scene_name, blue_config, red_config, match_setting],
                 )
-            ].match_results
+            ]
             for blue_search_size in match_result.blue_search_sizes
         ]
     )
@@ -74,17 +77,15 @@ def get_experiment_names(
 def get_experiment_result(
     experiment_name: str,
     results_root_path: str,
-) -> ExperimentResult:
-    file_path = f"{results_root_path}{experiment_name}.json"
+) -> Iterable[MatchResult]:
+    file_path = f"{results_root_path}{experiment_name}.jsonl"
     if not Path(file_path).is_file():
         raise Exception(f"Results file for {experiment_name} does not exist")
 
     with open(file_path, "r") as f:
         # This file reading is unreliable... need better file IO?
-        file_data = f.read()
-        if file_data == "":
-            raise Exception(f"{file_path} file empty?!")
-        return ExperimentResult.model_validate_json(file_data)
+        for line in f:
+            yield MatchResult.model_validate_json(line)
 
 
 if __name__ == "__main__":

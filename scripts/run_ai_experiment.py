@@ -11,7 +11,7 @@ from uuid import UUID
 
 import requests
 from experiment_models import (
-    ExperimentResult,
+    ExperimentMetadata,
     ExperimentSetConfig,
     MatchResult,
 )
@@ -69,7 +69,7 @@ def main() -> None:
     experiments = get_experiments(experiment_set)
 
     for experiment in experiments:
-        init_results_file(experiment, results_root_path)
+        init_metadata_file(experiment, results_root_path)
 
     matches = get_matches(experiments, results_root_path)
     random.shuffle(matches)
@@ -89,18 +89,16 @@ def main() -> None:
         for match_result in results:
             result, match_config = match_result
             print(f"    {match_config.name} done, tallying")
-            experiment_result = get_results(
+            experiment_metadata = get_metadata(
                 experiment_name=match_config.name,
                 results_root_path=results_root_path,
             )
-            if experiment_result.n_matches == match_config.n_matches:
+            if experiment_metadata.n_matches == match_config.n_matches:
                 continue
-            match_results = experiment_result.match_results
-            match_results.append(result)
-            experiment_result.n_matches = len(match_results)
-            save_results(
+            experiment_metadata.n_matches += 1
+            append_results(
                 experiment_name=match_config.name,
-                result=experiment_result,
+                result=result,
                 results_root_path=results_root_path,
             )
 
@@ -175,7 +173,7 @@ def get_matches(
 ) -> list[_MatchConfig]:
     matches: list[_MatchConfig] = []
     for experiment in experiments:
-        current_tally = get_results(
+        current_tally = get_metadata(
             experiment.name,
             results_root_path,
         )
@@ -224,11 +222,11 @@ def get_component_types() -> Iterable[type]:
     yield AiConfigComponent
 
 
-def init_results_file(
+def init_metadata_file(
     experiment_config: _ExperimentConfig,
     results_root_path: str,
 ) -> None:
-    file_path = f"{results_root_path}{experiment_config.name}.json"
+    file_path = f"{results_root_path}{experiment_config.name}-metadata.json"
 
     # If data already exists, avoid rerunning (need a manual file delete)
     if Path(file_path).is_file():
@@ -249,39 +247,39 @@ def init_results_file(
     # Save file
     with open(file_path, "w") as f:
         f.write(
-            ExperimentResult(
+            ExperimentMetadata(
                 n_matches=0,
                 blue_config=blue_config,
                 red_config=red_config,
-                match_results=[],
             ).model_dump_json(indent=2)
         )
 
 
-def get_results(
+def get_metadata(
     experiment_name: str,
     results_root_path: str,
-) -> ExperimentResult:
-    file_path = f"{results_root_path}{experiment_name}.json"
+) -> ExperimentMetadata:
+    file_path = f"{results_root_path}{experiment_name}-metadata.json"
     if not Path(file_path).is_file():
-        raise Exception(f"Results file for {experiment_name} does not exist")
+        raise Exception(f"Metadata file for {experiment_name} does not exist")
 
     with open(file_path, "r") as f:
         # This file reading is unreliable... need better file IO?
         file_data = f.read()
         if file_data == "":
             raise Exception(f"{file_path} file empty?!")
-        return ExperimentResult.model_validate_json(file_data)
+        return ExperimentMetadata.model_validate_json(file_data)
 
 
-def save_results(
+def append_results(
     experiment_name: str,
-    result: ExperimentResult,
+    result: MatchResult,
     results_root_path: str,
 ) -> None:
-    file_path = f"{results_root_path}{experiment_name}.json"
-    with open(file_path, "w") as f:
-        f.write(result.model_dump_json(indent=2))
+    file_path = f"{results_root_path}{experiment_name}.jsonl"
+    with open(file_path, "a") as f:
+        f.write(result.model_dump_json())
+        f.write("\n")
 
 
 if __name__ == "__main__":
