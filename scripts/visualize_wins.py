@@ -1,7 +1,6 @@
 import json
 from itertools import product
 from pathlib import Path
-from typing import TypedDict
 
 import pandas as pd
 from experiment_models import ExperimentResult, ExperimentSetConfig
@@ -15,13 +14,6 @@ from plotnine import (
     labs,
     scale_fill_cmap,
 )
-
-
-class _WinRateCell(TypedDict):
-    scene: str
-    blue: str
-    red: str
-    win_rate: float
 
 
 def main() -> None:
@@ -41,26 +33,27 @@ def main() -> None:
     # Can only plot from one match settings
     match_setting = experiment_set.match_settings[0]
 
-    # Generate a list of win rate for each cells
-    cells: list[_WinRateCell] = [
-        {
-            "scene": scene_name,
-            "blue": blue_config,
-            "red": red_config,
-            "win_rate": get_win_rate(
-                experiment_name="-".join(
-                    [scene_name, blue_config, red_config, match_setting],
+    # Generate cells of each win rate to render
+    df = pd.DataFrame(
+        [
+            {
+                "scene": scene_name,
+                "blue": blue_config,
+                "red": red_config,
+                "win_rate": get_win_rate(
+                    experiment_name="-".join(
+                        [scene_name, blue_config, red_config, match_setting],
+                    ),
+                    experiment_results_by_name=experiment_results_by_name,
                 ),
-                experiment_results_by_name=experiment_results_by_name,
-            ),
-        }
-        for scene_name in experiment_set.scene_configs
-        for blue_config in experiment_set.blue_configs
-        for red_config in experiment_set.red_configs
-    ]
+            }
+            for scene_name in experiment_set.scene_configs
+            for blue_config in experiment_set.blue_configs
+            for red_config in experiment_set.red_configs
+        ]
+    )
 
     # Plot those cells
-    df = pd.DataFrame(cells)
     plot = (
         ggplot(df, aes(x="red", y="blue", fill="win_rate"))
         + geom_tile()
