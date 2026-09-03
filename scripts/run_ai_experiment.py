@@ -226,7 +226,7 @@ def init_metadata_file(
     experiment_config: _ExperimentConfig,
     results_root_path: str,
 ) -> None:
-    file_path = f"{results_root_path}{experiment_config.name}-metadata.json"
+    file_path = Path(results_root_path) / f"{experiment_config.name}-metadata.json"
 
     # If data already exists, avoid rerunning (need a manual file delete)
     if Path(file_path).is_file():
@@ -259,7 +259,7 @@ def get_metadata(
     experiment_name: str,
     results_root_path: str,
 ) -> ExperimentMetadata:
-    file_path = f"{results_root_path}{experiment_name}-metadata.json"
+    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
     if not Path(file_path).is_file():
         raise Exception(f"Metadata file for {experiment_name} does not exist")
 
@@ -276,7 +276,7 @@ def append_results(
     result: MatchResult,
     results_root_path: str,
 ) -> None:
-    file_path = f"{results_root_path}{experiment_name}.jsonl"
+    file_path = Path(results_root_path) / f"{experiment_name}.jsonl"
     with open(file_path, "a") as f:
         f.write(result.model_dump_json())
         f.write("\n")

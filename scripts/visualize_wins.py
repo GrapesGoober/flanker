@@ -93,7 +93,7 @@ def get_experiment_results(
     experiment_name: str,
     results_root_path: str,
 ) -> Iterable[MatchResult]:
-    file_path = f"{results_root_path}{experiment_name}.jsonl"
+    file_path = Path(results_root_path) / f"{experiment_name}.jsonl"
     if not Path(file_path).is_file():
         raise Exception(f"Results file for {experiment_name} does not exist")
 
