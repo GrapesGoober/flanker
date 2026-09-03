@@ -1,4 +1,3 @@
-import json
 from itertools import product
 from pathlib import Path
 
@@ -70,7 +69,7 @@ def main() -> None:
 
 def get_config(config_path: str) -> ExperimentSetConfig:
     with open(config_path, "r") as f:
-        return ExperimentSetConfig(**json.loads(f.read()))
+        return ExperimentSetConfig.model_validate_json(f.read())
 
 
 def get_experiment_names(

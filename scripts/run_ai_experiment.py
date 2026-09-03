@@ -1,4 +1,3 @@
-import json
 import random
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
@@ -108,7 +107,7 @@ def main() -> None:
 
 def get_config(config_path: str) -> ExperimentSetConfig:
     with open(config_path, "r") as f:
-        return ExperimentSetConfig(**json.loads(f.read()))
+        return ExperimentSetConfig.model_validate_json(f.read())
 
 
 def run_match(
@@ -136,7 +135,7 @@ def run_match(
             sleep(30)
             return run_match(match_config)
 
-        result = _MatchResultApiResponse(**r.json())
+        result = _MatchResultApiResponse.model_validate_json(r.text)
 
     return (
         MatchResult(
