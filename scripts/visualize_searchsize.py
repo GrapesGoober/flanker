@@ -29,9 +29,7 @@ def main() -> None:
     match_setting = experiment_set.match_settings[0]
 
     # Generate cells of each win rate to render
-    scene_name = "scene-1"
-    blue_config = "blue-analysis"
-    red_config = "red-rh"
+    blue_config = "blue-grid"
     df = pd.DataFrame(
         [
             {
@@ -40,9 +38,8 @@ def main() -> None:
                 "red": red_config,
                 "search_size": blue_search_size,
             }
-            # for scene_name in experiment_set.scene_configs
-            # for blue_config in experiment_set.blue_configs
-            # for red_config in experiment_set.red_configs
+            for scene_name in experiment_set.scene_configs
+            for red_config in experiment_set.red_configs
             for match_result in experiment_results_by_name[
                 "-".join(
                     [scene_name, blue_config, red_config, match_setting],
