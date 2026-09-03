@@ -1,224 +1,98 @@
+import json
 from itertools import product
+from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-from flanker_core.models.components import InitiativeState
-from matplotlib.axes import Axes
-
-from scripts.experiment_models import ExperimentResult
+import pandas as pd
+from experiment_models import ExperimentResult, ExperimentSetConfig
+from plotnine import (
+    aes,
+    element_text,
+    facet_wrap,
+    geom_histogram,
+    ggplot,
+    labs,
+    theme,
+)
 
 
 def main() -> None:
-    scene_1_sizes, scene_2_sizes = get_sizes()
-    # plot_kde(scene_1_sizes, scene_2_sizes)
-    plot_hist(scene_1_sizes, scene_2_sizes)
 
-
-def get_sizes() -> tuple[dict[str, list[int]], dict[str, list[int]]]:
-    size_grid_scene_1: list[int] = get_search_sizes(
-        scene_name="scene-1",
-        faction=InitiativeState.Faction.BLUE,
-        blue_configs=["grid"],
-        red_configs=["grid", "analysis", "rh"],
+    # Retrieve the each experiment results
+    experiment_set = get_config(
+        config_path="./scripts/configs/experiment-config.json",
     )
-    size_grid_scene_2: list[int] = get_search_sizes(
-        scene_name="scene-2",
-        faction=InitiativeState.Faction.BLUE,
-        blue_configs=["grid"],
-        red_configs=["grid", "analysis", "rh"],
-    )
-    size_analysis_scene_1: list[int] = get_search_sizes(
-        scene_name="scene-1",
-        faction=InitiativeState.Faction.BLUE,
-        blue_configs=["analysis"],
-        red_configs=["grid", "analysis", "rh"],
-    )
-    size_analysis_scene_2: list[int] = get_search_sizes(
-        scene_name="scene-2",
-        faction=InitiativeState.Faction.BLUE,
-        blue_configs=["analysis"],
-        red_configs=["grid", "analysis", "rh"],
-    )
-
-    CUTOFF = 200_000
-
-    def percent_cutoff(numbers: list[int]) -> float:
-        above_cutoff_count = sum(1 for x in numbers if x > CUTOFF)
-        return (above_cutoff_count / len(numbers)) * 100
-
-    print(
-        f"grid-scene-1 >{CUTOFF} accounts for {percent_cutoff(size_grid_scene_1):.2f}%",
-        f"grid-scene-2 >{CUTOFF} accounts for {percent_cutoff(size_grid_scene_2):.2f}%",
-        f"analysis-scene-1 >{CUTOFF} accounts for {percent_cutoff(size_analysis_scene_1):.2f}%",
-        f"analysis-scene-2 >{CUTOFF} accounts for {percent_cutoff(size_analysis_scene_2):.2f}%",
-        sep="\n",
-    )
-
-    print(
-        f"grid-scene-1 average {np.average(size_grid_scene_1)}",
-        f"grid-scene-2 average {np.average(size_grid_scene_2)}",
-        f"analysis-scene-1 average {np.average(size_analysis_scene_1)}",
-        f"analysis-scene-2 average {np.average(size_analysis_scene_2)}",
-        sep="\n",
-    )
-
-    print(
-        f"grid-scene-1 min {min(size_grid_scene_1)}",
-        f"grid-scene-2 min {min(size_grid_scene_2)}",
-        f"analysis-scene-1 min {min(size_analysis_scene_1)}",
-        f"analysis-scene-2 min {min(size_analysis_scene_2)}",
-        sep="\n",
-    )
-
-    print(
-        f"grid-scene-1 max {max(size_grid_scene_1)}",
-        f"grid-scene-2 max {max(size_grid_scene_2)}",
-        f"analysis-scene-1 max {max(size_analysis_scene_1)}",
-        f"analysis-scene-2 max {max(size_analysis_scene_2)}",
-        sep="\n",
-    )
-
-    scene_1_sizes: dict[str, list[int]] = {
-        "grid": size_grid_scene_1,
-        "analysis": size_analysis_scene_1,
-    }
-    scene_2_sizes: dict[str, list[int]] = {
-        "grid": size_grid_scene_2,
-        "analysis": size_analysis_scene_2,
+    experiment_results_by_name = {
+        name: get_experiment_result(
+            experiment_name=name,
+            results_root_path="./scripts/outputs/experiment-results/",
+        )
+        for name in get_experiment_names(experiment_set)
     }
 
-    return scene_1_sizes, scene_2_sizes
+    # Can only plot from one match settings
+    match_setting = experiment_set.match_settings[0]
 
-
-def plot_kde(
-    scene_1_sizes: dict[str, list[int]],
-    scene_2_sizes: dict[str, list[int]],
-) -> None:
-
-    sns.set_style("whitegrid")
-
-    # Init the subplots
-    axes: list[Axes]
-    fig, axes = plt.subplots(  # type: ignore
-        nrows=2,
-        ncols=1,
-        figsize=(4.5, 4),
-        sharex=True,
-    )
-    CLIP_RANGE = (0, 300_000)
-
-    # Plot scene-1
-    for name, sizes in scene_1_sizes.items():
-        sns.kdeplot(
-            np.array(sizes),
-            clip=CLIP_RANGE,
-            label=name,
-            fill=True,
-            ax=axes[0],  # Put into top plot
-        )
-    axes[0].set_title("scene-1")  # type: ignore
-    axes[0].legend()  # type: ignore
-
-    # Plot scene-2
-    for name, sizes in scene_2_sizes.items():
-        sns.kdeplot(
-            np.array(sizes),
-            clip=CLIP_RANGE,
-            label=name,
-            fill=True,
-            ax=axes[1],  # Put into bottom plot
-        )
-    axes[1].set_title("scene-2")  # type: ignore
-    axes[1].legend()  # type: ignore
-
-    # Save to file
-    fig.tight_layout()
-    fig.savefig(  # type: ignore
-        "results-treesize.png",
-        dpi=300,
-        bbox_inches="tight",
-    )
-
-
-def plot_hist(
-    scene_1_sizes: dict[str, list[int]],
-    scene_2_sizes: dict[str, list[int]],
-) -> None:
-
-    FIG_SIZE = (4.5, 4)
-    CUTOFF = 200_000
-    BINS_COUNT = 20
-    Y_LIMIT = 0.5
-    FILE_NAME = "./scripts/outputs/searchsizes-comparison.png"
-
-    print(f"Bin width is {CUTOFF/BINS_COUNT}")
-
-    # Create a 2x1 subplot layout (2 rows, 1 column)
-    axes: list[Axes]
-    fig, axes = plt.subplots(2, 1, figsize=FIG_SIZE, sharex=True)  # type: ignore
-
-    # Loop through scenes and zip them with their corresponding subplot axis
-    for ax, search_sizes, scene_name in zip(
-        axes,
-        [scene_1_sizes, scene_2_sizes],
-        ["scene-1", "scene-2"],
-    ):
-        weights_list = [
-            np.ones_like(dataset) / len(dataset)
-            for dataset in list(search_sizes.values())
+    # Generate cells of each win rate to render
+    scene_name = "scene-1"
+    blue_config = "blue-analysis"
+    red_config = "red-rh"
+    df = pd.DataFrame(
+        [
+            {
+                "scene": scene_name,
+                "blue": blue_config,
+                "red": red_config,
+                "search_size": blue_search_size,
+            }
+            # for scene_name in experiment_set.scene_configs
+            # for blue_config in experiment_set.blue_configs
+            # for red_config in experiment_set.red_configs
+            for match_result in experiment_results_by_name[
+                "-".join(
+                    [scene_name, blue_config, red_config, match_setting],
+                )
+            ].match_results
+            for blue_search_size in match_result.blue_search_sizes
         ]
-        ax.hist(  # type: ignore
-            x=list(search_sizes.values()),
-            range=(0, CUTOFF),
-            bins=BINS_COUNT,
-            histtype="bar",
-            label=["grid", "analysis"],
-            weights=weights_list,
-        )
-        ax.set_ylim(0, Y_LIMIT)
-        ax.legend()  # type: ignore
-        ax.set_xlabel(f"BLUE game-tree sizes ({scene_name})")  # type: ignore
-        ax.set_ylabel("Relative Frequency")  # type: ignore
-
-    fig.tight_layout()
-    fig.savefig(  # type: ignore
-        FILE_NAME,
-        dpi=300,
-        bbox_inches="tight",
     )
-    # fig.show()  # type: ignore
+
+    plot = ggplot(df, aes(x="search_size")) + geom_histogram()
+    plot.show()
 
 
-def get_results(
+def get_config(config_path: str) -> ExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return ExperimentSetConfig(**json.loads(f.read()))
+
+
+def get_experiment_names(
+    experiment_set: ExperimentSetConfig,
+) -> list[str]:
+    return [
+        "-".join(name for name in combination)
+        for combination in product(
+            experiment_set.scene_configs,
+            experiment_set.blue_configs,
+            experiment_set.red_configs,
+            experiment_set.match_settings,
+        )
+    ]
+
+
+def get_experiment_result(
     experiment_name: str,
+    results_root_path: str,
 ) -> ExperimentResult:
-    file_path = f"./scripts/outputs/experiment-results/{experiment_name}.json"
+    file_path = f"{results_root_path}{experiment_name}.json"
+    if not Path(file_path).is_file():
+        raise Exception(f"Results file for {experiment_name} does not exist")
+
     with open(file_path, "r") as f:
+        # This file reading is unreliable... need better file IO?
         file_data = f.read()
         if file_data == "":
-            raise Exception(f"{file_path} file fmpty?!")
+            raise Exception(f"{file_path} file empty?!")
         return ExperimentResult.model_validate_json(file_data)
-
-
-def get_search_sizes(
-    scene_name: str,
-    faction: InitiativeState.Faction,
-    blue_configs: list[str],
-    red_configs: list[str],
-) -> list[int]:
-    # Just a placeholder to return the average
-    search_sizes: list[int] = []
-    for blue_conf, red_conf in product(blue_configs, red_configs):
-        experiment_name = f"{scene_name}-blue-{blue_conf}-red-{red_conf}-experiment"
-        results = get_results(experiment_name)
-        for match_result in results.match_results:
-            match faction:
-                case InitiativeState.Faction.BLUE:
-                    search_sizes += match_result.blue_search_sizes
-                case InitiativeState.Faction.RED:
-                    search_sizes += match_result.red_search_sizes
-    return search_sizes
 
 
 if __name__ == "__main__":
