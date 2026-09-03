@@ -1,13 +1,20 @@
 import json
 from itertools import product
 from pathlib import Path
+from typing import Any
 
-import matplotlib.pyplot as plt
+import pandas as pd
 from experiment_models import ExperimentResult, ExperimentSetConfig
 from flanker_core.models.components import InitiativeState
-from matplotlib.axes import Axes
-
-# pyright: reportUnknownMemberType=false
+from plotnine import (
+    aes,
+    facet_wrap,
+    geom_text,
+    geom_tile,
+    ggplot,
+    labs,
+    scale_fill_cmap,
+)
 
 
 def main() -> None:
@@ -20,50 +27,60 @@ def main() -> None:
         name: get_results(name, results_root_path)
         for name in get_experiment_names(experiment_set)
     }
+    match_settings_to_plot = experiment_set.match_settings[0]
 
-    FONTSIZE = 20
-
-    # Create a figure with 1 row and 2 columns
-    axes: list[Axes]
-    _, axes = plt.subplots(1, 2, figsize=(8, 4))  # type: ignore
-
+    # Plot win rate for each scene
+    win_rates_list: list[Any] = []
     for idx, scene_name in enumerate(experiment_set.scene_configs):
-        ax = axes[idx]
-        win_rates = [
-            [1],
-            [2],
-        ]
 
-        ax.imshow(win_rates, vmin=0, vmax=1)
+        # Create a BLUE's win rate mapping for each BLUE and each RED pairing
+        win_rates: dict[str, dict[str, float]] = {
+            blue_config: {
+                red_config: 0.1  # TODO: put the experiment_results here
+                for red_config in experiment_set.red_configs
+            }
+            for blue_config in experiment_set.blue_configs
+        }
+        win_rates_list.append(win_rates)
 
-        ax.set_xticks(range(len(experiment_set.red_configs)))
-        ax.set_xticklabels(experiment_set.red_configs, fontsize=FONTSIZE)
-        ax.set_xlabel("Red", fontsize=FONTSIZE)
-        ax.set_title(scene_name, fontsize=FONTSIZE)
+    plot = plot_win_rates(win_rates_list, experiment_set.scene_configs)
+    plot.draw(show=True)
 
-        if idx == 0:
-            ax.set_ylabel("Blue", fontsize=FONTSIZE)
-            ax.set_yticks(range(len(experiment_set.blue_configs)))
-            ax.set_yticklabels(experiment_set.blue_configs, fontsize=FONTSIZE)
-        else:
-            ax.set_yticks([])  # type: ignore
 
-        # Add numbers to each cell
-        for i in range(len(win_rates)):
-            for j in range(len(win_rates[i])):
-                ax.text(  # type: ignore
-                    j,
-                    i,
-                    f"{win_rates[i][j]:.2f}",
-                    ha="center",
-                    va="center",
-                    fontsize=FONTSIZE,
-                    color="white" if win_rates[i][j] < 0.5 else "black",
+def plot_win_rates(
+    win_rates_list: list[dict[str, dict[str, float]]], titles: list[str]
+) -> ggplot:
+    rows: list[dict[str, Any]] = []
+
+    for win_rates, title in zip(win_rates_list, titles):
+        for blue, red_rates in win_rates.items():
+            for red, win_rate in red_rates.items():
+                rows.append(
+                    {
+                        "plot": title,
+                        "blue": blue,
+                        "red": red,
+                        "win_rate": win_rate,
+                    }
                 )
 
-    plt.tight_layout()
-    # plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
-    plt.show()
+    df = pd.DataFrame(rows)
+
+    return (
+        ggplot(df, aes(x="red", y="blue", fill="win_rate"))
+        + geom_tile()
+        + geom_text(
+            aes(label="win_rate"),
+        )
+        + scale_fill_cmap(
+            limits=(0, 1),
+        )
+        + facet_wrap("~plot", nrow=1)
+        + labs(
+            x="RED configuration",
+            y="BLUE configuration",
+        )
+    )
 
 
 def get_config(config_path: str) -> ExperimentSetConfig:
