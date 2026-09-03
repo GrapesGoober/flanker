@@ -6,6 +6,7 @@ from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool, ThreadPool
 from pathlib import Path
+from time import sleep
 from typing import Any, Iterable, Literal
 from uuid import UUID
 
@@ -131,7 +132,8 @@ def run_match(
         )
         if 300 <= r.status_code <= 600:
             print(f"Request had {r.status_code} error: {r.text}")
-            print(f"Rerunning {match_config.name}")
+            print(f"Rerunning {match_config.name} in 30 seconds")
+            sleep(30)
             return run_match(match_config)
 
         result = _MatchResultApiResponse(**r.json())
