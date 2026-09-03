@@ -24,19 +24,25 @@ def main() -> None:
         config_path="./scripts/configs/experiment-config.json",
     )
     experiment_results = {
-        name: get_results(name, results_root_path)
+        name: get_experiment_result(name, results_root_path)
         for name in get_experiment_names(experiment_set)
     }
-    match_settings_to_plot = experiment_set.match_settings[0]
+
+    # Can only plot from one match settings
+    match_setting = experiment_set.match_settings[0]
 
     # Plot win rate for each scene
     win_rates_list: list[Any] = []
-    for idx, scene_name in enumerate(experiment_set.scene_configs):
-
+    for scene_name in experiment_set.scene_configs:
         # Create a BLUE's win rate mapping for each BLUE and each RED pairing
         win_rates: dict[str, dict[str, float]] = {
             blue_config: {
-                red_config: 0.1  # TODO: put the experiment_results here
+                red_config: get_win_rate(
+                    experiment_name="-".join(
+                        [scene_name, blue_config, red_config, match_setting],
+                    ),
+                    experiment_results=experiment_results,
+                )
                 for red_config in experiment_set.red_configs
             }
             for blue_config in experiment_set.blue_configs
@@ -45,6 +51,56 @@ def main() -> None:
 
     plot = plot_win_rates(win_rates_list, experiment_set.scene_configs)
     plot.draw(show=True)
+
+
+def get_config(config_path: str) -> ExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return ExperimentSetConfig(**json.loads(f.read()))
+
+
+def get_experiment_names(
+    experiment_set: ExperimentSetConfig,
+) -> list[str]:
+    return [
+        "-".join(name for name in combination)
+        for combination in product(
+            experiment_set.scene_configs,
+            experiment_set.blue_configs,
+            experiment_set.red_configs,
+            experiment_set.match_settings,
+        )
+    ]
+
+
+def get_experiment_result(
+    experiment_name: str,
+    results_root_path: str,
+) -> ExperimentResult:
+    file_path = f"{results_root_path}{experiment_name}.json"
+    if not Path(file_path).is_file():
+        raise Exception(f"Results file for {experiment_name} does not exist")
+
+    with open(file_path, "r") as f:
+        # This file reading is unreliable... need better file IO?
+        file_data = f.read()
+        if file_data == "":
+            raise Exception(f"{file_path} file empty?!")
+        return ExperimentResult.model_validate_json(file_data)
+
+
+def get_win_rate(
+    experiment_name: str,
+    experiment_results: dict[str, ExperimentResult],
+) -> float:
+    experiment = experiment_results[experiment_name]
+
+    return (
+        sum(
+            result.winner == InitiativeState.Faction.BLUE
+            for result in experiment.match_results
+        )
+        / experiment.n_matches
+    )
 
 
 def plot_win_rates(
@@ -81,66 +137,6 @@ def plot_win_rates(
             y="BLUE configuration",
         )
     )
-
-
-def get_config(config_path: str) -> ExperimentSetConfig:
-    with open(config_path, "r") as f:
-        return ExperimentSetConfig(**json.loads(f.read()))
-
-
-def get_experiment_names(
-    experiment_set: ExperimentSetConfig,
-) -> list[str]:
-    return [
-        "-".join(name for name in combination)
-        for combination in product(
-            experiment_set.scene_configs,
-            experiment_set.blue_configs,
-            experiment_set.red_configs,
-            experiment_set.match_settings,
-        )
-    ]
-
-
-def get_results(
-    experiment_name: str,
-    results_root_path: str,
-) -> ExperimentResult:
-    file_path = f"{results_root_path}{experiment_name}.json"
-    if not Path(file_path).is_file():
-        raise Exception(f"Results file for {experiment_name} does not exist")
-
-    with open(file_path, "r") as f:
-        # This file reading is unreliable... need better file IO?
-        file_data = f.read()
-        if file_data == "":
-            raise Exception(f"{file_path} file empty?!")
-        return ExperimentResult.model_validate_json(file_data)
-
-
-def get_win_rates(
-    blue_configs: list[str],
-    red_configs: list[str],
-    scene_name: str,
-    results_root_path: str,
-) -> list[list[float]]:
-    win_rates: list[list[float]] = []
-
-    for blue in blue_configs:
-        cells: list[float] = []
-        win_rates.append(cells)
-        for red in red_configs:
-            match_results = get_results(
-                experiment_name=f"{scene_name}-blue-{blue}-red-{red}-experiment",
-                results_root_path=results_root_path,
-            ).match_results
-            blue_wins = sum(
-                match_result.winner == InitiativeState.Faction.BLUE
-                for match_result in match_results
-            )
-            cells.append(blue_wins / len(match_results))
-
-    return win_rates
 
 
 if __name__ == "__main__":
