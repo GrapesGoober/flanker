@@ -20,7 +20,50 @@ def main() -> None:
         name: get_results(name, results_root_path)
         for name in get_experiment_names(experiment_set)
     }
-    ...
+
+    FONTSIZE = 20
+
+    # Create a figure with 1 row and 2 columns
+    axes: list[Axes]
+    _, axes = plt.subplots(1, 2, figsize=(8, 4))  # type: ignore
+
+    for idx, scene_name in enumerate(experiment_set.scene_configs):
+        ax = axes[idx]
+        win_rates = [
+            [1],
+            [2],
+        ]
+
+        ax.imshow(win_rates, vmin=0, vmax=1)
+
+        ax.set_xticks(range(len(experiment_set.red_configs)))
+        ax.set_xticklabels(experiment_set.red_configs, fontsize=FONTSIZE)
+        ax.set_xlabel("Red", fontsize=FONTSIZE)
+        ax.set_title(scene_name, fontsize=FONTSIZE)
+
+        if idx == 0:
+            ax.set_ylabel("Blue", fontsize=FONTSIZE)
+            ax.set_yticks(range(len(experiment_set.blue_configs)))
+            ax.set_yticklabels(experiment_set.blue_configs, fontsize=FONTSIZE)
+        else:
+            ax.set_yticks([])  # type: ignore
+
+        # Add numbers to each cell
+        for i in range(len(win_rates)):
+            for j in range(len(win_rates[i])):
+                ax.text(  # type: ignore
+                    j,
+                    i,
+                    f"{win_rates[i][j]:.2f}",
+                    ha="center",
+                    va="center",
+                    fontsize=FONTSIZE,
+                    color="white" if win_rates[i][j] < 0.5 else "black",
+                )
+
+    plt.tight_layout()
+    # plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
+    plt.show()
 
 
 def get_config(config_path: str) -> ExperimentSetConfig:
@@ -56,57 +99,6 @@ def get_results(
         if file_data == "":
             raise Exception(f"{file_path} file empty?!")
         return ExperimentResult.model_validate_json(file_data)
-
-
-def old_main() -> None:
-    blue_configs = ["grid", "analysis", "rh", "mcts"]
-    red_configs = ["rh"]
-    scenes = ["scene-1", "scene-2"]
-    FONTSIZE = 20
-
-    # Create a figure with 1 row and 2 columns
-    axes: list[Axes]
-    _, axes = plt.subplots(1, 2, figsize=(8, 4))  # type: ignore
-
-    for idx, scene_name in enumerate(scenes):
-        ax = axes[idx]
-        win_rates = get_win_rates(
-            blue_configs=blue_configs,
-            red_configs=red_configs,
-            scene_name=scene_name,
-            results_root_path="./scripts/outputs/experiment-results/",
-        )
-
-        ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
-
-        ax.set_xticks(range(len(red_configs)))  # type: ignore
-        ax.set_xticklabels(red_configs, fontsize=FONTSIZE)  # type: ignore
-        ax.set_xlabel("Red", fontsize=FONTSIZE)  # type: ignore
-        ax.set_title(scene_name, fontsize=FONTSIZE)  # type: ignore
-
-        if idx == 0:
-            ax.set_ylabel("Blue", fontsize=FONTSIZE)  # type: ignore
-            ax.set_yticks(range(len(blue_configs)))  # type: ignore
-            ax.set_yticklabels(blue_configs, fontsize=FONTSIZE)  # type: ignore
-        else:
-            ax.set_yticks([])  # type: ignore
-
-        # Add numbers to each cell
-        for i in range(len(win_rates)):
-            for j in range(len(win_rates[i])):
-                ax.text(  # type: ignore
-                    j,
-                    i,
-                    f"{win_rates[i][j]:.2f}",
-                    ha="center",
-                    va="center",
-                    fontsize=FONTSIZE,
-                    color="white" if win_rates[i][j] < 0.5 else "black",
-                )
-
-    plt.tight_layout()
-    # plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
-    plt.show()
 
 
 def get_win_rates(
