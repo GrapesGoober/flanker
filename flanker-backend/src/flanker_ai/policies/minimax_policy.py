@@ -74,7 +74,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             state_key = branch.get_hashable_key()
             cache_key = _TranspositionCacheKey(
                 state_snapshot=state_key,
-                current_depth=depth,
+                current_depth=depth - 1,
             )
 
             score = transposition_table.get(cache_key, None)
