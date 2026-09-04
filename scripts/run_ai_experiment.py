@@ -96,6 +96,11 @@ def main() -> None:
             if experiment_metadata.n_matches == match_config.n_matches:
                 continue
             experiment_metadata.n_matches += 1
+            update_metadata(
+                experiment_name=match_config.name,
+                metadata=experiment_metadata,
+                results_root_path=results_root_path,
+            )
             append_results(
                 experiment_name=match_config.name,
                 result=result,
@@ -264,11 +269,24 @@ def get_metadata(
         raise Exception(f"Metadata file for {experiment_name} does not exist")
 
     with open(file_path, "r") as f:
-        # This file reading is unreliable... need better file IO?
         file_data = f.read()
         if file_data == "":
             raise Exception(f"{file_path} file empty?!")
         return ExperimentMetadata.model_validate_json(file_data)
+
+
+def update_metadata(
+    experiment_name: str,
+    metadata: ExperimentMetadata,
+    results_root_path: str,
+) -> None:
+    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    if not Path(file_path).is_file():
+        raise Exception(f"Metadata file for {experiment_name} does not exist")
+
+    # Save file
+    with open(file_path, "w") as f:
+        f.write(metadata.model_dump_json(indent=2))
 
 
 def append_results(
