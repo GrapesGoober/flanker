@@ -1,4 +1,3 @@
-import json
 import random
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
@@ -6,10 +5,16 @@ from inspect import isclass
 from itertools import product
 from multiprocessing.pool import Pool, ThreadPool
 from pathlib import Path
+from time import sleep
 from typing import Any, Iterable, Literal
 from uuid import UUID
 
 import requests
+from experiment_models import (
+    ExperimentMetadata,
+    ExperimentSetConfig,
+    MatchResult,
+)
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
@@ -21,16 +26,27 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-class MatchResult(BaseModel):
-    """Match result model for each recorded match run."""
+@dataclass
+class _ExperimentConfig:
+    """Input config model for running a many matches."""
 
-    winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
+    name: str
+    gs: GameState
+    n_matches: int
+    target: Literal["local"] | str
 
 
-class MatchResultApiResponse(BaseModel):
+@dataclass
+class _MatchConfig:
+    """Input config model for running a single match."""
+
+    name: str
+    gs: GameState
+    n_matches: int
+    target: Literal["local"] | str
+
+
+class _MatchResultApiResponse(BaseModel):
     """Response model from WebAPI, kept separate from MatchResult."""
 
     model_config = ConfigDict(
@@ -44,48 +60,6 @@ class MatchResultApiResponse(BaseModel):
     red_search_sizes: list[int]
 
 
-class ExperimentResult(BaseModel):
-    """Result of an experiment run containing its match results."""
-
-    n_matches: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
-    match_results: list[MatchResult]
-
-
-class ExperimentSetConfig(BaseModel):
-    """Input config model for entire experiment-set run."""
-
-    scene_files: dict[str, str]
-    scene_configs: list[str]
-    blue_configs: list[str]
-    red_configs: list[str]
-    match_settings: list[str]
-    n_matches: int
-    max_workers: int
-    target: Literal["local"] | str
-
-
-@dataclass
-class ExperimentConfig:
-    """Input config model for running a many matches."""
-
-    name: str
-    gs: GameState
-    n_matches: int
-    target: Literal["local"] | str
-
-
-@dataclass
-class MatchConfig:
-    """Input config model for running a single match."""
-
-    name: str
-    gs: GameState
-    n_matches: int
-    target: Literal["local"] | str
-
-
 def main() -> None:
     results_root_path = "./scripts/outputs/experiment-results/"
 
@@ -95,7 +69,7 @@ def main() -> None:
     experiments = get_experiments(experiment_set)
 
     for experiment in experiments:
-        init_results_file(experiment, results_root_path)
+        init_metadata_file(experiment, results_root_path)
 
     matches = get_matches(experiments, results_root_path)
     random.shuffle(matches)
@@ -115,30 +89,33 @@ def main() -> None:
         for match_result in results:
             result, match_config = match_result
             print(f"    {match_config.name} done, tallying")
-            experiment_result = get_results(
+            experiment_metadata = get_metadata(
                 experiment_name=match_config.name,
                 results_root_path=results_root_path,
             )
-            if experiment_result.n_matches == match_config.n_matches:
+            if experiment_metadata.n_matches == match_config.n_matches:
                 continue
-            match_results = experiment_result.match_results
-            match_results.append(result)
-            experiment_result.n_matches = len(match_results)
-            save_results(
+            experiment_metadata.n_matches += 1
+            update_metadata(
                 experiment_name=match_config.name,
-                result=experiment_result,
+                metadata=experiment_metadata,
+                results_root_path=results_root_path,
+            )
+            append_results(
+                experiment_name=match_config.name,
+                result=result,
                 results_root_path=results_root_path,
             )
 
 
 def get_config(config_path: str) -> ExperimentSetConfig:
     with open(config_path, "r") as f:
-        return ExperimentSetConfig(**json.loads(f.read()))
+        return ExperimentSetConfig.model_validate_json(f.read())
 
 
 def run_match(
-    match_config: MatchConfig,
-) -> tuple[MatchResult, MatchConfig]:
+    match_config: _MatchConfig,
+) -> tuple[MatchResult, _MatchConfig]:
     print(f"Running match {match_config.name}")
 
     # Run locally if config says so
@@ -157,10 +134,11 @@ def run_match(
         )
         if 300 <= r.status_code <= 600:
             print(f"Request had {r.status_code} error: {r.text}")
-            print(f"Rerunning {match_config.name}")
+            print(f"Rerunning {match_config.name} in 30 seconds")
+            sleep(30)
             return run_match(match_config)
 
-        result = MatchResultApiResponse(**r.json())
+        result = _MatchResultApiResponse.model_validate_json(r.text)
 
     return (
         MatchResult(
@@ -175,9 +153,9 @@ def run_match(
 
 def get_experiments(
     experiment_set: ExperimentSetConfig,
-) -> list[ExperimentConfig]:
+) -> list[_ExperimentConfig]:
     return [
-        ExperimentConfig(
+        _ExperimentConfig(
             name="-".join(name for name in combination),
             gs=get_game_state(
                 [experiment_set.scene_files[name] for name in combination]
@@ -195,12 +173,12 @@ def get_experiments(
 
 
 def get_matches(
-    experiments: list[ExperimentConfig],
+    experiments: list[_ExperimentConfig],
     results_root_path: str,
-) -> list[MatchConfig]:
-    matches: list[MatchConfig] = []
+) -> list[_MatchConfig]:
+    matches: list[_MatchConfig] = []
     for experiment in experiments:
-        current_tally = get_results(
+        current_tally = get_metadata(
             experiment.name,
             results_root_path,
         )
@@ -211,7 +189,7 @@ def get_matches(
         gs = deepcopy(experiment.gs)
         for _ in range(remaining_matches):
             matches.append(
-                MatchConfig(
+                _MatchConfig(
                     name=experiment.name,
                     gs=gs,
                     n_matches=experiment.n_matches,
@@ -249,11 +227,11 @@ def get_component_types() -> Iterable[type]:
     yield AiConfigComponent
 
 
-def init_results_file(
-    experiment_config: ExperimentConfig,
+def init_metadata_file(
+    experiment_config: _ExperimentConfig,
     results_root_path: str,
 ) -> None:
-    file_path = f"{results_root_path}{experiment_config.name}.json"
+    file_path = Path(results_root_path) / f"{experiment_config.name}-metadata.json"
 
     # If data already exists, avoid rerunning (need a manual file delete)
     if Path(file_path).is_file():
@@ -274,39 +252,52 @@ def init_results_file(
     # Save file
     with open(file_path, "w") as f:
         f.write(
-            ExperimentResult(
+            ExperimentMetadata(
                 n_matches=0,
                 blue_config=blue_config,
                 red_config=red_config,
-                match_results=[],
             ).model_dump_json(indent=2)
         )
 
 
-def get_results(
+def get_metadata(
     experiment_name: str,
     results_root_path: str,
-) -> ExperimentResult:
-    file_path = f"{results_root_path}{experiment_name}.json"
+) -> ExperimentMetadata:
+    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
     if not Path(file_path).is_file():
-        raise Exception(f"Results file for {experiment_name} does not exist")
+        raise Exception(f"Metadata file for {experiment_name} does not exist")
 
     with open(file_path, "r") as f:
-        # This file reading is unreliable... need better file IO?
         file_data = f.read()
         if file_data == "":
             raise Exception(f"{file_path} file empty?!")
-        return ExperimentResult.model_validate_json(file_data)
+        return ExperimentMetadata.model_validate_json(file_data)
 
 
-def save_results(
+def update_metadata(
     experiment_name: str,
-    result: ExperimentResult,
+    metadata: ExperimentMetadata,
     results_root_path: str,
 ) -> None:
-    file_path = f"{results_root_path}{experiment_name}.json"
+    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    if not Path(file_path).is_file():
+        raise Exception(f"Metadata file for {experiment_name} does not exist")
+
+    # Save file
     with open(file_path, "w") as f:
-        f.write(result.model_dump_json(indent=2))
+        f.write(metadata.model_dump_json(indent=2))
+
+
+def append_results(
+    experiment_name: str,
+    result: MatchResult,
+    results_root_path: str,
+) -> None:
+    file_path = Path(results_root_path) / f"{experiment_name}.jsonl"
+    with open(file_path, "a") as f:
+        f.write(result.model_dump_json())
+        f.write("\n")
 
 
 if __name__ == "__main__":

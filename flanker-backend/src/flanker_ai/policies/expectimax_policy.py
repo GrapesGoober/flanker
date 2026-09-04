@@ -1,11 +1,19 @@
+from dataclasses import dataclass
 from itertools import count
 from math import inf
+from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
 from flanker_core.models.components import InitiativeState
 
 _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
+
+
+@dataclass(frozen=True)
+class _TranspositionCacheKey:
+    state_snapshot: Any
+    current_depth: int
 
 
 class ExpectimaxPolicy[TAction](IPolicy[TAction]):
@@ -67,7 +75,11 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
             expected_score = 0
             for probability, branch in branches:
 
-                cache_key = branch.get_hashable_key()
+                state_key = branch.get_hashable_key()
+                cache_key = _TranspositionCacheKey(
+                    state_snapshot=state_key,
+                    current_depth=depth - 1,
+                )
                 score = transposition_table.get(cache_key, None)
                 if score == None:  # Reuse the cached reward if possible
                     score, _ = self._search(

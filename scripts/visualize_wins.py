@@ -1,109 +1,117 @@
-import matplotlib.pyplot as plt
-from flanker_ai.components import AiConfigComponent
+from itertools import product
+from pathlib import Path
+from typing import Iterable
+
+import pandas as pd
+from experiment_models import ExperimentSetConfig, MatchResult
 from flanker_core.models.components import InitiativeState
-from matplotlib.axes import Axes
-from pydantic import BaseModel
-
-# pyright: reportUnknownMemberType=false
-
-
-class MatchResult(BaseModel):
-    winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
-
-
-class ExperimentResult(BaseModel):
-    n_matches: int
-    blue_config: AiConfigComponent
-    red_config: AiConfigComponent
-    match_results: list[MatchResult]
-
-
-FOLDER = "./scripts/outputs/experiment-results/"
+from plotnine import (
+    aes,
+    facet_wrap,
+    geom_text,
+    geom_tile,
+    ggplot,
+    labs,
+    scale_fill_cmap,
+)
 
 
 def main() -> None:
-    blue_configs = ["grid", "analysis", "rh", "mcts"]
-    red_configs = ["rh"]
-    scenes = ["scene-1", "scene-2"]
-    FONTSIZE = 20
 
-    # Create a figure with 1 row and 2 columns
-    axes: list[Axes]
-    _, axes = plt.subplots(1, 2, figsize=(8, 4))  # type: ignore
-
-    for idx, scene_name in enumerate(scenes):
-        ax = axes[idx]
-        win_rates = get_win_rates(
-            blue_configs=blue_configs,
-            red_configs=red_configs,
-            scene_name=scene_name,
-        )
-
-        ax.imshow(win_rates, vmin=0, vmax=1)  # type: ignore
-
-        ax.set_xticks(range(len(red_configs)))  # type: ignore
-        ax.set_xticklabels(red_configs, fontsize=FONTSIZE)  # type: ignore
-        ax.set_xlabel("Red", fontsize=FONTSIZE)  # type: ignore
-        ax.set_title(scene_name, fontsize=FONTSIZE)  # type: ignore
-
-        if idx == 0:
-            ax.set_ylabel("Blue", fontsize=FONTSIZE)  # type: ignore
-            ax.set_yticks(range(len(blue_configs)))  # type: ignore
-            ax.set_yticklabels(blue_configs, fontsize=FONTSIZE)  # type: ignore
-        else:
-            ax.set_yticks([])  # type: ignore
-
-        # Add numbers to each cell
-        for i in range(len(win_rates)):
-            for j in range(len(win_rates[i])):
-                ax.text(  # type: ignore
-                    j,
-                    i,
-                    f"{win_rates[i][j]:.2f}",
-                    ha="center",
-                    va="center",
-                    fontsize=FONTSIZE,
-                    color="white" if win_rates[i][j] < 0.5 else "black",
-                )
-
-    plt.tight_layout()
-    # plt.savefig("scenes_winrates_comparison.png", bbox_inches="tight")  # type: ignore
-    plt.show()
-
-
-def get_results(experiment_name: str) -> ExperimentResult:
-    file_path = f"{FOLDER}{experiment_name}.json"
-    with open(file_path, "r") as f:
-        file_data = f.read()
-        if file_data == "":
-            raise Exception(f"{file_path} file fmpty?!")
-        return ExperimentResult.model_validate_json(file_data)
-
-
-def get_win_rates(
-    blue_configs: list[str],
-    red_configs: list[str],
-    scene_name: str,
-) -> list[list[float]]:
-    win_rates: list[list[float]] = []
-
-    for blue in blue_configs:
-        cells: list[float] = []
-        win_rates.append(cells)
-        for red in red_configs:
-            match_results = get_results(
-                f"{scene_name}-blue-{blue}-red-{red}-experiment"
-            ).match_results
-            blue_wins = sum(
-                match_result.winner == InitiativeState.Faction.BLUE
-                for match_result in match_results
+    # Retrieve the each experiment results
+    experiment_set = get_config(
+        config_path="./scripts/configs/experiment-config.json",
+    )
+    experiment_results_by_name: dict[str, list[MatchResult]] = {
+        name: list(
+            get_experiment_results(
+                experiment_name=name,
+                results_root_path="./scripts/outputs/experiment-results/",
             )
-            cells.append(blue_wins / len(match_results))
+        )
+        for name in get_experiment_names(experiment_set)
+    }
 
-    return win_rates
+    # Can only plot from one match settings
+    match_setting = experiment_set.match_settings[0]
+
+    # Generate cells of each win rate to render
+    df = pd.DataFrame(
+        [
+            {
+                "scene": scene_name,
+                "blue": blue_config,
+                "red": red_config,
+                "win_rate": get_win_rate(
+                    experiment_name="-".join(
+                        [scene_name, blue_config, red_config, match_setting],
+                    ),
+                    experiment_results_by_name=experiment_results_by_name,
+                ),
+            }
+            for scene_name in experiment_set.scene_configs
+            for blue_config in experiment_set.blue_configs
+            for red_config in experiment_set.red_configs
+        ]
+    )
+
+    # Plot those cells
+    plot = (
+        ggplot(df, aes(x="red", y="blue", fill="win_rate"))
+        + geom_tile()
+        + geom_text(aes(label="win_rate"))
+        + scale_fill_cmap(limits=(0, 1))
+        + facet_wrap("~scene", nrow=1)
+        + labs(
+            x="RED configuration",
+            y="BLUE configuration",
+        )
+    )
+    plot.show()
+
+
+def get_config(config_path: str) -> ExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return ExperimentSetConfig.model_validate_json(f.read())
+
+
+def get_experiment_names(
+    experiment_set: ExperimentSetConfig,
+) -> list[str]:
+    return [
+        "-".join(name for name in combination)
+        for combination in product(
+            experiment_set.scene_configs,
+            experiment_set.blue_configs,
+            experiment_set.red_configs,
+            experiment_set.match_settings,
+        )
+    ]
+
+
+def get_experiment_results(
+    experiment_name: str,
+    results_root_path: str,
+) -> Iterable[MatchResult]:
+    file_path = Path(results_root_path) / f"{experiment_name}.jsonl"
+    if not Path(file_path).is_file():
+        raise Exception(f"Results file for {experiment_name} does not exist")
+
+    with open(file_path, "r") as f:
+        # This file reading is unreliable... need better file IO?
+        for line in f:
+            yield MatchResult.model_validate_json(line)
+
+
+def get_win_rate(
+    experiment_name: str,
+    experiment_results_by_name: dict[str, list[MatchResult]],
+) -> float:
+    match_results = experiment_results_by_name[experiment_name]
+    return sum(
+        match_result.winner == InitiativeState.Faction.BLUE
+        for match_result in match_results
+    ) / len(match_results)
 
 
 if __name__ == "__main__":
