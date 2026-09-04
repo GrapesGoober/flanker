@@ -2,12 +2,15 @@ from itertools import product
 from pathlib import Path
 from typing import Iterable
 
+import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
 from plotnine import (
     aes,
     geom_histogram,
     ggplot,
+    theme_matplotlib,
+    theme_set,
 )
 
 
@@ -51,6 +54,8 @@ def main() -> None:
         ]
     )
 
+    matplotlib.use("tkagg")
+    theme_set(theme_matplotlib())
     plot = ggplot(df, aes(x="search_size")) + geom_histogram()
     plot.show()
 

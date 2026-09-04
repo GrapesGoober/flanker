@@ -2,6 +2,7 @@ from itertools import product
 from pathlib import Path
 from typing import Iterable
 
+import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
 from flanker_core.models.components import InitiativeState
@@ -13,6 +14,8 @@ from plotnine import (
     ggplot,
     labs,
     scale_fill_cmap,
+    theme_matplotlib,
+    theme_set,
 )
 
 
@@ -56,6 +59,8 @@ def main() -> None:
     )
 
     # Plot those cells
+    matplotlib.use("tkagg")
+    theme_set(theme_matplotlib())
     plot = (
         ggplot(df, aes(x="red", y="blue", fill="win_rate"))
         + geom_tile()
