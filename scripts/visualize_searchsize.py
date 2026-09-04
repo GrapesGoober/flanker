@@ -10,7 +10,6 @@ from plotnine import (
     geom_histogram,
     ggplot,
     theme_matplotlib,
-    theme_set,
 )
 
 
@@ -55,8 +54,7 @@ def main() -> None:
     )
 
     matplotlib.use("tkagg")
-    theme_set(theme_matplotlib())
-    plot = ggplot(df, aes(x="search_size")) + geom_histogram()
+    plot = ggplot(df, aes(x="search_size")) + geom_histogram() + theme_matplotlib()
     plot.show()
 
 

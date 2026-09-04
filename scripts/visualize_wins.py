@@ -15,7 +15,6 @@ from plotnine import (
     labs,
     scale_fill_cmap,
     theme_matplotlib,
-    theme_set,
 )
 
 
@@ -60,7 +59,6 @@ def main() -> None:
 
     # Plot those cells
     matplotlib.use("tkagg")
-    theme_set(theme_matplotlib())
     plot = (
         ggplot(df, aes(x="red", y="blue", fill="win_rate"))
         + geom_tile()
@@ -71,6 +69,7 @@ def main() -> None:
             x="RED configuration",
             y="BLUE configuration",
         )
+        + theme_matplotlib()
     )
     plot.show()
 
