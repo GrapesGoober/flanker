@@ -2,6 +2,7 @@ from itertools import product
 from pathlib import Path
 from typing import Iterable
 
+import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
 from flanker_core.models.components import InitiativeState
@@ -13,6 +14,7 @@ from plotnine import (
     ggplot,
     labs,
     scale_fill_cmap,
+    theme_matplotlib,
 )
 
 
@@ -56,6 +58,7 @@ def main() -> None:
     )
 
     # Plot those cells
+    matplotlib.use("tkagg")
     plot = (
         ggplot(df, aes(x="red", y="blue", fill="win_rate"))
         + geom_tile()
@@ -66,6 +69,7 @@ def main() -> None:
             x="RED configuration",
             y="BLUE configuration",
         )
+        + theme_matplotlib()
     )
     plot.show()
 
@@ -108,10 +112,14 @@ def get_win_rate(
     experiment_results_by_name: dict[str, list[MatchResult]],
 ) -> float:
     match_results = experiment_results_by_name[experiment_name]
-    return sum(
-        match_result.winner == InitiativeState.Faction.BLUE
-        for match_result in match_results
-    ) / len(match_results)
+    return round(
+        sum(
+            match_result.winner == InitiativeState.Faction.BLUE
+            for match_result in match_results
+        )
+        / len(match_results),
+        ndigits=2,
+    )
 
 
 if __name__ == "__main__":

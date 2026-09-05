@@ -18,6 +18,7 @@ from experiment_models import (
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -55,9 +56,8 @@ class _MatchResultApiResponse(BaseModel):
     )
 
     winner: InitiativeState.Faction | None
-    total_runtime: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
+    total_runtime_seconds: float
+    search_logs: list[AiSearchLog]
 
 
 def main() -> None:
@@ -143,9 +143,8 @@ def run_match(
     return (
         MatchResult(
             winner=result.winner,
-            total_runtime=result.total_runtime,
-            blue_search_sizes=result.blue_search_sizes,
-            red_search_sizes=result.red_search_sizes,
+            total_runtime_seconds=result.total_runtime_seconds,
+            search_logs=result.search_logs,
         ),
         match_config,
     )

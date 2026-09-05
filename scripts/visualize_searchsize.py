@@ -2,12 +2,16 @@ from itertools import product
 from pathlib import Path
 from typing import Iterable
 
+import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
+from flanker_ai.policies.search_log_models import MinimaxSearchLog
+from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
     geom_histogram,
     ggplot,
+    theme_matplotlib,
 )
 
 
@@ -38,7 +42,7 @@ def main() -> None:
                 "scene": scene_name,
                 "blue": blue_config,
                 "red": red_config,
-                "search_size": blue_search_size,
+                "search_size": log.tree_size,
             }
             for scene_name in experiment_set.scene_configs
             for red_config in experiment_set.red_configs
@@ -47,11 +51,18 @@ def main() -> None:
                     [scene_name, blue_config, red_config, match_setting],
                 )
             ]
-            for blue_search_size in match_result.blue_search_sizes
+            for log in match_result.search_logs
+            if isinstance(log, MinimaxSearchLog)
+            if log.faction == InitiativeState.Faction.BLUE
         ]
     )
 
-    plot = ggplot(df, aes(x="search_size")) + geom_histogram()
+    matplotlib.use("tkagg")
+    plot = (
+        ggplot(df, aes(x="search_size"))
+        + geom_histogram(binwidth=1_000)
+        + theme_matplotlib()
+    )
     plot.show()
 
 

@@ -18,6 +18,7 @@ from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
 from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.policies.random_policy import RandomPolicy
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -30,17 +31,17 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
+class _AiAgentInstanceComponent:
+    faction: InitiativeState.Faction
+    agent: "AiAgent"
+
+
+@dataclass
 class AiActionResult:
     action: Action
     result: ActionResult
     result_gs: GameState
-    search_size: int
-
-
-@dataclass
-class _AiAgentInstanceComponent:
-    faction: InitiativeState.Faction
-    agent: "AiAgent"
+    search_log: AiSearchLog
 
 
 class AiAgent:
@@ -49,11 +50,11 @@ class AiAgent:
         gs: GameState,
         faction: InitiativeState.Faction,
         rs: IRepresentationState[Action],
-        policy: IPolicy[Action],
+        policy: IPolicy[Action, AiSearchLog],
     ) -> None:
         self.gs = gs
         self.faction: InitiativeState.Faction = faction
-        self.policy: IPolicy[Action] = policy
+        self.policy: IPolicy[Action, AiSearchLog] = policy
         self.rs: IRepresentationState[Action] = rs
 
     def play_initiative(
@@ -78,7 +79,7 @@ class AiAgent:
             # Prepare the representation and run the policy on it
             rs = deepcopy(self.rs)
             rs.update_state(self.gs)
-            action, size = self.policy.get_action(rs)
+            action, log = self.policy.get_action(rs)
             if action == None:
                 InitiativeSystem.flip_initiative(self.gs)
                 break
@@ -92,7 +93,7 @@ class AiAgent:
                 action=action,
                 result=result,
                 result_gs=self.gs,
-                search_size=size,
+                search_log=log,
             )
             # Prevent mutation by creating a copy
             action_results.append(deepcopy(ai_action_result))
@@ -122,7 +123,7 @@ class AiAgent:
             raise ValueError("AiConfigComponent not found")
 
         # Config found, create the agent
-        policy: IPolicy[Action]
+        policy: IPolicy[Action, AiSearchLog]
         state: IRepresentationState[Action]
         match config_component.config:
             case HeuristicPolicyConfig():
