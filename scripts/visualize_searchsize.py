@@ -58,7 +58,11 @@ def main() -> None:
     )
 
     matplotlib.use("tkagg")
-    plot = ggplot(df, aes(x="search_size")) + geom_histogram() + theme_matplotlib()
+    plot = (
+        ggplot(df, aes(x="search_size"))
+        + geom_histogram(binwidth=1_000)
+        + theme_matplotlib()
+    )
     plot.show()
 
 
