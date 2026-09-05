@@ -5,6 +5,7 @@ from typing import Iterable
 import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
+from flanker_ai.policies.minimax_policy import MinimaxSearchLog
 from plotnine import (
     aes,
     geom_histogram,
@@ -40,7 +41,7 @@ def main() -> None:
                 "scene": scene_name,
                 "blue": blue_config,
                 "red": red_config,
-                "search_size": blue_search_size,
+                "search_size": log.tree_size,
             }
             for scene_name in experiment_set.scene_configs
             for red_config in experiment_set.red_configs
@@ -49,7 +50,8 @@ def main() -> None:
                     [scene_name, blue_config, red_config, match_setting],
                 )
             ]
-            for blue_search_size in match_result.blue_search_sizes
+            for log in match_result.search_logs
+            if isinstance(log, MinimaxSearchLog)
         ]
     )
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.ai_agent import AiActionResult, AiAgent
+from flanker_ai.ai_agent import AiActionResult, AiAgent, AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -12,8 +12,7 @@ class _AiMatchResult:
     total_runtime_seconds: float
     action_results: list[AiActionResult]
     winner: InitiativeState.Faction | None
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
+    search_logs: list[AiSearchLog]
 
 
 class AiMatch:
@@ -26,10 +25,12 @@ class AiMatch:
         """Runs the given game match with 2 AIs and returns results."""
 
         # Sets up a match
-        blue_agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
-        red_agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-        blue_search_sizes: list[int] = []
-        red_search_sizes: list[int] = []
+        agents = [
+            AiAgent.get_agent(gs, faction)
+            for faction in [InitiativeState.Faction.BLUE, InitiativeState.Faction.RED]
+        ]
+
+        logs: list[AiSearchLog] = []
 
         # Let two agents fight each other over and over
         action_results: list[AiActionResult] = []
@@ -37,18 +38,15 @@ class AiMatch:
         while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
 
             # Have the AI play agianst each other.
-            blue_action_results = blue_agent.play_initiative()
-            red_action_results = red_agent.play_initiative()
-            for action_result in blue_action_results:
-                blue_search_sizes.append(action_result.search_size)
-                action_results.append(action_result)
-
-            for action_result in red_action_results:
-                red_search_sizes.append(action_result.search_size)
-                action_results.append(action_result)
+            has_any_action_played: bool = False
+            for agent in agents:
+                for action_result in agent.play_initiative():
+                    has_any_action_played = True
+                    logs.append(action_result.search_log)
+                    action_results.append(action_result)
 
             # If both agents have no actions, then consider it draw
-            if red_action_results == [] and blue_action_results == []:
+            if has_any_action_played == False:
                 break
 
         runtime = perf_counter() - start_time
@@ -56,6 +54,5 @@ class AiMatch:
             total_runtime_seconds=runtime,
             action_results=action_results,
             winner=winner,
-            blue_search_sizes=blue_search_sizes,
-            red_search_sizes=red_search_sizes,
+            search_logs=logs,
         )

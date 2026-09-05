@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
+from flanker_ai.ai_agent import AiSearchLog
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
 from flanker_core.models.vec2 import Vec2
@@ -53,8 +54,7 @@ class AiMatchResponse(BaseModel, CamelCaseConfig):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
+    search_logs: list[AiSearchLog]
     json_state: str
 
 

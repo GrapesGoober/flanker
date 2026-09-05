@@ -33,20 +33,12 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
-class AiActionResult:
-    action: Action
-    result: ActionResult
-    result_gs: GameState
-    search_size: int
-
-
-@dataclass
 class _AiAgentInstanceComponent:
     faction: InitiativeState.Faction
     agent: "AiAgent"
 
 
-SearchLog = (
+AiSearchLog = (
     MinimaxSearchLog
     | MctsSearchLog
     | ExpectimaxSearchLog
@@ -55,17 +47,25 @@ SearchLog = (
 )
 
 
+@dataclass
+class AiActionResult:
+    action: Action
+    result: ActionResult
+    result_gs: GameState
+    search_log: AiSearchLog
+
+
 class AiAgent:
     def __init__(
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
         rs: IRepresentationState[Action],
-        policy: IPolicy[Action, SearchLog],
+        policy: IPolicy[Action, AiSearchLog],
     ) -> None:
         self.gs = gs
         self.faction: InitiativeState.Faction = faction
-        self.policy: IPolicy[Action, SearchLog] = policy
+        self.policy: IPolicy[Action, AiSearchLog] = policy
         self.rs: IRepresentationState[Action] = rs
 
     def play_initiative(
@@ -100,24 +100,11 @@ class AiAgent:
                 InitiativeSystem.flip_initiative(self.gs)
                 break
 
-            search_size: int
-            match log:
-                case RandomHeuristicLog():
-                    search_size = log.actions_length
-                case MinimaxSearchLog():
-                    search_size = log.tree_size
-                case ExpectimaxSearchLog():
-                    search_size = log.tree_size
-                case MctsSearchLog():
-                    search_size = log.tree_depth
-                case RandomSearchLog():
-                    search_size = log.actions_length
-
             ai_action_result = AiActionResult(
                 action=action,
                 result=result,
                 result_gs=self.gs,
-                search_size=search_size,
+                search_log=log,
             )
             # Prevent mutation by creating a copy
             action_results.append(deepcopy(ai_action_result))
@@ -147,7 +134,7 @@ class AiAgent:
             raise ValueError("AiConfigComponent not found")
 
         # Config found, create the agent
-        policy: IPolicy[Action, SearchLog]
+        policy: IPolicy[Action, AiSearchLog]
         state: IRepresentationState[Action]
         match config_component.config:
             case HeuristicPolicyConfig():

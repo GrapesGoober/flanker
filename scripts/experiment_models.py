@@ -1,5 +1,6 @@
 from typing import Literal
 
+from flanker_ai.ai_agent import AiSearchLog
 from flanker_ai.components import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel
@@ -10,8 +11,7 @@ class MatchResult(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    blue_search_sizes: list[int]
-    red_search_sizes: list[int]
+    search_logs: list[AiSearchLog]
 
 
 class ExperimentMetadata(BaseModel):
