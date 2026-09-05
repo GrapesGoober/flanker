@@ -16,7 +16,12 @@ class _TranspositionCacheKey:
     current_depth: int
 
 
-class MinimaxPolicy[TAction](IPolicy[TAction]):
+@dataclass
+class MinimaxSearchLog:
+    tree_size: int
+
+
+class MinimaxPolicy[TAction](IPolicy[TAction, MinimaxSearchLog]):
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
@@ -24,7 +29,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
     def get_action(
         self,
         rs: IRepresentationState[TAction],
-    ) -> tuple[TAction | None, int]:
+    ) -> tuple[TAction | None, MinimaxSearchLog]:
         counter = count()
         _, action = self._search(
             rs=rs,
@@ -34,7 +39,9 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             counter=counter,
             transposition_table={},
         )
-        return action, next(counter) - 1
+        return action, MinimaxSearchLog(
+            tree_size=next(counter) - 1,
+        )
 
     def _search(
         self,

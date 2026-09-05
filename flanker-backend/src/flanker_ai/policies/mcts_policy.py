@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
@@ -24,22 +25,27 @@ class _MctsTreeNode[TAction]:
     action: TAction | None
 
 
-class MctsPolicy[TAction](IPolicy[TAction]):
+@dataclass
+class MctsSearchLog:
+    tree_depth: int
+
+
+class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
 
     def __init__(
         self,
         max_iterations: int,
         max_simulate_length: int,
-        simulate_policy: IPolicy[TAction],
+        simulate_policy: IPolicy[TAction, Any],
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
-        self._simulate_policy: IPolicy[TAction] = simulate_policy
+        self._simulate_policy: IPolicy[TAction, Any] = simulate_policy
 
     def get_action(
         self,
         rs: IRepresentationState[TAction],
-    ) -> tuple[TAction | None, int]:
+    ) -> tuple[TAction | None, MctsSearchLog]:
         root = _MctsTreeNode(
             state=rs,
             parent=None,
@@ -68,11 +74,15 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
         # No valid actions at this root
         if not root.children:
-            return None, self._max_iterations
+            return None, MctsSearchLog(
+                tree_depth=self._max_iterations,
+            )
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
-        return best.action, self._max_iterations
+        return best.action, MctsSearchLog(
+            tree_depth=self._max_iterations,
+        )
 
     def _select_leaf_best_uct(
         self,
