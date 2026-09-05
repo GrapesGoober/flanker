@@ -33,7 +33,7 @@ def main() -> None:
             "./scenes/experiment-settings.json",
             "./scenes/experiment-scene-2.json",
             # "./scenes/experiment-blue-analysis.json",
-            "./scenes/experiment-blue-waypoints.json",
+            "./scenes/experiment-blue-handdrawn-s1.json",
         ]
     )
 
@@ -48,11 +48,11 @@ def main() -> None:
         plt.gca().invert_yaxis()
 
     # draw_terrains(gs)
-    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True, draw_path=(65, 22))
-    # draw_move_candidates(gs, InitiativeState.Faction.BLUE)
+    # draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True, draw_path=(65, 22))
+    draw_move_candidates(gs, InitiativeState.Faction.BLUE)
 
     # Draw LOS for each combat unit
-    if False:
+    if True:
         for id, unit in gs.query(CombatUnit):
             if unit.faction == InitiativeState.Faction.BLUE:
                 draw_combat_unit_los_cone(

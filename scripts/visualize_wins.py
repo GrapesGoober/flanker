@@ -112,10 +112,14 @@ def get_win_rate(
     experiment_results_by_name: dict[str, list[MatchResult]],
 ) -> float:
     match_results = experiment_results_by_name[experiment_name]
-    return sum(
-        match_result.winner == InitiativeState.Faction.BLUE
-        for match_result in match_results
-    ) / len(match_results)
+    return round(
+        sum(
+            match_result.winner == InitiativeState.Faction.BLUE
+            for match_result in match_results
+        )
+        / len(match_results),
+        ndigits=2,
+    )
 
 
 if __name__ == "__main__":
