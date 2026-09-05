@@ -3,24 +3,30 @@ from inspect import isclass
 from typing import Any
 from uuid import UUID
 
-import matplotlib.image as mpimg
-from flanker_ai.ai_agent import AiAgent
+import matplotlib
+import pandas as pd
 from flanker_ai.components import AiConfigComponent
-from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
-from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
-from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
+    Transform,
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
 from flanker_core.utils.transform_utils import TransformUtils
-from matplotlib import pyplot as plt
+from matplotlib.colors import to_rgba
+from plotnine import (
+    aes,
+    coord_fixed,
+    geom_polygon,
+    ggplot,
+    scale_y_reverse,
+    theme_matplotlib,
+)
 
 # pyright: reportUnknownMemberType=false
 
@@ -37,47 +43,46 @@ def main() -> None:
         ]
     )
 
-    screenshot = "./scripts/screenshots/experiment-scene-2.png"
-    if screenshot:
-        img = mpimg.imread(screenshot)  # type: ignore
-        plt.imshow(  # type: ignore
-            img,  # type: ignore
-            extent=[0, 300, 300, 0],  # type: ignore
+    matplotlib.use("tkagg")
+    plot = (
+        ggplot()
+        # Inverse y (positive y goes downwards)
+        + scale_y_reverse()
+        # ylim must count down to work with  scale_y_reverse
+        + coord_fixed(ratio=1, xlim=(0, 300), ylim=(300, 0))
+        + theme_matplotlib()
+    )
+
+    plot = draw_terrains(plot, gs)
+
+    draw_as_cone = True
+    for _, unit, transform in gs.query(CombatUnit, Transform):
+        polygon = LosSystem.get_los_polygon(
+            gs=gs,
+            spotter_pos=transform.position,
         )
-    else:
-        plt.gca().invert_yaxis()
-
-    # draw_terrains(gs)
-    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True, draw_path=(65, 22))
-    # draw_move_candidates(gs, InitiativeState.Faction.BLUE)
-
-    # Draw LOS for each combat unit
-    if False:
-        for id, unit in gs.query(CombatUnit):
-            if unit.faction == InitiativeState.Faction.BLUE:
-                draw_combat_unit_los_cone(
-                    gs,
-                    unit_id=id,
-                    color="C0",
-                    linestyle="--",
-                    draw_as_cone=False,
+        if draw_as_cone:
+            polygon = PolygonUtils.clip_by_fov_cone(
+                polyline=polygon,
+                center_point=transform.position,
+                heading_degree=transform.degrees,
+            )
+        match unit.faction:
+            case InitiativeState.Faction.BLUE:
+                plot += get_polygon(
+                    polygon,
+                    color="lightblue",
+                    fill_alpha=0.05,
+                    plot_alpha=0.3,
                 )
-
-            if unit.faction == InitiativeState.Faction.RED:
-                draw_combat_unit_los_cone(
-                    gs,
-                    unit_id=id,
-                    color="C1",
-                    linestyle="--",
-                    draw_as_cone=False,
+            case InitiativeState.Faction.RED:
+                plot += get_polygon(
+                    polygon,
+                    color="orange",
+                    fill_alpha=0.05,
+                    plot_alpha=0.3,
                 )
-
-    # plt.axis("equal")
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    plt.axis("off")
-    plt.axis((0, 300, 300, 0))
-    plt.savefig("./scripts/outputs/visualize-waypoints", dpi=300)
-    plt.show()
+    plot.show()
 
 
 def get_game_state(
@@ -103,31 +108,33 @@ def get_game_state(
     return gs
 
 
-def visualize_polygon(
+def get_polygon(
     verts: list[Vec2],
     color: str = "C0",
     fill_alpha: float = 0,
     plot_alpha: float = 1,
-    linestyle: str = "-",
-) -> None:
-    xs = [v.x for v in verts]
-    ys = [v.y for v in verts]
-
-    # plt.scatter(xs, ys, color=color)  # type: ignore
-    plt.fill(xs, ys, color=color, alpha=fill_alpha)  # type: ignore
-    plt.plot(  # type: ignore
-        xs,
-        ys,
-        linestyle=linestyle,
-        color=color,
-        alpha=plot_alpha,
-        linewidth=3.0,
+    linewidth: int = 1,
+) -> geom_polygon:
+    return geom_polygon(
+        aes("x", "y"),
+        pd.DataFrame(
+            {
+                "x": [v.x for v in verts],
+                "y": [v.y for v in verts],
+            }
+        ),
+        color=to_rgba(color, plot_alpha),
+        fill=color,
+        alpha=fill_alpha,
+        size=linewidth,
     )
-    plt.axis("equal")  # type: ignore
 
 
-def draw_terrains(gs: GameState) -> None:
-
+def draw_terrains(
+    plot: ggplot,
+    gs: GameState,
+) -> ggplot:
+    newplot = plot
     for _, terrain, transform in gs.query(
         components.TerrainFeature,
         components.Transform,
@@ -135,118 +142,13 @@ def draw_terrains(gs: GameState) -> None:
         vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
-        visualize_polygon(
+        newplot += get_polygon(
             vertices,
             color="forestgreen",
-            fill_alpha=0,
+            fill_alpha=0.1,
             plot_alpha=0.2,
         )
-
-
-def draw_combat_unit_los_cone(
-    gs: GameState,
-    unit_id: UUID,
-    color: str = "C0",
-    linestyle: str = "-",
-    draw_as_cone: bool = True,
-) -> None:
-    spotter_transform = gs.get_component(unit_id, components.Transform)
-    polygon = LosSystem.get_los_polygon(
-        gs=gs,
-        spotter_pos=spotter_transform.position,
-    )
-    if draw_as_cone:
-        polygon = PolygonUtils.clip_by_fov_cone(
-            polyline=polygon,
-            center_point=spotter_transform.position,
-            heading_degree=spotter_transform.degrees,
-        )
-
-    visualize_polygon(
-        polygon,
-        color=color,
-        fill_alpha=0.05,
-        plot_alpha=0.3,
-        linestyle=linestyle,
-    )
-
-
-def draw_waypoints(
-    gs: GameState,
-    faction: InitiativeState.Faction,
-    draw_path: tuple[int, int],
-    draw_ids: bool = False,
-) -> None:
-
-    print("Creating waypoints...")
-
-    agent = AiAgent.get_agent(gs, faction)
-    waypoints_state = agent.rs
-    assert isinstance(
-        waypoints_state, WaypointsState
-    ), "Configured agent's state representation must be waypoints state."
-
-    waypoints_state.update_state(gs)
-
-    print("Drawing waypoints...")
-
-    points_x: list[float] = []
-    points_y: list[float] = []
-    ids: list[int] = []
-
-    waypoints = WaypointsGraph.get_waypoints(waypoints_state.gs)
-
-    for id, point in waypoints.items():
-
-        if draw_ids:
-            plt.text(  # type: ignore
-                point.position.x,
-                point.position.y,
-                str(id),
-            )
-
-        points_x.append(point.position.x)
-        points_y.append(point.position.y)
-        ids.append(id)
-
-    plt.scatter(points_x, points_y, color="C0", s=40)
-
-    if draw_path:
-        xs: list[float] = []
-        ys: list[float] = []
-        move_from, move_to = draw_path
-        path_nodes = waypoints[move_from].movable_paths[move_to]
-        for path_node in path_nodes:
-            position = waypoints[path_node].position
-            xs.append(position.x)
-            ys.append(position.y)
-        plt.plot(xs, ys, color="C2", linewidth=2)
-        direct_path_xs = [
-            waypoints[move_from].position.x,
-            waypoints[move_to].position.x,
-        ]
-        direct_path_ys = [
-            waypoints[move_from].position.y,
-            waypoints[move_to].position.y,
-        ]
-        plt.plot(direct_path_xs, direct_path_ys, color="C3", linewidth=2)
-
-
-def draw_move_candidates(
-    gs: GameState,
-    faction: InitiativeState.Faction,
-) -> None:
-
-    agent = AiAgent.get_agent(gs, faction)
-    agent.rs.update_state(gs)
-
-    actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
-    unit_id = actions[0].unit_id if actions else None
-    moves: list[Vec2] = [a.to for a in actions if a.unit_id == unit_id]
-
-    points_x = [v.x for v in moves]
-    points_y = [v.y for v in moves]
-    plt.scatter(points_x, points_y, color="C1", marker="s", s=60)  # type: ignore
+    return newplot
 
 
 if __name__ == "__main__":
