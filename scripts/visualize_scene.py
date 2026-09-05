@@ -28,8 +28,6 @@ from plotnine import (
     theme_matplotlib,
 )
 
-# pyright: reportUnknownMemberType=false
-
 
 def main() -> None:
 
