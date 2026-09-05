@@ -55,7 +55,7 @@ class _MatchResultApiResponse(BaseModel):
     )
 
     winner: InitiativeState.Faction | None
-    total_runtime: float
+    total_runtime_seconds: float
     blue_search_sizes: list[int]
     red_search_sizes: list[int]
 
@@ -143,7 +143,7 @@ def run_match(
     return (
         MatchResult(
             winner=result.winner,
-            total_runtime=result.total_runtime,
+            total_runtime_seconds=result.total_runtime_seconds,
             blue_search_sizes=result.blue_search_sizes,
             red_search_sizes=result.red_search_sizes,
         ),

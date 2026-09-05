@@ -9,7 +9,7 @@ class MatchResult(BaseModel):
     """Match result model for each recorded match run."""
 
     winner: InitiativeState.Faction | None
-    total_runtime: float
+    total_runtime_seconds: float
     blue_search_sizes: list[int]
     red_search_sizes: list[int]
 
