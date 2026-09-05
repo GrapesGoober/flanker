@@ -5,6 +5,7 @@ from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.policies.search_log_models import ExpectimaxSearchLog
 from flanker_core.models.components import InitiativeState
 
 _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
@@ -14,11 +15,6 @@ _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 class _TranspositionCacheKey:
     state_snapshot: Any
     current_depth: int
-
-
-@dataclass
-class ExpectimaxSearchLog:
-    tree_size: int
 
 
 class ExpectimaxPolicy[TAction](IPolicy[TAction, ExpectimaxSearchLog]):
@@ -41,6 +37,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction, ExpectimaxSearchLog]):
             transposition_table={},
         )
         return action, ExpectimaxSearchLog(
+            faction=rs.get_initiative(),
             tree_size=next(counter) - 1,
         )
 

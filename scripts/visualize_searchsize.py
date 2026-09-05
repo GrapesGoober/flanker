@@ -5,7 +5,8 @@ from typing import Iterable
 import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
-from flanker_ai.policies.minimax_policy import MinimaxSearchLog
+from flanker_ai.policies.search_log_models import MinimaxSearchLog
+from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
     geom_histogram,
@@ -52,6 +53,7 @@ def main() -> None:
             ]
             for log in match_result.search_logs
             if isinstance(log, MinimaxSearchLog)
+            if log.faction == InitiativeState.Faction.BLUE
         ]
     )
 

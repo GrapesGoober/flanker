@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from flanker_ai.ai_agent import AiSearchLog
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
 from flanker_core.models.vec2 import Vec2

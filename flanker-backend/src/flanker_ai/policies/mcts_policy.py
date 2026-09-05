@@ -6,6 +6,7 @@ from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.policies.search_log_models import MctsSearchLog
 from flanker_core.models.components import InitiativeState
 
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
@@ -23,11 +24,6 @@ class _MctsTreeNode[TAction]:
     total_value: float  # Q(v) total simulation reward of all visited children
 
     action: TAction | None
-
-
-@dataclass
-class MctsSearchLog:
-    tree_depth: int
 
 
 class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
@@ -75,12 +71,14 @@ class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
         # No valid actions at this root
         if not root.children:
             return None, MctsSearchLog(
+                faction=rs.get_initiative(),
                 tree_depth=self._max_iterations,
             )
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
         return best.action, MctsSearchLog(
+            faction=rs.get_initiative(),
             tree_depth=self._max_iterations,
         )
 

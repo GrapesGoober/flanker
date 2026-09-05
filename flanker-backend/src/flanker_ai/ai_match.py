@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.ai_agent import AiActionResult, AiAgent, AiSearchLog
+from flanker_ai.ai_agent import AiActionResult, AiAgent
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.objective_system import ObjectiveSystem

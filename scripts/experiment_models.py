@@ -1,7 +1,7 @@
 from typing import Literal
 
-from flanker_ai.ai_agent import AiSearchLog
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel
 

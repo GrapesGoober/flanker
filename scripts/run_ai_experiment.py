@@ -15,9 +15,10 @@ from experiment_models import (
     ExperimentSetConfig,
     MatchResult,
 )
-from flanker_ai.ai_agent import AiAgent, AiSearchLog
+from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
