@@ -1,6 +1,6 @@
 from dataclasses import is_dataclass
 from inspect import isclass
-from typing import Any
+from typing import Any, Iterable
 from uuid import UUID
 
 import matplotlib
@@ -51,35 +51,12 @@ def main() -> None:
         + theme_matplotlib()
     )
 
-    plot = draw_terrains(plot, gs)
+    for polygon in get_terrains(gs):
+        plot += polygon
 
-    draw_as_cone = True
-    for _, unit, transform in gs.query(CombatUnit, Transform):
-        polygon = LosSystem.get_los_polygon(
-            gs=gs,
-            spotter_pos=transform.position,
-        )
-        if draw_as_cone:
-            polygon = PolygonUtils.clip_by_fov_cone(
-                polyline=polygon,
-                center_point=transform.position,
-                heading_degree=transform.degrees,
-            )
-        match unit.faction:
-            case InitiativeState.Faction.BLUE:
-                plot += get_polygon(
-                    polygon,
-                    color="lightblue",
-                    fill_alpha=0.05,
-                    plot_alpha=0.3,
-                )
-            case InitiativeState.Faction.RED:
-                plot += get_polygon(
-                    polygon,
-                    color="orange",
-                    fill_alpha=0.05,
-                    plot_alpha=0.3,
-                )
+    for polygon in get_los_polygons(gs):
+        plot += polygon
+
     plot.show()
 
 
@@ -128,11 +105,9 @@ def get_polygon(
     )
 
 
-def draw_terrains(
-    plot: ggplot,
+def get_terrains(
     gs: GameState,
-) -> ggplot:
-    newplot = plot
+) -> Iterable[geom_polygon]:
     for _, terrain, transform in gs.query(
         components.TerrainFeature,
         components.Transform,
@@ -140,13 +115,45 @@ def draw_terrains(
         vertices = TransformUtils.apply(terrain.vertices, transform)
         if terrain.is_closed_loop:
             vertices.append(vertices[0])
-        newplot += get_polygon(
+        yield get_polygon(
             vertices,
             color="forestgreen",
             fill_alpha=0.1,
             plot_alpha=0.2,
         )
-    return newplot
+
+
+def get_los_polygons(
+    gs: GameState,
+    draw_as_cone: bool = True,
+) -> Iterable[geom_polygon]:
+
+    for _, unit, transform in gs.query(CombatUnit, Transform):
+        polygon = LosSystem.get_los_polygon(
+            gs=gs,
+            spotter_pos=transform.position,
+        )
+        if draw_as_cone:
+            polygon = PolygonUtils.clip_by_fov_cone(
+                polyline=polygon,
+                center_point=transform.position,
+                heading_degree=transform.degrees,
+            )
+        match unit.faction:
+            case InitiativeState.Faction.BLUE:
+                yield get_polygon(
+                    polygon,
+                    color="lightblue",
+                    fill_alpha=0.05,
+                    plot_alpha=0.3,
+                )
+            case InitiativeState.Faction.RED:
+                yield get_polygon(
+                    polygon,
+                    color="orange",
+                    fill_alpha=0.05,
+                    plot_alpha=0.3,
+                )
 
 
 if __name__ == "__main__":
