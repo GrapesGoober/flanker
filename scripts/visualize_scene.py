@@ -25,6 +25,61 @@ from matplotlib import pyplot as plt
 # pyright: reportUnknownMemberType=false
 
 
+def main() -> None:
+
+    gs = get_game_state(
+        paths=[
+            # "./scenes/visualize-los.json"
+            "./scenes/experiment-settings.json",
+            "./scenes/experiment-scene-2.json",
+            # "./scenes/experiment-blue-analysis.json",
+            "./scenes/experiment-blue-waypoints.json",
+        ]
+    )
+
+    screenshot = "./scripts/screenshots/experiment-scene-2.png"
+    if screenshot:
+        img = mpimg.imread(screenshot)  # type: ignore
+        plt.imshow(  # type: ignore
+            img,  # type: ignore
+            extent=[0, 300, 300, 0],  # type: ignore
+        )
+    else:
+        plt.gca().invert_yaxis()
+
+    # draw_terrains(gs)
+    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True, draw_path=(65, 22))
+    # draw_move_candidates(gs, InitiativeState.Faction.BLUE)
+
+    # Draw LOS for each combat unit
+    if False:
+        for id, unit in gs.query(CombatUnit):
+            if unit.faction == InitiativeState.Faction.BLUE:
+                draw_combat_unit_los_cone(
+                    gs,
+                    unit_id=id,
+                    color="C0",
+                    linestyle="--",
+                    draw_as_cone=False,
+                )
+
+            if unit.faction == InitiativeState.Faction.RED:
+                draw_combat_unit_los_cone(
+                    gs,
+                    unit_id=id,
+                    color="C1",
+                    linestyle="--",
+                    draw_as_cone=False,
+                )
+
+    # plt.axis("equal")
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    plt.axis("off")
+    plt.axis((0, 300, 300, 0))
+    plt.savefig("./scripts/outputs/visualize-waypoints", dpi=300)
+    plt.show()
+
+
 def get_game_state(
     paths: list[str],
 ) -> GameState:
@@ -195,55 +250,4 @@ def draw_move_candidates(
 
 
 if __name__ == "__main__":
-
-    gs = get_game_state(
-        paths=[
-            # "./scenes/visualize-los.json"
-            "./scenes/experiment-settings.json",
-            "./scenes/experiment-scene-2.json",
-            # "./scenes/experiment-blue-analysis.json",
-            "./scenes/experiment-blue-waypoints.json",
-        ]
-    )
-
-    screenshot = "./scripts/screenshots/experiment-scene-2.png"
-    if screenshot:
-        img = mpimg.imread(screenshot)  # type: ignore
-        plt.imshow(  # type: ignore
-            img,  # type: ignore
-            extent=[0, 300, 300, 0],  # type: ignore
-        )
-    else:
-        plt.gca().invert_yaxis()
-
-    # draw_terrains(gs)
-    draw_waypoints(gs, InitiativeState.Faction.BLUE, draw_ids=True, draw_path=(65, 22))
-    # draw_move_candidates(gs, InitiativeState.Faction.BLUE)
-
-    # Draw LOS for each combat unit
-    if False:
-        for id, unit in gs.query(CombatUnit):
-            if unit.faction == InitiativeState.Faction.BLUE:
-                draw_combat_unit_los_cone(
-                    gs,
-                    unit_id=id,
-                    color="C0",
-                    linestyle="--",
-                    draw_as_cone=False,
-                )
-
-            if unit.faction == InitiativeState.Faction.RED:
-                draw_combat_unit_los_cone(
-                    gs,
-                    unit_id=id,
-                    color="C1",
-                    linestyle="--",
-                    draw_as_cone=False,
-                )
-
-    # plt.axis("equal")
-    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    plt.axis("off")
-    plt.axis((0, 300, 300, 0))
-    plt.savefig("./scripts/outputs/visualize-waypoints", dpi=300)
-    plt.show()
+    main()
