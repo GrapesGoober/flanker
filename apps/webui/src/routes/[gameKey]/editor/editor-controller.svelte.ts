@@ -2,7 +2,7 @@ import {
 	AddTerrainData,
 	DeleteTerrainData,
 	GetMapData,
-	GetUnitStatesData,
+	GetViewStatesData,
 	UpdateTerrainData,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
@@ -56,7 +56,7 @@ export class EditorController {
 	async refreshData() {
 		const gameStateJson = this.getGameStateJson();
 		this.mapData = await GetMapData(gameStateJson);
-		this.combatUnitsData = await GetUnitStatesData(gameStateJson);
+		this.combatUnitsData = await GetViewStatesData(gameStateJson);
 	}
 
 	/** Resets the editor state to default. */

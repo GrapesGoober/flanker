@@ -1,6 +1,6 @@
 import {
 	GetMapData,
-	GetUnitStatesData,
+	GetViewStatesData,
 	performActionAsync,
 	type GameViewState,
 	type MapViewState,
@@ -49,7 +49,7 @@ export class PlayerController {
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
 		this.mapData = await GetMapData(gameStateJson);
-		this.viewState = await GetUnitStatesData(gameStateJson);
+		this.viewState = await GetViewStatesData(gameStateJson);
 		this.isFetching = false;
 	}
 
