@@ -57,7 +57,7 @@
 			height="160"
 			class="in-map-text"
 		>
-			({marker.x}, {marker.y})
+			({marker.x.toFixed()}, {marker.y.toFixed()})
 		</foreignObject>
 	{/each}
 
@@ -72,7 +72,10 @@
 			>
 				{unit.unitId.slice(0, 8)}
 				<br />
-				({unit.position.x}, {unit.position.y}, {unit.degree}&deg)
+				(
+				{unit.position.x.toFixed()},
+				{unit.position.y.toFixed()},
+				{unit.degree.toFixed()}&deg )
 				<br />
 				{unit.status}
 			</foreignObject>
