@@ -31,17 +31,17 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
-class _AiAgentInstanceComponent:
-    faction: InitiativeState.Faction
-    agent: "AiAgent"
-
-
-@dataclass
 class AiActionResult:
     action: Action
     result: ActionResult
     result_gs: GameState
     search_log: AiSearchLog
+
+
+@dataclass
+class _AiAgentInstanceComponent:
+    faction: InitiativeState.Faction
+    agent: "AiAgent"
 
 
 class AiAgent:
