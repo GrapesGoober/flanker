@@ -7,11 +7,13 @@
 		inspectionData: GameStateInspection;
 		drawFov: boolean;
 		drawMoveCandidates: boolean;
+		drawUnitTexts: boolean;
 	};
 	let {
 		inspectionData,
 		drawFov = $bindable(),
-		drawMoveCandidates = $bindable()
+		drawMoveCandidates = $bindable(),
+		drawUnitTexts = $bindable()
 	}: Props = $props();
 </script>
 
@@ -39,6 +41,25 @@
 			/>
 		{/each}
 	{/if}
+
+	{#if drawUnitTexts}
+		<!-- Draw unit data last to render on top -->
+		{#each inspectionData.viewState.squads as unit}
+			<foreignObject
+				x={unit.position.x + 10}
+				y={unit.position.y - 10}
+				width="160"
+				height="160"
+				class="combat-unit-text"
+			>
+				{unit.unitId.slice(0, 8)}
+				<br />
+				({unit.position.x}, {unit.position.y})
+				<br />
+				{unit.status}
+			</foreignObject>
+		{/each}
+	{/if}
 </svg>
 
 <style lang="less">
@@ -62,5 +83,8 @@
 	.move-candidate {
 		fill: rgb(255, 132, 0);
 		r: 3;
+	}
+	.combat-unit-text {
+		font-size: 0.3em;
 	}
 </style>
