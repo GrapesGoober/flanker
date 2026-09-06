@@ -54,6 +54,7 @@ class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
 
         # Expand the game tree. MCTS is stop-any-time, so run
         # until _max_iterations to stop, as deep as it needs.
+        max_depth = 0
         for _ in range(self._max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
@@ -61,25 +62,28 @@ class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
             child = self._expand(leaf)
             value = self._simulate(child)
 
-            # Back propagate each node
+            # Back propagate each node (while tracking depth)
+            depth = 0
             node: _MctsTreeNode[TAction] | None = child
             while node is not None:
                 node.total_visits += 1
                 node.total_value += value
                 node = node.parent
+                depth += 1
+            max_depth = max(max_depth, depth)
 
         # No valid actions at this root
         if not root.children:
             return None, MctsSearchLog(
                 faction=rs.get_initiative(),
-                tree_depth=self._max_iterations,
+                tree_depth=max_depth,
             )
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
         return best.action, MctsSearchLog(
             faction=rs.get_initiative(),
-            tree_depth=self._max_iterations,
+            tree_depth=max_depth,
         )
 
     def _select_leaf_best_uct(
