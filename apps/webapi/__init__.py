@@ -54,8 +54,8 @@ async def get_game_state_json(
     return SceneService.serialize(gs, indent=False)
 
 
-@app.post("/api/units")
-async def get_units(
+@app.post("/api/scenes/view")
+async def get_view_state(
     state: str = Body(...),
 ) -> GameViewState:
     """Get all combat units for the player faction."""

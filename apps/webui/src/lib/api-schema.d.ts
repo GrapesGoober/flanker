@@ -44,7 +44,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/units": {
+    "/api/scenes/view": {
         parameters: {
             query?: never;
             header?: never;
@@ -54,10 +54,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get Units
+         * Get View State
          * @description Get all combat units for the player faction.
          */
-        post: operations["get_units_api_units_post"];
+        post: operations["get_view_state_api_scenes_view_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -219,6 +219,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AiMatchResponse
+         * @description Response model for AI match contains match result and final game state.
+         */
+        AiMatchResponse: {
+            winner: components["schemas"]["Faction"] | null;
+            /** Totalruntimeseconds */
+            totalRuntimeSeconds: number;
+            /** Searchlogs */
+            searchLogs: (components["schemas"]["MinimaxSearchLog"] | components["schemas"]["MctsSearchLog"] | components["schemas"]["ExpectimaxSearchLog"] | components["schemas"]["RandomHeuristicLog"] | components["schemas"]["RandomSearchLog"])[];
+            /** Jsonstate */
+            jsonState: string;
+        };
         /** AiWaypointConfigRequest */
         AiWaypointConfigRequest: {
             faction: components["schemas"]["Faction"];
@@ -289,6 +302,12 @@ export interface components {
             /** State */
             state: string;
             terrain: components["schemas"]["TerrainModel"];
+        };
+        /** ExpectimaxSearchLog */
+        ExpectimaxSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Treesize */
+            treeSize: number;
         };
         /**
          * Faction
@@ -375,6 +394,18 @@ export interface components {
             /** Boundary */
             boundary: components["schemas"]["Vec2"][];
         };
+        /** MctsSearchLog */
+        MctsSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Treedepth */
+            treeDepth: number;
+        };
+        /** MinimaxSearchLog */
+        MinimaxSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Treesize */
+            treeSize: number;
+        };
         /** MoveActionLog */
         MoveActionLog: {
             /**
@@ -437,6 +468,18 @@ export interface components {
              */
             unitId: string;
             to: components["schemas"]["Vec2"];
+        };
+        /** RandomHeuristicLog */
+        RandomHeuristicLog: {
+            faction: components["schemas"]["Faction"];
+            /** Actionslength */
+            actionsLength: number;
+        };
+        /** RandomSearchLog */
+        RandomSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Actionslength */
+            actionsLength: number;
         };
         /**
          * SquadModel
@@ -571,7 +614,7 @@ export interface operations {
             };
         };
     };
-    get_units_api_units_post: {
+    get_view_state_api_scenes_view_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -722,7 +765,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["AiMatchResponse"];
                 };
             };
             /** @description Validation Error */

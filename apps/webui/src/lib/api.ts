@@ -111,7 +111,7 @@ export async function DeleteTerrainData(
 
 /** Get current combat unit states for the game. */
 export async function GetViewStatesData(jsonState: string): Promise<GameViewState> {
-	const { data, error } = await client.POST('/api/units', {
+	const { data, error } = await client.POST('/api/scenes/view', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
