@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { GameStateInspection } from '$lib/api';
+	import type { GameStateInspection, Vec2 } from '$lib/api';
 	import { RifleSquad } from '$lib/components';
 	import { GetClosedPath } from '$lib/map-utils';
 
@@ -8,12 +8,14 @@
 		drawFov: boolean;
 		drawMoveCandidates: boolean;
 		drawUnitTexts: boolean;
+		positionMarkers: Vec2[];
 	};
 	let {
 		inspectionData,
 		drawFov = $bindable(),
 		drawMoveCandidates = $bindable(),
-		drawUnitTexts = $bindable()
+		drawUnitTexts = $bindable(),
+		positionMarkers = $bindable()
 	}: Props = $props();
 </script>
 
@@ -42,15 +44,31 @@
 		{/each}
 	{/if}
 
+	{#each positionMarkers as marker}
+		<circle cx={marker.x} cy={marker.y} class="position-marker" />
+	{/each}
+
+	<!-- Draw texts last to render on top -->
+	{#each positionMarkers as marker}
+		<foreignObject
+			x={marker.x}
+			y={marker.y}
+			width="160"
+			height="160"
+			class="in-map-text"
+		>
+			({marker.x}, {marker.y})
+		</foreignObject>
+	{/each}
+
 	{#if drawUnitTexts}
-		<!-- Draw unit data last to render on top -->
 		{#each inspectionData.viewState.squads as unit}
 			<foreignObject
 				x={unit.position.x + 10}
 				y={unit.position.y - 10}
 				width="160"
 				height="160"
-				class="combat-unit-text"
+				class="in-map-text"
 			>
 				{unit.unitId.slice(0, 8)}
 				<br />
@@ -84,7 +102,11 @@
 		fill: rgb(255, 132, 0);
 		r: 3;
 	}
-	.combat-unit-text {
+	.position-marker {
+		fill: rgb(255, 0, 212);
+		r: 2;
+	}
+	.in-map-text {
 		font-size: 0.3em;
 	}
 </style>
