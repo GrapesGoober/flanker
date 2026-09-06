@@ -6,8 +6,13 @@
 	type Props = {
 		inspectionData: GameStateInspection;
 		drawFov: boolean;
+		drawMoveCandidates: boolean;
 	};
-	let { inspectionData, drawFov = $bindable() }: Props = $props();
+	let {
+		inspectionData,
+		drawFov = $bindable(),
+		drawMoveCandidates = $bindable()
+	}: Props = $props();
 </script>
 
 <svg overflow="visible">
@@ -24,6 +29,16 @@
 			<path d={GetClosedPath(polygon)} class="red-los" />
 		{/if}
 	{/each}
+
+	{#if drawMoveCandidates}
+		{#each inspectionData.moveCandidates as moveCandidate}
+			<circle
+				cx={moveCandidate.x}
+				cy={moveCandidate.y}
+				class="move-candidate"
+			/>
+		{/each}
+	{/if}
 </svg>
 
 <style lang="less">
@@ -43,5 +58,9 @@
 		stroke: #efab5e77;
 		stroke-width: los-stroke-width;
 		stroke-linecap: square;
+	}
+	.move-candidate {
+		fill: rgb(255, 132, 0);
+		r: 3;
 	}
 </style>

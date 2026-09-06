@@ -4,15 +4,18 @@ from pathlib import Path
 from typing import Any, Iterable
 from uuid import UUID
 
+from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
     InitiativeState,
     Transform,
 )
+from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -145,7 +148,14 @@ class SceneService:
                 )
             )
 
+        agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
+        agent.rs.update_state(gs)
+        actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
+        unit_id = actions[0].unit_id if actions else None
+        move_candidates: list[Vec2] = [a.to for a in actions if a.unit_id == unit_id]
+
         return GameStateInspection(
             view_state=SceneService.get_view_state(gs),
             los_polygons=los_polygons,
+            move_candidates=move_candidates,
         )

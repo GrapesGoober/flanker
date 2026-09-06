@@ -387,6 +387,8 @@ export interface components {
             viewState: components["schemas"]["GameViewState"];
             /** Lospolygons */
             losPolygons: components["schemas"]["LosPolygon"][];
+            /** Movecandidates */
+            moveCandidates: components["schemas"]["Vec2"][];
         };
         /**
          * GameViewState

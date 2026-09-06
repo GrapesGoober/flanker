@@ -27,10 +27,12 @@
 			hasInitiative: false,
 			squads: []
 		},
-		losPolygons: []
+		losPolygons: [],
+		moveCandidates: []
 	});
 
 	let drawFov: boolean = $state(true);
+	let drawMoveCandidates: boolean = $state(true);
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
@@ -43,10 +45,11 @@
 
 {#snippet mapSvgSnippet()}
 	<TerrainLayer {mapData} />
-	<InspectLayer {inspectionData} bind:drawFov />
+	<InspectLayer {inspectionData} bind:drawFov bind:drawMoveCandidates />
 {/snippet}
 
 <div>
 	<SvgMap svgSnippet={mapSvgSnippet} />
 </div>
 <input type="checkbox" bind:checked={drawFov} /> Draw LOS Polygon as FOV
+<input type="checkbox" bind:checked={drawMoveCandidates} /> Draw Move Candidates

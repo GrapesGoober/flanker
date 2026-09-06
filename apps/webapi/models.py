@@ -52,6 +52,7 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
 
     view_state: GameViewState
     los_polygons: list[LosPolygon]
+    move_candidates: list[Vec2]
 
 
 class GameViewStateResponse(BaseModel, CamelCaseConfig):
