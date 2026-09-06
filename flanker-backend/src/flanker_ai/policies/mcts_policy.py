@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.policies.search_log_models import MctsSearchLog
 from flanker_core.models.components import InitiativeState
 
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
@@ -24,22 +26,22 @@ class _MctsTreeNode[TAction]:
     action: TAction | None
 
 
-class MctsPolicy[TAction](IPolicy[TAction]):
+class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
 
     def __init__(
         self,
         max_iterations: int,
         max_simulate_length: int,
-        simulate_policy: IPolicy[TAction],
+        simulate_policy: IPolicy[TAction, Any],
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
-        self._simulate_policy: IPolicy[TAction] = simulate_policy
+        self._simulate_policy: IPolicy[TAction, Any] = simulate_policy
 
     def get_action(
         self,
         rs: IRepresentationState[TAction],
-    ) -> tuple[TAction | None, int]:
+    ) -> tuple[TAction | None, MctsSearchLog]:
         root = _MctsTreeNode(
             state=rs,
             parent=None,
@@ -52,6 +54,7 @@ class MctsPolicy[TAction](IPolicy[TAction]):
 
         # Expand the game tree. MCTS is stop-any-time, so run
         # until _max_iterations to stop, as deep as it needs.
+        max_depth = 0
         for _ in range(self._max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
@@ -59,20 +62,29 @@ class MctsPolicy[TAction](IPolicy[TAction]):
             child = self._expand(leaf)
             value = self._simulate(child)
 
-            # Back propagate each node
+            # Back propagate each node (while tracking depth)
+            depth = 0
             node: _MctsTreeNode[TAction] | None = child
             while node is not None:
                 node.total_visits += 1
                 node.total_value += value
                 node = node.parent
+                depth += 1
+            max_depth = max(max_depth, depth)
 
         # No valid actions at this root
         if not root.children:
-            return None, self._max_iterations
+            return None, MctsSearchLog(
+                faction=rs.get_initiative(),
+                tree_depth=max_depth,
+            )
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
-        return best.action, self._max_iterations
+        return best.action, MctsSearchLog(
+            faction=rs.get_initiative(),
+            tree_depth=max_depth,
+        )
 
     def _select_leaf_best_uct(
         self,

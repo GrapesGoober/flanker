@@ -5,6 +5,7 @@ from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.policies.search_log_models import ExpectimaxSearchLog
 from flanker_core.models.components import InitiativeState
 
 _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
@@ -16,7 +17,7 @@ class _TranspositionCacheKey:
     current_depth: int
 
 
-class ExpectimaxPolicy[TAction](IPolicy[TAction]):
+class ExpectimaxPolicy[TAction](IPolicy[TAction, ExpectimaxSearchLog]):
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
@@ -24,7 +25,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
     def get_action(
         self,
         rs: IRepresentationState[TAction],
-    ) -> tuple[TAction | None, int]:
+    ) -> tuple[TAction | None, ExpectimaxSearchLog]:
         """
         Returns the best actions sequence given a current game state.
         """
@@ -35,7 +36,10 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction]):
             counter=counter,
             transposition_table={},
         )
-        return action, next(counter) - 1
+        return action, ExpectimaxSearchLog(
+            faction=rs.get_initiative(),
+            tree_size=next(counter) - 1,
+        )
 
     def _search(
         self,

@@ -5,6 +5,7 @@ from typing import Any
 
 from flanker_ai.i_policy import IPolicy
 from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.policies.search_log_models import MinimaxSearchLog
 from flanker_core.models.components import InitiativeState
 
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
@@ -16,7 +17,7 @@ class _TranspositionCacheKey:
     current_depth: int
 
 
-class MinimaxPolicy[TAction](IPolicy[TAction]):
+class MinimaxPolicy[TAction](IPolicy[TAction, MinimaxSearchLog]):
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
@@ -24,7 +25,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
     def get_action(
         self,
         rs: IRepresentationState[TAction],
-    ) -> tuple[TAction | None, int]:
+    ) -> tuple[TAction | None, MinimaxSearchLog]:
         counter = count()
         _, action = self._search(
             rs=rs,
@@ -34,7 +35,10 @@ class MinimaxPolicy[TAction](IPolicy[TAction]):
             counter=counter,
             transposition_table={},
         )
-        return action, next(counter) - 1
+        return action, MinimaxSearchLog(
+            faction=rs.get_initiative(),
+            tree_size=next(counter) - 1,
+        )
 
     def _search(
         self,
