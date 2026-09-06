@@ -45,7 +45,12 @@ class GameViewState(BaseModel, CamelCaseConfig):
 class GameStateInspection(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the game state."""
 
+    class LosPolygon(BaseModel, CamelCaseConfig):
+        faction: InitiativeState.Faction
+        los_polygon: list[Vec2]
+
     view_state: GameViewState
+    los_polygons: list[LosPolygon]
 
 
 class GameViewStateResponse(BaseModel, CamelCaseConfig):

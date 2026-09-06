@@ -126,4 +126,5 @@ class SceneService:
     def get_inspection(gs: GameState) -> GameStateInspection:
         return GameStateInspection(
             view_state=SceneService.get_view_state(gs),
+            los_polygons=[],
         )

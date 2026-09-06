@@ -26,7 +26,8 @@
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
 			squads: []
-		}
+		},
+		losPolygons: []
 	});
 
 	/* Loads terrain and log data on mount. */
@@ -40,7 +41,7 @@
 
 {#snippet mapSvgSnippet()}
 	<TerrainLayer {mapData} />
-	<InspectLayer viewState={inspectionData.viewState} />
+	<InspectLayer {inspectionData} />
 {/snippet}
 
 <div>

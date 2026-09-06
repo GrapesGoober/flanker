@@ -385,6 +385,8 @@ export interface components {
          */
         GameStateInspection: {
             viewState: components["schemas"]["GameViewState"];
+            /** Lospolygons */
+            losPolygons: components["schemas"]["LosPolygon"][];
         };
         /**
          * GameViewState
@@ -410,6 +412,12 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** LosPolygon */
+        LosPolygon: {
+            faction: components["schemas"]["Faction"];
+            /** Lospolygon */
+            losPolygon: components["schemas"]["Vec2"][];
         };
         /**
          * MapViewState

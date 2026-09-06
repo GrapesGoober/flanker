@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { GameViewState } from '$lib/api';
+	import type { GameStateInspection } from '$lib/api';
 	import { RifleSquad } from '$lib/components';
 
 	type Props = {
-		viewState: GameViewState;
+		inspectionData: GameStateInspection;
 	};
 
 	let props: Props = $props();
@@ -13,8 +13,8 @@
 <svg overflow="visible">
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	{#each props.viewState.squads as unit, index}
-		<RifleSquad bind:rifleSquadData={props.viewState.squads[index]} />
+	{#each props.inspectionData.viewState.squads as unit}
+		<RifleSquad rifleSquadData={unit} />
 	{/each}
 </svg>
 
