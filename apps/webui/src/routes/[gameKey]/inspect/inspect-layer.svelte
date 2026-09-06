@@ -32,14 +32,14 @@
 		font-family: Verdana, Geneva, Tahoma, sans-serif;
 	}
 	.blue-los {
-		fill: #5eb0ef38;
-		stroke: #5eb0efae;
+		fill: #5eb0ef1b;
+		stroke: #5eb0ef75;
 		stroke-width: los-stroke-width;
 		stroke-linecap: square;
 	}
 	.red-los {
-		fill: #efab5e3d;
-		stroke: #efab5eba;
+		fill: #efab5e23;
+		stroke: #efab5e77;
 		stroke-width: los-stroke-width;
 		stroke-linecap: square;
 	}
