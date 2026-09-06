@@ -12,6 +12,7 @@ export type TerrainType = components['schemas']['Types'];
 export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse = components['schemas']['GameViewStateResponse'];
+export type GameStateInspection = components['schemas']['GameStateInspection'];
 export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 
@@ -112,6 +113,15 @@ export async function DeleteTerrainData(
 /** Get current combat unit states for the game. */
 export async function GetViewStatesData(jsonState: string): Promise<GameViewState> {
 	const { data, error } = await client.POST('/api/scenes/view', {
+		body: jsonState
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
+/** Get current combat unit states for the game. */
+export async function GetStatesInspectionData(jsonState: string): Promise<GameStateInspection> {
+	const { data, error } = await client.POST('/api/scenes/inspect', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));

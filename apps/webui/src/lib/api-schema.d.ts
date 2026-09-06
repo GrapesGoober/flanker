@@ -55,9 +55,29 @@ export interface paths {
         put?: never;
         /**
          * Get View State
-         * @description Get all combat units for the player faction.
+         * @description Get all the scene's view state for the player faction.
          */
         post: operations["get_view_state_api_scenes_view_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenes/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get State Inspection
+         * @description Get the detailed inspection data of the scene.
+         */
+        post: operations["get_state_inspection_api_scenes_inspect_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -360,6 +380,13 @@ export interface components {
          */
         FireOutcomes: "MISS" | "PIN" | "SUPPRESS" | "KILL";
         /**
+         * GameStateInspection
+         * @description Detailed inspection debugging data of the game state.
+         */
+        GameStateInspection: {
+            viewState: components["schemas"]["GameViewState"];
+        };
+        /**
          * GameViewState
          * @description Simplified view model of the game state.
          */
@@ -634,6 +661,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameViewState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_state_inspection_api_scenes_inspect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameStateInspection"];
                 };
             };
             /** @description Validation Error */

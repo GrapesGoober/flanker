@@ -42,6 +42,12 @@ class GameViewState(BaseModel, CamelCaseConfig):
     squads: list[SquadModel]
 
 
+class GameStateInspection(BaseModel, CamelCaseConfig):
+    """Detailed inspection debugging data of the game state."""
+
+    view_state: GameViewState
+
+
 class GameViewStateResponse(BaseModel, CamelCaseConfig):
     """Response model for actions contains view state and mutated game state."""
 
