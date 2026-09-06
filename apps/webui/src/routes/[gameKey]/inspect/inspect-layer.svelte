@@ -54,7 +54,7 @@
 			>
 				{unit.unitId.slice(0, 8)}
 				<br />
-				({unit.position.x}, {unit.position.y})
+				({unit.position.x}, {unit.position.y}, {unit.degree}&deg)
 				<br />
 				{unit.status}
 			</foreignObject>
