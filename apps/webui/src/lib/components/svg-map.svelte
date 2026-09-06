@@ -36,7 +36,7 @@
 			});
 
 		// Set default starting zoom and pan
-		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(1.5));
+		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(2));
 		mapDiv.call(zoom as any);
 	});
 </script>
@@ -60,7 +60,12 @@
 	<g bind:this={zoomLayer}>
 		{@render props.svgSnippet()}
 	</g>
-	<rect class="grid-layer" width="100%" height="100%" fill={`url(#${gridPatternId})`} />
+	<rect
+		class="grid-layer"
+		width="100%"
+		height="100%"
+		fill={`url(#${gridPatternId})`}
+	/>
 </svg>
 
 <style lang="less">
