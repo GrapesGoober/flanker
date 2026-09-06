@@ -5,22 +5,23 @@
 
 	type Props = {
 		inspectionData: GameStateInspection;
+		drawFov: boolean;
 	};
-
-	let props: Props = $props();
+	let { inspectionData, drawFov = $bindable() }: Props = $props();
 </script>
 
-<!-- Draw the combat units -->
 <svg overflow="visible">
-	{#each props.inspectionData.viewState.squads as unit}
+	{#each inspectionData.viewState.squads as unit}
 		<RifleSquad rifleSquadData={unit} />
 	{/each}
 
-	{#each props.inspectionData.losPolygons as losPolygon}
-		{#if losPolygon.faction == 'BLUE'}
-			<path d={GetClosedPath(losPolygon.losPolygon)} class="blue-los" />
-		{:else if losPolygon.faction == 'RED'}
-			<path d={GetClosedPath(losPolygon.losPolygon)} class="red-los" />
+	{#each inspectionData.losPolygons as losPolygon}
+		{@const polygon = drawFov ? losPolygon.fovPolygon : losPolygon.losPolygon}
+
+		{#if losPolygon.faction === 'BLUE'}
+			<path d={GetClosedPath(polygon)} class="blue-los" />
+		{:else if losPolygon.faction === 'RED'}
+			<path d={GetClosedPath(polygon)} class="red-los" />
 		{/if}
 	{/each}
 </svg>

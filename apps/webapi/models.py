@@ -48,6 +48,7 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
     class LosPolygon(BaseModel, CamelCaseConfig):
         faction: InitiativeState.Faction
         los_polygon: list[Vec2]
+        fov_polygon: list[Vec2]
 
     view_state: GameViewState
     los_polygons: list[LosPolygon]

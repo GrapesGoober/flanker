@@ -418,6 +418,8 @@ export interface components {
             faction: components["schemas"]["Faction"];
             /** Lospolygon */
             losPolygon: components["schemas"]["Vec2"][];
+            /** Fovpolygon */
+            fovPolygon: components["schemas"]["Vec2"][];
         };
         /**
          * MapViewState

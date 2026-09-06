@@ -18,6 +18,7 @@ from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
+from flanker_core.utils.polygon_utils import PolygonUtils
 from webapi.components import LogRecords, TerrainTypeTag
 from webapi.models import (
     GameStateInspection,
@@ -125,16 +126,26 @@ class SceneService:
 
     @staticmethod
     def get_inspection(gs: GameState) -> GameStateInspection:
-        return GameStateInspection(
-            view_state=SceneService.get_view_state(gs),
-            los_polygons=[
+        los_polygons: list[GameStateInspection.LosPolygon] = []
+        for _, unit, transform in gs.query(CombatUnit, Transform):
+            los_polygon = LosSystem.get_los_polygon(
+                gs,
+                spotter_pos=transform.position,
+            )
+            fov_polygon = PolygonUtils.clip_by_fov_cone(
+                polyline=los_polygon,
+                center_point=transform.position,
+                heading_degree=transform.degrees,
+            )
+            los_polygons.append(
                 GameStateInspection.LosPolygon(
                     faction=unit.faction,
-                    los_polygon=LosSystem.get_los_polygon(
-                        gs,
-                        spotter_pos=transform.position,
-                    ),
+                    los_polygon=los_polygon,
+                    fov_polygon=fov_polygon,
                 )
-                for _, unit, transform in gs.query(CombatUnit, Transform)
-            ],
+            )
+
+        return GameStateInspection(
+            view_state=SceneService.get_view_state(gs),
+            los_polygons=los_polygons,
         )

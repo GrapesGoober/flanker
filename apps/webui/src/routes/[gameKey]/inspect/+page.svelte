@@ -30,6 +30,8 @@
 		losPolygons: []
 	});
 
+	let drawFov: boolean = $state(true);
+
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
 		const gameKey: string = page.params['gameKey'] as string;
@@ -41,9 +43,10 @@
 
 {#snippet mapSvgSnippet()}
 	<TerrainLayer {mapData} />
-	<InspectLayer {inspectionData} />
+	<InspectLayer {inspectionData} bind:drawFov />
 {/snippet}
 
 <div>
 	<SvgMap svgSnippet={mapSvgSnippet} />
 </div>
+<input type="checkbox" bind:checked={drawFov} /> Draw LOS Polygon as FOV
