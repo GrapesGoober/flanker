@@ -16,6 +16,7 @@ from flanker_core.models.components import (
 from flanker_core.serializer import Serializer
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from webapi.components import LogRecords, TerrainTypeTag
 from webapi.models import (
@@ -126,5 +127,14 @@ class SceneService:
     def get_inspection(gs: GameState) -> GameStateInspection:
         return GameStateInspection(
             view_state=SceneService.get_view_state(gs),
-            los_polygons=[],
+            los_polygons=[
+                GameStateInspection.LosPolygon(
+                    faction=unit.faction,
+                    los_polygon=LosSystem.get_los_polygon(
+                        gs,
+                        spotter_pos=transform.position,
+                    ),
+                )
+                for _, unit, transform in gs.query(CombatUnit, Transform)
+            ],
         )
