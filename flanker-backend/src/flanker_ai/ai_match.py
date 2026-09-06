@@ -28,7 +28,10 @@ class AiMatch:
         # Sets up a match
         agents = [
             AiAgent.get_agent(gs, faction)
-            for faction in [InitiativeState.Faction.BLUE, InitiativeState.Faction.RED]
+            for faction in [
+                InitiativeState.Faction.BLUE,
+                InitiativeState.Faction.RED,
+            ]
         ]
 
         logs: list[AiSearchLog] = []
