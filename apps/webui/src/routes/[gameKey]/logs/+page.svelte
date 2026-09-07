@@ -1,17 +1,16 @@
 <script lang="ts">
-	/*
-	Logs page Svelte component
-	Displays action logs, terrain, and unit state for replay and analysis.
-	Handles log navigation and map rendering.
-	*/
 	import { page } from '$app/state';
-	import { GetLogs, GetMapData, type ActionLog, type MapViewState } from '$lib/api';
+	import {
+		GetLogs,
+		GetMapData,
+		type ActionLog,
+		type MapViewState
+	} from '$lib/api';
 	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { loadGameLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import LogViewLayer from './log-view-layer.svelte';
 
-	let map: SvgMap | null = $state(null);
 	let logData: ActionLog[] = $state([]);
 	let index: number = $state(0);
 	let mapData: MapViewState = $state({
@@ -39,7 +38,7 @@ index = <input type="number" class="number-input" bind:value={index} />
 
 <!-- Map SVG rendering -->
 <div>
-	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
+	<SvgMap svgSnippet={mapSvgSnippet} />
 </div>
 
 <!-- Display current action log details -->

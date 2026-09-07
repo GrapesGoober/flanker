@@ -1,8 +1,4 @@
 <script lang="ts">
-	/*
-	ControlPanel displays selected unit info and available actions (move, fire, assault).
-	Handles keyboard shortcuts and loading state for player actions.
-	*/
 	import { LoadingSpinner } from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
 
@@ -36,7 +32,9 @@
 	<div class="info-box">
 		<div class="info-header-box">
 			<span class="info-header-text">1st Platoon</span>
-			<button class="info-header-close-button" onclick={closeSelection}>Close (c)</button>
+			<button class="info-header-close-button" onclick={closeSelection}
+				>Close (c)</button
+			>
 		</div>
 		<span class="info-detail">
 			UnitId={controller.state.selectedUnit.unitId},

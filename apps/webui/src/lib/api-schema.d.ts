@@ -44,7 +44,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/units": {
+    "/api/scenes/view": {
         parameters: {
             query?: never;
             header?: never;
@@ -54,10 +54,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Get Units
-         * @description Get all combat units for the player faction.
+         * Get View State
+         * @description Get all the scene's view state for the player faction.
          */
-        post: operations["get_units_api_units_post"];
+        post: operations["get_view_state_api_scenes_view_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scenes/inspect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get State Inspection
+         * @description Get the detailed inspection data of the scene.
+         */
+        post: operations["get_state_inspection_api_scenes_inspect_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -219,6 +239,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AiMatchResponse
+         * @description Response model for AI match contains match result and final game state.
+         */
+        AiMatchResponse: {
+            winner: components["schemas"]["Faction"] | null;
+            /** Totalruntimeseconds */
+            totalRuntimeSeconds: number;
+            /** Searchlogs */
+            searchLogs: (components["schemas"]["MinimaxSearchLog"] | components["schemas"]["MctsSearchLog"] | components["schemas"]["ExpectimaxSearchLog"] | components["schemas"]["RandomHeuristicLog"] | components["schemas"]["RandomSearchLog"])[];
+            /** Jsonstate */
+            jsonState: string;
+        };
         /** AiWaypointConfigRequest */
         AiWaypointConfigRequest: {
             faction: components["schemas"]["Faction"];
@@ -290,6 +323,12 @@ export interface components {
             state: string;
             terrain: components["schemas"]["TerrainModel"];
         };
+        /** ExpectimaxSearchLog */
+        ExpectimaxSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Treesize */
+            treeSize: number;
+        };
         /**
          * Faction
          * @enum {string}
@@ -341,6 +380,17 @@ export interface components {
          */
         FireOutcomes: "MISS" | "PIN" | "SUPPRESS" | "KILL";
         /**
+         * GameStateInspection
+         * @description Detailed inspection debugging data of the game state.
+         */
+        GameStateInspection: {
+            viewState: components["schemas"]["GameViewState"];
+            /** Lospolygons */
+            losPolygons: components["schemas"]["LosPolygon"][];
+            /** Movecandidates */
+            moveCandidates: components["schemas"]["Vec2"][];
+        };
+        /**
          * GameViewState
          * @description Simplified view model of the game state.
          */
@@ -365,6 +415,14 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** LosPolygon */
+        LosPolygon: {
+            faction: components["schemas"]["Faction"];
+            /** Lospolygon */
+            losPolygon: components["schemas"]["Vec2"][];
+            /** Fovpolygon */
+            fovPolygon: components["schemas"]["Vec2"][];
+        };
         /**
          * MapViewState
          * @description Simplified view model of the game map.
@@ -374,6 +432,18 @@ export interface components {
             terrains: components["schemas"]["TerrainModel"][];
             /** Boundary */
             boundary: components["schemas"]["Vec2"][];
+        };
+        /** MctsSearchLog */
+        MctsSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Treedepth */
+            treeDepth: number;
+        };
+        /** MinimaxSearchLog */
+        MinimaxSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Treesize */
+            treeSize: number;
         };
         /** MoveActionLog */
         MoveActionLog: {
@@ -437,6 +507,18 @@ export interface components {
              */
             unitId: string;
             to: components["schemas"]["Vec2"];
+        };
+        /** RandomHeuristicLog */
+        RandomHeuristicLog: {
+            faction: components["schemas"]["Faction"];
+            /** Actionslength */
+            actionsLength: number;
+        };
+        /** RandomSearchLog */
+        RandomSearchLog: {
+            faction: components["schemas"]["Faction"];
+            /** Actionslength */
+            actionsLength: number;
         };
         /**
          * SquadModel
@@ -571,7 +653,7 @@ export interface operations {
             };
         };
     };
-    get_units_api_units_post: {
+    get_view_state_api_scenes_view_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -591,6 +673,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameViewState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_state_inspection_api_scenes_inspect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameStateInspection"];
                 };
             };
             /** @description Validation Error */
@@ -722,7 +837,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["AiMatchResponse"];
                 };
             };
             /** @description Validation Error */

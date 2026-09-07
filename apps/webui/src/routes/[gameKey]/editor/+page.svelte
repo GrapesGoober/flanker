@@ -1,8 +1,4 @@
 <script lang="ts">
-	/**
-	 * Editor page for terrain and polygon drawing in the map scene.
-	 * Handles terrain editing, drawing polygons, and UI state management.
-	 */
 	import { page } from '$app/state';
 	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
@@ -76,7 +72,10 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	{#if controller.state.type == 'draw'}
-		<path d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)} class="draw-polygon" />
+		<path
+			d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)}
+			class="draw-polygon"
+		/>
 	{:else if controller.state.type == 'draw-waypoints'}
 		{#each controller.state.waypoints.points as point}
 			<circle r="5" cx={point.x} cy={point.y} fill="red" />
@@ -93,15 +92,33 @@
 mode = {controller.state.type}
 <button onclick={resetMode} style="margin-bottom: 1em;">Reset</button>
 <button onclick={drawMode} style="margin-bottom: 1em;">Draw Mode</button>
-<button onclick={waypointsMode} style="margin-bottom: 1em;">Waypoints Mode</button>
+<button onclick={waypointsMode} style="margin-bottom: 1em;"
+	>Waypoints Mode</button
+>
 
 {#if controller.state.type == 'selected'}
 	id = {controller.state.terrain.terrainId}
-	x = <input type="number" class="number-input" bind:value={controller.state.terrain.position.x} />
-	y = <input type="number" class="number-input" bind:value={controller.state.terrain.position.y} />
+	x =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.terrain.position.x}
+	/>
+	y =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.terrain.position.y}
+	/>
 	degrees =
-	<input type="number" class="number-input" bind:value={controller.state.terrain.degrees} />
-	<button onclick={deleteTerrain} style="margin-bottom: 1em;">Delete Terrain</button>
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.terrain.degrees}
+	/>
+	<button onclick={deleteTerrain} style="margin-bottom: 1em;"
+		>Delete Terrain</button
+	>
 {:else if controller.state.type == 'draw'}
 	<select bind:value={controller.state.terrainType}>
 		<option value="FOREST">FOREST</option>
@@ -118,7 +135,9 @@ mode = {controller.state.type}
 		<option value="BLUE">BLUE</option>
 		<option value="RED">RED</option>
 	</select>
-	<button onclick={confirmsWaypoints} style="margin-bottom: 1em;">Confirm</button>
+	<button onclick={confirmsWaypoints} style="margin-bottom: 1em;"
+		>Confirm</button
+	>
 {/if}
 
 <style lang="less">

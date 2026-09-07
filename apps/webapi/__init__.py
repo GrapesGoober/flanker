@@ -12,6 +12,7 @@ from webapi.models import (
     ActionRequest,
     AiMatchResponse,
     AiWaypointConfigRequest,
+    GameStateInspection,
     GameViewState,
     GameViewStateResponse,
     MapViewState,
@@ -54,13 +55,22 @@ async def get_game_state_json(
     return SceneService.serialize(gs, indent=False)
 
 
-@app.post("/api/units")
-async def get_units(
+@app.post("/api/scenes/view")
+async def get_view_state(
     state: str = Body(...),
 ) -> GameViewState:
-    """Get all combat units for the player faction."""
+    """Get all the scene's view state for the player faction."""
     gs = SceneService.deserialize(state)
     return SceneService.get_view_state(gs)
+
+
+@app.post("/api/scenes/inspect")
+async def get_state_inspection(
+    state: str = Body(...),
+) -> GameStateInspection:
+    """Get the detailed inspection data of the scene."""
+    gs = SceneService.deserialize(state)
+    return SceneService.get_inspection(gs)
 
 
 @app.post("/api/map")

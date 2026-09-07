@@ -1,11 +1,11 @@
 <script lang="ts">
-	/*
-	LogViewLayer Svelte component
-	Renders unit icons and action overlays for a specific log entry.
-	Handles display of actor and target units for fire/assault actions.
-	*/
 	import { type ActionLog, type GameViewState } from '$lib/api';
-	import { Arrow, BorderFriendlyUnit, BorderHostileUnit, RifleSquad } from '$lib/components';
+	import {
+		Arrow,
+		BorderFriendlyUnit,
+		BorderHostileUnit,
+		RifleSquad
+	} from '$lib/components';
 
 	type Props = {
 		logData: ActionLog[];
@@ -20,7 +20,9 @@
 			squads: []
 		}
 	);
-	let currentAction: ActionLog | null = $derived(props.logData[props.index] ?? null);
+	let currentAction: ActionLog | null = $derived(
+		props.logData[props.index] ?? null
+	);
 </script>
 
 <svg overflow="visible">
@@ -41,7 +43,9 @@
 					{#if targetUnit}
 						{@const targetPos = targetUnit.position}
 						<Arrow start={actorUnit.position} end={targetPos} offset={12} />
-						<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
+						<g transform="translate({targetPos.x}, {targetPos.y})"
+							><BorderHostileUnit /></g
+						>
 					{/if}
 				{/if}
 			{/if}

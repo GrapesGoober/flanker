@@ -4,22 +4,31 @@ from pathlib import Path
 from typing import Any, Iterable
 from uuid import UUID
 
+from flanker_ai.ai_agent import AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
+from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
     InitiativeState,
     Transform,
 )
+from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
-
+from flanker_core.utils.polygon_utils import PolygonUtils
 from webapi.components import LogRecords, TerrainTypeTag
-from webapi.models import GameViewState, GameViewStateResponse, SquadModel
+from webapi.models import (
+    GameStateInspection,
+    GameViewState,
+    GameViewStateResponse,
+    SquadModel,
+)
 
 
 class SceneService:
@@ -116,4 +125,37 @@ class SceneService:
         return GameViewStateResponse(
             view_state=SceneService.get_view_state(gs),
             json_state=SceneService.serialize(gs),
+        )
+
+    @staticmethod
+    def get_inspection(gs: GameState) -> GameStateInspection:
+        los_polygons: list[GameStateInspection.LosPolygon] = []
+        for _, unit, transform in gs.query(CombatUnit, Transform):
+            los_polygon = LosSystem.get_los_polygon(
+                gs,
+                spotter_pos=transform.position,
+            )
+            fov_polygon = PolygonUtils.clip_by_fov_cone(
+                polyline=los_polygon,
+                center_point=transform.position,
+                heading_degree=transform.degrees,
+            )
+            los_polygons.append(
+                GameStateInspection.LosPolygon(
+                    faction=unit.faction,
+                    los_polygon=los_polygon,
+                    fov_polygon=fov_polygon,
+                )
+            )
+
+        agent = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
+        agent.rs.update_state(gs)
+        actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
+        unit_id = actions[0].unit_id if actions else None
+        move_candidates: list[Vec2] = [a.to for a in actions if a.unit_id == unit_id]
+
+        return GameStateInspection(
+            view_state=SceneService.get_view_state(gs),
+            los_polygons=los_polygons,
+            move_candidates=move_candidates,
         )

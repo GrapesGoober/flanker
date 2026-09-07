@@ -42,6 +42,19 @@ class GameViewState(BaseModel, CamelCaseConfig):
     squads: list[SquadModel]
 
 
+class GameStateInspection(BaseModel, CamelCaseConfig):
+    """Detailed inspection debugging data of the game state."""
+
+    class LosPolygon(BaseModel, CamelCaseConfig):
+        faction: InitiativeState.Faction
+        los_polygon: list[Vec2]
+        fov_polygon: list[Vec2]
+
+    view_state: GameViewState
+    los_polygons: list[LosPolygon]
+    move_candidates: list[Vec2]
+
+
 class GameViewStateResponse(BaseModel, CamelCaseConfig):
     """Response model for actions contains view state and mutated game state."""
 
