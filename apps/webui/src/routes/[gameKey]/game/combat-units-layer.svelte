@@ -1,10 +1,5 @@
 <script lang="ts">
 	import type { Vec2 } from '$lib/api';
-	/*
-	CombatUnitsLayer Svelte component
-	Renders combat units and overlays for gameplay, including selection and action markers.
-	Handles unit selection and icon display based on game state.
-	*/
 	import {
 		Arrow,
 		BlankFriendlyUnit,
@@ -52,18 +47,30 @@
 		{@const position = controller.state.selectedUnit.position}
 
 		{#if selectedUnit.isFriendly}
-			<g transform="translate({position.x}, {position.y})"><BorderFriendlyUnit /></g>
+			<g transform="translate({position.x}, {position.y})"
+				><BorderFriendlyUnit /></g
+			>
 		{:else if !selectedUnit.isFriendly}
-			<g transform="translate({position.x}, {position.y})"><BorderHostileUnit /></g>
+			<g transform="translate({position.x}, {position.y})"
+				><BorderHostileUnit /></g
+			>
 		{/if}
 		{#if controller.state.type == 'moveMarked'}
 			{@const moveMarker = controller.state.moveMarker}
-			<g transform="translate({moveMarker.x}, {moveMarker.y})"><BlankFriendlyUnit /></g>
-			<Arrow start={selectedUnit.position} end={controller.state.moveMarker} offset={6} />
+			<g transform="translate({moveMarker.x}, {moveMarker.y})"
+				><BlankFriendlyUnit /></g
+			>
+			<Arrow
+				start={selectedUnit.position}
+				end={controller.state.moveMarker}
+				offset={6}
+			/>
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}
 			<Arrow start={selectedUnit.position} end={targetPos} offset={12} />
-			<g transform="translate({targetPos.x}, {targetPos.y})"><BorderHostileUnit /></g>
+			<g transform="translate({targetPos.x}, {targetPos.y})"
+				><BorderHostileUnit /></g
+			>
 		{/if}
 	{/if}
 </svg>

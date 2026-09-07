@@ -10,16 +10,24 @@ import {
 import { loadGameLocal, saveGameLocal } from '$lib/scenes-storage';
 
 type PlayerControllerState =
-	| { type: 'default' }
-	| { type: 'selected'; selectedUnit: RifleSquadData }
-	| { type: 'moveMarked'; selectedUnit: RifleSquadData; moveMarker: Vec2 }
-	| { type: 'attackMarked'; selectedUnit: RifleSquadData; target: RifleSquadData };
+	| {
+			type: 'default';
+	  }
+	| {
+			type: 'selected';
+			selectedUnit: RifleSquadData;
+	  }
+	| {
+			type: 'moveMarked';
+			selectedUnit: RifleSquadData;
+			moveMarker: Vec2;
+	  }
+	| {
+			type: 'attackMarked';
+			selectedUnit: RifleSquadData;
+			target: RifleSquadData;
+	  };
 
-/*
-PlayerController class
-Manages player state, unit selection, actions (move, fire, assault), and game data fetching.
-Handles validation and updates for gameplay interactions.
-*/
 export class PlayerController {
 	mapData: MapViewState = $state({
 		terrains: [],
@@ -223,7 +231,9 @@ export class PlayerController {
 
 	/* Reselects the unit after an action, or resets state if not found. */
 	private reselectUnit(unitId: string) {
-		let currentUnit = this.viewState.squads.find((unit) => unit.unitId == unitId);
+		let currentUnit = this.viewState.squads.find(
+			(unit) => unit.unitId == unitId
+		);
 		if (currentUnit)
 			this.state = {
 				type: 'selected',

@@ -1,8 +1,4 @@
 <script lang="ts">
-	/**
-	 * Gameplay page for handling player actions, map interactions, and UI state.
-	 * Manages player controller, map, and click events for move markers.
-	 */
 	import { page } from '$app/state';
 	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
@@ -49,4 +45,6 @@
 
 <ControlPanel bind:controller />
 
-{controller.viewState.objectiveState == 'COMPLETED' ? 'Objectives Completed' : ''}
+{controller.viewState.objectiveState == 'COMPLETED'
+	? 'Objectives Completed'
+	: ''}
