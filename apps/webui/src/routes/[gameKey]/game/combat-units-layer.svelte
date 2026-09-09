@@ -1,13 +1,13 @@
 <script lang="ts">
 	import type { Vec2 } from '$lib/api';
 	import {
-		Arrow,
 		BlankFriendlyUnit,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
 		RifleSquad
 	} from '$lib/components';
 	import FireEffectArrows from '$lib/components/svg-icons/fire-effect-arrows.svelte';
+	import UiMarkerArrows from '$lib/components/svg-icons/ui-marker-arrows.svelte';
 	import { PlayerController } from './player-controller.svelte';
 
 	type Props = {
@@ -66,21 +66,17 @@
 			<g transform="translate({moveMarker.x}, {moveMarker.y})">
 				<BlankFriendlyUnit />
 			</g>
-			<Arrow
+			<UiMarkerArrows
 				start={selectedUnit.position}
 				end={controller.state.moveMarker}
-				headOffset={6}
-				shaftWidth={5}
-				headSize={10}
+				headOffset={0}
 			/>
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}
-			<Arrow
+			<UiMarkerArrows
 				start={selectedUnit.position}
 				end={targetPos}
-				headOffset={12}
-				shaftWidth={5}
-				headSize={10}
+				headOffset={10}
 			/>
 			<g transform="translate({targetPos.x}, {targetPos.y})">
 				<BorderHostileUnit />

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { type ActionLog, type GameViewState } from '$lib/api';
 	import {
-		Arrow,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
 		RifleSquad
 	} from '$lib/components';
+	import UiMarkerArrows from '$lib/components/svg-icons/ui-marker-arrows.svelte';
 
 	type Props = {
 		logData: ActionLog[];
@@ -42,12 +42,10 @@
 					)[0]}
 					{#if targetUnit}
 						{@const targetPos = targetUnit.position}
-						<Arrow
+						<UiMarkerArrows
 							start={actorUnit.position}
 							end={targetPos}
 							headOffset={10}
-							shaftWidth={3}
-							headSize={10}
 						/>
 						<g transform="translate({targetPos.x}, {targetPos.y})"
 							><BorderHostileUnit /></g
@@ -59,7 +57,7 @@
 	</g>
 
 	<!-- Render all squads for the current log view -->
-	{#each currentView.squads as unit, index}
+	{#each currentView.squads as _, index}
 		<RifleSquad bind:rifleSquadData={currentView.squads[index]} />
 	{/each}
 </svg>
