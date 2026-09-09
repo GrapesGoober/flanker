@@ -7,6 +7,7 @@
 		BorderHostileUnit,
 		RifleSquad
 	} from '$lib/components';
+	import FireEffectArrows from '$lib/components/svg-icons/fire-effect-arrows.svelte';
 	import { PlayerController } from './player-controller.svelte';
 
 	type Props = {
@@ -36,9 +37,14 @@
 <svg overflow="visible" class="transparent-icons">
 	{#each controller.viewState.squads as unit}
 		{#if unit.firingAt != null}
-			{@const unitPos = GetUnitPosition(unit.firingAt[0])}
-			{#if unitPos != null}
-				<Arrow start={unit.position} end={unitPos} offset={10} />
+			{@const targetPos = GetUnitPosition(unit.firingAt[0])}
+			{#if targetPos != null}
+				<FireEffectArrows
+					positionA={unit.position}
+					positionB={targetPos}
+					fireEffectA={unit.firingAt[1]}
+					fireEffectB={null}
+				/>
 			{/if}
 		{/if}
 	{/each}
