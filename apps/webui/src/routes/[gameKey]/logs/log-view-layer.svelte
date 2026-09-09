@@ -42,7 +42,13 @@
 					)[0]}
 					{#if targetUnit}
 						{@const targetPos = targetUnit.position}
-						<Arrow start={actorUnit.position} end={targetPos} offset={12} />
+						<Arrow
+							start={actorUnit.position}
+							end={targetPos}
+							headOffset={10}
+							shaftWidth={3}
+							headSize={10}
+						/>
 						<g transform="translate({targetPos.x}, {targetPos.y})"
 							><BorderHostileUnit /></g
 						>

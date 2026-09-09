@@ -4,62 +4,37 @@
 	type Props = {
 		start: Vec2;
 		end: Vec2;
-		offset: number;
+		headOffset: number;
+		headSize: number;
+		shaftWidth: number;
 	};
+
 	let props: Props = $props();
 
-	function GetShaftEnd(): Vec2 {
-		// Normalized directional vector of this arrow
-		const dx = props.end.x - props.start.x;
-		const dy = props.end.y - props.start.y;
-		const length = Math.hypot(dx, dy);
-		const ux = dx / length;
-		const uy = dy / length;
+	const angle = $derived(
+		(Math.atan2(props.end.y - props.start.y, props.end.x - props.start.x) *
+			180) /
+			Math.PI
+	);
 
-		// Point before arrowhead starts
-		return {
-			x: props.end.x - ux * props.offset,
-			y: props.end.y - uy * props.offset
-		};
-	}
-
-	let shaftEnd: Vec2 = $derived(GetShaftEnd());
+	const length = $derived(
+		Math.hypot(props.end.x - props.start.x, props.end.y - props.start.y) -
+			props.headOffset
+	);
 </script>
 
-<svg overflow="visible">
-	<defs>
-		<marker
-			id="triangle"
-			viewBox="0 0 8 8"
-			refX="1"
-			refY="4"
-			markerUnits="strokeWidth"
-			markerWidth="2"
-			markerHeight="2"
-			orient="auto"
-		>
-			<path d="M 0 0 L 6 4 L 0 8 z" />
-		</marker>
-	</defs>
-
-	<line
-		x1={props.start.x}
-		y1={props.start.y}
-		x2={shaftEnd.x}
-		y2={shaftEnd.y}
-		class="move-line"
-		marker-end="url(#triangle)"
+<svg>
+	<!-- Draw arrow flat (facing rightward) then rotate it via transform -->
+	<polygon
+		transform={`translate(${props.start.x} ${props.start.y}) rotate(${angle})`}
+		points={`
+		0,${-props.shaftWidth / 2}
+		${length - props.headSize},${-props.shaftWidth / 2}
+		${length - props.headSize},${-props.headSize / 2}
+		${length},0
+		${length - props.headSize},${props.headSize / 2}
+		${length - props.headSize},${props.shaftWidth / 2}
+		0,${props.shaftWidth / 2}
+	`}
 	/>
 </svg>
-
-<style lang="less">
-	@color: black;
-	path {
-		stroke: none;
-		fill: @color;
-	}
-	line {
-		stroke-width: 5;
-		stroke: @color;
-	}
-</style>

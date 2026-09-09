@@ -63,20 +63,28 @@
 		{/if}
 		{#if controller.state.type == 'moveMarked'}
 			{@const moveMarker = controller.state.moveMarker}
-			<g transform="translate({moveMarker.x}, {moveMarker.y})"
-				><BlankFriendlyUnit /></g
-			>
+			<g transform="translate({moveMarker.x}, {moveMarker.y})">
+				<BlankFriendlyUnit />
+			</g>
 			<Arrow
 				start={selectedUnit.position}
 				end={controller.state.moveMarker}
-				offset={6}
+				headOffset={6}
+				shaftWidth={5}
+				headSize={10}
 			/>
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}
-			<Arrow start={selectedUnit.position} end={targetPos} offset={12} />
-			<g transform="translate({targetPos.x}, {targetPos.y})"
-				><BorderHostileUnit /></g
-			>
+			<Arrow
+				start={selectedUnit.position}
+				end={targetPos}
+				headOffset={12}
+				shaftWidth={5}
+				headSize={10}
+			/>
+			<g transform="translate({targetPos.x}, {targetPos.y})">
+				<BorderHostileUnit />
+			</g>
 		{/if}
 	{/if}
 </svg>
