@@ -4,10 +4,10 @@
 		BlankFriendlyUnit,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
-		RifleSquad
+		FireEffectArrows,
+		RifleSquad,
+		UiMarkerArrows
 	} from '$lib/components';
-	import FireEffectArrows from '$lib/components/svg-icons/fire-effect-arrows.svelte';
-	import UiMarkerArrows from '$lib/components/svg-icons/ui-marker-arrows.svelte';
 	import { PlayerController } from './player-controller.svelte';
 
 	type Props = {

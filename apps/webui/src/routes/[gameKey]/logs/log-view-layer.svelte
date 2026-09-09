@@ -3,9 +3,9 @@
 	import {
 		BorderFriendlyUnit,
 		BorderHostileUnit,
-		RifleSquad
+		RifleSquad,
+		UiMarkerArrows
 	} from '$lib/components';
-	import UiMarkerArrows from '$lib/components/svg-icons/ui-marker-arrows.svelte';
 
 	type Props = {
 		logData: ActionLog[];
