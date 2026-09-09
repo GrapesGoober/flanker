@@ -74,9 +74,18 @@ class AssaultSystem:
         ):
             return invalid_reason
 
-        # Moves the unit to target position (allow reactive fire)
+        # Offset the move position to not land directly on the target
+        # to prevent funky reactive fire happening at the last point.
+        # Only once the assault is successful, set the attacker position
+        # the target position.
+        attacker_transform = gs.get_component(attacker_id, Transform)
+        attacker_position = attacker_transform.position
         target_position = gs.get_component(target_id, Transform).position
-        result = MoveSystem.move(gs, attacker_id, target_position)
+        direction = (target_position - attacker_position).normalized()
+        offset = direction * 0.1  # offsetted by small amount
+
+        # Moves the unit to target position (allow reactive fire)
+        result = MoveSystem.move(gs, attacker_id, target_position - offset)
         if isinstance(result, InvalidAction):
             return result
         if result.reactive_fire_outcome != None:
@@ -97,6 +106,7 @@ class AssaultSystem:
         match outcome:
             case AssaultOutcomes.SUCCESS:
                 CommandSystem.kill_unit(gs, target_id)
+                attacker_transform.position = target_position
             case AssaultOutcomes.FAIL:
                 CommandSystem.kill_unit(gs, attacker_id)
         return AssaultActionResult(
