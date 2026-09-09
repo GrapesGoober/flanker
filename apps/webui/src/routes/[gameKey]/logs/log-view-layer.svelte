@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { type ActionLog, type GameViewState } from '$lib/api';
 	import {
+		ActionMarkerArrows,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
-		RifleSquad,
-		UiMarkerArrows
+		RifleSquad
 	} from '$lib/components';
 
 	type Props = {
@@ -42,7 +42,7 @@
 					)[0]}
 					{#if targetUnit}
 						{@const targetPos = targetUnit.position}
-						<UiMarkerArrows
+						<ActionMarkerArrows
 							start={actorUnit.position}
 							end={targetPos}
 							headOffset={10}

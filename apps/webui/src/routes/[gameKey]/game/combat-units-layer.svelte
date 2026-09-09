@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { Vec2 } from '$lib/api';
 	import {
+		ActionMarkerArrows,
 		BlankFriendlyUnit,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
 		FireEffectArrows,
-		RifleSquad,
-		UiMarkerArrows
+		RifleSquad
 	} from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
 
@@ -66,14 +66,14 @@
 			<g transform="translate({moveMarker.x}, {moveMarker.y})">
 				<BlankFriendlyUnit />
 			</g>
-			<UiMarkerArrows
+			<ActionMarkerArrows
 				start={selectedUnit.position}
 				end={controller.state.moveMarker}
 				headOffset={0}
 			/>
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}
-			<UiMarkerArrows
+			<ActionMarkerArrows
 				start={selectedUnit.position}
 				end={targetPos}
 				headOffset={10}
