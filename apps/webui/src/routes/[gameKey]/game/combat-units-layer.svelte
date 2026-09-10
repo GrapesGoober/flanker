@@ -25,7 +25,7 @@
 
 <!-- Draw overlay for gameplay icons -->
 <svg overflow="visible" class="transparent-icons">
-	{#each controller.viewState.fireEffectPair as fireEffect}
+	{#each controller.viewState.fireEffectPairs as fireEffect}
 		<FireEffectArrows
 			positionA={fireEffect.positionA}
 			positionB={fireEffect.positionB}

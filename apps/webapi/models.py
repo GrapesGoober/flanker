@@ -47,7 +47,7 @@ class GameViewState(BaseModel, CamelCaseConfig):
     objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
-    fire_effect_pair: list[FireEffectPair]
+    fire_effect_pairs: list[FireEffectPair]
 
 
 class GameStateInspection(BaseModel, CamelCaseConfig):

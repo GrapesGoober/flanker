@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { type ActionLog, type GameViewState } from '$lib/api';
 	import {
-		ActionMarkerArrows,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
+		FireEffectArrows,
 		RifleSquad
 	} from '$lib/components';
 
@@ -17,7 +17,8 @@
 		props.logData[props.index]?.viewState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
-			squads: []
+			squads: [],
+			fireEffectPairs: []
 		}
 	);
 	let currentAction: ActionLog | null = $derived(
@@ -28,28 +29,46 @@
 <svg overflow="visible">
 	<!-- Overlay for action icons and arrows -->
 	<g class="transparent-icons">
+		{#each currentView.fireEffectPairs as fireEffect}
+			<FireEffectArrows
+				positionA={fireEffect.positionA}
+				positionB={fireEffect.positionB}
+				fireEffectA={fireEffect.fireEffectA}
+				fireEffectB={fireEffect.fireEffectB}
+			/>
+		{/each}
+
 		{#if currentAction}
 			{@const actorUnit = currentView.squads.filter(
 				(unit) => unit.unitId == currentAction.body.unitId
 			)[0]}
 			{#if actorUnit}
-				<g transform="translate({actorUnit.position.x}, {actorUnit.position.y})"
-					><BorderFriendlyUnit /></g
+				<g
+					transform="translate(
+						{actorUnit.position.x}, 
+						{actorUnit.position.y}
+					)"
 				>
-				{#if currentAction.logType == 'FireActionLog' || currentAction.logType == 'AssaultActionLog'}
+					{#if actorUnit.isFriendly}
+						<BorderFriendlyUnit />
+					{:else}
+						<BorderHostileUnit />
+					{/if}
+				</g>
+
+				{#if currentAction.logType == 'FireActionLog'}
 					{@const targetUnit = currentView.squads.filter(
 						(unit) => unit.unitId == currentAction.body.targetId
 					)[0]}
 					{#if targetUnit}
 						{@const targetPos = targetUnit.position}
-						<ActionMarkerArrows
-							start={actorUnit.position}
-							end={targetPos}
-							headOffset={10}
-						/>
-						<g transform="translate({targetPos.x}, {targetPos.y})"
-							><BorderHostileUnit /></g
-						>
+						<g transform="translate({targetPos.x}, {targetPos.y})">
+							{#if targetUnit.isFriendly}
+								<BorderFriendlyUnit />
+							{:else}
+								<BorderHostileUnit />
+							{/if}
+						</g>
 					{/if}
 				{/if}
 			{/if}

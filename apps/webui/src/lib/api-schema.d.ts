@@ -407,8 +407,8 @@ export interface components {
             hasInitiative: boolean;
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
-            /** Fireeffectpair */
-            fireEffectPair: components["schemas"]["FireEffectPair"][];
+            /** Fireeffectpairs */
+            fireEffectPairs: components["schemas"]["FireEffectPair"][];
         };
         /**
          * GameViewStateResponse

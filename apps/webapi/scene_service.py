@@ -91,7 +91,7 @@ class SceneService:
 
         # Grab all the squads and build its view models
         squads: list[SquadModel] = []
-        fire_effect_pair: dict[FrozenSet[UUID], FireEffectPair] = {}
+        fire_effect_pairs: dict[FrozenSet[UUID], FireEffectPair] = {}
         for unit_id, unit, transform, fire_controls in gs.query(
             CombatUnit,
             Transform,
@@ -111,13 +111,13 @@ class SceneService:
             if fire_controls.firing_at != None:
                 target_id = fire_controls.firing_at[0]
                 fire_effect_key = frozenset((unit_id, target_id))
-                if fire_effect_key in fire_effect_pair:
-                    fire_effect_pair[fire_effect_key].fire_effect_b = (
+                if fire_effect_key in fire_effect_pairs:
+                    fire_effect_pairs[fire_effect_key].fire_effect_b = (
                         fire_controls.firing_at[1]
                     )
                 else:
                     target_transform = gs.get_component(target_id, Transform)
-                    fire_effect_pair[fire_effect_key] = FireEffectPair(
+                    fire_effect_pairs[fire_effect_key] = FireEffectPair(
                         position_a=transform.position,
                         position_b=target_transform.position,
                         fire_effect_a=fire_controls.firing_at[1],
@@ -138,7 +138,7 @@ class SceneService:
             objective_state=objective_state,
             has_initiative=has_initiative,
             squads=squads,
-            fire_effect_pair=list(fire_effect_pair.values()),
+            fire_effect_pairs=list(fire_effect_pairs.values()),
         )
 
     @staticmethod
