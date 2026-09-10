@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Vec2 } from '$lib/api';
 	import {
 		ActionMarkerArrows,
 		BlankFriendlyUnit,
@@ -21,15 +20,6 @@
 		if (controller.isFetching) return;
 		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);
-	}
-
-	function GetUnitPosition(unitId: string): Vec2 | null {
-		for (let squad of controller.viewState.squads) {
-			if (squad.unitId == unitId) {
-				return squad.position;
-			}
-		}
-		return null;
 	}
 </script>
 
