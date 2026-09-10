@@ -20,9 +20,13 @@
 
 	const distance = 3;
 
+	const hasBothArrows = $derived(
+		props.fireEffectA != null && props.fireEffectB != null
+	);
+
 	const offset = $derived({
-		x: -Math.sin(angle) * distance,
-		y: Math.cos(angle) * distance
+		x: hasBothArrows ? -Math.sin(angle) * distance : 0,
+		y: hasBothArrows ? Math.cos(angle) * distance : 0
 	});
 </script>
 
