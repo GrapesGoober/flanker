@@ -21,6 +21,8 @@
 		Math.hypot(props.end.x - props.start.x, props.end.y - props.start.y) -
 			props.headOffset
 	);
+
+	const textIsFlipped = $derived(Math.abs(angle) > 90);
 </script>
 
 <svg>
@@ -41,7 +43,7 @@
 
 		<g transform={`translate(${length / 4} 0)`}>
 			<foreignObject x={0} y={-8} width="160" height="160" class="arrow-text">
-				hello world
+				<span class={textIsFlipped ? 'flip' : ''}> hello world </span>
 			</foreignObject>
 		</g>
 	</g>
@@ -50,5 +52,9 @@
 <style lang="less">
 	.arrow-text {
 		font-size: 0.3em;
+	}
+	.flip {
+		display: inline-block;
+		transform: scale(-1, -1);
 	}
 </style>
