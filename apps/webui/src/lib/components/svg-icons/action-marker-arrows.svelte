@@ -18,5 +18,6 @@
 		headOffset={props.headOffset}
 		headSize={10}
 		shaftWidth={4}
+		text=""
 	/>
 </svg>

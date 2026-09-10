@@ -7,6 +7,7 @@
 		headOffset: number;
 		headSize: number;
 		shaftWidth: number;
+		text: string;
 	};
 
 	let props: Props = $props();
@@ -43,7 +44,7 @@
 
 		<g transform={`translate(${length / 4} 0)`}>
 			<foreignObject x={0} y={-8} width="160" height="160" class="arrow-text">
-				<span class={textIsFlipped ? 'flip' : ''}> hello world </span>
+				<span class={textIsFlipped ? 'flip' : ''}> {props.text} </span>
 			</foreignObject>
 		</g>
 	</g>

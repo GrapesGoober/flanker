@@ -39,6 +39,7 @@
 				headOffset={7}
 				shaftWidth={2.5}
 				headSize={5}
+				text={props.fireEffectA}
 			/>
 		</g>
 	{/if}
@@ -51,6 +52,7 @@
 				headOffset={7}
 				shaftWidth={2.5}
 				headSize={5}
+				text={props.fireEffectB}
 			/>
 		</g>
 	{/if}
