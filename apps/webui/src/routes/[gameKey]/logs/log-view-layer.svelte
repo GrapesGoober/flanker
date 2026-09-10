@@ -76,8 +76,8 @@
 	</g>
 
 	<!-- Render all squads for the current log view -->
-	{#each currentView.squads as _, index}
-		<RifleSquad bind:rifleSquadData={currentView.squads[index]} />
+	{#each currentView.squads as squad}
+		<RifleSquad rifleSquadData={squad} />
 	{/each}
 </svg>
 
