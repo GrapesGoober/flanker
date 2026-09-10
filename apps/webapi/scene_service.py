@@ -109,18 +109,16 @@ class SceneService:
             )
 
             if fire_controls.firing_at != None:
-                target_id = fire_controls.firing_at[0]
+                target_id, fire_effect = fire_controls.firing_at
                 fire_effect_key = frozenset((unit_id, target_id))
                 if fire_effect_key in fire_effect_pairs:
-                    fire_effect_pairs[fire_effect_key].fire_effect_b = (
-                        fire_controls.firing_at[1]
-                    )
+                    fire_effect_pairs[fire_effect_key].fire_effect_b = fire_effect
                 else:
                     target_transform = gs.get_component(target_id, Transform)
                     fire_effect_pairs[fire_effect_key] = FireEffectPair(
                         position_a=transform.position,
                         position_b=target_transform.position,
-                        fire_effect_a=fire_controls.firing_at[1],
+                        fire_effect_a=fire_effect,
                         fire_effect_b=None,
                     )
 
