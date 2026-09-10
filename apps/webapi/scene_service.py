@@ -1,7 +1,7 @@
 from dataclasses import is_dataclass
 from inspect import isclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, FrozenSet, Iterable
 from uuid import UUID
 
 from flanker_ai.ai_agent import AiAgent
@@ -24,6 +24,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
 from webapi.components import LogRecords, TerrainTypeTag
 from webapi.models import (
+    FireEffectPair,
     GameStateInspection,
     GameViewState,
     GameViewStateResponse,
@@ -87,7 +88,10 @@ class SceneService:
         """Get a view version of game state."""
         # Assume player faction is BLUE
         faction = InitiativeState.Faction.BLUE
+
+        # Grab all the squads and build its view models
         squads: list[SquadModel] = []
+        fire_effect_pairs: dict[FrozenSet[UUID], FireEffectPair] = {}
         for unit_id, unit, transform, fire_controls in gs.query(
             CombatUnit,
             Transform,
@@ -104,9 +108,23 @@ class SceneService:
                 )
             )
 
+            if fire_controls.firing_at != None:
+                target_id, fire_effect = fire_controls.firing_at
+                fire_effect_key = frozenset((unit_id, target_id))
+                if fire_effect_key in fire_effect_pairs:
+                    fire_effect_pairs[fire_effect_key].fire_effect_b = fire_effect
+                else:
+                    target_transform = gs.get_component(target_id, Transform)
+                    fire_effect_pairs[fire_effect_key] = FireEffectPair(
+                        position_a=transform.position,
+                        position_b=target_transform.position,
+                        fire_effect_a=fire_effect,
+                        fire_effect_b=None,
+                    )
+
+        # Grab all the game match data
         has_initiative = InitiativeSystem.get_initiative(gs) == faction
         winning_faction = ObjectiveSystem.get_winning_faction(gs)
-
         if winning_faction == faction:
             objective_state = GameViewState.ObjectiveState.COMPLETED
         elif winning_faction == None:
@@ -118,6 +136,7 @@ class SceneService:
             objective_state=objective_state,
             has_initiative=has_initiative,
             squads=squads,
+            fire_effect_pairs=list(fire_effect_pairs.values()),
         )
 
     @staticmethod

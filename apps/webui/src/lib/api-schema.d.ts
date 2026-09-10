@@ -373,6 +373,13 @@ export interface components {
          * @enum {string}
          */
         FireEffect: "PINNING" | "SUPPRESSING";
+        /** FireEffectPair */
+        FireEffectPair: {
+            positionA: components["schemas"]["Vec2"];
+            positionB: components["schemas"]["Vec2"];
+            fireEffectA: components["schemas"]["FireEffect"] | null;
+            fireEffectB: components["schemas"]["FireEffect"] | null;
+        };
         /**
          * FireOutcomes
          * @description Defines all fire outcomes.
@@ -400,6 +407,8 @@ export interface components {
             hasInitiative: boolean;
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
+            /** Fireeffectpairs */
+            fireEffectPairs: components["schemas"]["FireEffectPair"][];
         };
         /**
          * GameViewStateResponse

@@ -15,6 +15,7 @@ export type GameViewStateResponse = components['schemas']['GameViewStateResponse
 export type GameStateInspection = components['schemas']['GameStateInspection'];
 export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
+export type FireEffect = components['schemas']['FireEffect'];
 
 export type MoveActionRequest = components['schemas']['MoveActionRequest'];
 export type FireActionRequest = components['schemas']['FireActionRequest'];

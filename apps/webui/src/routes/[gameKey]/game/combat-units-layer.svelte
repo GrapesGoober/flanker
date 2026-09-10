@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Vec2 } from '$lib/api';
 	import {
-		Arrow,
+		ActionMarkerArrows,
 		BlankFriendlyUnit,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
+		FireEffectArrows,
 		RifleSquad
 	} from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
@@ -21,26 +21,17 @@
 		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);
 	}
-
-	function GetUnitPosition(unitId: string): Vec2 | null {
-		for (let squad of controller.viewState.squads) {
-			if (squad.unitId == unitId) {
-				return squad.position;
-			}
-		}
-		return null;
-	}
 </script>
 
 <!-- Draw overlay for gameplay icons -->
 <svg overflow="visible" class="transparent-icons">
-	{#each controller.viewState.squads as unit}
-		{#if unit.firingAt != null}
-			{@const unitPos = GetUnitPosition(unit.firingAt[0])}
-			{#if unitPos != null}
-				<Arrow start={unit.position} end={unitPos} offset={10} />
-			{/if}
-		{/if}
+	{#each controller.viewState.fireEffectPairs as fireEffect}
+		<FireEffectArrows
+			positionA={fireEffect.positionA}
+			positionB={fireEffect.positionB}
+			fireEffectA={fireEffect.fireEffectA}
+			fireEffectB={fireEffect.fireEffectB}
+		/>
 	{/each}
 	{#if controller.state.type !== 'default'}
 		{@const selectedUnit = controller.state.selectedUnit}
@@ -57,20 +48,24 @@
 		{/if}
 		{#if controller.state.type == 'moveMarked'}
 			{@const moveMarker = controller.state.moveMarker}
-			<g transform="translate({moveMarker.x}, {moveMarker.y})"
-				><BlankFriendlyUnit /></g
-			>
-			<Arrow
+			<g transform="translate({moveMarker.x}, {moveMarker.y})">
+				<BlankFriendlyUnit />
+			</g>
+			<ActionMarkerArrows
 				start={selectedUnit.position}
 				end={controller.state.moveMarker}
-				offset={6}
+				headOffset={0}
 			/>
 		{:else if controller.state.type == 'attackMarked'}
 			{@const targetPos = controller.state.target.position}
-			<Arrow start={selectedUnit.position} end={targetPos} offset={12} />
-			<g transform="translate({targetPos.x}, {targetPos.y})"
-				><BorderHostileUnit /></g
-			>
+			<ActionMarkerArrows
+				start={selectedUnit.position}
+				end={targetPos}
+				headOffset={10}
+			/>
+			<g transform="translate({targetPos.x}, {targetPos.y})">
+				<BorderHostileUnit />
+			</g>
 		{/if}
 	{/if}
 </svg>
