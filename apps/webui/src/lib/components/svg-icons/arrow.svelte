@@ -24,17 +24,31 @@
 </script>
 
 <svg>
-	<!-- Draw arrow flat (facing rightward) then rotate it via transform -->
-	<polygon
+	<g
 		transform={`translate(${props.start.x} ${props.start.y}) rotate(${angle})`}
-		points={`
-		0,${-props.shaftWidth / 2}
-		${length - props.headSize},${-props.shaftWidth / 2}
-		${length - props.headSize},${-props.headSize / 2}
-		${length},0
-		${length - props.headSize},${props.headSize / 2}
-		${length - props.headSize},${props.shaftWidth / 2}
-		0,${props.shaftWidth / 2}
-	`}
-	/>
+	>
+		<polygon
+			points={`
+				0,${-props.shaftWidth / 2}
+				${length - props.headSize},${-props.shaftWidth / 2}
+				${length - props.headSize},${-props.headSize / 2}
+				${length},0
+				${length - props.headSize},${props.headSize / 2}
+				${length - props.headSize},${props.shaftWidth / 2}
+				0,${props.shaftWidth / 2}
+			`}
+		/>
+
+		<g transform={`translate(${length / 4} 0)`}>
+			<foreignObject x={0} y={-8} width="160" height="160" class="arrow-text">
+				hello world
+			</foreignObject>
+		</g>
+	</g>
 </svg>
+
+<style lang="less">
+	.arrow-text {
+		font-size: 0.3em;
+	}
+</style>
