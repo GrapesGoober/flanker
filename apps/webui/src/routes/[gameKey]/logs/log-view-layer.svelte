@@ -82,6 +82,10 @@
 </svg>
 
 <style lang="less">
+	* {
+		font-size: large;
+		font-family: Verdana, Geneva, Tahoma, sans-serif;
+	}
 	.transparent-icons {
 		opacity: 0.5;
 	}
