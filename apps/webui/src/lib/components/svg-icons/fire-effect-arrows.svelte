@@ -29,28 +29,61 @@
 
 <svg>
 	{#if props.fireEffectA != null}
-		<Arrow
-			start={props.positionA}
-			end={props.positionB}
-			headOffset={10}
-			shaftWidth={2.5}
-			headSize={5}
-		/>
-		<g
-			transform="
+		<g transform="translate(0, 0)">
+			<Arrow
+				start={props.positionA}
+				end={props.positionB}
+				headOffset={7}
+				shaftWidth={2.5}
+				headSize={5}
+			/>
+			<g
+				transform="
                 translate({props.positionA.x}, {props.positionA.y}) 
-                rotate({angle})"
-		>
-			<g transform="translate({length / 3}, 0)">
-				<foreignObject
-					x={0}
-					y={-8}
-					width="160"
-					height="160"
-					class="fire-effect-text"
-				>
-					{props.fireEffectA} FIRE
-				</foreignObject>
+                rotate({angle})
+            	"
+			>
+				<g transform="translate({length / 3}, 0)">
+					<foreignObject
+						x={0}
+						y={-8}
+						width="160"
+						height="160"
+						class="fire-effect-text"
+					>
+						{props.fireEffectA}
+					</foreignObject>
+				</g>
+			</g>
+		</g>
+	{/if}
+
+	{#if props.fireEffectB != null}
+		<g transform="translate(0, 0)">
+			<Arrow
+				start={props.positionB}
+				end={props.positionA}
+				headOffset={7}
+				shaftWidth={2.5}
+				headSize={5}
+			/>
+			<g
+				transform="
+                translate({props.positionB.x}, {props.positionB.y}) 
+                rotate({angle - 180})
+            	"
+			>
+				<g transform="translate({length / 3}, 0)">
+					<foreignObject
+						x={0}
+						y={-8}
+						width="160"
+						height="160"
+						class="fire-effect-text"
+					>
+						{props.fireEffectB} FIRE
+					</foreignObject>
+				</g>
 			</g>
 		</g>
 	{/if}

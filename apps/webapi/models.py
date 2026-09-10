@@ -29,6 +29,13 @@ class SquadModel(BaseModel, CamelCaseConfig):
     firing_at: tuple[UUID, FireEffect] | None
 
 
+class FireEffectPair(BaseModel, CamelCaseConfig):
+    position_a: Vec2
+    position_b: Vec2
+    fire_effect_a: FireEffect | None
+    fire_effect_b: FireEffect | None
+
+
 class GameViewState(BaseModel, CamelCaseConfig):
     """Simplified view model of the game state."""
 
@@ -40,6 +47,7 @@ class GameViewState(BaseModel, CamelCaseConfig):
     objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
+    fire_effect_pair: list[FireEffectPair]
 
 
 class GameStateInspection(BaseModel, CamelCaseConfig):

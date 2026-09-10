@@ -35,18 +35,13 @@
 
 <!-- Draw overlay for gameplay icons -->
 <svg overflow="visible" class="transparent-icons">
-	{#each controller.viewState.squads as unit}
-		{#if unit.firingAt != null}
-			{@const targetPos = GetUnitPosition(unit.firingAt[0])}
-			{#if targetPos != null}
-				<FireEffectArrows
-					positionA={unit.position}
-					positionB={targetPos}
-					fireEffectA={unit.firingAt[1]}
-					fireEffectB={null}
-				/>
-			{/if}
-		{/if}
+	{#each controller.viewState.fireEffectPair as fireEffect}
+		<FireEffectArrows
+			positionA={fireEffect.positionA}
+			positionB={fireEffect.positionB}
+			fireEffectA={fireEffect.fireEffectA}
+			fireEffectB={fireEffect.fireEffectB}
+		/>
 	{/each}
 	{#if controller.state.type !== 'default'}
 		{@const selectedUnit = controller.state.selectedUnit}
