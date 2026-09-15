@@ -104,6 +104,7 @@ class SceneService:
                     degree=transform.degrees,
                     status=FireSystem.get_status(gs, unit_id),
                     is_friendly=(unit.faction == faction),
+                    fov_degrees=fire_controls.fov_degrees,
                     firing_at=fire_controls.firing_at,
                 )
             )

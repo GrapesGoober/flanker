@@ -48,8 +48,7 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "los_polygon": null
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
@@ -106,8 +105,7 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "los_polygon": null
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },

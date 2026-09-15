@@ -545,6 +545,8 @@ export interface components {
             status: components["schemas"]["Status"];
             /** Isfriendly */
             isFriendly: boolean;
+            /** Fovdegrees */
+            fovDegrees: number | null;
             /** Firingat */
             firingAt: [
                 string,
