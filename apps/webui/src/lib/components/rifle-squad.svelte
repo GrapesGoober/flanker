@@ -8,22 +8,27 @@
 	};
 
 	let { rifleSquadData = $bindable() }: Props = $props();
-	let leftRay: Vec2 | null = $state(null);
-	let rightRay: Vec2 | null = $state(null);
-	if (rifleSquadData.fovDegrees != null) {
-		let FOV_HALF = rifleSquadData.fovDegrees / 2;
-		const FOV_LENGTH = 120;
-		function ray(angleDeg: number) {
-			const r = (angleDeg * Math.PI) / 180;
-			return {
-				x: Math.cos(r) * FOV_LENGTH,
-				y: Math.sin(r) * FOV_LENGTH
-			};
-		}
 
-		leftRay = ray(rifleSquadData.degree - FOV_HALF);
-		rightRay = ray(rifleSquadData.degree + FOV_HALF);
+	const FOV_LENGTH = 120;
+
+	function ray(angleDeg: number) {
+		const r = (angleDeg * Math.PI) / 180;
+		return {
+			x: Math.cos(r) * FOV_LENGTH,
+			y: Math.sin(r) * FOV_LENGTH
+		};
 	}
+
+	let leftRay: Vec2 | null = $derived.by(() => {
+		if (rifleSquadData.fovDegrees == null) return null;
+		const FOV_HALF = rifleSquadData.fovDegrees / 2;
+		return ray(rifleSquadData.degree - FOV_HALF);
+	});
+	let rightRay: Vec2 | null = $derived.by(() => {
+		if (rifleSquadData.fovDegrees == null) return null;
+		const FOV_HALF = rifleSquadData.fovDegrees / 2;
+		return ray(rifleSquadData.degree + FOV_HALF);
+	});
 </script>
 
 <svg overflow="visible">
