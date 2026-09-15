@@ -176,14 +176,15 @@ class MoveSystem:
                 )
                 match outcome:
                     case FireOutcomes.MISS:
-                        pass
+                        if worst_fire_outcome is None:
+                            worst_fire_outcome = FireOutcomes.MISS
                     case FireOutcomes.PIN:
                         transform.position = pos
-                        if worst_fire_outcome == None:
+                        if worst_fire_outcome in [None, FireOutcomes.MISS]:
                             worst_fire_outcome = FireOutcomes.PIN
                     case FireOutcomes.SUPPRESS:
                         transform.position = pos
-                        if worst_fire_outcome in [None, FireOutcomes.PIN]:
+                        if worst_fire_outcome != FireOutcomes.KILL:
                             worst_fire_outcome = FireOutcomes.SUPPRESS
                     case FireOutcomes.KILL:
                         worst_fire_outcome = FireOutcomes.KILL
