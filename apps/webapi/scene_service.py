@@ -149,16 +149,24 @@ class SceneService:
     @staticmethod
     def get_inspection(gs: GameState) -> GameStateInspection:
         los_polygons: list[GameStateInspection.LosPolygon] = []
-        for _, unit, transform in gs.query(CombatUnit, Transform):
+        for _, unit, transform, fire_controls in gs.query(
+            CombatUnit, Transform, FireControls
+        ):
             los_polygon = LosSystem.get_los_polygon(
                 gs,
                 spotter_pos=transform.position,
             )
-            fov_polygon = PolygonUtils.clip_by_fov_cone(
-                polyline=los_polygon,
-                center_point=transform.position,
-                heading_degree=transform.degrees,
-            )
+
+            if fire_controls.fov_degrees != None:
+                fov_polygon = PolygonUtils.clip_by_fov_cone(
+                    polyline=los_polygon,
+                    center_point=transform.position,
+                    heading_degree=transform.degrees,
+                    fov_degrees=fire_controls.fov_degrees,
+                )
+            else:
+                fov_polygon = los_polygon
+
             los_polygons.append(
                 GameStateInspection.LosPolygon(
                     faction=unit.faction,

@@ -51,27 +51,42 @@ def fixture() -> Fixture:
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(-1, 12), degrees=-90),
-        FireControls(override=FireOutcomes.PIN),
+        # TODO: should there be a dedicated test for no-fov?
+        # Alternatively, perhaps I should refactor all tests to only use no-fov,
+        # since the no-fov would be the only case I'd continue with.
+        FireControls(
+            fov_degrees=90,
+            override=FireOutcomes.PIN,
+        ),
         AssaultControls(),
     )
     friendly_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.BLUE),
         Transform(position=Vec2(1, 12), degrees=-90),
-        FireControls(override=FireOutcomes.PIN),
+        FireControls(
+            fov_degrees=90,
+            override=FireOutcomes.PIN,
+        ),
         AssaultControls(),
     )
     enemy_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        FireControls(override=FireOutcomes.PIN),
+        FireControls(
+            fov_degrees=90,
+            override=FireOutcomes.PIN,
+        ),
         Transform(position=Vec2(0, -15), degrees=70),
         AssaultControls(),
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        FireControls(override=FireOutcomes.PIN),
+        FireControls(
+            fov_degrees=90,
+            override=FireOutcomes.PIN,
+        ),
         Transform(position=Vec2(0, -18), degrees=100),
         AssaultControls(),
     )

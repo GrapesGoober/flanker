@@ -118,7 +118,7 @@ class PolygonUtils:
         polyline: list[Vec2],
         center_point: Vec2,
         heading_degree: float,
-        fov_degree: float = 90,
+        fov_degrees: float,
         radius: float = 1000,
     ) -> list[Vec2]:
         """Returns a new clipped a polygon to the specified cone."""
@@ -126,8 +126,8 @@ class PolygonUtils:
         # Create some rays that defines this FOV cone
         forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)
         forward_ray = forward_direction * radius
-        left_ray: Vec2 = center_point + forward_ray.rotated(fov_degree / 2)
-        right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degree / 2)
+        left_ray: Vec2 = center_point + forward_ray.rotated(fov_degrees / 2)
+        right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degrees / 2)
 
         # Choose the two first intersection points of this FOV cone
         left_intersects = IntersectUtils.get_intersects(
@@ -158,7 +158,7 @@ class PolygonUtils:
             # Only keep other points if within FOV half angle
             target_angle = center_point.angle_to(vertex)
             angle_diff = (target_angle - heading_degree + 180) % 360 - 180
-            if abs(angle_diff) <= fov_degree / 2:
+            if abs(angle_diff) <= fov_degrees / 2:
                 new_los.append(vertex)
 
         # Add left points and right points back to the list

@@ -3,7 +3,12 @@ from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
+from flanker_core.models.components import (
+    FireControls,
+    MapBoundary,
+    TerrainFeature,
+    Transform,
+)
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import (
@@ -124,31 +129,47 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
             return override.method(gs, spotter_id, line)
 
-        # Reuse FOV polygon from cache
-        fov_polygon: list[Vec2]
+        # Reuse the cache object if exists
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
         else:
             gs.add_entity(cache := _LosCacheComponent({}, {}))
+
+        # Create the cache key
         spotter_transform = gs.get_component(spotter_id, Transform)
         cache_key: tuple[Vec2, float] = (
             spotter_transform.position,
+            # TODO: should this not cache rotation if not using FOV?
+            # Perhaps a dedicated noneness tuple[Vec2, float | None]?
+            # Perhaps restructure the cache to handle with and without FOV?
             spotter_transform.degrees,
         )
+
+        # Try reusing the cached polygon
+        fov_polygon: list[Vec2]
         if cache_key in cache.fov_polygon_by_point:
             fov_polygon = cache.fov_polygon_by_point[cache_key]
-        else:  # Regenerate FOV polygon
+
+        # Polygon not exists, recalculate
+        else:
+            spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             los_polygon = LosSystem.get_los_polygon(
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = PolygonUtils.clip_by_fov_cone(
-                polyline=los_polygon,
-                center_point=spotter_transform.position,
-                heading_degree=spotter_transform.degrees,
-            )
+            if spotter_fire_controls.fov_degrees != None:
+                fov_polygon = PolygonUtils.clip_by_fov_cone(
+                    polyline=los_polygon,
+                    center_point=spotter_transform.position,
+                    heading_degree=spotter_transform.degrees,
+                    fov_degrees=spotter_fire_controls.fov_degrees,
+                )
+            else:
+                fov_polygon = los_polygon
+
             cache.fov_polygon_by_point[cache_key] = fov_polygon
 
+        # Compute intersections and return
         return LosSystem._get_line_fov_intersection(line, fov_polygon)
 
     @staticmethod

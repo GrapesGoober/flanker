@@ -37,7 +37,10 @@ def fixture() -> Fixture:
     unit_shoot = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        FireControls(override=FireOutcomes.PIN),
+        FireControls(
+            fov_degrees=90,
+            override=FireOutcomes.PIN,
+        ),
         Transform(
             position=Vec2(-20, 10),
             degrees=-90,
