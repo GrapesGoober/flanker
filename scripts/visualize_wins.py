@@ -72,6 +72,7 @@ def main() -> None:
         + theme_matplotlib()
     )
     plot.show()
+    plot.save("./scripts/outputs/visualize-wins-no-fov.png")
 
 
 def get_config(config_path: str) -> ExperimentSetConfig:
