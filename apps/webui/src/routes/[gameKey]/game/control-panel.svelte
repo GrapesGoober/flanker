@@ -54,15 +54,18 @@
 		>
 			Move (m)
 		</button>
-		<button
-			class="action-button"
-			onclick={() => {
-				controller.moveActionAsync();
-			}}
-			disabled={!controller.isPivotActionValid()}
-		>
-			Pivot (p)
-		</button>
+		<!-- Only allow pivot action if unit has FOV -->
+		{#if controller.state.selectedUnit.fovDegrees != null}
+			<button
+				class="action-button"
+				onclick={() => {
+					controller.moveActionAsync();
+				}}
+				disabled={!controller.isPivotActionValid()}
+			>
+				Pivot (p)
+			</button>
+		{/if}
 		<button
 			class="action-button"
 			onclick={() => {
