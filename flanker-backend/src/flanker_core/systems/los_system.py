@@ -67,7 +67,7 @@ class LosSystem:
     def in_fov(  # TODO This method feels like utils. Where should it be placed?
         spotter_transform: Transform,
         target_pos: Vec2,
-        fov: float = 90,
+        fov_degrees: float,
     ) -> bool:
         """
         Util method returns `True` the target position `target_pos`
@@ -78,7 +78,7 @@ class LosSystem:
         # Wraps around to be in range [-180, 180]
         angle_diff = (target_angle - spotter_transform.degrees + 180) % 360 - 180
 
-        return abs(angle_diff) <= fov / 2
+        return abs(angle_diff) <= fov_degrees / 2
 
     @staticmethod
     def has_los(  # TODO: should this be refactored to reuse LOS criteria?
