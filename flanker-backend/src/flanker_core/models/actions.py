@@ -33,6 +33,7 @@ class AssaultAction:
 class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
+    move_interrupted: bool
     reactive_fire_outcome: FireOutcomes | None
 
 

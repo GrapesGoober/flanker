@@ -150,12 +150,13 @@ class MoveSystem:
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
         worst_fire_outcome: FireOutcomes | None = None
+        move_interrupted: bool = False
 
         for pos, spotter_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
             # subsequent spotters don't get to fire.
-            if worst_fire_outcome is not None:
+            if move_interrupted == True:
                 break
 
             # All spotters in this in candidate gets to reactive fire
@@ -163,7 +164,7 @@ class MoveSystem:
 
                 # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
-                if not gs.try_component(unit_id, CombatUnit):
+                if gs.try_component(unit_id, CombatUnit) is None:
                     break
 
                 # Apply reactive fire outcome
@@ -174,25 +175,32 @@ class MoveSystem:
                     target_id=unit_id,
                     fire_outcome=outcome,
                 )
+
+                # If reactively fired upon, it stops at that position
                 match outcome:
                     case FireOutcomes.MISS:
                         if worst_fire_outcome is None:
                             worst_fire_outcome = FireOutcomes.MISS
                     case FireOutcomes.PIN:
+                        move_interrupted = True
                         transform.position = pos
                         if worst_fire_outcome in [None, FireOutcomes.MISS]:
                             worst_fire_outcome = FireOutcomes.PIN
                     case FireOutcomes.SUPPRESS:
+                        move_interrupted = True
                         transform.position = pos
                         if worst_fire_outcome != FireOutcomes.KILL:
                             worst_fire_outcome = FireOutcomes.SUPPRESS
                     case FireOutcomes.KILL:
+                        move_interrupted = True
                         worst_fire_outcome = FireOutcomes.KILL
 
-        if worst_fire_outcome is None:
+        # If not being reactive fired upon, it moves to target position
+        if move_interrupted == False:
             transform.position = to
 
         return MoveActionResult(
+            move_interrupted=move_interrupted,
             reactive_fire_outcome=worst_fire_outcome,
         )
 

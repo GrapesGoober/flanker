@@ -88,9 +88,10 @@ class AssaultSystem:
         result = MoveSystem.move(gs, attacker_id, target_position - offset)
         if isinstance(result, InvalidAction):
             return result
-        if result.reactive_fire_outcome != None:
+        if result.move_interrupted == True:
             return AssaultActionResult(
-                outcome=None, reactive_fire_outcome=result.reactive_fire_outcome
+                outcome=None,
+                reactive_fire_outcome=result.reactive_fire_outcome,
             )
 
         # Reset stall count after validity checks
