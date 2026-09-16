@@ -175,8 +175,8 @@ class FireSystem:
         return FireActionResult(outcome=fire_outcome)
 
     @staticmethod
-    def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
-        """Returns a list of valid spotters for reactive fire. Doesn't check LOS."""
+    def get_reactive_fire_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
+        """Returns a list of valid reactive fire candidates. Doesn't check LOS."""
         unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, _ in gs.query(
             CombatUnit, Transform, FireControls

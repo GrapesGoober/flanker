@@ -116,9 +116,7 @@ class LosSystem:
 
     @staticmethod
     def get_los_from_line(
-        gs: GameState,
-        spotter_id: UUID,
-        line: tuple[Vec2, Vec2],
+        gs: GameState, spotter_id: UUID, line_from: Vec2, line_to: Vec2
     ) -> Vec2 | None:
         """
         Returns an eariliest point position, if exists, along `line` that
@@ -127,7 +125,7 @@ class LosSystem:
 
         # Use the override if exists
         for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
-            return override.method(gs, spotter_id, line)
+            return override.method(gs, spotter_id, (line_from, line_to))
 
         # Reuse the cache object if exists
         if ent := gs.query(_LosCacheComponent):
@@ -170,11 +168,12 @@ class LosSystem:
             cache.fov_polygon_by_point[cache_key] = fov_polygon
 
         # Compute intersections and return
-        return LosSystem._get_line_fov_intersection(line, fov_polygon)
+        return LosSystem._get_line_fov_intersection(line_from, line_to, fov_polygon)
 
     @staticmethod
     def _get_line_fov_intersection(
-        line: tuple[Vec2, Vec2],
+        line_from: Vec2,
+        line_to: Vec2,
         fov_polygon: list[Vec2],
     ) -> Vec2 | None:
         """
@@ -186,25 +185,25 @@ class LosSystem:
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
         if PolygonUtils.is_inside(
-            point=line[0],
+            point=line_from,
             polygon=fov_polygon,
         ):
-            return line[0]
+            return line_from
 
         # The first point is outside, thus only care about intersection
         elif intersects := IntersectUtils.get_intersects(
-            line=(line[0], line[1]),
+            line=(line_from, line_to),
             polyline=fov_polygon,
         ):
             earliest_point = min(
                 intersects,
-                key=lambda point: (line[0] - point).length(),
+                key=lambda point: (line_from - point).length(),
             )
             # Add a tiny offset to prevent coordinate from sitting
             # precisely on LOS polygon edge.
             # This reduces floating point sensitivity.
-            line_direction = line[1] - line[0]
-            offset = line_direction * 1e-12
+            line_direction = (line_to - line_from).normalized()
+            offset = line_direction * 1e-6
             return earliest_point + offset
 
         return None

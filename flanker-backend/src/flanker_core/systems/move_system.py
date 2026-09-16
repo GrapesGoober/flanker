@@ -79,33 +79,34 @@ class MoveSystem:
         unit_id: UUID,
         to: Vec2,
     ) -> list[tuple[Vec2, list[UUID]]]:
-        """Returns move interrupt points and attacker IDs"""
+        """Returns move interrupt candidate points and reactive firer IDs"""
 
-        spotter_candidates = list(
-            FireSystem.get_spotter_candidates(gs, unit_id),
+        firer_candidates = list(
+            FireSystem.get_reactive_fire_candidates(gs, unit_id),
         )
         interrupt_candidates: list[tuple[Vec2, list[UUID]]] = []
 
         transform = gs.get_component(unit_id, Transform)
 
-        for spotter_id in spotter_candidates:
+        for firer_id in firer_candidates:
             interrupt_pos = LosSystem.get_los_from_line(
                 gs=gs,
-                spotter_id=spotter_id,
-                line=(transform.position, to),
+                spotter_id=firer_id,
+                line_from=transform.position,
+                line_to=to,
             )
 
             # Move interrupt found, add this as a candidate
             if interrupt_pos is not None:
                 # If this position already exists, add a the spotter
-                for existing_pos, spotters in interrupt_candidates:
+                for existing_pos, firer_ids in interrupt_candidates:
                     if existing_pos.is_close(
                         interrupt_pos, abs_tol=_MOVE_INTERRUPT_ATOL
                     ):
-                        spotters.append(spotter_id)
+                        firer_ids.append(firer_id)
                         break
                 else:  # Otherwise add a new candidate entry
-                    interrupt_candidates.append((interrupt_pos, [spotter_id]))
+                    interrupt_candidates.append((interrupt_pos, [firer_id]))
 
         # Sort the intersection candidates based on distance from starting pos
         interrupt_candidates = sorted(
@@ -152,7 +153,7 @@ class MoveSystem:
         reactive_fire_outcomes: list[FireOutcomes] = []
         move_interrupted: bool = False
 
-        for pos, spotter_ids in interrupt_candidates:
+        for pos, firer_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
             # subsequent spotters don't get to fire.
@@ -160,18 +161,23 @@ class MoveSystem:
                 break
 
             # All spotters in this in candidate gets to reactive fire
-            for spotter_id in spotter_ids:
+            for firer_id in firer_ids:
+                transform.position = pos
 
                 # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
                 if gs.try_component(unit_id, CombatUnit) is None:
                     break
 
+                # Validate sight before reactively firing
+                if FireSystem.validate_fire_actors(gs, firer_id, unit_id) != None:
+                    continue
+
                 # Apply reactive fire outcome
-                outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+                outcome = FireSystem.get_fire_outcome(gs, firer_id)
                 FireSystem.apply_fire_outcome(
                     gs,
-                    attacker_id=spotter_id,
+                    attacker_id=firer_id,
                     target_id=unit_id,
                     fire_outcome=outcome,
                 )
@@ -184,7 +190,6 @@ class MoveSystem:
                     FireOutcomes.KILL,
                 ]:
                     move_interrupted = True
-                    transform.position = pos
 
         # If not being reactive fired upon, it moves to target position
         if move_interrupted == False:
