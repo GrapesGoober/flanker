@@ -116,7 +116,10 @@ class LosSystem:
 
     @staticmethod
     def get_los_from_line(
-        gs: GameState, spotter_id: UUID, line_from: Vec2, line_to: Vec2
+        gs: GameState,
+        spotter_id: UUID,
+        line_from: Vec2,
+        line_to: Vec2,
     ) -> Vec2 | None:
         """
         Returns an eariliest point position, if exists, along `line` that
