@@ -9,7 +9,12 @@ from flanker_core.models.actions import (
     MoveAction,
     PivotAction,
 )
-from flanker_core.models.components import CombatUnit, InitiativeState, Transform
+from flanker_core.models.components import (
+    CombatUnit,
+    FireControls,
+    InitiativeState,
+    Transform,
+)
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
@@ -91,7 +96,13 @@ class AiActionService:
         # Have it pivot only towards enemies to reduce branching factor.
         actions: list[PivotAction] = []
         for friendly_id in friendly_ids:
+            friendly_fire_controls = gs.get_component(friendly_id, FireControls)
             friendly_transform = gs.get_component(friendly_id, Transform)
+
+            # If there's no FOV, then there's no need for a pivot action
+            if friendly_fire_controls.fov_degrees == None:
+                continue
+
             for target_id in target_ids:
                 target_transform = gs.get_component(target_id, Transform)
 
@@ -99,6 +110,7 @@ class AiActionService:
                 if LosSystem.in_fov(
                     spotter_transform=friendly_transform,
                     target_pos=target_transform.position,
+                    fov_degrees=friendly_fire_controls.fov_degrees,
                 ):
                     continue
                 if not LosSystem.has_los(

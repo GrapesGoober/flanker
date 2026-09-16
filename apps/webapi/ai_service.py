@@ -90,7 +90,7 @@ class AiService:
                             unit_id=result.action.unit_id,
                             to=result.action.to,
                         ),
-                        reactive_fire_outcome=result.result.reactive_fire_outcome,
+                        reactive_fire_outcomes=result.result.reactive_fire_outcomes,
                         view_state=SceneService.get_view_state(result.result_gs),
                     )
 
@@ -100,7 +100,7 @@ class AiService:
                             unit_id=result.action.unit_id,
                             to=result.action.to,
                         ),
-                        reactive_fire_outcome=result.result.reactive_fire_outcome,
+                        reactive_fire_outcomes=result.result.reactive_fire_outcomes,
                         view_state=SceneService.get_view_state(result.result_gs),
                     )
                 case FireAction(), FireActionResult():
@@ -119,7 +119,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        reactive_fire_outcome=result.result.reactive_fire_outcome,
+                        reactive_fire_outcomes=result.result.reactive_fire_outcomes,
                         view_state=SceneService.get_view_state(result.result_gs),
                     )
 

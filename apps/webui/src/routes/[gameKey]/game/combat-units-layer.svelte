@@ -76,9 +76,11 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<!-- Draw combat units -->
 	{#each controller.viewState.squads as unit, index}
-		<g onclick={(event) => SelectUnit(unit.unitId, event)}>
-			<RifleSquad bind:rifleSquadData={controller.viewState.squads[index]} />
-		</g>
+		{#if controller.viewState.squads[index] != undefined}
+			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+				<RifleSquad bind:rifleSquadData={controller.viewState.squads[index]} />
+			</g>
+		{/if}
 	{/each}
 </svg>
 

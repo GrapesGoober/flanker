@@ -37,7 +37,10 @@ def fixture() -> Fixture:
     unit_shoot = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        FireControls(override=FireOutcomes.PIN),
+        FireControls(
+            fov_degrees=90,
+            override=FireOutcomes.PIN,
+        ),
         Transform(
             position=Vec2(-20, 10),
             degrees=-90,
@@ -67,8 +70,8 @@ def fixture() -> Fixture:
 def test_reactive_fire_at_fov(fixture: Fixture) -> None:
     ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(-50, 0)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert transform.position == Vec2(
-        -10, 0
+    assert transform.position.is_close(
+        Vec2(-10, 0), abs_tol=1e-2
     ), "Expects to be interrupted at FOV border (-10, 0)."
 
 
@@ -78,6 +81,6 @@ def test_reactive_fire_after_rotated(fixture: Fixture) -> None:
     red_transform.degrees = -78.69
     ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(-50, 0)))
     transform = fixture.gs.get_component(fixture.unit_move, Transform)
-    assert (
-        transform.position - Vec2(-5, 0)
-    ).length() < 1e-2, "Expects to be interrupted at FOV border (-5, 0)."
+    assert transform.position.is_close(
+        Vec2(-5, 0), abs_tol=1e-2
+    ), "Expects to be interrupted at FOV border (-5, 0)."

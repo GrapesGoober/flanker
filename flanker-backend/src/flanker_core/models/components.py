@@ -35,7 +35,7 @@ class InitiativeState:
 class CombatUnit:
     """
     Marks an entity as a direct combat-capable unit.
-    Tracks unit suppression and command hierarchy tree.
+    Tracks its faction, defines its status, and (optional) override.
     """
 
     class Status(Enum):
@@ -44,7 +44,6 @@ class CombatUnit:
         SUPPRESSED = "SUPPRESSED"
 
     faction: InitiativeState.Faction
-    command_id: UUID | None = None
     status_override: Status | None = None
 
 
@@ -69,6 +68,7 @@ class FireControls:
     Defines the set of outcomes and override.
     """
 
+    fov_degrees: float | None = None
     override: FireOutcomes | None = None
     firing_at: tuple[UUID, FireEffect] | None = None
 

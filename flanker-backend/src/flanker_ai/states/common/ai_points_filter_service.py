@@ -101,7 +101,7 @@ class AiPointsFilterService:
                     polyline=target_los_polygon,
                     center_point=target_waypoint,
                     heading_degree=ingress_angle,
-                    fov_degree=ingress_fov,
+                    fov_degrees=ingress_fov,
                 )
                 signature: tuple[bool, ...] = tuple(
                     [

@@ -267,7 +267,8 @@ export interface components {
             logType: "AssaultActionLog";
             body: components["schemas"]["AssaultActionRequest"];
             outcome: components["schemas"]["AssaultOutcomes"] | null;
-            reactiveFireOutcome: components["schemas"]["FireOutcomes"] | null;
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -462,7 +463,8 @@ export interface components {
              */
             logType: "MoveActionLog";
             body: components["schemas"]["MoveActionRequest"];
-            reactiveFireOutcome: components["schemas"]["FireOutcomes"] | null;
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -496,7 +498,8 @@ export interface components {
              */
             logType: "PivotActionLog";
             body: components["schemas"]["PivotActionRequest"];
-            reactiveFireOutcome: components["schemas"]["FireOutcomes"] | null;
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
             viewState: components["schemas"]["GameViewState"];
         };
         /**
@@ -545,6 +548,8 @@ export interface components {
             status: components["schemas"]["Status"];
             /** Isfriendly */
             isFriendly: boolean;
+            /** Fovdegrees */
+            fovDegrees: number | null;
             /** Firingat */
             firingAt: [
                 string,

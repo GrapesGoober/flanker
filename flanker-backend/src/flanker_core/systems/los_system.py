@@ -3,7 +3,12 @@ from typing import Callable, Iterable
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
+from flanker_core.models.components import (
+    FireControls,
+    MapBoundary,
+    TerrainFeature,
+    Transform,
+)
 from flanker_core.models.vec2 import Vec2
 from flanker_core.utils.intersect_utils import IntersectUtils
 from flanker_core.utils.polygon_utils import (
@@ -62,7 +67,7 @@ class LosSystem:
     def in_fov(  # TODO This method feels like utils. Where should it be placed?
         spotter_transform: Transform,
         target_pos: Vec2,
-        fov: float = 90,
+        fov_degrees: float,
     ) -> bool:
         """
         Util method returns `True` the target position `target_pos`
@@ -73,7 +78,7 @@ class LosSystem:
         # Wraps around to be in range [-180, 180]
         angle_diff = (target_angle - spotter_transform.degrees + 180) % 360 - 180
 
-        return abs(angle_diff) <= fov / 2
+        return abs(angle_diff) <= fov_degrees / 2
 
     @staticmethod
     def has_los(  # TODO: should this be refactored to reuse LOS criteria?
@@ -113,7 +118,8 @@ class LosSystem:
     def get_los_from_line(
         gs: GameState,
         spotter_id: UUID,
-        line: tuple[Vec2, Vec2],
+        line_from: Vec2,
+        line_to: Vec2,
     ) -> Vec2 | None:
         """
         Returns an eariliest point position, if exists, along `line` that
@@ -122,38 +128,55 @@ class LosSystem:
 
         # Use the override if exists
         for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
-            return override.method(gs, spotter_id, line)
+            return override.method(gs, spotter_id, (line_from, line_to))
 
-        # Reuse FOV polygon from cache
-        fov_polygon: list[Vec2]
+        # Reuse the cache object if exists
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
         else:
             gs.add_entity(cache := _LosCacheComponent({}, {}))
+
+        # Create the cache key
         spotter_transform = gs.get_component(spotter_id, Transform)
         cache_key: tuple[Vec2, float] = (
             spotter_transform.position,
+            # TODO: should this not cache rotation if not using FOV?
+            # Perhaps a dedicated noneness tuple[Vec2, float | None]?
+            # Perhaps restructure the cache to handle with and without FOV?
             spotter_transform.degrees,
         )
+
+        # Try reusing the cached polygon
+        fov_polygon: list[Vec2]
         if cache_key in cache.fov_polygon_by_point:
             fov_polygon = cache.fov_polygon_by_point[cache_key]
-        else:  # Regenerate FOV polygon
+
+        # Polygon not exists, recalculate
+        else:
+            spotter_fire_controls = gs.get_component(spotter_id, FireControls)
             los_polygon = LosSystem.get_los_polygon(
                 gs=gs,
                 spotter_pos=spotter_transform.position,
             )
-            fov_polygon = PolygonUtils.clip_by_fov_cone(
-                polyline=los_polygon,
-                center_point=spotter_transform.position,
-                heading_degree=spotter_transform.degrees,
-            )
+            if spotter_fire_controls.fov_degrees != None:
+                fov_polygon = PolygonUtils.clip_by_fov_cone(
+                    polyline=los_polygon,
+                    center_point=spotter_transform.position,
+                    heading_degree=spotter_transform.degrees,
+                    fov_degrees=spotter_fire_controls.fov_degrees,
+                )
+            else:
+                fov_polygon = los_polygon
+
             cache.fov_polygon_by_point[cache_key] = fov_polygon
 
-        return LosSystem._get_line_fov_intersection(line, fov_polygon)
+        # Compute intersections and return
+        return LosSystem._get_line_fov_intersection(line_from, line_to, fov_polygon)
 
     @staticmethod
     def _get_line_fov_intersection(
-        line: tuple[Vec2, Vec2],
+        line_from: Vec2,
+        line_to: Vec2,
         fov_polygon: list[Vec2],
     ) -> Vec2 | None:
         """
@@ -165,25 +188,25 @@ class LosSystem:
         # If the first point is inside, ignore any intersections and
         # return the first point right away.
         if PolygonUtils.is_inside(
-            point=line[0],
+            point=line_from,
             polygon=fov_polygon,
         ):
-            return line[0]
+            return line_from
 
         # The first point is outside, thus only care about intersection
         elif intersects := IntersectUtils.get_intersects(
-            line=(line[0], line[1]),
+            line=(line_from, line_to),
             polyline=fov_polygon,
         ):
             earliest_point = min(
                 intersects,
-                key=lambda point: (line[0] - point).length(),
+                key=lambda point: (line_from - point).length(),
             )
             # Add a tiny offset to prevent coordinate from sitting
             # precisely on LOS polygon edge.
             # This reduces floating point sensitivity.
-            line_direction = line[1] - line[0]
-            offset = line_direction * 1e-12
+            line_direction = (line_to - line_from).normalized()
+            offset = line_direction * 1e-6
             return earliest_point + offset
 
         return None

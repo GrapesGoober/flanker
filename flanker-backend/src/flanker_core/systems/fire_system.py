@@ -63,6 +63,7 @@ class FireSystem:
         """Returns a reason if invalid, `None` otherwise. Doesn't Check initiative."""
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         attacker_transform = gs.get_component(attacker_id, Transform)
+        attacker_fire_controls = gs.get_component(attacker_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
         target_transform = gs.get_component(target_id, Transform)
 
@@ -77,18 +78,22 @@ class FireSystem:
         if attacker_unit.faction == target_unit.faction:
             return InvalidAction.BAD_ENTITY
 
-        # Check if attacker has LOS to target and within FOV
+        # Check if attacker has LOS to target
         if not LosSystem.has_los(
             gs,
             attacker_transform.position,
             target_transform.position,
         ):
             return InvalidAction.BAD_COORDS
-        if not LosSystem.in_fov(
-            attacker_transform,
-            target_transform.position,
-        ):
-            return InvalidAction.BAD_COORDS
+
+        # Check FOV if the attacker has FOV firing limit
+        if attacker_fire_controls.fov_degrees != None:
+            if not LosSystem.in_fov(
+                attacker_transform,
+                target_transform.position,
+                fov_degrees=attacker_fire_controls.fov_degrees,
+            ):
+                return InvalidAction.BAD_COORDS
 
     @staticmethod
     def get_fire_outcome(
@@ -170,8 +175,8 @@ class FireSystem:
         return FireActionResult(outcome=fire_outcome)
 
     @staticmethod
-    def get_spotter_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
-        """Returns a list of valid spotters for reactive fire. Doesn't check LOS."""
+    def get_reactive_fire_candidates(gs: GameState, target_id: UUID) -> Iterable[UUID]:
+        """Returns a list of valid reactive fire candidates. Doesn't check LOS."""
         unit = gs.get_component(target_id, CombatUnit)
         for spotter_id, spotter_unit, _, _ in gs.query(
             CombatUnit, Transform, FireControls

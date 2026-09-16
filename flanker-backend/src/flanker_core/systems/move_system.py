@@ -79,33 +79,34 @@ class MoveSystem:
         unit_id: UUID,
         to: Vec2,
     ) -> list[tuple[Vec2, list[UUID]]]:
-        """Returns move interrupt points and attacker IDs"""
+        """Returns move interrupt candidate points and reactive firer IDs"""
 
-        spotter_candidates = list(
-            FireSystem.get_spotter_candidates(gs, unit_id),
+        firer_candidates = list(
+            FireSystem.get_reactive_fire_candidates(gs, unit_id),
         )
         interrupt_candidates: list[tuple[Vec2, list[UUID]]] = []
 
         transform = gs.get_component(unit_id, Transform)
 
-        for spotter_id in spotter_candidates:
+        for firer_id in firer_candidates:
             interrupt_pos = LosSystem.get_los_from_line(
                 gs=gs,
-                spotter_id=spotter_id,
-                line=(transform.position, to),
+                spotter_id=firer_id,
+                line_from=transform.position,
+                line_to=to,
             )
 
             # Move interrupt found, add this as a candidate
             if interrupt_pos is not None:
                 # If this position already exists, add a the spotter
-                for existing_pos, spotters in interrupt_candidates:
+                for existing_pos, firer_ids in interrupt_candidates:
                     if existing_pos.is_close(
                         interrupt_pos, abs_tol=_MOVE_INTERRUPT_ATOL
                     ):
-                        spotters.append(spotter_id)
+                        firer_ids.append(firer_id)
                         break
                 else:  # Otherwise add a new candidate entry
-                    interrupt_candidates.append((interrupt_pos, [spotter_id]))
+                    interrupt_candidates.append((interrupt_pos, [firer_id]))
 
         # Sort the intersection candidates based on distance from starting pos
         interrupt_candidates = sorted(
@@ -149,50 +150,54 @@ class MoveSystem:
 
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
-        worst_fire_outcome: FireOutcomes | None = None
+        reactive_fire_outcomes: list[FireOutcomes] = []
+        move_interrupted: bool = False
 
-        for pos, spotter_ids in interrupt_candidates:
+        for pos, firer_ids in interrupt_candidates:
 
             # If the unit got interrupted and stopped moving,
             # subsequent spotters don't get to fire.
-            if worst_fire_outcome is not None:
+            if move_interrupted == True:
                 break
 
             # All spotters in this in candidate gets to reactive fire
-            for spotter_id in spotter_ids:
+            for firer_id in firer_ids:
+                transform.position = pos
 
                 # Some previous fire outcomes might have killed unit,
                 # so break early to prevent a non-existant entity being used.
-                if not gs.try_component(unit_id, CombatUnit):
+                if gs.try_component(unit_id, CombatUnit) is None:
                     break
 
+                # Validate sight before reactively firing
+                if FireSystem.validate_fire_actors(gs, firer_id, unit_id) != None:
+                    continue
+
                 # Apply reactive fire outcome
-                outcome = FireSystem.get_fire_outcome(gs, spotter_id)
+                outcome = FireSystem.get_fire_outcome(gs, firer_id)
                 FireSystem.apply_fire_outcome(
                     gs,
-                    attacker_id=spotter_id,
+                    attacker_id=firer_id,
                     target_id=unit_id,
                     fire_outcome=outcome,
                 )
-                match outcome:
-                    case FireOutcomes.MISS:
-                        pass
-                    case FireOutcomes.PIN:
-                        transform.position = pos
-                        if worst_fire_outcome == None:
-                            worst_fire_outcome = FireOutcomes.PIN
-                    case FireOutcomes.SUPPRESS:
-                        transform.position = pos
-                        if worst_fire_outcome in [None, FireOutcomes.PIN]:
-                            worst_fire_outcome = FireOutcomes.SUPPRESS
-                    case FireOutcomes.KILL:
-                        worst_fire_outcome = FireOutcomes.KILL
+                reactive_fire_outcomes.append(outcome)
 
-        if worst_fire_outcome is None:
+                # If reactively fired upon, it stops at that position
+                if outcome in [
+                    FireOutcomes.PIN,
+                    FireOutcomes.SUPPRESS,
+                    FireOutcomes.KILL,
+                ]:
+                    move_interrupted = True
+
+        # If not being reactive fired upon, it moves to target position
+        if move_interrupted == False:
             transform.position = to
 
         return MoveActionResult(
-            reactive_fire_outcome=worst_fire_outcome,
+            move_interrupted=move_interrupted,
+            reactive_fire_outcomes=reactive_fire_outcomes,
         )
 
     @staticmethod
@@ -206,10 +211,12 @@ class MoveSystem:
         result = MoveSystem._atomic_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
             return result
-        if result.reactive_fire_outcome in (
+        # If there are any SUPPRESS or KILL reactive fires,
+        # the initiative is lost.
+        if {
             FireOutcomes.SUPPRESS,
             FireOutcomes.KILL,
-        ):
+        } & set(result.reactive_fire_outcomes):
             InitiativeSystem.flip_initiative(gs)
 
         return result
@@ -234,13 +241,15 @@ class MoveSystem:
         if isinstance(result, InvalidAction):
             return result
 
-        if result.reactive_fire_outcome in (
+        # If there are any SUPPRESS or KILL reactive fires,
+        # the initiative is lost.
+        if {
             FireOutcomes.SUPPRESS,
-            FireOutcomes.PIN,
-        ):
+            FireOutcomes.KILL,
+        } & set(result.reactive_fire_outcomes):
             InitiativeSystem.flip_initiative(gs)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
 
-        return PivotActionResult(result.reactive_fire_outcome)
+        return PivotActionResult(result.reactive_fire_outcomes)
