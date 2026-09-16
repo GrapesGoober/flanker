@@ -141,14 +141,14 @@ class PivotActionRequest(BaseModel, CamelCaseConfig):
 class MoveActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLog"] = "MoveActionLog"
     body: MoveActionRequest
-    reactive_fire_outcome: FireOutcomes | None
+    reactive_fire_outcomes: list[FireOutcomes]
     view_state: GameViewState
 
 
 class PivotActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["PivotActionLog"] = "PivotActionLog"
     body: PivotActionRequest
-    reactive_fire_outcome: FireOutcomes | None
+    reactive_fire_outcomes: list[FireOutcomes]
     view_state: GameViewState
 
 
@@ -163,7 +163,7 @@ class AssaultActionLog(BaseModel, CamelCaseConfig):
     log_type: Literal["AssaultActionLog"] = "AssaultActionLog"
     body: AssaultActionRequest
     outcome: AssaultOutcomes | None
-    reactive_fire_outcome: FireOutcomes | None
+    reactive_fire_outcomes: list[FireOutcomes]
     view_state: GameViewState
 
 

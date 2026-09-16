@@ -149,7 +149,7 @@ class MoveSystem:
 
         # Track the most-severe fire outcome.
         # More severe outcomes will override this variables.
-        worst_fire_outcome: FireOutcomes | None = None
+        reactive_fire_outcomes: list[FireOutcomes] = []
         move_interrupted: bool = False
 
         for pos, spotter_ids in interrupt_candidates:
@@ -175,25 +175,16 @@ class MoveSystem:
                     target_id=unit_id,
                     fire_outcome=outcome,
                 )
+                reactive_fire_outcomes.append(outcome)
 
                 # If reactively fired upon, it stops at that position
-                match outcome:
-                    case FireOutcomes.MISS:
-                        if worst_fire_outcome is None:
-                            worst_fire_outcome = FireOutcomes.MISS
-                    case FireOutcomes.PIN:
-                        move_interrupted = True
-                        transform.position = pos
-                        if worst_fire_outcome in [None, FireOutcomes.MISS]:
-                            worst_fire_outcome = FireOutcomes.PIN
-                    case FireOutcomes.SUPPRESS:
-                        move_interrupted = True
-                        transform.position = pos
-                        if worst_fire_outcome != FireOutcomes.KILL:
-                            worst_fire_outcome = FireOutcomes.SUPPRESS
-                    case FireOutcomes.KILL:
-                        move_interrupted = True
-                        worst_fire_outcome = FireOutcomes.KILL
+                if outcome in [
+                    FireOutcomes.PIN,
+                    FireOutcomes.SUPPRESS,
+                    FireOutcomes.KILL,
+                ]:
+                    move_interrupted = True
+                    transform.position = pos
 
         # If not being reactive fired upon, it moves to target position
         if move_interrupted == False:
@@ -201,7 +192,7 @@ class MoveSystem:
 
         return MoveActionResult(
             move_interrupted=move_interrupted,
-            reactive_fire_outcome=worst_fire_outcome,
+            reactive_fire_outcomes=reactive_fire_outcomes,
         )
 
     @staticmethod
@@ -215,10 +206,12 @@ class MoveSystem:
         result = MoveSystem._atomic_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
             return result
-        if result.reactive_fire_outcome in (
+        # If there are any SUPPRESS or KILL reactive fires,
+        # the initiative is lost.
+        if {
             FireOutcomes.SUPPRESS,
             FireOutcomes.KILL,
-        ):
+        } & set(result.reactive_fire_outcomes):
             InitiativeSystem.flip_initiative(gs)
 
         return result
@@ -243,13 +236,15 @@ class MoveSystem:
         if isinstance(result, InvalidAction):
             return result
 
-        if result.reactive_fire_outcome in (
+        # If there are any SUPPRESS or KILL reactive fires,
+        # the initiative is lost.
+        if {
             FireOutcomes.SUPPRESS,
-            FireOutcomes.PIN,
-        ):
+            FireOutcomes.KILL,
+        } & set(result.reactive_fire_outcomes):
             InitiativeSystem.flip_initiative(gs)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position
 
-        return PivotActionResult(result.reactive_fire_outcome)
+        return PivotActionResult(result.reactive_fire_outcomes)

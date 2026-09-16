@@ -7,7 +7,6 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionRequest,
@@ -55,7 +54,7 @@ class ActionService:
             gs,
             MoveActionLog(
                 body=body,
-                reactive_fire_outcome=result.reactive_fire_outcome,
+                reactive_fire_outcomes=result.reactive_fire_outcomes,
                 view_state=SceneService.get_view_state(gs),
             ),
         )
@@ -75,7 +74,7 @@ class ActionService:
             gs,
             PivotActionLog(
                 body=body,
-                reactive_fire_outcome=result.reactive_fire_outcome,
+                reactive_fire_outcomes=result.reactive_fire_outcomes,
                 view_state=SceneService.get_view_state(gs),
             ),
         )
@@ -116,7 +115,7 @@ class ActionService:
             AssaultActionLog(
                 body=body,
                 outcome=result.outcome,
-                reactive_fire_outcome=result.reactive_fire_outcome,
+                reactive_fire_outcomes=result.reactive_fire_outcomes,
                 view_state=SceneService.get_view_state(gs),
             ),
         )

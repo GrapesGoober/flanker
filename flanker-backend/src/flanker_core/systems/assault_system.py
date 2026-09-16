@@ -88,13 +88,15 @@ class AssaultSystem:
         result = MoveSystem.move(gs, attacker_id, target_position - offset)
         if isinstance(result, InvalidAction):
             return result
+
+        # If move action did not arrive at target, consider the action to fail.
         if result.move_interrupted == True:
             return AssaultActionResult(
                 outcome=None,
-                reactive_fire_outcome=result.reactive_fire_outcome,
+                reactive_fire_outcomes=result.reactive_fire_outcomes,
             )
 
-        # Reset stall count after validity checks
+        # Reset stall count after assault and move action validity checks
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         ObjectiveSystem.reset_stall(gs, attacker_unit.faction)
 
@@ -112,5 +114,5 @@ class AssaultSystem:
                 CommandSystem.kill_unit(gs, attacker_id)
         return AssaultActionResult(
             outcome=outcome,
-            reactive_fire_outcome=None,
+            reactive_fire_outcomes=[],
         )

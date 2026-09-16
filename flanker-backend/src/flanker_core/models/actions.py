@@ -34,14 +34,14 @@ class MoveActionResult:
     """Result of a move action as any reactive fire."""
 
     move_interrupted: bool
-    reactive_fire_outcome: FireOutcomes | None
+    reactive_fire_outcomes: list[FireOutcomes]
 
 
 @dataclass
 class PivotActionResult:
     """Result of a pivot action as any reactive fire."""
 
-    reactive_fire_outcome: FireOutcomes | None
+    reactive_fire_outcomes: list[FireOutcomes]
 
 
 @dataclass
@@ -56,7 +56,7 @@ class AssaultActionResult:
     """Result of an assault action as assault outcome, and any reactive fire."""
 
     outcome: AssaultOutcomes | None
-    reactive_fire_outcome: FireOutcomes | None
+    reactive_fire_outcomes: list[FireOutcomes]
 
 
 Action = MoveAction | PivotAction | FireAction | AssaultAction
