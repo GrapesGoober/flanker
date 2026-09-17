@@ -8,23 +8,28 @@
     "demo": "./scenes/demo.json",
     "demo-simple": "./scenes/demo-simple.json",
 
-    "scene-1": "./scenes/experiment-scene-1.json",
-    "scene-2": "./scenes/experiment-scene-2.json",
-    "blue-handdrawn-s1": "./scenes/experiment-blue-handdrawn-s1.json",
-    "blue-handdrawn-s2": "./scenes/experiment-blue-handdrawn-s2.json",
-    "blue-analysis": "./scenes/experiment-blue-analysis.json",
-    "blue-grid": "./scenes/experiment-blue-grid.json",
-    "blue-mcts": "./scenes/experiment-blue-mcts.json",
-    "blue-rh": "./scenes/experiment-blue-rh.json",
-    "red-analysis": "./scenes/experiment-red-analysis.json",
-    "red-grid": "./scenes/experiment-red-grid.json",
-    "red-rh": "./scenes/experiment-red-rh.json",
-    "experiment": "./scenes/experiment-settings.json",
+    "scene-1": "./scenes/experiments/scenes/scene-1.json",
+    "scene-2": "./scenes/experiments/scenes/scene-2.json",
+    "scene-1-no-fov": "./scenes/experiments/scenes/scene-1-no-fov.json",
+    "scene-2-no-fov": "./scenes/experiments/scenes/scene-2-no-fov.json",
 
-    "visualize-expansion": "./scenes/visualize-expansion.json",
-    "visualize-interrupt": "./scenes/visualize-interrupt.json",
-    "visualize-los": "./scenes/visualize-los.json",
-    "visualize-peeking": "./scenes/visualize-peeking.json",
-    "visualize-polytope": "./scenes/visualize-polytope.json"
+    "blue-handdrawn-s1": "./scenes/experiments/blue-agents/handdrawn-s1.json",
+    "blue-handdrawn-s2": "./scenes/experiments/blue-agents/handdrawn-s2.json",
+    "blue-analysis": "./scenes/experiments/blue-agents/analysis.json",
+    "blue-grid": "./scenes/experiments/blue-agents/grid.json",
+    "blue-mcts": "./scenes/experiments/blue-agents/mcts.json",
+    "blue-rh": "./scenes/experiments/blue-agents/rh.json",
+
+    "red-analysis": "./scenes/experiments/red-agents/analysis.json",
+    "red-grid": "./scenes/experiments/red-agents/grid.json",
+    "red-rh": "./scenes/experiments/red-agents/rh.json",
+
+    "experiment": "./scenes/experiments/settings.json",
+
+    "visualize-expansion": "./scenes/visualizations/expansion.json",
+    "visualize-interrupt": "./scenes/visualizations/interrupt.json",
+    "visualize-los": "./scenes/visualizations/los.json",
+    "visualize-peeking": "./scenes/visualizations/peeking.json",
+    "visualize-polytope": "./scenes/visualizations/polytope.json"
   }
 }
