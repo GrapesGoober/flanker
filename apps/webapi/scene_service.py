@@ -1,5 +1,6 @@
 from dataclasses import is_dataclass
 from inspect import isclass
+from pathlib import Path
 from typing import Any, FrozenSet, Iterable
 from uuid import UUID
 
@@ -45,9 +46,31 @@ class SceneService:
         yield LogRecords
 
     @staticmethod
+    def get_manifest() -> SceneManifest:
+
+        # Load the default manifest. Throw if not exists.
+        manifest = SceneManifest.model_validate_json(
+            Path("./scenes/manifest.json").read_text()
+        )
+
+        # Load the local manifest. This is optional
+        local_manifest_path = Path("./scenes/local/manifest.json")
+        local_manifest = (
+            SceneManifest.model_validate_json(local_manifest_path.read_text())
+            if local_manifest_path.exists()
+            else SceneManifest(quick_access={}, scene_paths={})
+        )
+
+        # Combine both. Local takes priority (right hand side)
+        return SceneManifest(
+            quick_access=manifest.quick_access | local_manifest.quick_access,
+            scene_paths=manifest.scene_paths | local_manifest.scene_paths,
+        )
+
+    @staticmethod
     def get_scenes() -> SceneManifestResponse:
-        with open("./scenes/manifest.json", "r") as f:
-            manifest = SceneManifest.model_validate_json(f.read())
+        manifest = SceneService.get_manifest()
+
         return SceneManifestResponse(
             quick_access_scenes=list(manifest.quick_access.keys()),
             scene_names=list(manifest.scene_paths.keys()),
@@ -76,10 +99,9 @@ class SceneService:
         component_types = list(SceneService._get_component_types())
         entities: dict[UUID, Any] = {}
 
-        with open("./scenes/manifest.json", "r") as f:
-            manifest = SceneManifest.model_validate_json(f.read())
-
+        manifest = SceneService.get_manifest()
         paths = [manifest.scene_paths[name] for name in scene_names]
+
         for path in paths:
             with open(path, "r") as f:
                 entities.update(
