@@ -1,6 +1,5 @@
 from dataclasses import is_dataclass
 from inspect import isclass
-from pathlib import Path
 from typing import Any, FrozenSet, Iterable
 from uuid import UUID
 
@@ -28,6 +27,7 @@ from webapi.models import (
     GameStateInspection,
     GameViewState,
     GameViewStateResponse,
+    SceneManifest,
     SquadModel,
 )
 
@@ -45,8 +45,9 @@ class SceneService:
 
     @staticmethod
     def get_scenes() -> list[str]:
-        folder = Path("./scenes/")
-        return [file.stem for file in folder.iterdir() if file.is_file()]
+        with open("./scenes/manifest.json", "r") as f:
+            manifest = SceneManifest.model_validate_json(f.read())
+        return list(manifest.scene_paths.keys())
 
     @staticmethod
     def serialize(gs: GameState, indent: int | None = None) -> str:
@@ -70,8 +71,12 @@ class SceneService:
     ) -> GameState:
         component_types = list(SceneService._get_component_types())
         entities: dict[UUID, Any] = {}
-        for scene in scene_names:
-            path = f"./scenes/{scene}.json"
+
+        with open("./scenes/manifest.json", "r") as f:
+            manifest = SceneManifest.model_validate_json(f.read())
+
+        paths = [manifest.scene_paths[name] for name in scene_names]
+        for path in paths:
             with open(path, "r") as f:
                 entities.update(
                     Serializer.deserialize(

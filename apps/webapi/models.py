@@ -172,6 +172,11 @@ class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
     points: list[Vec2]
 
 
+class SceneManifest(BaseModel, CamelCaseConfig):
+    quick_access: dict[str, list[str]]
+    scene_paths: dict[str, str]
+
+
 ActionRequest = Annotated[
     Union[
         MoveActionRequest,
