@@ -15,8 +15,7 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "fov_degrees": 90
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
@@ -35,8 +34,7 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "fov_degrees": 90
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
@@ -55,8 +53,7 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "fov_degrees": 90
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
@@ -75,8 +72,7 @@
         "move_type": "FOOT"
       },
       "FireControls": {
-        "can_reactive_fire": true,
-        "fov_degrees": 90
+        "can_reactive_fire": true
       },
       "AssaultControls": {}
     },
