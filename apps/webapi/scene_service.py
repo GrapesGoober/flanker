@@ -118,8 +118,7 @@ class SceneService:
     def load_from_quick_access(
         quick_access_name: str,
     ) -> GameState:
-        with open("./scenes/manifest.json", "r") as f:
-            manifest = SceneManifest.model_validate_json(f.read())
+        manifest = SceneService.get_manifest()
         scene_names = manifest.quick_access[quick_access_name]
         return SceneService.load_game_state(scene_names)
 
