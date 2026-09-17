@@ -54,7 +54,7 @@
 
 <h1>Project Flanker</h1>
 
-<h3>Local Game Saves</h3>
+<h3>Game Saves</h3>
 {#if saveGameKeys.length === 0}
 	<p>No game saves found.</p>
 {:else}
