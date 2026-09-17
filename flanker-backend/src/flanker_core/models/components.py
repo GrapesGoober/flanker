@@ -68,7 +68,7 @@ class FireControls:
     Defines the set of outcomes and override.
     """
 
-    fov_degrees: float | None = None
+    fov_degrees: float | None
     override: FireOutcomes | None = None
     firing_at: tuple[UUID, FireEffect] | None = None
 
