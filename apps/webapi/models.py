@@ -177,6 +177,11 @@ class SceneManifest(BaseModel, CamelCaseConfig):
     scene_paths: dict[str, str]
 
 
+class SceneManifestResponse(BaseModel, CamelCaseConfig):
+    quick_access_scenes: list[str]
+    scene_names: list[str]
+
+
 ActionRequest = Annotated[
     Union[
         MoveActionRequest,

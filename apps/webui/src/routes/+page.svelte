@@ -1,10 +1,22 @@
 <script lang="ts">
-	import { GetGameStateJSON, GetSceneNames } from '$lib/api';
-	import { deleteGameLocal, getGameKeys, saveGameLocal } from '$lib/scenes-storage';
+	import {
+		GetGameStateJSON,
+		GetGameStateQuickAccessJSON,
+		GetSceneNames,
+		type SceneManifest
+	} from '$lib/api';
+	import {
+		deleteGameLocal,
+		getGameKeys,
+		saveGameLocal
+	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 
 	let saveGameKeys: string[] = $state([]);
-	let sceneNames: string[] = $state([]);
+	let sceneNames: SceneManifest = $state({
+		quickAccessScenes: [],
+		sceneNames: []
+	});
 	let selectedScenes: string[] = $state([]);
 	let newGameName: string = $state('');
 
@@ -19,10 +31,16 @@
 		sceneNames = await GetSceneNames();
 	}
 
-	async function createNewGame() {
+	async function createNewGameFromSelection() {
 		if (selectedScenes.length == 0) return;
 		const stateJson = await GetGameStateJSON(selectedScenes);
 		saveGameLocal(newGameName, stateJson);
+		reloadList();
+	}
+
+	async function createNewFromQuickAccess(quickAccessName: string) {
+		const stateJson = await GetGameStateQuickAccessJSON(quickAccessName);
+		saveGameLocal(quickAccessName, stateJson);
 		reloadList();
 	}
 
@@ -58,12 +76,33 @@
 	</ul>
 {/if}
 
-<h3>Load Scene Presets</h3>
-{#if sceneNames.length === 0}
-	<p>No scene presets.</p>
+<h3>Load From Quick Access</h3>
+
+{#if sceneNames.quickAccessScenes.length === 0}
+	<p>No quick access.</p>
 {:else}
 	<ul>
-		{#each sceneNames as sceneName}
+		{#each sceneNames.quickAccessScenes as quickAccessName}
+			<li>
+				<input
+					type="button"
+					value={quickAccessName}
+					onclick={() => {
+						createNewFromQuickAccess(quickAccessName);
+					}}
+				/>
+			</li>
+		{/each}
+	</ul>
+{/if}
+
+<h3>Load From Each Scenes</h3>
+
+{#if sceneNames.sceneNames.length === 0}
+	<p>No scenes.</p>
+{:else}
+	<ul>
+		{#each sceneNames.sceneNames as sceneName}
 			<li>
 				<input type="checkbox" value={sceneName} bind:group={selectedScenes} />
 				{sceneName}
@@ -73,4 +112,4 @@
 {/if}
 
 <input type="text" bind:value={newGameName} />
-<input type="button" value="New Game" onclick={createNewGame} />
+<input type="button" value="New Game" onclick={createNewGameFromSelection} />

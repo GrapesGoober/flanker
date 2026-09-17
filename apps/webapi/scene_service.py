@@ -28,6 +28,7 @@ from webapi.models import (
     GameViewState,
     GameViewStateResponse,
     SceneManifest,
+    SceneManifestResponse,
     SquadModel,
 )
 
@@ -44,10 +45,13 @@ class SceneService:
         yield LogRecords
 
     @staticmethod
-    def get_scenes() -> list[str]:
+    def get_scenes() -> SceneManifestResponse:
         with open("./scenes/manifest.json", "r") as f:
             manifest = SceneManifest.model_validate_json(f.read())
-        return list(manifest.scene_paths.keys())
+        return SceneManifestResponse(
+            quick_access_scenes=list(manifest.quick_access.keys()),
+            scene_names=list(manifest.scene_paths.keys()),
+        )
 
     @staticmethod
     def serialize(gs: GameState, indent: int | None = None) -> str:
@@ -87,6 +91,15 @@ class SceneService:
 
         gs = GameState.load(entities)
         return gs
+
+    @staticmethod
+    def load_from_quick_access(
+        quick_access_name: str,
+    ) -> GameState:
+        with open("./scenes/manifest.json", "r") as f:
+            manifest = SceneManifest.model_validate_json(f.read())
+        scene_names = manifest.quick_access[quick_access_name]
+        return SceneService.load_game_state(scene_names)
 
     @staticmethod
     def get_view_state(gs: GameState) -> GameViewState:
