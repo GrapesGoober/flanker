@@ -14,6 +14,7 @@ from experiment_models import (
     ExperimentMetadata,
     ExperimentSetConfig,
     MatchResult,
+    SceneManifest,
 )
 from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
@@ -155,14 +156,12 @@ def get_experiments(
 ) -> list[_ExperimentConfig]:
     return [
         _ExperimentConfig(
-            name="-".join(name for name in combination),
-            gs=get_game_state(
-                [experiment_set.scene_files[name] for name in combination]
-            ),
+            name="-".join(name for name in scene_names),
+            gs=get_game_state(list(scene_names)),
             n_matches=experiment_set.n_matches,
             target=experiment_set.target,
         )
-        for combination in product(
+        for scene_names in product(
             experiment_set.scene_configs,
             experiment_set.blue_configs,
             experiment_set.red_configs,
@@ -200,10 +199,16 @@ def get_matches(
 
 
 def get_game_state(
-    paths: list[str],
+    scene_names: list[str],
 ) -> GameState:
     component_types = list(get_component_types())
     entities: dict[UUID, Any] = {}
+
+    with open("./scenes/manifest.json", "r") as f:
+        manifest = SceneManifest.model_validate_json(f.read())
+
+    paths = [manifest.scene_paths[name] for name in scene_names]
+
     for path in paths:
         with open(path, "r") as f:
             entities.update(
