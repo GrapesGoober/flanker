@@ -123,9 +123,12 @@ class FireSystem:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
+                # TODO: should this fire effect condition be updated?
                 # If firing at the same suppressed target, don't reset the effect
                 if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
                     fire_controls.firing_at = (target_id, FireEffect.PINNING)
+                # SUPPRESSED target doesn't get PINNED.
+                if target_unit.status == CombatUnit.Status.ACTIVE:
                     target_unit.status = CombatUnit.Status.PINNED
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
