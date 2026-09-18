@@ -26,7 +26,6 @@ from flanker_core.models.components import CombatUnit, InitiativeState, Transfor
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystemOverrides
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -64,9 +63,9 @@ class WaypointsState(IRepresentationState[Action]):
                 return -10000
 
         score = 0.0
-        for unit_id, unit in self.gs.query(CombatUnit):
+        for _, unit in self.gs.query(CombatUnit):
             value = 0
-            match FireSystem.get_status(self.gs, unit_id):
+            match unit.status:
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:

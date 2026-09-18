@@ -1,7 +1,6 @@
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action, FireAction
 from flanker_core.models.components import CombatUnit, FireControls
-from flanker_core.systems.fire_system import FireSystem
 
 
 class AiBranchAbstractionService:
@@ -27,12 +26,6 @@ class AiBranchAbstractionService:
                     continue
                 if (unit_left, unit_right) == (None, None):
                     return (left_id, right_id)
-
-                # Filter on unit status equality
-                left_unit_status = FireSystem.get_status(branch_left, action.unit_id)
-                right_unit_status = FireSystem.get_status(branch_right, action.unit_id)
-                if left_unit_status != right_unit_status:
-                    continue
 
                 # Filter on fire controls equality
                 match action:

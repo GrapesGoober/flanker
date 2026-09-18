@@ -16,14 +16,13 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass
 class Fixture:
     gs: GameState
-    unit_move: UUID
+    unit_move_id: UUID
     unit_shoot_1: UUID
     unit_shoot_2: UUID
     fire_controls_1: FireControls
@@ -35,16 +34,22 @@ def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
     gs.add_entity(InitiativeState())
-    unit_move = gs.add_entity(
+    unit_move_id = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(0, -10)),
     )
     # Have the shooters stand on top of each other,
     # so the reactive fire position is the same
     unit_shoot_1 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         fire_controls_1 := FireControls(
             fov_degrees=None,
         ),
@@ -55,7 +60,10 @@ def fixture() -> Fixture:
     )
     unit_shoot_2 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         fire_controls_2 := FireControls(
             fov_degrees=None,
         ),
@@ -94,7 +102,7 @@ def fixture() -> Fixture:
 
     return Fixture(
         gs=gs,
-        unit_move=unit_move,
+        unit_move_id=unit_move_id,
         unit_shoot_1=unit_shoot_1,
         fire_controls_1=fire_controls_1,
         unit_shoot_2=unit_shoot_2,
@@ -103,8 +111,8 @@ def fixture() -> Fixture:
 
 
 def test_no_interrupt(fixture: Fixture) -> None:
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(5, -15)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(5, -15)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position == Vec2(
         5, -15
     ), "Move action expects to not be interrupted"
@@ -116,8 +124,8 @@ def test_no_interrupt(fixture: Fixture) -> None:
 def test_both_miss(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.MISS
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position == Vec2(
         20, -10
     ), "Move action expects to not be interrupted"
@@ -129,40 +137,40 @@ def test_both_miss(fixture: Fixture) -> None:
 def test_one_pin(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.MISS
     fixture.fire_controls_2.override = FireOutcomes.PIN
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position.is_close(
         Vec2(7.5, -10), abs_tol=1e-2
     ), "Move action expects to be interrupted at Vec2(7.5, -10)"
-    unit_status = FireSystem.get_status(fixture.gs, fixture.unit_move)
-    assert unit_status == CombatUnit.Status.PINNED, "Target expects to be pinned"
+    unit_move = fixture.gs.get_component(fixture.unit_move_id, CombatUnit)
+    assert unit_move.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move) == True
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move_id) == True
     ), "PINNED reactive fire must maintain initiative for moving unit."
 
 
 def test_one_pin_one_suppress(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.PIN
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position.is_close(
         Vec2(7.5, -10), abs_tol=1e-2
     ), "Move action expects to be interrupted at Vec2(7.5, -10)"
-    unit_status = FireSystem.get_status(fixture.gs, fixture.unit_move)
+    unit_move = fixture.gs.get_component(fixture.unit_move_id, CombatUnit)
     assert (
-        unit_status == CombatUnit.Status.SUPPRESSED
+        unit_move.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move) == False
+        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move_id) == False
     ), "SUPPRESS reactive fire lose initiative for moving unit."
 
 
 def test_both_suppress(fixture: Fixture) -> None:
     fixture.fire_controls_1.override = FireOutcomes.SUPPRESS
     fixture.fire_controls_2.override = FireOutcomes.SUPPRESS
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.try_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.try_component(fixture.unit_move_id, Transform)
     assert transform == None, "Target expects to be killed"
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == True

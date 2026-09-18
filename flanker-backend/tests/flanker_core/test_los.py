@@ -32,12 +32,18 @@ def fixture() -> Fixture:
     # Two entities
     target_id = gs.add_entity(
         target_transform := Transform(position=Vec2(0, -10)),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         MoveControls(),
     )
     spotter_id = gs.add_entity(
         spotter_transform := Transform(position=Vec2(15, 10)),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         MoveControls(),
     )
 

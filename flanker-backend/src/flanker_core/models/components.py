@@ -35,7 +35,7 @@ class InitiativeState:
 class CombatUnit:
     """
     Marks an entity as a direct combat-capable unit.
-    Tracks its faction, defines its status, and (optional) override.
+    Tracks its faction and its status.
     """
 
     class Status(Enum):
@@ -44,7 +44,7 @@ class CombatUnit:
         SUPPRESSED = "SUPPRESSED"
 
     faction: InitiativeState.Faction
-    status_override: Status | None = None
+    status: Status
 
 
 @dataclass

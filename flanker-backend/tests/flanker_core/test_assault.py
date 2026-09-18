@@ -32,6 +32,7 @@ def fixture() -> Fixture:
     attacker_id = gs.add_entity(
         CombatUnit(
             faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
         ),
         Transform(position=Vec2(1, 1)),
         assault_controls := AssaultControls(),
@@ -40,6 +41,7 @@ def fixture() -> Fixture:
     target_id = gs.add_entity(
         CombatUnit(
             faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
         ),
         Transform(position=Vec2(2, 2)),
         AssaultControls(),

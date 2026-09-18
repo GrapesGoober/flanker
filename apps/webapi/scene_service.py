@@ -17,7 +17,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -141,7 +140,7 @@ class SceneService:
                     unit_id=unit_id,
                     position=transform.position,
                     degree=transform.degrees,
-                    status=FireSystem.get_status(gs, unit_id),
+                    status=unit.status,
                     is_friendly=(unit.faction == faction),
                     fov_degrees=fire_controls.fov_degrees,
                     firing_at=fire_controls.firing_at,

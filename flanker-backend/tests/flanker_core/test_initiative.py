@@ -27,7 +27,10 @@ def fixture() -> Fixture:
     gs.add_entity(InitiativeState())
     unit_id = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(0, 0)),
     )
     return Fixture(gs, unit_id)
