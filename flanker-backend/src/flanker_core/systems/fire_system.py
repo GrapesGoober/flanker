@@ -126,9 +126,11 @@ class FireSystem:
                 # If firing at the same suppressed target, don't reset the effect
                 if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
                     fire_controls.firing_at = (target_id, FireEffect.PINNING)
+                    target_unit.status = CombatUnit.Status.PINNED
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
                     # Reset fire effect because SUPPRESSED unit can't fire.
                     if target_fire_controls != None:
                         target_fire_controls.firing_at = None
