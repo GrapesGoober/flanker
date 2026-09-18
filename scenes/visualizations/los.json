@@ -42,7 +42,8 @@
         "degrees": -50
       },
       "CombatUnit": {
-        "faction": "BLUE"
+        "faction": "BLUE",
+        "status": "ACTIVE"
       },
       "MoveControls": {
         "move_type": "FOOT"
