@@ -85,15 +85,15 @@ class AssaultSystem:
         offset = direction * 0.1  # offsetted by small amount
 
         # Moves the unit to target position (allow reactive fire)
-        result = MoveSystem.move(gs, attacker_id, target_position - offset)
-        if isinstance(result, InvalidAction):
-            return result
+        move_result = MoveSystem.move(gs, attacker_id, target_position - offset)
+        if isinstance(move_result, InvalidAction):
+            return move_result
 
         # If move action did not arrive at target, consider the action to fail.
-        if result.move_interrupted == True:
+        if move_result.move_interrupted == True:
             return AssaultActionResult(
                 outcome=None,
-                reactive_fire_outcomes=result.reactive_fire_outcomes,
+                reactive_fire_outcomes=move_result.reactive_fire_outcomes,
             )
 
         # Reset stall count after assault and move action validity checks
@@ -114,5 +114,5 @@ class AssaultSystem:
                 CommandSystem.kill_unit(gs, attacker_id)
         return AssaultActionResult(
             outcome=outcome,
-            reactive_fire_outcomes=[],
+            reactive_fire_outcomes=move_result.reactive_fire_outcomes,
         )

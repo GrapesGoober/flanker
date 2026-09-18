@@ -49,7 +49,8 @@
       },
       "FireControls": {
         "override": "SUPPRESS",
-        "can_reactive_fire": true
+        "can_reactive_fire": true,
+        "fov_degrees": 90
       },
       "AssaultControls": {}
     },
@@ -69,7 +70,8 @@
       },
       "FireControls": {
         "override": "PIN",
-        "can_reactive_fire": false
+        "can_reactive_fire": false,
+        "fov_degrees": 90
       },
       "AssaultControls": {}
     },
@@ -89,7 +91,8 @@
       },
       "FireControls": {
         "override": "PIN",
-        "can_reactive_fire": false
+        "can_reactive_fire": false,
+        "fov_degrees": 90
       },
       "AssaultControls": {}
     },

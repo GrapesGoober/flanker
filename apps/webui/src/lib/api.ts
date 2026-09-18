@@ -5,13 +5,16 @@ const client = createClient<paths>({
 	baseUrl: import.meta.env.VITE_WEBAPI_URL
 });
 
+export type SceneManifest = components['schemas']['SceneManifestResponse'];
+
 export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
 export type TerrainType = components['schemas']['Types'];
 export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type GameViewState = components['schemas']['GameViewState'];
-export type GameViewStateResponse = components['schemas']['GameViewStateResponse'];
+export type GameViewStateResponse =
+	components['schemas']['GameViewStateResponse'];
 export type GameStateInspection = components['schemas']['GameStateInspection'];
 export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
@@ -19,7 +22,8 @@ export type FireEffect = components['schemas']['FireEffect'];
 
 export type MoveActionRequest = components['schemas']['MoveActionRequest'];
 export type FireActionRequest = components['schemas']['FireActionRequest'];
-export type AssaultActionRequest = components['schemas']['AssaultActionRequest'];
+export type AssaultActionRequest =
+	components['schemas']['AssaultActionRequest'];
 export type PivotActionRequest = components['schemas']['PivotActionRequest'];
 export type ActionRequest =
 	| MoveActionRequest
@@ -31,12 +35,32 @@ export type MoveActionLog = components['schemas']['MoveActionLog'];
 export type FireActionLog = components['schemas']['FireActionLog'];
 export type AssaultActionLog = components['schemas']['AssaultActionLog'];
 export type PivotActionLog = components['schemas']['PivotActionLog'];
-export type ActionLog = MoveActionLog | FireActionLog | AssaultActionLog | PivotActionLog;
+export type ActionLog =
+	| MoveActionLog
+	| FireActionLog
+	| AssaultActionLog
+	| PivotActionLog;
 
 /** Get all available scene names. */
-export async function GetSceneNames(): Promise<string[]> {
+export async function GetSceneNames(): Promise<SceneManifest> {
 	const { data, error } = await client.GET('/api/scenes');
 	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
+/** Get game state entities table from quick access in JSON string. */
+export async function GetGameStateQuickAccessJSON(
+	quickAccessName: string
+): Promise<string> {
+	const { data, error } = await client.GET('/api/scenes/quick-access/json', {
+		params: {
+			query: {
+				quickAccessName: quickAccessName
+			}
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+
 	return data;
 }
 
@@ -112,7 +136,9 @@ export async function DeleteTerrainData(
 }
 
 /** Get current combat unit states for the game. */
-export async function GetViewStatesData(jsonState: string): Promise<GameViewState> {
+export async function GetViewStatesData(
+	jsonState: string
+): Promise<GameViewState> {
 	const { data, error } = await client.POST('/api/scenes/view', {
 		body: jsonState
 	});
@@ -121,7 +147,9 @@ export async function GetViewStatesData(jsonState: string): Promise<GameViewStat
 }
 
 /** Get current combat unit states for the game. */
-export async function GetStatesInspectionData(jsonState: string): Promise<GameStateInspection> {
+export async function GetStatesInspectionData(
+	jsonState: string
+): Promise<GameStateInspection> {
 	const { data, error } = await client.POST('/api/scenes/inspect', {
 		body: jsonState
 	});

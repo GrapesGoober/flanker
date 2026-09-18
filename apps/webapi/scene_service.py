@@ -28,6 +28,8 @@ from webapi.models import (
     GameStateInspection,
     GameViewState,
     GameViewStateResponse,
+    SceneManifest,
+    SceneManifestResponse,
     SquadModel,
 )
 
@@ -44,9 +46,35 @@ class SceneService:
         yield LogRecords
 
     @staticmethod
-    def get_scenes() -> list[str]:
-        folder = Path("./scenes/")
-        return [file.stem for file in folder.iterdir() if file.is_file()]
+    def get_manifest() -> SceneManifest:
+
+        # Load the default manifest. Throw if not exists.
+        manifest = SceneManifest.model_validate_json(
+            Path("./scenes/manifest.json").read_text()
+        )
+
+        # Load the local manifest. This is optional
+        local_manifest_path = Path("./scenes/local/manifest.json")
+        local_manifest = (
+            SceneManifest.model_validate_json(local_manifest_path.read_text())
+            if local_manifest_path.exists()
+            else SceneManifest(quick_access={}, scene_paths={})
+        )
+
+        # Combine both. Local takes priority (right hand side)
+        return SceneManifest(
+            quick_access=manifest.quick_access | local_manifest.quick_access,
+            scene_paths=manifest.scene_paths | local_manifest.scene_paths,
+        )
+
+    @staticmethod
+    def get_scenes() -> SceneManifestResponse:
+        manifest = SceneService.get_manifest()
+
+        return SceneManifestResponse(
+            quick_access_scenes=list(manifest.quick_access.keys()),
+            scene_names=list(manifest.scene_paths.keys()),
+        )
 
     @staticmethod
     def serialize(gs: GameState, indent: int | None = None) -> str:
@@ -70,8 +98,11 @@ class SceneService:
     ) -> GameState:
         component_types = list(SceneService._get_component_types())
         entities: dict[UUID, Any] = {}
-        for scene in scene_names:
-            path = f"./scenes/{scene}.json"
+
+        manifest = SceneService.get_manifest()
+        paths = [manifest.scene_paths[name] for name in scene_names]
+
+        for path in paths:
             with open(path, "r") as f:
                 entities.update(
                     Serializer.deserialize(
@@ -82,6 +113,14 @@ class SceneService:
 
         gs = GameState.load(entities)
         return gs
+
+    @staticmethod
+    def load_from_quick_access(
+        quick_access_name: str,
+    ) -> GameState:
+        manifest = SceneService.get_manifest()
+        scene_names = manifest.quick_access[quick_access_name]
+        return SceneService.load_game_state(scene_names)
 
     @staticmethod
     def get_view_state(gs: GameState) -> GameViewState:

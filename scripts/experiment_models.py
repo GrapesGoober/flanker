@@ -3,7 +3,8 @@ from typing import Literal
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.models.components import InitiativeState
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
 class MatchResult(BaseModel):
@@ -25,7 +26,6 @@ class ExperimentMetadata(BaseModel):
 class ExperimentSetConfig(BaseModel):
     """Input config model for entire experiment-set run."""
 
-    scene_files: dict[str, str]
     scene_configs: list[str]
     blue_configs: list[str]
     red_configs: list[str]
@@ -33,3 +33,13 @@ class ExperimentSetConfig(BaseModel):
     n_matches: int
     max_workers: int
     target: Literal["local"] | str
+
+
+class SceneManifest(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+    )
+
+    quick_access: dict[str, list[str]]
+    scene_paths: dict[str, str]

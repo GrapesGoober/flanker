@@ -16,6 +16,7 @@ from webapi.models import (
     GameViewState,
     GameViewStateResponse,
     MapViewState,
+    SceneManifestResponse,
     TerrainModel,
 )
 from webapi.scene_service import SceneService
@@ -41,7 +42,7 @@ async def value_error_handler(_: Request, exc: Exception) -> NoReturn:
 
 
 @app.get("/api/scenes")
-async def get_scenes() -> list[str]:
+async def get_scenes() -> SceneManifestResponse:
     """Gets a list of scenes."""
     return SceneService.get_scenes()
 
@@ -52,6 +53,15 @@ async def get_game_state_json(
 ) -> str:
     """Gets a game state serialized entities table."""
     gs = SceneService.load_game_state(scene_names)
+    return SceneService.serialize(gs, indent=False)
+
+
+@app.get("/api/scenes/quick-access/json")
+async def get_game_state_json_from_quick_access(
+    quick_access_name: str = Query(..., alias="quickAccessName"),
+) -> str:
+    """Gets a game state serialized entities table."""
+    gs = SceneService.load_from_quick_access(quick_access_name)
     return SceneService.serialize(gs, indent=False)
 
 

@@ -44,6 +44,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/scenes/quick-access/json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Game State Json From Quick Access
+         * @description Gets a game state serialized entities table.
+         */
+        get: operations["get_game_state_json_from_quick_access_api_scenes_quick_access_json_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/scenes/view": {
         parameters: {
             query?: never;
@@ -532,6 +552,13 @@ export interface components {
             /** Actionslength */
             actionsLength: number;
         };
+        /** SceneManifestResponse */
+        SceneManifestResponse: {
+            /** Quickaccessscenes */
+            quickAccessScenes: string[];
+            /** Scenenames */
+            sceneNames: string[];
+        };
         /**
          * SquadModel
          * @description Represents a view of a single squad in the game.
@@ -631,7 +658,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string[];
+                    "application/json": components["schemas"]["SceneManifestResponse"];
                 };
             };
         };
@@ -640,6 +667,37 @@ export interface operations {
         parameters: {
             query: {
                 sceneNames: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_game_state_json_from_quick_access_api_scenes_quick_access_json_get: {
+        parameters: {
+            query: {
+                quickAccessName: string;
             };
             header?: never;
             path?: never;
