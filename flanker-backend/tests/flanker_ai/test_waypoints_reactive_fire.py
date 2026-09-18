@@ -41,7 +41,10 @@ def fixture() -> Fixture:
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(0, -10)),
         FireControls(
             fov_degrees=None,
@@ -51,7 +54,10 @@ def fixture() -> Fixture:
     # so the reactive fire position is the same
     enemy_1 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         FireControls(
             fov_degrees=None,
         ),
@@ -59,7 +65,10 @@ def fixture() -> Fixture:
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         FireControls(
             fov_degrees=None,
         ),
@@ -68,7 +77,10 @@ def fixture() -> Fixture:
     # Have another enemy unit for a second reactive fire
     enemy_3 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         FireControls(
             fov_degrees=None,
         ),

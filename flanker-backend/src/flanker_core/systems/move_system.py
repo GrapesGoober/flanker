@@ -36,9 +36,10 @@ class MoveSystem:
         """Returns `True` if move action can be performed."""
         transform = gs.get_component(unit_id, Transform)
         move_controls = gs.get_component(unit_id, MoveControls)
+        move_unit = gs.get_component(unit_id, CombatUnit)
 
         # Check game state is valid for move action
-        if FireSystem.get_status(gs, unit_id) != CombatUnit.Status.ACTIVE:
+        if move_unit.status != CombatUnit.Status.ACTIVE:
             return InvalidAction.INACTIVE_UNIT
         if not InitiativeSystem.has_initiative(gs, unit_id):
             return InvalidAction.NO_INITIATIVE
