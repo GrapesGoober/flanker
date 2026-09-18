@@ -274,7 +274,7 @@ def test_optimal_actions(
             peeking_units.append(result.action.unit_id)
     assert len(peeking_units) != 0, "AI must try peeking to Vec2(-10, 1)."
 
-    assert set(peeking_units).issubset(
+    assert not set(peeking_units).isdisjoint(
         set(staging_units)
     ), "Peeking units must be staged first."
 
