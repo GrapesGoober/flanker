@@ -37,7 +37,9 @@ def fixture() -> Fixture:
         attacker_unit := CombatUnit(
             faction=InitiativeState.Faction.BLUE,
         ),
-        fire_controls := FireControls(),
+        fire_controls := FireControls(
+            fov_degrees=None,
+        ),
         Transform(position=Vec2(7.6, -10), degrees=90),
     )
     target_id = gs.add_entity(

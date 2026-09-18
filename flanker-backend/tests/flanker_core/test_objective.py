@@ -40,7 +40,10 @@ def fixture() -> Fixture:
     )
     attacker_id = gs.add_entity(
         CombatUnit(faction=InitiativeState.Faction.BLUE),
-        FireControls(override=FireOutcomes.KILL),
+        FireControls(
+            override=FireOutcomes.KILL,
+            fov_degrees=None,
+        ),
         Transform(position=Vec2(0, 0)),
     )
     target_id_1 = gs.add_entity(

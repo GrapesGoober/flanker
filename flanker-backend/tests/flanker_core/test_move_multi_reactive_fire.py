@@ -45,7 +45,9 @@ def fixture() -> Fixture:
     unit_shoot_1 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        fire_controls_1 := FireControls(),
+        fire_controls_1 := FireControls(
+            fov_degrees=None,
+        ),
         Transform(
             position=Vec2(15, 20),
             degrees=-90,
@@ -54,7 +56,9 @@ def fixture() -> Fixture:
     unit_shoot_2 = gs.add_entity(
         MoveControls(),
         CombatUnit(faction=InitiativeState.Faction.RED),
-        fire_controls_2 := FireControls(),
+        fire_controls_2 := FireControls(
+            fov_degrees=None,
+        ),
         Transform(
             position=Vec2(15, 20),
             degrees=-90,
