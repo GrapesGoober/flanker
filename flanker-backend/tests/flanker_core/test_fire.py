@@ -136,10 +136,17 @@ def test_pin_fire(fixture: Fixture) -> None:
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
+    # If kills the firer, the fire effect is gone, but status remains
     CommandSystem.kill_unit(fixture.gs, fixture.attacker_id)
     assert (
+        target_unit.status == CombatUnit.Status.PINNED
+    ), "Target expects to remain PINNED even if fire effect is gone"
+
+    # The status would only revert automatically once unit regains initiative
+    InitiativeSystem.flip_initiative(fixture.gs)
+    assert (
         target_unit.status == CombatUnit.Status.ACTIVE
-    ), "Target expects to be reset to ACTIVE as firer is gone"
+    ), "Target expects to be ACTIVE once fire is gone and regains initiative."
 
 
 def test_fire_reset_on_target_killed(fixture: Fixture) -> None:
