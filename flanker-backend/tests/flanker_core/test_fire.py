@@ -143,7 +143,7 @@ def test_pin_fire(fixture: Fixture) -> None:
     ), "Target expects to remain PINNED even if fire effect is gone"
 
     # The status would only revert automatically once unit regains initiative
-    InitiativeSystem.flip_initiative(fixture.gs)
+    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     assert (
         target_unit.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE once fire is gone and regains initiative."

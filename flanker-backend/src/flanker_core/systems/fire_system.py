@@ -23,32 +23,6 @@ class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
-    def old_get_status(
-        gs: GameState,
-        unit_id: UUID,
-    ) -> CombatUnit.Status:
-        """Gets the current unit status of a combat unit."""
-
-        # Record each fire effects of each firer
-        fire_effects: set[FireEffect] = set()
-        for _, fire_controls in gs.query(FireControls):
-            if fire_controls.firing_at == None:
-                continue
-            fire_at_id, fire_effect = fire_controls.firing_at
-            if fire_at_id != unit_id:
-                continue
-            fire_effects.add(fire_effect)
-
-        # Apply each fire effect; SUPPRESSING surpass PINNING
-        if FireEffect.SUPPRESSING in fire_effects:
-            return CombatUnit.Status.SUPPRESSED
-        elif fire_effects == {FireEffect.PINNING}:
-            return CombatUnit.Status.PINNED
-
-        # No fire effect => return active status
-        return CombatUnit.Status.ACTIVE
-
-    @staticmethod
     def validate_fire_actors(
         gs: GameState,
         attacker_id: UUID,
@@ -123,7 +97,9 @@ class FireSystem:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                # TODO: should this fire effect condition be updated?
+                # TODO: should this PIN fire not cancelling SUPPRESS be removed?
+                # It doesn't seem to add anything.
+
                 # If firing at the same suppressed target, don't reset the effect
                 if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
                     fire_controls.firing_at = (target_id, FireEffect.PINNING)
