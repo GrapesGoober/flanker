@@ -51,7 +51,7 @@ def fixture() -> Fixture:
             status=CombatUnit.Status.ACTIVE,
         ),
         fire_controls_1 := FireControls(
-            fov_degrees=None,
+            fov_degrees=90,
         ),
         Transform(
             position=Vec2(15, 20),
@@ -65,7 +65,7 @@ def fixture() -> Fixture:
             status=CombatUnit.Status.ACTIVE,
         ),
         fire_controls_2 := FireControls(
-            fov_degrees=None,
+            fov_degrees=90,
         ),
         Transform(
             position=Vec2(15, 20),

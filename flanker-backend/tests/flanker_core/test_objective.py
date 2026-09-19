@@ -45,7 +45,7 @@ def fixture() -> Fixture:
         ),
         FireControls(
             override=FireOutcomes.KILL,
-            fov_degrees=None,
+            fov_degrees=90,
         ),
         Transform(position=Vec2(0, 0)),
     )
