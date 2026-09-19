@@ -97,12 +97,7 @@ class FireSystem:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                # TODO: should this PIN fire not cancelling SUPPRESS be removed?
-                # It doesn't seem to add anything.
-
-                # If firing at the same suppressed target, don't reset the effect
-                if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
-                    fire_controls.firing_at = (target_id, FireEffect.PINNING)
+                fire_controls.firing_at = (target_id, FireEffect.PINNING)
                 # SUPPRESSED target doesn't get PINNED.
                 if target_unit.status == CombatUnit.Status.ACTIVE:
                     target_unit.status = CombatUnit.Status.PINNED
@@ -110,7 +105,7 @@ class FireSystem:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
                     target_unit.status = CombatUnit.Status.SUPPRESSED
-                    # Reset fire effect because SUPPRESSED unit can't fire.
+                    # Reset the target's fire effect because SUPPRESSED unit can't fire.
                     if target_fire_controls != None:
                         target_fire_controls.firing_at = None
                 else:  # Kills the unit if it is already suppressed
