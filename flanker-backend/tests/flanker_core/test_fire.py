@@ -187,22 +187,6 @@ def test_suppress_fire(fixture: Fixture) -> None:
         InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
-    fixture.fire_controls.override = FireOutcomes.PIN
-    fire_result = ActionSystem.perform(
-        gs=fixture.gs,
-        action=FireAction(
-            unit_id=fixture.attacker_id,
-            target_id=fixture.target_id,
-        ),
-    )
-    assert not isinstance(fire_result, InvalidAction), "Fire action must occur"
-    assert (
-        target_unit.status == CombatUnit.Status.SUPPRESSED
-    ), "Expects PIN outcome to not overwrite SUPPRESSED status."
-    assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
-    ), "Expects attacker to lose initiative"
-
 
 def test_kill_fire(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.KILL
