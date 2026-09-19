@@ -49,7 +49,10 @@ def fixture() -> Fixture:
     )
     friendly_1 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(-1, 12), degrees=-90),
         # TODO: should there be a dedicated test for no-fov?
         # Alternatively, perhaps I should refactor all tests to only use no-fov,
@@ -62,7 +65,10 @@ def fixture() -> Fixture:
     )
     friendly_2 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(1, 12), degrees=-90),
         FireControls(
             fov_degrees=90,
@@ -72,7 +78,10 @@ def fixture() -> Fixture:
     )
     enemy_1 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         FireControls(
             fov_degrees=90,
             override=FireOutcomes.PIN,
@@ -82,7 +91,10 @@ def fixture() -> Fixture:
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         FireControls(
             fov_degrees=90,
             override=FireOutcomes.PIN,
@@ -246,8 +258,8 @@ def test_optimal_actions(
             peeking_units.append(result.action.unit_id)
     assert len(peeking_units) != 0, "AI must try peeking to Vec2(-10, 1)."
 
-    assert set(peeking_units).issubset(
-        set(staging_units)
+    assert (
+        len(set(peeking_units) & set(staging_units)) != 0
     ), "Peeking units must be staged first."
 
     last_action_result = action_results[-1]

@@ -31,12 +31,18 @@ def fixture() -> Fixture:
     gs.add_entity(InitiativeState())
     unit_move = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(0, 0)),
     )
     unit_shoot = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         FireControls(
             fov_degrees=90,
             override=FireOutcomes.PIN,

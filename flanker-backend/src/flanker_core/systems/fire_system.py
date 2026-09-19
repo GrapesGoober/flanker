@@ -23,38 +23,6 @@ class FireSystem:
     """Static class for handling firing action of combat units."""
 
     @staticmethod
-    def get_status(
-        gs: GameState,
-        unit_id: UUID,
-    ) -> CombatUnit.Status:
-        """Gets the current unit status of a combat unit."""
-
-        unit = gs.get_component(unit_id, CombatUnit)
-
-        # If overriden, return the override value
-        if unit.status_override != None:
-            return unit.status_override
-
-        # Record each fire effects of each firer
-        fire_effects: set[FireEffect] = set()
-        for _, fire_controls in gs.query(FireControls):
-            if fire_controls.firing_at == None:
-                continue
-            fire_at_id, fire_effect = fire_controls.firing_at
-            if fire_at_id != unit_id:
-                continue
-            fire_effects.add(fire_effect)
-
-        # Apply each fire effect; SUPPRESSING surpass PINNING
-        if FireEffect.SUPPRESSING in fire_effects:
-            return CombatUnit.Status.SUPPRESSED
-        elif fire_effects == {FireEffect.PINNING}:
-            return CombatUnit.Status.PINNED
-
-        # No fire effect => return active status
-        return CombatUnit.Status.ACTIVE
-
-    @staticmethod
     def validate_fire_actors(
         gs: GameState,
         attacker_id: UUID,
@@ -68,7 +36,7 @@ class FireSystem:
         target_transform = gs.get_component(target_id, Transform)
 
         # Check if attacker can attack
-        if FireSystem.get_status(gs, attacker_id) not in (
+        if attacker_unit.status not in (
             CombatUnit.Status.ACTIVE,
             CombatUnit.Status.PINNED,
         ):
@@ -123,19 +91,21 @@ class FireSystem:
         """Applies the fire outcome to the target combat unit."""
         fire_controls = gs.get_component(attacker_id, FireControls)
         target_fire_controls = gs.try_component(target_id, FireControls)
+        target_unit = gs.get_component(target_id, CombatUnit)
 
         match fire_outcome:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                # If firing at the same suppressed target, don't reset the effect
-                if fire_controls.firing_at != (target_id, FireEffect.SUPPRESSING):
-                    fire_controls.firing_at = (target_id, FireEffect.PINNING)
+                fire_controls.firing_at = (target_id, FireEffect.PINNING)
+                # SUPPRESSED target doesn't get PINNED.
+                if target_unit.status == CombatUnit.Status.ACTIVE:
+                    target_unit.status = CombatUnit.Status.PINNED
             case FireOutcomes.SUPPRESS:
-                target_status = FireSystem.get_status(gs, target_id)
-                if target_status != CombatUnit.Status.SUPPRESSED:
+                if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
-                    # Reset fire effect because SUPPRESSED unit can't fire.
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
+                    # Reset the target's fire effect because SUPPRESSED unit can't fire.
                     if target_fire_controls != None:
                         target_fire_controls.firing_at = None
                 else:  # Kills the unit if it is already suppressed
@@ -182,7 +152,7 @@ class FireSystem:
             CombatUnit, Transform, FireControls
         ):
             # Check that spotter is a valid spotter for reactive fire
-            if FireSystem.get_status(gs, spotter_id) == CombatUnit.Status.SUPPRESSED:
+            if spotter_unit.status == CombatUnit.Status.SUPPRESSED:
                 continue
             if spotter_id == target_id:
                 continue

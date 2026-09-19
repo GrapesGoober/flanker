@@ -31,12 +31,18 @@ def fixture() -> Fixture:
     # Rifle Squad
     unit_id_1 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(0, -10)),
     )
     unit_id_2 = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(5, -10)),
     )
 

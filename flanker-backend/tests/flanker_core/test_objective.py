@@ -39,16 +39,28 @@ def fixture() -> Fixture:
         ),
     )
     attacker_id = gs.add_entity(
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
-        FireControls(override=FireOutcomes.KILL),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
+        FireControls(
+            override=FireOutcomes.KILL,
+            fov_degrees=90,
+        ),
         Transform(position=Vec2(0, 0)),
     )
     target_id_1 = gs.add_entity(
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(2, 1)),
     )
     target_id_2 = gs.add_entity(
-        CombatUnit(faction=InitiativeState.Faction.RED),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(3, 1)),
     )
 

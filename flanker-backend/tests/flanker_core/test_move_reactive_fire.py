@@ -16,14 +16,13 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass
 class Fixture:
     gs: GameState
-    unit_move: UUID
+    unit_move_id: UUID
     unit_shoot: UUID
     fire_controls: FireControls
 
@@ -33,15 +32,23 @@ def fixture() -> Fixture:
     gs = GameState()
     # Rifle Squads
     gs.add_entity(InitiativeState())
-    unit_move = gs.add_entity(
+    unit_move_id = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.BLUE),
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
         Transform(position=Vec2(0, -10)),
     )
     unit_shoot = gs.add_entity(
         MoveControls(),
-        CombatUnit(faction=InitiativeState.Faction.RED),
-        fire_controls := FireControls(),
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
+        fire_controls := FireControls(
+            fov_degrees=90,
+        ),
         Transform(
             position=Vec2(15, 20),
             degrees=-90,
@@ -75,15 +82,15 @@ def fixture() -> Fixture:
 
     return Fixture(
         gs=gs,
-        unit_move=unit_move,
+        unit_move_id=unit_move_id,
         unit_shoot=unit_shoot,
         fire_controls=fire_controls,
     )
 
 
 def test_move(fixture: Fixture) -> None:
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(5, -15)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(5, -15)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position == Vec2(
         5, -15
     ), "Move action expects to not be interrupted"
@@ -94,8 +101,8 @@ def test_move(fixture: Fixture) -> None:
 
 def test_interrupt_miss(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.MISS
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position.is_close(
         Vec2(20, -10), abs_tol=1e-2
     ), "Move action expects to not be interrupted"
@@ -106,13 +113,13 @@ def test_interrupt_miss(fixture: Fixture) -> None:
 
 def test_interrupt_pin(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.PIN
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position.is_close(
         Vec2(7.5, -10), abs_tol=1e-2
     ), "Move action expects to be interrupted at Vec2(7.5, -10)"
-    unit_status = FireSystem.get_status(fixture.gs, fixture.unit_move)
-    assert unit_status == CombatUnit.Status.PINNED, "Target expects to be pinned"
+    unit_move = fixture.gs.get_component(fixture.unit_move_id, CombatUnit)
+    assert unit_move.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == False
     ), "PINNED reactive fire must maintain initiative."
@@ -120,14 +127,14 @@ def test_interrupt_pin(fixture: Fixture) -> None:
 
 def test_interrupt_suppress(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.SUPPRESS
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.get_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.get_component(fixture.unit_move_id, Transform)
     assert transform.position.is_close(
         Vec2(7.5, -10), abs_tol=1e-2
     ), "Move action expects to be interrupted at Vec2(8, -10)"
-    unit_status = FireSystem.get_status(fixture.gs, fixture.unit_move)
+    unit_move = fixture.gs.get_component(fixture.unit_move_id, CombatUnit)
     assert (
-        unit_status == CombatUnit.Status.SUPPRESSED
+        unit_move.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True
@@ -136,8 +143,8 @@ def test_interrupt_suppress(fixture: Fixture) -> None:
 
 def test_interrupt_kill(fixture: Fixture) -> None:
     fixture.fire_controls.override = FireOutcomes.KILL
-    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move, Vec2(20, -10)))
-    transform = fixture.gs.try_component(fixture.unit_move, Transform)
+    ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_move_id, Vec2(20, -10)))
+    transform = fixture.gs.try_component(fixture.unit_move_id, Transform)
     assert transform == None, "Target expects to be killed"
     assert (
         InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot) == True

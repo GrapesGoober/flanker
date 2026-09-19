@@ -27,7 +27,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -53,9 +52,9 @@ class UnabstractedState(IRepresentationState[Action]):
                 return -10000
 
         score = 0.0
-        for unit_id, combat_unit in self._gs.query(CombatUnit):
+        for _, combat_unit in self._gs.query(CombatUnit):
             value = 0
-            match FireSystem.get_status(self._gs, unit_id):
+            match combat_unit.status:
                 case CombatUnit.Status.ACTIVE:
                     value = 3
                 case CombatUnit.Status.PINNED:

@@ -24,7 +24,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
@@ -159,7 +158,8 @@ class AiBranchingService:
         )
         for _, new_state in branches:
             assault_controls = new_state.get_component(unit_id, AssaultControls)
-            if FireSystem.get_status(gs, target_id) == CombatUnit.Status.SUPPRESSED:
+            target_unit = new_state.get_component(target_id, CombatUnit)
+            if target_unit.status == CombatUnit.Status.SUPPRESSED:
                 assault_controls.override = AssaultOutcomes.SUCCESS
             else:
                 assault_controls.override = AssaultOutcomes.FAIL

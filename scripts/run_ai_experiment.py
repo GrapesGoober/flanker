@@ -129,17 +129,24 @@ def run_match(
             entities=match_config.gs.dump(),
             component_types=list(get_component_types()),
         )
-        r = requests.post(
-            f"{match_config.target}/api/ai-play",
-            data=scene_data,
-        )
-        if 300 <= r.status_code <= 600:
-            print(f"Request had {r.status_code} error: {r.text}")
-            print(f"Rerunning {match_config.name} in 30 seconds")
-            sleep(30)
-            return run_match(match_config)
+        response: requests.Response | None = None
 
-        result = _MatchResultApiResponse.model_validate_json(r.text)
+        # Keep retrying requests if it fails
+        while True:
+            try:
+                response = requests.post(
+                    f"{match_config.target}/api/ai-play",
+                    data=scene_data,
+                )
+                response.raise_for_status()
+                break
+
+            except requests.RequestException as e:
+                print(f"Request had error {e}")
+                print(f"Rerunning {match_config.name} in 30 seconds")
+                sleep(30)
+
+        result = _MatchResultApiResponse.model_validate_json(response.text)
 
     return (
         MatchResult(
