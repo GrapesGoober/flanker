@@ -42,7 +42,7 @@ def fixture() -> Fixture:
         ),
         Transform(position=Vec2(0, -10)),
         FireControls(
-            fov_degrees=None,
+            fov_degrees=90,
         ),
     )
     # Have the shooters stand on top of each other,
@@ -54,7 +54,7 @@ def fixture() -> Fixture:
             status=CombatUnit.Status.ACTIVE,
         ),
         FireControls(
-            fov_degrees=None,
+            fov_degrees=90,
         ),
         Transform(position=Vec2(15, 20), degrees=-90),
     )
@@ -65,7 +65,7 @@ def fixture() -> Fixture:
             status=CombatUnit.Status.ACTIVE,
         ),
         FireControls(
-            fov_degrees=None,
+            fov_degrees=90,
         ),
         Transform(position=Vec2(15, 20), degrees=-90),
     )
