@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
 import pytest
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -11,7 +12,7 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     UnabstractedStateConfig,
 )
-from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireAction, MoveAction
@@ -175,7 +176,7 @@ def fixture() -> Fixture:
 def get_agent(
     gs: GameState,
     policy_type: Literal["Minimax", "MCTS"],
-) -> AiSearchAgent:
+) -> IAiAgent[Any]:
 
     move_candidate_points = [
         Vec2(0, 0),
@@ -216,8 +217,7 @@ def get_agent(
         ),
     )
 
-    agent = AiSearchAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
-    agent.rs.update_state(gs)
+    agent = AiAgentFactory.get_agent(gs, faction=InitiativeState.Faction.BLUE)
     return agent
 
 
@@ -227,6 +227,8 @@ def test_branching_total_prob(fixture: Fixture) -> None:
         to=Vec2(-10, 1),
     )
     blue_agent = get_agent(fixture.gs, policy_type="Minimax")
+    assert isinstance(blue_agent, AiSearchAgent), "BLUE agent must be a search agent"
+    blue_agent.rs.update_state(fixture.gs)
     branches = blue_agent.rs.get_branches(action)
     total_prob = 0
     for prob, _ in branches:

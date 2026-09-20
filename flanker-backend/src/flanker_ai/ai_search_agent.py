@@ -76,7 +76,7 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
         )
 
     @staticmethod
-    def get_agent(
+    def get_search_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
     ) -> "AiSearchAgent":

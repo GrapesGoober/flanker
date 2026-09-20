@@ -1,5 +1,5 @@
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -49,7 +49,7 @@ class AiService:
         if InitiativeSystem.get_initiative(gs) != InitiativeState.Faction.RED:
             return
 
-        agent = AiSearchAgent.get_agent(gs, InitiativeState.Faction.RED)
+        agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
         action_results: list[AiActionResult[AiSearchLog]] = []
         for _ in range(max_actions):
             result = agent.perform_action(gs)

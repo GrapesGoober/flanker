@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
 import pytest
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -11,7 +12,7 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
@@ -182,7 +183,7 @@ def fixture() -> Fixture:
 def get_agent(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],
-) -> AiSearchAgent:
+) -> IAiAgent[Any]:
     match policy_type:
         case "MCTS":
             policy = PolicyConfig.MctsPolicy(
@@ -215,11 +216,12 @@ def get_agent(
         )
     )
 
-    return AiSearchAgent.get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
+    return AiAgentFactory.get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
     agent = get_agent(fixture, policy_type="Minimax")
+    assert isinstance(agent, AiSearchAgent), "BLUE agent must be a search agent"
     rs = agent.rs
     assert isinstance(
         rs, WaypointsState
@@ -241,6 +243,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
     agent = get_agent(fixture, policy_type="Minimax")
+    assert isinstance(agent, AiSearchAgent), "BLUE agent must be a search agent"
     rs = agent.rs
     assert isinstance(
         rs, WaypointsState

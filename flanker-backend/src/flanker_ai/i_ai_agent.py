@@ -13,7 +13,7 @@ class AiActionResult[TLog]:
 
 
 class IAiAgent[TLog]:
-    """Interface for a game-playing AI agent."""
+    """Interface for a game-playing AI agent. The policy log is of type TLog."""
 
     def perform_action(
         self,

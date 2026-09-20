@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.ai_search_agent import AiSearchAgent
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
@@ -29,7 +29,7 @@ class AiMatch:
 
         # Sets up a match
         agents = {
-            faction: AiSearchAgent.get_agent(gs, faction)
+            faction: AiAgentFactory.get_agent(gs, faction)
             for faction in [
                 InitiativeState.Faction.BLUE,
                 InitiativeState.Faction.RED,

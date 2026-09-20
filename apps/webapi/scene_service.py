@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, FrozenSet, Iterable
 from uuid import UUID
 
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
@@ -214,11 +215,13 @@ class SceneService:
                 )
             )
 
-        agent = AiSearchAgent.get_agent(gs, InitiativeState.Faction.BLUE)
-        agent.rs.update_state(gs)
-        actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
-        unit_id = actions[0].unit_id if actions else None
-        move_candidates: list[Vec2] = [a.to for a in actions if a.unit_id == unit_id]
+        agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.BLUE)
+        move_candidates: list[Vec2] = []
+        if isinstance(agent, AiSearchAgent):
+            agent.rs.update_state(gs)
+            actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
+            unit_id = actions[0].unit_id if actions else None
+            move_candidates = [a.to for a in actions if a.unit_id == unit_id]
 
         return GameStateInspection(
             view_state=SceneService.get_view_state(gs),

@@ -16,8 +16,8 @@ from experiment_models import (
     MatchResult,
     SceneManifest,
 )
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
@@ -226,8 +226,8 @@ def get_game_state(
             )
 
     gs = GameState.load(entities)
-    AiSearchAgent.get_agent(gs, InitiativeState.Faction.BLUE)
-    AiSearchAgent.get_agent(gs, InitiativeState.Faction.RED)
+    AiAgentFactory.get_agent(gs, InitiativeState.Faction.BLUE)
+    AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
     return gs
 
 
