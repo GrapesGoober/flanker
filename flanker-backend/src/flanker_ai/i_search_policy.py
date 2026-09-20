@@ -5,7 +5,10 @@ from flanker_ai.i_search_state import ISearchState
 
 @runtime_checkable
 class ISearchPolicy[TAction, TLog](Protocol):
-    """Interface for a domain independent search decision policy."""
+    """
+    Interface for a domain independent search decision policy.
+    The action space is of type TAction, and log type is TLog.
+    """
 
     def get_action(
         self,
