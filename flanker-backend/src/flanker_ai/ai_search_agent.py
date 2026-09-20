@@ -32,10 +32,10 @@ from flanker_core.systems.action_system import ActionSystem
 @dataclass
 class _AiAgentInstanceComponent:
     faction: InitiativeState.Faction
-    agent: "AiAgent"
+    agent: "AiSearchAgent"
 
 
-class AiAgent(IAiAgent):
+class AiSearchAgent(IAiAgent):
     def __init__(
         self,
         gs: GameState,
@@ -79,7 +79,7 @@ class AiAgent(IAiAgent):
     def get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> "AiAgent":
+    ) -> "AiSearchAgent":
         """Use the config to build an AI agent, or reuse agent if exists."""
 
         # Get the agent instance component if already exists
@@ -152,7 +152,7 @@ class AiAgent(IAiAgent):
                             path_tolerance=state_config.path_tolerance,
                         )
 
-        agent = AiAgent(gs, faction, state, policy)
+        agent = AiSearchAgent(gs, faction, state, policy)
         gs.add_entity(
             _AiAgentInstanceComponent(
                 faction=faction,

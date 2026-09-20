@@ -3,7 +3,7 @@ from typing import Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_agent import AiActionResult, AiAgent
+from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -11,6 +11,7 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     UnabstractedStateConfig,
 )
+from flanker_ai.i_ai_agent import AiActionResult
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireAction, MoveAction
 from flanker_core.models.components import (
@@ -173,7 +174,7 @@ def fixture() -> Fixture:
 def get_agent(
     gs: GameState,
     policy_type: Literal["Minimax", "MCTS"],
-) -> AiAgent:
+) -> AiSearchAgent:
 
     move_candidate_points = [
         Vec2(0, 0),
@@ -214,7 +215,7 @@ def get_agent(
         ),
     )
 
-    agent = AiAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+    agent = AiSearchAgent.get_agent(gs, faction=InitiativeState.Faction.BLUE)
     agent.rs.update_state(gs)
     return agent
 

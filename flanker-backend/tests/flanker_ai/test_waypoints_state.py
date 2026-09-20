@@ -3,7 +3,7 @@ from typing import Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_agent import AiActionResult, AiAgent
+from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -11,6 +11,7 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
+from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -180,7 +181,7 @@ def fixture() -> Fixture:
 def get_agent(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],
-) -> AiAgent:
+) -> AiSearchAgent:
     match policy_type:
         case "MCTS":
             policy = PolicyConfig.MctsPolicy(
@@ -213,7 +214,7 @@ def get_agent(
         )
     )
 
-    return AiAgent.get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
+    return AiSearchAgent.get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:

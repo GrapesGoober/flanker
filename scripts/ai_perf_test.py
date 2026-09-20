@@ -4,8 +4,8 @@ from inspect import isclass
 from typing import Any
 from uuid import UUID
 
-from flanker_ai.ai_agent import AiAgent
 from flanker_ai.ai_match import AiMatch
+from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -50,8 +50,8 @@ if __name__ == "__main__":
     random.seed(10)
 
     # Initialize the state first
-    _ = AiAgent.get_agent(gs, InitiativeState.Faction.BLUE)
-    _ = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
+    _ = AiSearchAgent.get_agent(gs, InitiativeState.Faction.BLUE)
+    _ = AiSearchAgent.get_agent(gs, InitiativeState.Faction.RED)
 
     def run_ai_trial() -> None:
         result = AiMatch.run_match(gs)
