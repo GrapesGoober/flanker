@@ -5,6 +5,7 @@ from flanker_ai.ai_agent import AiActionResult, AiAgent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
+from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -26,32 +27,41 @@ class AiMatch:
         """Runs the given game match with 2 AIs and returns results."""
 
         # Sets up a match
-        agents = [
-            AiAgent.get_agent(gs, faction)
+        agents = {
+            faction: AiAgent.get_agent(gs, faction)
             for faction in [
                 InitiativeState.Faction.BLUE,
                 InitiativeState.Faction.RED,
             ]
-        ]
+        }
 
         logs: list[AiSearchLog] = []
 
-        # Let two agents fight each other over and over
+        # Let two agents fight each other over and over until winner found
         action_results: list[AiActionResult] = []
         start_time = perf_counter()
-        while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
+        no_action_count = 0
 
-            # Have the AI play agianst each other.
-            has_any_action_played: bool = False
-            for agent in agents:
-                for action_result in agent.play_initiative():
-                    has_any_action_played = True
-                    logs.append(action_result.search_log)
-                    action_results.append(action_result)
+        while (winner := ObjectiveSystem.get_winning_faction(gs)) is None:
 
-            # If both agents have no actions, then consider it draw
-            if has_any_action_played == False:
-                break
+            # Have the agent play its initiative
+            agent = agents[InitiativeSystem.get_initiative(gs)]
+            action_result = agent.perform_action(gs)
+
+            # If no legal actions are performed, flip initiative or draw
+            if action_result is None:
+                # If both agents have no legal actions, consider draw
+                no_action_count += 1
+                if no_action_count >= 2:
+                    break
+
+                InitiativeSystem.flip_initiative(gs)
+                continue
+            else:  # An action was performed, so reset the counter
+                no_action_count = 0
+
+            logs.append(action_result.search_log)
+            action_results.append(action_result)
 
         runtime = perf_counter() - start_time
         return _AiMatchResult(

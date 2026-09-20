@@ -3,7 +3,7 @@ from typing import Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_agent import AiAgent
+from flanker_ai.ai_agent import AiActionResult, AiAgent
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -239,7 +239,13 @@ def test_optimal_actions(
 ) -> None:
 
     blue_agent = get_agent(fixture.gs, policy_type)
-    action_results = blue_agent.play_initiative()
+    action_results: list[AiActionResult] = []
+    for _ in range(10):
+        result = blue_agent.perform_action(fixture.gs)
+        if result == None:
+            break
+        action_results.append(result)
+
     assert action_results != [], "The minimax must find optimal action sequence."
 
     staging_units: list[UUID] = []

@@ -21,6 +21,7 @@ from flanker_core.models.actions import (
     PivotActionResult,
 )
 from flanker_core.models.components import InitiativeState
+from flanker_core.systems.initiative_system import InitiativeSystem
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AiMatchResponse,
@@ -41,11 +42,24 @@ class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
-    def play_redfor(gs: GameState) -> None:
-        """Runs the default REDFOR AI."""
+    def play_red_initiative(
+        gs: GameState,
+        max_actions: int = 10,
+    ) -> None:
+        """Runs the default RED AI for entire RED initiative."""
+        if InitiativeSystem.get_initiative(gs) != InitiativeState.Faction.RED:
+            return
+
         agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-        results = agent.play_initiative()
-        action_results = [action_result for action_result in results]
+        action_results: list[AiActionResult] = []
+        for _ in range(max_actions):
+            result = agent.perform_action(gs)
+            if result == None:
+                InitiativeSystem.flip_initiative(gs)
+                break
+            action_results.append(result)
+
+        action_results = [action_result for action_result in action_results]
         AiService._log_ai_action_results(gs, action_results)
 
     @staticmethod

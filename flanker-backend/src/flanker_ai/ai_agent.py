@@ -26,8 +26,6 @@ from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
@@ -57,48 +55,32 @@ class AiAgent:
         self.policy: ISearchPolicy[Action, AiSearchLog] = policy
         self.rs: ISearchState[Action] = rs
 
-    def play_initiative(
-        self, max_action_per_initiative: int = 10
-    ) -> list[AiActionResult]:
-        """Have the agent play the entire initiative."""
-        if InitiativeSystem.get_initiative(self.gs) != self.faction:
-            return []
+    def perform_action(self, gs: GameState) -> AiActionResult | None:
+        """
+        Performs an action and return its result.
+        Returns `None` if no legal actions possible.
+        """
 
-        halt_counter = 0
-        action_results: list[AiActionResult] = []
-        while InitiativeSystem.get_initiative(self.gs) == self.faction:
-            # If win/lose condition is already met, pass
-            if ObjectiveSystem.get_winning_faction(self.gs) != None:
-                break
+        # Prepare the representation and run the policy on it
+        rs = deepcopy(self.rs)
+        rs.update_state(gs)
+        action, log = self.policy.get_action(rs)
+        if action == None:
+            return None
 
-            # Check redundant moves (stop search)
-            if halt_counter > max_action_per_initiative:
-                InitiativeSystem.flip_initiative(self.gs)
-                break
+        result = ActionSystem.perform(self.gs, action)
+        if isinstance(result, InvalidAction):
+            return None
 
-            # Prepare the representation and run the policy on it
-            rs = deepcopy(self.rs)
-            rs.update_state(self.gs)
-            action, log = self.policy.get_action(rs)
-            if action == None:
-                InitiativeSystem.flip_initiative(self.gs)
-                break
-
-            result = ActionSystem.perform(self.gs, action)
-            if isinstance(result, InvalidAction):
-                InitiativeSystem.flip_initiative(self.gs)
-                break
-
-            ai_action_result = AiActionResult(
+        # Prevent mutation shenanigans by returning a copy
+        return deepcopy(
+            AiActionResult(
                 action=action,
                 result=result,
                 result_gs=self.gs,
                 search_log=log,
             )
-            # Prevent mutation by creating a copy
-            action_results.append(deepcopy(ai_action_result))
-            halt_counter += 1
-        return action_results
+        )
 
     @staticmethod
     def get_agent(
