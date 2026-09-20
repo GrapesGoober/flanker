@@ -11,6 +11,7 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
     WaypointsStateConfig,
 )
+from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
 from flanker_ai.i_search_policy import ISearchPolicy
 from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
@@ -22,18 +23,10 @@ from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action, ActionResult
+from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-
-
-@dataclass
-class AiActionResult:
-    action: Action
-    result: ActionResult
-    result_gs: GameState
-    search_log: AiSearchLog
 
 
 @dataclass
@@ -42,7 +35,7 @@ class _AiAgentInstanceComponent:
     agent: "AiAgent"
 
 
-class AiAgent:
+class AiAgent(IAiAgent):
     def __init__(
         self,
         gs: GameState,
