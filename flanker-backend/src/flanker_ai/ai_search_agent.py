@@ -35,7 +35,7 @@ class _AiAgentInstanceComponent:
     agent: "AiSearchAgent"
 
 
-class AiSearchAgent(IAiAgent):
+class AiSearchAgent(IAiAgent[AiSearchLog]):
     def __init__(
         self,
         gs: GameState,
@@ -48,7 +48,7 @@ class AiSearchAgent(IAiAgent):
         self.policy: ISearchPolicy[Action, AiSearchLog] = policy
         self.rs: ISearchState[Action] = rs
 
-    def perform_action(self, gs: GameState) -> AiActionResult | None:
+    def perform_action(self, gs: GameState) -> AiActionResult[AiSearchLog] | None:
         """
         Performs an action and return its result.
         Returns `None` if no legal actions possible.
@@ -71,7 +71,7 @@ class AiSearchAgent(IAiAgent):
                 action=action,
                 result=result,
                 result_gs=self.gs,
-                search_log=log,
+                policy_log=log,
             )
         )
 

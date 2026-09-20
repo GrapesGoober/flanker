@@ -12,6 +12,7 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
 )
 from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireAction, MoveAction
 from flanker_core.models.components import (
@@ -240,7 +241,7 @@ def test_optimal_actions(
 ) -> None:
 
     blue_agent = get_agent(fixture.gs, policy_type)
-    action_results: list[AiActionResult] = []
+    action_results: list[AiActionResult[AiSearchLog]] = []
     for _ in range(10):
         result = blue_agent.perform_action(fixture.gs)
         if result == None:

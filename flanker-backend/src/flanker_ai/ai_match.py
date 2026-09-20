@@ -13,7 +13,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 @dataclass
 class _AiMatchResult:
     total_runtime_seconds: float
-    action_results: list[AiActionResult]
+    action_results: list[AiActionResult[AiSearchLog]]
     winner: InitiativeState.Faction | None
     search_logs: list[AiSearchLog]
 
@@ -39,7 +39,7 @@ class AiMatch:
         logs: list[AiSearchLog] = []
 
         # Let two agents fight each other over and over until winner found
-        action_results: list[AiActionResult] = []
+        action_results: list[AiActionResult[AiSearchLog]] = []
         start_time = perf_counter()
         no_action_count = 0
 
@@ -61,7 +61,7 @@ class AiMatch:
             else:  # An action was performed, so reset the counter
                 no_action_count = 0
 
-            logs.append(action_result.search_log)
+            logs.append(action_result.policy_log)
             action_results.append(action_result)
 
         runtime = perf_counter() - start_time

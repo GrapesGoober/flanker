@@ -7,6 +7,7 @@ from flanker_ai.config_models import (
     WaypointsStateConfig,
 )
 from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     AssaultAction,
@@ -49,7 +50,7 @@ class AiService:
             return
 
         agent = AiSearchAgent.get_agent(gs, InitiativeState.Faction.RED)
-        action_results: list[AiActionResult] = []
+        action_results: list[AiActionResult[AiSearchLog]] = []
         for _ in range(max_actions):
             result = agent.perform_action(gs)
             if result == None:
@@ -92,7 +93,7 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[AiActionResult],
+        results: list[AiActionResult[AiSearchLog]],
     ) -> None:
         for result in results:
             match result.action, result.result:

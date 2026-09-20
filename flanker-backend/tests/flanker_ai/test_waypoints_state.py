@@ -12,6 +12,7 @@ from flanker_ai.config_models import (
     WaypointsStateConfig,
 )
 from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -256,7 +257,7 @@ def test_optimal_actions(
     policy_type: Literal["Minimax", "MCTS"],
 ) -> None:
     blue_agent = get_agent(fixture, policy_type)
-    action_results: list[AiActionResult] = []
+    action_results: list[AiActionResult[AiSearchLog]] = []
     for _ in range(10):
         result = blue_agent.perform_action(fixture.gs)
         if result == None:
