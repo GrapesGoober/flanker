@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Literal, Optional, Sequence, override
 
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
@@ -19,7 +19,7 @@ FACTION_TO_MARK: dict[InitiativeState.Faction, MARK] = {
 }
 
 
-class TicTacToeState(IRepresentationState[TicTacToeAction]):
+class TicTacToeState(ISearchState[TicTacToeAction]):
 
     def __init__(
         self,

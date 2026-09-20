@@ -5,7 +5,7 @@ from flanker_ai.config_models import (
     FilterConfig,
     PointsConfig,
 )
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
@@ -31,7 +31,7 @@ from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
-class UnabstractedState(IRepresentationState[Action]):
+class UnabstractedState(ISearchState[Action]):
     def __init__(
         self,
         move_pool_config: PointsConfig.ALL,
@@ -132,7 +132,7 @@ class UnabstractedState(IRepresentationState[Action]):
     def get_one_branch(
         self,
         action: Action,
-    ) -> IRepresentationState[Action] | None:
+    ) -> ISearchState[Action] | None:
         branches = AiBranchingService.get_action_branches(self._gs, action)
         if branches == []:
             return None

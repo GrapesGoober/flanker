@@ -5,8 +5,8 @@ from flanker_core.models.components import InitiativeState
 
 
 @runtime_checkable
-class IRepresentationState[TAction](Protocol):
-    """Interface for defining game state representation for AI"""
+class ISearchState[TAction](Protocol):
+    """Interface for defining a search state for search policy."""
 
     def get_score(
         self,
@@ -19,7 +19,7 @@ class IRepresentationState[TAction](Protocol):
         """Get legal actions from the current state."""
         ...
 
-    def copy(self) -> "IRepresentationState[TAction]":
+    def copy(self) -> "ISearchState[TAction]":
         """Copies the state."""
         ...
 
@@ -37,14 +37,14 @@ class IRepresentationState[TAction](Protocol):
     def get_branches(
         self,
         action: TAction,
-    ) -> Sequence[tuple[float, "IRepresentationState[TAction]"]]:
+    ) -> Sequence[tuple[float, "ISearchState[TAction]"]]:
         """Get branches and their probability from the current action."""
         ...
 
     def get_one_branch(
         self,
         action: TAction,
-    ) -> "IRepresentationState[TAction] | None":
+    ) -> "ISearchState[TAction] | None":
         """Get one most likely branch from the current action."""
         ...
 

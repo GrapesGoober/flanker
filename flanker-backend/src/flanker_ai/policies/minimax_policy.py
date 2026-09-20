@@ -3,8 +3,8 @@ from itertools import count
 from math import inf
 from typing import Any
 
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_policy import ISearchPolicy
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.search_log_models import MinimaxSearchLog
 from flanker_core.models.components import InitiativeState
 
@@ -17,14 +17,14 @@ class _TranspositionCacheKey:
     current_depth: int
 
 
-class MinimaxPolicy[TAction](IPolicy[TAction, MinimaxSearchLog]):
+class MinimaxPolicy[TAction](ISearchPolicy[TAction, MinimaxSearchLog]):
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
 
     def get_action(
         self,
-        rs: IRepresentationState[TAction],
+        rs: ISearchState[TAction],
     ) -> tuple[TAction | None, MinimaxSearchLog]:
         counter = count()
         _, action = self._search(
@@ -42,7 +42,7 @@ class MinimaxPolicy[TAction](IPolicy[TAction, MinimaxSearchLog]):
 
     def _search(
         self,
-        rs: IRepresentationState[TAction],
+        rs: ISearchState[TAction],
         depth: int,
         alpha: float,
         beta: float,

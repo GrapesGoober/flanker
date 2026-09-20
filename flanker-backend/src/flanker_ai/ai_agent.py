@@ -11,8 +11,8 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_policy import ISearchPolicy
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
@@ -49,13 +49,13 @@ class AiAgent:
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
-        rs: IRepresentationState[Action],
-        policy: IPolicy[Action, AiSearchLog],
+        rs: ISearchState[Action],
+        policy: ISearchPolicy[Action, AiSearchLog],
     ) -> None:
         self.gs = gs
         self.faction: InitiativeState.Faction = faction
-        self.policy: IPolicy[Action, AiSearchLog] = policy
-        self.rs: IRepresentationState[Action] = rs
+        self.policy: ISearchPolicy[Action, AiSearchLog] = policy
+        self.rs: ISearchState[Action] = rs
 
     def play_initiative(
         self, max_action_per_initiative: int = 10
@@ -123,8 +123,8 @@ class AiAgent:
             raise ValueError("AiConfigComponent not found")
 
         # Config found, create the agent
-        policy: IPolicy[Action, AiSearchLog]
-        state: IRepresentationState[Action]
+        policy: ISearchPolicy[Action, AiSearchLog]
+        state: ISearchState[Action]
         match config_component.config:
             case HeuristicPolicyConfig():
                 # TODO: need a better framework for rule-based policies.

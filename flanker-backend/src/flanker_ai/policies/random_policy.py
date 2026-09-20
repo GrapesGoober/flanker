@@ -1,16 +1,16 @@
 import random
 
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_policy import ISearchPolicy
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.search_log_models import RandomSearchLog
 
 
-class RandomPolicy[TAction](IPolicy[TAction, RandomSearchLog]):
+class RandomPolicy[TAction](ISearchPolicy[TAction, RandomSearchLog]):
     """True random baseline policy."""
 
     def get_action(
         self,
-        rs: IRepresentationState[TAction],
+        rs: ISearchState[TAction],
     ) -> tuple[TAction | None, RandomSearchLog]:
 
         winner = rs.get_winner()

@@ -3,8 +3,8 @@ from itertools import count
 from math import inf
 from typing import Any
 
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_policy import ISearchPolicy
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.search_log_models import ExpectimaxSearchLog
 from flanker_core.models.components import InitiativeState
 
@@ -17,14 +17,14 @@ class _TranspositionCacheKey:
     current_depth: int
 
 
-class ExpectimaxPolicy[TAction](IPolicy[TAction, ExpectimaxSearchLog]):
+class ExpectimaxPolicy[TAction](ISearchPolicy[TAction, ExpectimaxSearchLog]):
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
 
     def get_action(
         self,
-        rs: IRepresentationState[TAction],
+        rs: ISearchState[TAction],
     ) -> tuple[TAction | None, ExpectimaxSearchLog]:
         """
         Returns the best actions sequence given a current game state.
@@ -43,7 +43,7 @@ class ExpectimaxPolicy[TAction](IPolicy[TAction, ExpectimaxSearchLog]):
 
     def _search(
         self,
-        state: IRepresentationState[TAction],
+        state: ISearchState[TAction],
         depth: int,
         counter: "count[int]",
         transposition_table: dict[object, float],
