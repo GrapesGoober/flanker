@@ -58,7 +58,7 @@ class _MatchResultApiResponse(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    search_logs: list[AiSearchLog]
+    policy_logs: list[AiSearchLog]
 
 
 def main() -> None:
@@ -152,7 +152,7 @@ def run_match(
         MatchResult(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
-            search_logs=result.search_logs,
+            policy_logs=result.policy_logs,
         ),
         match_config,
     )

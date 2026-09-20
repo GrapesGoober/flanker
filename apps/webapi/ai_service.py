@@ -69,7 +69,7 @@ class AiService:
         return AiMatchResponse(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
-            search_logs=result.search_logs,
+            policy_logs=result.policy_logs,
             json_state=SceneService.serialize(gs),
         )
 

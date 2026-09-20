@@ -76,7 +76,7 @@ class AiMatchResponse(BaseModel, CamelCaseConfig):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    search_logs: list[AiSearchLog]
+    policy_logs: list[AiSearchLog]
     json_state: str
 
 

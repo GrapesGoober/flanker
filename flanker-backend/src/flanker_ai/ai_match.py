@@ -15,7 +15,7 @@ class _AiMatchResult:
     total_runtime_seconds: float
     action_results: list[AiActionResult[AiSearchLog]]
     winner: InitiativeState.Faction | None
-    search_logs: list[AiSearchLog]
+    policy_logs: list[AiSearchLog]
 
 
 class AiMatch:
@@ -36,7 +36,7 @@ class AiMatch:
             ]
         }
 
-        logs: list[AiSearchLog] = []
+        policy_logs: list[AiSearchLog] = []
 
         # Let two agents fight each other over and over until winner found
         action_results: list[AiActionResult[AiSearchLog]] = []
@@ -61,7 +61,7 @@ class AiMatch:
             else:  # An action was performed, so reset the counter
                 no_action_count = 0
 
-            logs.append(action_result.policy_log)
+            policy_logs.append(action_result.policy_log)
             action_results.append(action_result)
 
         runtime = perf_counter() - start_time
@@ -69,5 +69,5 @@ class AiMatch:
             total_runtime_seconds=runtime,
             action_results=action_results,
             winner=winner,
-            search_logs=logs,
+            policy_logs=policy_logs,
         )
