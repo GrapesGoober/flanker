@@ -51,7 +51,7 @@ def main() -> None:
                     [scene_name, blue_config, red_config, match_setting],
                 )
             ]
-            for log in match_result.search_logs
+            for log in match_result.policy_logs
             if isinstance(log, MinimaxSearchLog)
             if log.faction == InitiativeState.Faction.BLUE
         ]

@@ -100,7 +100,7 @@ async def perform_action(
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.perform(gs, action)
-    AiService.play_redfor(gs)
+    AiService.play_red_initiative(gs)
     return SceneService.get_view_state_response(gs)
 
 

@@ -5,7 +5,7 @@ from flanker_ai.config_models import (
     FilterConfig,
     PointsConfig,
 )
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.states.common.ai_action_service import AiActionService
 from flanker_ai.states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
@@ -31,7 +31,7 @@ from flanker_core.systems.los_system import LosSystemOverrides
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
-class WaypointsState(IRepresentationState[Action]):
+class WaypointsState(ISearchState[Action]):
     def __init__(
         self,
         waypoints_config: PointsConfig.ALL,

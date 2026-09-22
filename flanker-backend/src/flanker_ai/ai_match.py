@@ -1,19 +1,21 @@
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.ai_agent import AiActionResult, AiAgent
+from flanker_ai.ai_agent_factory import AiAgentFactory
+from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
+from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 @dataclass
 class _AiMatchResult:
     total_runtime_seconds: float
-    action_results: list[AiActionResult]
+    action_results: list[AiActionResult[AiSearchLog]]
     winner: InitiativeState.Faction | None
-    search_logs: list[AiSearchLog]
+    policy_logs: list[AiSearchLog]
 
 
 class AiMatch:
@@ -26,37 +28,46 @@ class AiMatch:
         """Runs the given game match with 2 AIs and returns results."""
 
         # Sets up a match
-        agents = [
-            AiAgent.get_agent(gs, faction)
+        agents = {
+            faction: AiAgentFactory.get_agent(gs, faction)
             for faction in [
                 InitiativeState.Faction.BLUE,
                 InitiativeState.Faction.RED,
             ]
-        ]
+        }
 
-        logs: list[AiSearchLog] = []
+        policy_logs: list[AiSearchLog] = []
 
-        # Let two agents fight each other over and over
-        action_results: list[AiActionResult] = []
+        # Let two agents fight each other over and over until winner found
+        action_results: list[AiActionResult[AiSearchLog]] = []
         start_time = perf_counter()
-        while (winner := ObjectiveSystem.get_winning_faction(gs)) == None:
+        no_action_count = 0
 
-            # Have the AI play agianst each other.
-            has_any_action_played: bool = False
-            for agent in agents:
-                for action_result in agent.play_initiative():
-                    has_any_action_played = True
-                    logs.append(action_result.search_log)
-                    action_results.append(action_result)
+        while (winner := ObjectiveSystem.get_winning_faction(gs)) is None:
 
-            # If both agents have no actions, then consider it draw
-            if has_any_action_played == False:
-                break
+            # Have the agent play its initiative
+            agent = agents[InitiativeSystem.get_initiative(gs)]
+            action_result = agent.perform_action(gs)
+
+            # If no legal actions are performed, flip initiative or draw
+            if action_result is None:
+                # If both agents have no legal actions, consider draw
+                no_action_count += 1
+                if no_action_count >= 2:
+                    break
+
+                InitiativeSystem.flip_initiative(gs)
+                continue
+            else:  # An action was performed, so reset the counter
+                no_action_count = 0
+
+            policy_logs.append(action_result.policy_log)
+            action_results.append(action_result)
 
         runtime = perf_counter() - start_time
         return _AiMatchResult(
             total_runtime_seconds=runtime,
             action_results=action_results,
             winner=winner,
-            search_logs=logs,
+            policy_logs=policy_logs,
         )

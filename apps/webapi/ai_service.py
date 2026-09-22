@@ -1,7 +1,4 @@
-from flanker_ai.ai_agent import (
-    AiActionResult,
-    AiAgent,
-)
+from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
@@ -9,6 +6,8 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
+from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     AssaultAction,
@@ -21,6 +20,7 @@ from flanker_core.models.actions import (
     PivotActionResult,
 )
 from flanker_core.models.components import InitiativeState
+from flanker_core.systems.initiative_system import InitiativeSystem
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AiMatchResponse,
@@ -41,11 +41,24 @@ class AiService:
     """Provides static methods for basic AI behavior."""
 
     @staticmethod
-    def play_redfor(gs: GameState) -> None:
-        """Runs the default REDFOR AI."""
-        agent = AiAgent.get_agent(gs, InitiativeState.Faction.RED)
-        results = agent.play_initiative()
-        action_results = [action_result for action_result in results]
+    def play_red_initiative(
+        gs: GameState,
+        max_actions: int = 10,
+    ) -> None:
+        """Runs the default RED AI for entire RED initiative."""
+        if InitiativeSystem.get_initiative(gs) != InitiativeState.Faction.RED:
+            return
+
+        agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
+        action_results: list[AiActionResult[AiSearchLog]] = []
+        for _ in range(max_actions):
+            result = agent.perform_action(gs)
+            if result == None:
+                InitiativeSystem.flip_initiative(gs)
+                break
+            action_results.append(result)
+
+        action_results = [action_result for action_result in action_results]
         AiService._log_ai_action_results(gs, action_results)
 
     @staticmethod
@@ -56,7 +69,7 @@ class AiService:
         return AiMatchResponse(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
-            search_logs=result.search_logs,
+            policy_logs=result.policy_logs,
             json_state=SceneService.serialize(gs),
         )
 
@@ -80,7 +93,7 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[AiActionResult],
+        results: list[AiActionResult[AiSearchLog]],
     ) -> None:
         for result in results:
             match result.action, result.result:

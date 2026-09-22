@@ -4,8 +4,8 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_search_policy import ISearchPolicy
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.search_log_models import MctsSearchLog
 from flanker_core.models.components import InitiativeState
 
@@ -14,7 +14,7 @@ MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 @dataclass
 class _MctsTreeNode[TAction]:
-    state: IRepresentationState[TAction]
+    state: ISearchState[TAction]
     parent: "_MctsTreeNode[TAction] | None"
 
     children: list["_MctsTreeNode[TAction]"]
@@ -26,21 +26,21 @@ class _MctsTreeNode[TAction]:
     action: TAction | None
 
 
-class MctsPolicy[TAction](IPolicy[TAction, MctsSearchLog]):
+class MctsPolicy[TAction](ISearchPolicy[TAction, MctsSearchLog]):
 
     def __init__(
         self,
         max_iterations: int,
         max_simulate_length: int,
-        simulate_policy: IPolicy[TAction, Any],
+        simulate_policy: ISearchPolicy[TAction, Any],
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
-        self._simulate_policy: IPolicy[TAction, Any] = simulate_policy
+        self._simulate_policy: ISearchPolicy[TAction, Any] = simulate_policy
 
     def get_action(
         self,
-        rs: IRepresentationState[TAction],
+        rs: ISearchState[TAction],
     ) -> tuple[TAction | None, MctsSearchLog]:
         root = _MctsTreeNode(
             state=rs,

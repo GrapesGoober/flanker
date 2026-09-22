@@ -11,8 +11,9 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.i_policy import IPolicy
-from flanker_ai.i_representation_state import IRepresentationState
+from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
+from flanker_ai.i_search_policy import ISearchPolicy
+from flanker_ai.i_search_state import ISearchState
 from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
 from flanker_ai.policies.mcts_policy import MctsPolicy
 from flanker_ai.policies.minimax_policy import MinimaxPolicy
@@ -22,89 +23,63 @@ from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action, ActionResult
+from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
-from flanker_core.systems.objective_system import ObjectiveSystem
-
-
-@dataclass
-class AiActionResult:
-    action: Action
-    result: ActionResult
-    result_gs: GameState
-    search_log: AiSearchLog
 
 
 @dataclass
 class _AiAgentInstanceComponent:
     faction: InitiativeState.Faction
-    agent: "AiAgent"
+    agent: "AiSearchAgent"
 
 
-class AiAgent:
+class AiSearchAgent(IAiAgent[AiSearchLog]):
     def __init__(
         self,
         gs: GameState,
         faction: InitiativeState.Faction,
-        rs: IRepresentationState[Action],
-        policy: IPolicy[Action, AiSearchLog],
+        rs: ISearchState[Action],
+        policy: ISearchPolicy[Action, AiSearchLog],
     ) -> None:
         self.gs = gs
         self.faction: InitiativeState.Faction = faction
-        self.policy: IPolicy[Action, AiSearchLog] = policy
-        self.rs: IRepresentationState[Action] = rs
+        self.policy: ISearchPolicy[Action, AiSearchLog] = policy
+        self.rs: ISearchState[Action] = rs
 
-    def play_initiative(
-        self, max_action_per_initiative: int = 10
-    ) -> list[AiActionResult]:
-        """Have the agent play the entire initiative."""
-        if InitiativeSystem.get_initiative(self.gs) != self.faction:
-            return []
+    def perform_action(self, gs: GameState) -> AiActionResult[AiSearchLog] | None:
+        """
+        Performs an action and return its result.
+        Returns `None` if no legal actions possible.
+        """
 
-        halt_counter = 0
-        action_results: list[AiActionResult] = []
-        while InitiativeSystem.get_initiative(self.gs) == self.faction:
-            # If win/lose condition is already met, pass
-            if ObjectiveSystem.get_winning_faction(self.gs) != None:
-                break
+        # Prepare the representation and run the policy on it
+        rs = deepcopy(self.rs)
+        rs.update_state(gs)
+        action, log = self.policy.get_action(rs)
+        if action == None:
+            return None
 
-            # Check redundant moves (stop search)
-            if halt_counter > max_action_per_initiative:
-                InitiativeSystem.flip_initiative(self.gs)
-                break
+        result = ActionSystem.perform(self.gs, action)
+        if isinstance(result, InvalidAction):
+            return None
 
-            # Prepare the representation and run the policy on it
-            rs = deepcopy(self.rs)
-            rs.update_state(self.gs)
-            action, log = self.policy.get_action(rs)
-            if action == None:
-                InitiativeSystem.flip_initiative(self.gs)
-                break
-
-            result = ActionSystem.perform(self.gs, action)
-            if isinstance(result, InvalidAction):
-                InitiativeSystem.flip_initiative(self.gs)
-                break
-
-            ai_action_result = AiActionResult(
+        # Prevent mutation shenanigans by returning a copy
+        return deepcopy(
+            AiActionResult(
                 action=action,
                 result=result,
                 result_gs=self.gs,
-                search_log=log,
+                policy_log=log,
             )
-            # Prevent mutation by creating a copy
-            action_results.append(deepcopy(ai_action_result))
-            halt_counter += 1
-        return action_results
+        )
 
     @staticmethod
-    def get_agent(
+    def get_search_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> "AiAgent":
+    ) -> "AiSearchAgent":
         """Use the config to build an AI agent, or reuse agent if exists."""
 
         # Get the agent instance component if already exists
@@ -123,8 +98,8 @@ class AiAgent:
             raise ValueError("AiConfigComponent not found")
 
         # Config found, create the agent
-        policy: IPolicy[Action, AiSearchLog]
-        state: IRepresentationState[Action]
+        policy: ISearchPolicy[Action, AiSearchLog]
+        state: ISearchState[Action]
         match config_component.config:
             case HeuristicPolicyConfig():
                 # TODO: need a better framework for rule-based policies.
@@ -177,7 +152,7 @@ class AiAgent:
                             path_tolerance=state_config.path_tolerance,
                         )
 
-        agent = AiAgent(gs, faction, state, policy)
+        agent = AiSearchAgent(gs, faction, state, policy)
         gs.add_entity(
             _AiAgentInstanceComponent(
                 faction=faction,
