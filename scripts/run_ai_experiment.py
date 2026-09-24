@@ -19,7 +19,7 @@ from experiment_models import (
 from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
-from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import AiConfigComponent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models import components

@@ -5,8 +5,8 @@ from uuid import UUID
 import pytest
 from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
-from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
+    AiConfigComponent,
     PointsConfig,
     PolicyConfig,
     SearchPolicyConfig,

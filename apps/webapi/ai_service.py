@@ -1,8 +1,8 @@
 from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
-from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
+    AiConfigComponent,
     PointsConfig,
     SearchPolicyConfig,
     WaypointsStateConfig,

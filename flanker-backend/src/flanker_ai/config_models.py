@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
+from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 
 
@@ -89,3 +90,14 @@ class SearchPolicyConfig:
 @dataclass
 class HeuristicPolicyConfig:
     policy: PolicyConfig.RandomHeuristicPolicy
+
+
+@dataclass
+class AiConfigComponent:
+    """
+    Configures AI agent of either BLUE or RED with search policy and state.
+    Supports search-based policy or heuristic rule-based policy.
+    """
+
+    config: SearchPolicyConfig | HeuristicPolicyConfig
+    faction: InitiativeState.Faction

@@ -2,7 +2,7 @@ from dataclasses import is_dataclass
 from inspect import isclass
 from typing import Any
 
-from flanker_ai.components import AiConfigComponent
+from flanker_ai.config_models import AiConfigComponent
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
 

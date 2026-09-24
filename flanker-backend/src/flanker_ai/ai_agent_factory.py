@@ -2,8 +2,11 @@ from dataclasses import dataclass
 
 from flanker_ai.ai_random_heuristic_agent import AiRandomHeuristicAgent
 from flanker_ai.ai_search_agent import AiSearchAgent
-from flanker_ai.components import AiConfigComponent
-from flanker_ai.config_models import HeuristicPolicyConfig, SearchPolicyConfig
+from flanker_ai.config_models import (
+    AiConfigComponent,
+    HeuristicPolicyConfig,
+    SearchPolicyConfig,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
