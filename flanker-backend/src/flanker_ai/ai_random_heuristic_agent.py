@@ -5,14 +5,15 @@ from dataclasses import dataclass
 from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireAction, MoveAction
-from flanker_core.models.components import CombatUnit, Transform
+from flanker_core.models.components import CombatUnit, InitiativeState, Transform
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass
-class RandomHeuristicLog: ...
+class RandomHeuristicLog:
+    faction: InitiativeState.Faction
 
 
 class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
@@ -43,7 +44,7 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
                         action=fire_action,
                         result=result,
                         result_gs=gs,
-                        policy_log=RandomHeuristicLog(),
+                        policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )
 
@@ -75,7 +76,7 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
                         action=move_action,
                         result=result,
                         result_gs=gs,
-                        policy_log=RandomHeuristicLog(),
+                        policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )
 
