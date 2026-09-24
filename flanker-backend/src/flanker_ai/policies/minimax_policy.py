@@ -36,7 +36,6 @@ class MinimaxPolicy[TAction](ISearchPolicy[TAction, MinimaxSearchLog]):
             transposition_table={},
         )
         return action, MinimaxSearchLog(
-            faction=rs.get_initiative(),
             tree_size=next(counter) - 1,
         )
 

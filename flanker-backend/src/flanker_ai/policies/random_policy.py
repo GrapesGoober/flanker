@@ -16,14 +16,12 @@ class RandomPolicy[TAction](ISearchPolicy[TAction, RandomSearchLog]):
         winner = rs.get_winner()
         if winner is not None:
             return None, RandomSearchLog(
-                faction=rs.get_initiative(),
                 actions_length=0,
             )
 
         actions = list(rs.get_actions(is_legal_only=False))
         if not actions:
             return None, RandomSearchLog(
-                faction=rs.get_initiative(),
                 actions_length=0,
             )
 
@@ -32,11 +30,9 @@ class RandomPolicy[TAction](ISearchPolicy[TAction, RandomSearchLog]):
         for action in actions:
             if rs.is_legal(action):
                 return action, RandomSearchLog(
-                    faction=rs.get_initiative(),
                     actions_length=len(actions),
                 )
 
         return None, RandomSearchLog(
-            faction=rs.get_initiative(),
             actions_length=0,
         )

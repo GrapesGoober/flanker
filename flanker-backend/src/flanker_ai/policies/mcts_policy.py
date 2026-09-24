@@ -75,14 +75,12 @@ class MctsPolicy[TAction](ISearchPolicy[TAction, MctsSearchLog]):
         # No valid actions at this root
         if not root.children:
             return None, MctsSearchLog(
-                faction=rs.get_initiative(),
                 tree_depth=max_depth,
             )
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
         return best.action, MctsSearchLog(
-            faction=rs.get_initiative(),
             tree_depth=max_depth,
         )
 

@@ -37,7 +37,6 @@ class ExpectimaxPolicy[TAction](ISearchPolicy[TAction, ExpectimaxSearchLog]):
             transposition_table={},
         )
         return action, ExpectimaxSearchLog(
-            faction=rs.get_initiative(),
             tree_size=next(counter) - 1,
         )
 
