@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from time import perf_counter
+from typing import Any
 
 from flanker_ai.ai_agent_factory import AiAgentFactory
+from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
@@ -13,9 +15,11 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 @dataclass
 class _AiMatchResult:
     total_runtime_seconds: float
-    action_results: list[AiActionResult[AiSearchLog]]
+    action_results: list[
+        AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
+    ]
     winner: InitiativeState.Faction | None
-    policy_logs: list[AiSearchLog]
+    policy_logs: list[AiSearchLog | RandomHeuristicLog]
 
 
 class AiMatch:
@@ -36,10 +40,10 @@ class AiMatch:
             ]
         }
 
-        policy_logs: list[AiSearchLog] = []
+        policy_logs: list[Any] = []
 
         # Let two agents fight each other over and over until winner found
-        action_results: list[AiActionResult[AiSearchLog]] = []
+        action_results: list[AiActionResult[Any]] = []
         start_time = perf_counter()
         no_action_count = 0
 

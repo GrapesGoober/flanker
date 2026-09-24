@@ -1,11 +1,7 @@
 from copy import deepcopy
-from dataclasses import dataclass
 from typing import Any
 
-from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
-    HeuristicPolicyConfig,
-    PointsConfig,
     PolicyConfig,
     SearchPolicyConfig,
     UnabstractedStateConfig,
@@ -27,12 +23,6 @@ from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-
-
-@dataclass
-class _AiAgentInstanceComponent:
-    faction: InitiativeState.Faction
-    agent: "AiSearchAgent"
 
 
 class AiSearchAgent(IAiAgent[AiSearchLog]):
@@ -77,84 +67,46 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
     def get_search_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
+        config: SearchPolicyConfig,
     ) -> "AiSearchAgent":
         """Use the config to build an AI agent, or reuse agent if exists."""
 
-        # Get the agent instance component if already exists
-        for _, agent_instance in gs.query(_AiAgentInstanceComponent):
-            if agent_instance.faction != faction:
-                continue
-            return agent_instance.agent
-
-        # If not exist, create a new empty one using config
-        config_component: AiConfigComponent | None = None
-        for _, component in gs.query(AiConfigComponent):
-            if component.faction == faction:
-                config_component = component
-                break
-        if config_component == None:
-            raise ValueError("AiConfigComponent not found")
-
-        # Config found, create the agent
-        policy: ISearchPolicy[Action, AiSearchLog]
-        state: ISearchState[Action]
-        match config_component.config:
-            case HeuristicPolicyConfig():
-                # TODO: need a better framework for rule-based policies.
-                # It should not take the same states as search based, since
-                # its use case is different.
-                policy = RandomHeuristicPolicy()
-                state = UnabstractedState(
-                    move_pool_config=PointsConfig.Random(
-                        type="Random",
-                        count=10,
-                    ),
-                    move_filter_config=[],
+        policy_config = config.policy
+        match policy_config:
+            case PolicyConfig.ExpectimaxPolicy():
+                policy = ExpectimaxPolicy[Action](
+                    depth=policy_config.depth,
                 )
-            case SearchPolicyConfig():
-                policy_config = config_component.config.policy
-                match policy_config:
-                    case PolicyConfig.ExpectimaxPolicy():
-                        policy = ExpectimaxPolicy[Action](
-                            depth=policy_config.depth,
-                        )
-                    case PolicyConfig.MinimaxPolicy():
-                        policy = MinimaxPolicy[Action](
-                            depth=policy_config.depth,
-                        )
-                    case PolicyConfig.MctsPolicy():
-                        match policy_config.simulation_policy:
-                            case "random":
-                                simulate_policy = RandomPolicy[Any]()
-                            case "rh":
-                                simulate_policy = RandomHeuristicPolicy()
+            case PolicyConfig.MinimaxPolicy():
+                policy = MinimaxPolicy[Action](
+                    depth=policy_config.depth,
+                )
+            case PolicyConfig.MctsPolicy():
+                match policy_config.simulation_policy:
+                    case "random":
+                        simulate_policy = RandomPolicy[Any]()
+                    case "rh":
+                        simulate_policy = RandomHeuristicPolicy()
 
-                        policy = MctsPolicy[Action](
-                            max_iterations=policy_config.max_iterations,
-                            max_simulate_length=policy_config.max_simulate_length,
-                            simulate_policy=simulate_policy,
-                        )
-                match config_component.config.state:
-                    case UnabstractedStateConfig():
-                        # The unabstracted state uses lazy move candidate filtering
-                        state_config = config_component.config.state
-                        state = UnabstractedState(
-                            move_pool_config=state_config.move_candidates_pool,
-                            move_filter_config=state_config.move_candidates_filter,
-                        )
-                    case WaypointsStateConfig():
-                        state_config = config_component.config.state
-                        state = WaypointsState(
-                            waypoints_config=state_config.waypoints,
-                            move_filter_config=state_config.move_candidates_filter,
-                            path_tolerance=state_config.path_tolerance,
-                        )
+                policy = MctsPolicy[Action](
+                    max_iterations=policy_config.max_iterations,
+                    max_simulate_length=policy_config.max_simulate_length,
+                    simulate_policy=simulate_policy,
+                )
+        match config.state:
+            case UnabstractedStateConfig():
+                # The unabstracted state uses lazy move candidate filtering
+                state_config = config.state
+                state = UnabstractedState(
+                    move_pool_config=state_config.move_candidates_pool,
+                    move_filter_config=state_config.move_candidates_filter,
+                )
+            case WaypointsStateConfig():
+                state_config = config.state
+                state = WaypointsState(
+                    waypoints_config=state_config.waypoints,
+                    move_filter_config=state_config.move_candidates_filter,
+                    path_tolerance=state_config.path_tolerance,
+                )
 
-        agent = AiSearchAgent(faction, state, policy)
-        gs.add_entity(
-            _AiAgentInstanceComponent(
-                faction=faction,
-                agent=agent,
-            )
-        )
-        return agent
+        return AiSearchAgent(faction, state, policy)

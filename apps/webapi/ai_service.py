@@ -1,5 +1,6 @@
 from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
+from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.config_models import (
     PointsConfig,
@@ -50,7 +51,9 @@ class AiService:
             return
 
         agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
-        action_results: list[AiActionResult[AiSearchLog]] = []
+        action_results: list[
+            AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
+        ] = []
         for _ in range(max_actions):
             result = agent.perform_action(gs)
             if result == None:
@@ -93,7 +96,7 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[AiActionResult[AiSearchLog]],
+        results: list[AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]],
     ) -> None:
         for result in results:
             match result.action, result.result:

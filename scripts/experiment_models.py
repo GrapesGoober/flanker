@@ -1,5 +1,6 @@
 from typing import Literal
 
+from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.components import AiConfigComponent
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.models.components import InitiativeState
@@ -12,7 +13,7 @@ class MatchResult(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    policy_logs: list[AiSearchLog]
+    policy_logs: list[AiSearchLog | RandomHeuristicLog]
 
 
 class ExperimentMetadata(BaseModel):
