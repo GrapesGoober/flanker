@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
@@ -54,21 +56,31 @@ class AiService:
         action_results: list[
             AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
         ] = []
+        gs_snapshots: list[GameState] = []
         for _ in range(max_actions):
             result = agent.perform_action(gs)
             if result == None:
                 InitiativeSystem.flip_initiative(gs)
                 break
             action_results.append(result)
+            gs_snapshots.append(deepcopy(gs))
 
         action_results = [action_result for action_result in action_results]
-        AiService._log_ai_action_results(gs, action_results)
+        AiService._log_ai_action_results(
+            gs=gs,
+            results=action_results,
+            gs_snapshots=gs_snapshots,
+        )
 
     @staticmethod
     def run_match(gs: GameState) -> AiMatchResponse:
         """Runs a match where 2 AI agents plays against each other."""
         result = AiMatch.run_match(gs)
-        AiService._log_ai_action_results(gs, result.action_results)
+        AiService._log_ai_action_results(
+            gs=gs,
+            results=result.action_results,
+            gs_snapshots=result.gs_snapshots,
+        )
         return AiMatchResponse(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
@@ -97,8 +109,9 @@ class AiService:
     def _log_ai_action_results(
         gs: GameState,
         results: list[AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]],
+        gs_snapshots: list[GameState],
     ) -> None:
-        for result in results:
+        for result, gs_snapshot in zip(results, gs_snapshots):
             match result.action, result.result:
                 case MoveAction(), MoveActionResult():
                     log = MoveActionLog(
@@ -107,7 +120,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(gs_snapshot),
                     )
 
                 case PivotAction(), PivotActionResult():
@@ -117,7 +130,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(gs_snapshot),
                     )
                 case FireAction(), FireActionResult():
                     log = FireActionLog(
@@ -126,7 +139,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        view_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(gs_snapshot),
                     )
                 case AssaultAction(), AssaultActionResult():
                     log = AssaultActionLog(
@@ -136,7 +149,7 @@ class AiService:
                         ),
                         outcome=result.result.outcome,
                         reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=SceneService.get_view_state(result.result_gs),
+                        view_state=SceneService.get_view_state(gs_snapshot),
                     )
 
                 case _:

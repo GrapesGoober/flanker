@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from time import perf_counter
 
@@ -17,6 +18,7 @@ class _AiMatchResult:
     action_results: list[
         AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
     ]
+    gs_snapshots: list[GameState]
     winner: InitiativeState.Faction | None
     policy_logs: list[AiSearchLog | RandomHeuristicLog]
 
@@ -45,6 +47,7 @@ class AiMatch:
         ] = []
         start_time = perf_counter()
         no_action_count = 0
+        gs_snapshots: list[GameState] = []
 
         # Let two agents fight each other over and over until winner found
         while (winner := ObjectiveSystem.get_winning_faction(gs)) is None:
@@ -67,11 +70,13 @@ class AiMatch:
 
             policy_logs.append(action_result.policy_log)
             action_results.append(action_result)
+            gs_snapshots.append(deepcopy(gs))
 
         runtime = perf_counter() - start_time
         return _AiMatchResult(
             total_runtime_seconds=runtime,
             action_results=action_results,
+            gs_snapshots=gs_snapshots,
             winner=winner,
             policy_logs=policy_logs,
         )

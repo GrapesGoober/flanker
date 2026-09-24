@@ -43,7 +43,6 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
                     AiActionResult(
                         action=fire_action,
                         result=result,
-                        result_gs=gs,
                         policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )
@@ -75,7 +74,6 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
                     AiActionResult(
                         action=move_action,
                         result=result,
-                        result_gs=gs,
                         policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )

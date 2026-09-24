@@ -58,7 +58,6 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
             AiActionResult(
                 action=action,
                 result=result,
-                result_gs=gs,
                 policy_log=log,
             )
         )

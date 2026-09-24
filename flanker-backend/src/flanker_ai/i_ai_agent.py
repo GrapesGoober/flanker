@@ -9,7 +9,6 @@ from flanker_core.models.actions import Action, ActionResult
 class AiActionResult[TLog]:
     action: Action
     result: ActionResult
-    result_gs: GameState
     policy_log: TLog
 
 
