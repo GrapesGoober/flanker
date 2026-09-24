@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from time import perf_counter
-from typing import Any
 
 from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
@@ -40,13 +39,14 @@ class AiMatch:
             ]
         }
 
-        policy_logs: list[Any] = []
-
-        # Let two agents fight each other over and over until winner found
-        action_results: list[AiActionResult[Any]] = []
+        policy_logs: list[AiSearchLog | RandomHeuristicLog] = []
+        action_results: list[
+            AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
+        ] = []
         start_time = perf_counter()
         no_action_count = 0
 
+        # Let two agents fight each other over and over until winner found
         while (winner := ObjectiveSystem.get_winning_faction(gs)) is None:
 
             # Have the agent play its initiative
