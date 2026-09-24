@@ -71,26 +71,25 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
     ) -> "AiSearchAgent":
         """Use the config to build an AI agent, or reuse agent if exists."""
 
-        policy_config = config.policy
-        match policy_config:
+        match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
                 policy = ExpectimaxPolicy[Action](
-                    depth=policy_config.depth,
+                    depth=config.policy.depth,
                 )
             case PolicyConfig.MinimaxPolicy():
                 policy = MinimaxPolicy[Action](
-                    depth=policy_config.depth,
+                    depth=config.policy.depth,
                 )
             case PolicyConfig.MctsPolicy():
-                match policy_config.simulation_policy:
+                match config.policy.simulation_policy:
                     case "random":
                         simulate_policy = RandomPolicy[Any]()
                     case "rh":
                         simulate_policy = RandomHeuristicPolicy()
 
                 policy = MctsPolicy[Action](
-                    max_iterations=policy_config.max_iterations,
-                    max_simulate_length=policy_config.max_simulate_length,
+                    max_iterations=config.policy.max_iterations,
+                    max_simulate_length=config.policy.max_simulate_length,
                     simulate_policy=simulate_policy,
                 )
         match config.state:
