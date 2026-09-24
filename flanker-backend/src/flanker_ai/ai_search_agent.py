@@ -38,12 +38,10 @@ class _AiAgentInstanceComponent:
 class AiSearchAgent(IAiAgent[AiSearchLog]):
     def __init__(
         self,
-        gs: GameState,
         faction: InitiativeState.Faction,
         rs: ISearchState[Action],
         policy: ISearchPolicy[Action, AiSearchLog],
     ) -> None:
-        self.gs = gs
         self.faction: InitiativeState.Faction = faction
         self.policy: ISearchPolicy[Action, AiSearchLog] = policy
         self.rs: ISearchState[Action] = rs
@@ -61,7 +59,7 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
         if action == None:
             return None
 
-        result = ActionSystem.perform(self.gs, action)
+        result = ActionSystem.perform(gs, action)
         if isinstance(result, InvalidAction):
             return None
 
@@ -70,7 +68,7 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
             AiActionResult(
                 action=action,
                 result=result,
-                result_gs=self.gs,
+                result_gs=gs,
                 policy_log=log,
             )
         )
@@ -152,7 +150,7 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
                             path_tolerance=state_config.path_tolerance,
                         )
 
-        agent = AiSearchAgent(gs, faction, state, policy)
+        agent = AiSearchAgent(faction, state, policy)
         gs.add_entity(
             _AiAgentInstanceComponent(
                 faction=faction,
