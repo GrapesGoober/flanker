@@ -23,6 +23,7 @@ from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
+from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 class AiSearchAgent(IAiAgent[AiSearchLog]):
@@ -56,6 +57,7 @@ class AiSearchAgent(IAiAgent[AiSearchLog]):
         # Prevent mutation shenanigans by returning a copy
         return deepcopy(
             AiActionResult(
+                faction=InitiativeSystem.get_initiative(gs),
                 action=action,
                 result=result,
                 policy_log=log,

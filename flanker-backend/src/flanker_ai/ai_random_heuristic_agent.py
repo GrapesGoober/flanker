@@ -41,6 +41,7 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
             if not isinstance(result, InvalidAction):
                 return deepcopy(
                     AiActionResult(
+                        faction=initiative,
                         action=fire_action,
                         result=result,
                         policy_log=RandomHeuristicLog(faction=initiative),
@@ -72,6 +73,7 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
             if not isinstance(result, InvalidAction):
                 return deepcopy(
                     AiActionResult(
+                        faction=initiative,
                         action=move_action,
                         result=result,
                         policy_log=RandomHeuristicLog(faction=initiative),

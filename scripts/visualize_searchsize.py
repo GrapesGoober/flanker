@@ -42,7 +42,7 @@ def main() -> None:
                 "scene": scene_name,
                 "blue": blue_config,
                 "red": red_config,
-                "search_size": log.tree_size,
+                "search_size": action_result.policy_log.tree_size,
             }
             for scene_name in experiment_set.scene_configs
             for red_config in experiment_set.red_configs
@@ -51,9 +51,9 @@ def main() -> None:
                     [scene_name, blue_config, red_config, match_setting],
                 )
             ]
-            for log in match_result.policy_logs
-            if isinstance(log, MinimaxSearchLog)
-            if log.faction == InitiativeState.Faction.BLUE
+            for action_result in match_result.action_results
+            if isinstance(action_result.policy_log, MinimaxSearchLog)
+            if action_result.faction == InitiativeState.Faction.BLUE
         ]
     )
 

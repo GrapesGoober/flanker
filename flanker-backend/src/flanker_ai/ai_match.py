@@ -20,7 +20,6 @@ class _AiMatchResult:
     ]
     gs_snapshots: list[GameState]
     winner: InitiativeState.Faction | None
-    policy_logs: list[AiSearchLog | RandomHeuristicLog]
 
 
 class AiMatch:
@@ -41,7 +40,6 @@ class AiMatch:
             ]
         }
 
-        policy_logs: list[AiSearchLog | RandomHeuristicLog] = []
         action_results: list[
             AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
         ] = []
@@ -68,7 +66,6 @@ class AiMatch:
             else:  # An action was performed, so reset the counter
                 no_action_count = 0
 
-            policy_logs.append(action_result.policy_log)
             action_results.append(action_result)
             gs_snapshots.append(deepcopy(gs))
 
@@ -78,5 +75,4 @@ class AiMatch:
             action_results=action_results,
             gs_snapshots=gs_snapshots,
             winner=winner,
-            policy_logs=policy_logs,
         )
