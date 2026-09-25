@@ -3,8 +3,8 @@ from typing import Any, Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -216,7 +216,8 @@ def get_agent(
         )
     )
 
-    return AiAgentFactory.get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
+    # TODO: modify agents to static class
+    return AiSystem._get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:

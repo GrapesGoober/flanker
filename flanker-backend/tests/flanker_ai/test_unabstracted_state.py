@@ -3,8 +3,8 @@ from typing import Any, Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -217,7 +217,8 @@ def get_agent(
         ),
     )
 
-    agent = AiAgentFactory.get_agent(gs, faction=InitiativeState.Faction.BLUE)
+    # TODO: modify agents to static class
+    agent = AiSystem._get_agent(gs, faction=InitiativeState.Faction.BLUE)
     return agent
 
 

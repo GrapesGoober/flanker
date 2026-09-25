@@ -2,8 +2,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
@@ -31,15 +31,6 @@ class AiMatch:
     ) -> _AiMatchResult:
         """Runs the given game match with 2 AIs and returns results."""
 
-        # Sets up a match
-        agents = {
-            faction: AiAgentFactory.get_agent(gs, faction)
-            for faction in [
-                InitiativeState.Faction.BLUE,
-                InitiativeState.Faction.RED,
-            ]
-        }
-
         action_results: list[
             AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
         ] = []
@@ -51,8 +42,8 @@ class AiMatch:
         while (winner := ObjectiveSystem.get_winning_faction(gs)) is None:
 
             # Have the agent play its initiative
-            agent = agents[InitiativeSystem.get_initiative(gs)]
-            action_result = agent.perform_action(gs)
+            current_faction = InitiativeSystem.get_initiative(gs)
+            action_result = AiSystem.perform_action(gs, current_faction)
 
             # If no legal actions are performed, flip initiative or draw
             if action_result is None:

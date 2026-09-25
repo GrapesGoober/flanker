@@ -16,9 +16,9 @@ from experiment_models import (
     MatchResult,
     SceneManifest,
 )
-from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import AiConfigComponent
 from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
@@ -230,8 +230,12 @@ def get_game_state(
             )
 
     gs = GameState.load(entities)
-    AiAgentFactory.get_agent(gs, InitiativeState.Faction.BLUE)
-    AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
+
+    # TODO: modify agents to static class. There should be a manual
+    # initialization method to precompute the agent before copy.
+    # Alternatively, have it precompute lazily (remove manual precompute step).
+    AiSystem._get_agent(gs, InitiativeState.Faction.BLUE)
+    AiSystem._get_agent(gs, InitiativeState.Faction.RED)
     return gs
 
 

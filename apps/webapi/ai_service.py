@@ -1,8 +1,8 @@
 from copy import deepcopy
 
-from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -52,13 +52,17 @@ class AiService:
         if InitiativeSystem.get_initiative(gs) != InitiativeState.Faction.RED:
             return
 
-        agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.RED)
         action_results: list[
             AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
         ] = []
         gs_snapshots: list[GameState] = []
         for _ in range(max_actions):
-            result = agent.perform_action(gs)
+
+            result = AiSystem.perform_action(
+                gs=gs,
+                faction=InitiativeSystem.get_initiative(gs),
+            )
+
             if result == None:
                 InitiativeSystem.flip_initiative(gs)
                 break

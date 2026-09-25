@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 
-from flanker_ai.ai_random_heuristic_agent import AiRandomHeuristicAgent
+from flanker_ai.ai_random_heuristic_agent import (
+    AiRandomHeuristicAgent,
+    RandomHeuristicLog,
+)
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
     AiConfigComponent,
     HeuristicPolicyConfig,
     SearchPolicyConfig,
 )
+from flanker_ai.i_ai_agent import AiActionResult
+from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -17,9 +22,9 @@ class _AiAgentInstanceComponent:
     agent: AiSearchAgent | AiRandomHeuristicAgent
 
 
-class AiAgentFactory:
+class AiSystem:
     @staticmethod
-    def get_agent(
+    def _get_agent(
         gs: GameState,
         faction: InitiativeState.Faction,
     ) -> AiSearchAgent | AiRandomHeuristicAgent:
@@ -55,3 +60,11 @@ class AiAgentFactory:
             )
         )
         return agent
+
+    @staticmethod
+    def perform_action(
+        gs: GameState,
+        faction: InitiativeState.Faction,
+    ) -> AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog] | None:
+        agent = AiSystem._get_agent(gs, faction)
+        return agent.perform_action(gs)
