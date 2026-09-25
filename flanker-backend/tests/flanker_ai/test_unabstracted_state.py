@@ -3,6 +3,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 import pytest
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
@@ -12,8 +13,6 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     UnabstractedStateConfig,
 )
-from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
-from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireAction, MoveAction
 from flanker_core.models.components import (
@@ -173,10 +172,10 @@ def fixture() -> Fixture:
     )
 
 
-def get_agent(
+def add_agent_config(
     gs: GameState,
     policy_type: Literal["Minimax", "MCTS"],
-) -> IAiAgent[Any]:
+) -> SearchPolicyConfig:
 
     move_candidate_points = [
         Vec2(0, 0),
@@ -199,27 +198,25 @@ def get_agent(
                 type="MinimaxPolicy",
                 depth=4,
             )
-
+    config = SearchPolicyConfig(
+        policy=policy,
+        state=UnabstractedStateConfig(
+            type="UnabstractedStateConfig",
+            move_candidates_pool=PointsConfig.HandDrawn(
+                type="HandDrawnConfig",
+                points=move_candidate_points,
+            ),
+            move_candidates_filter=[],
+        ),
+    )
     gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
-            config=SearchPolicyConfig(
-                policy=policy,
-                state=UnabstractedStateConfig(
-                    type="UnabstractedStateConfig",
-                    move_candidates_pool=PointsConfig.HandDrawn(
-                        type="HandDrawnConfig",
-                        points=move_candidate_points,
-                    ),
-                    move_candidates_filter=[],
-                ),
-            ),
+            config=config,
         ),
     )
 
-    # TODO: modify agents to static class
-    agent = AiSystem._get_agent(gs, faction=InitiativeState.Faction.BLUE)
-    return agent
+    return config
 
 
 def test_branching_total_prob(fixture: Fixture) -> None:
@@ -227,10 +224,14 @@ def test_branching_total_prob(fixture: Fixture) -> None:
         unit_id=fixture.friendly_1,
         to=Vec2(-10, 1),
     )
-    blue_agent = get_agent(fixture.gs, policy_type="Minimax")
-    assert isinstance(blue_agent, AiSearchAgent), "BLUE agent must be a search agent"
-    blue_agent.rs.update_state(fixture.gs)
-    branches = blue_agent.rs.get_branches(action)
+
+    config = add_agent_config(fixture.gs, policy_type="Minimax")
+    state = AiSearchAgent.get_state(
+        gs=fixture.gs,
+        config=config,
+    )
+
+    branches = state.get_branches(action)
     total_prob = 0
     for prob, _ in branches:
         total_prob += prob
@@ -243,10 +244,14 @@ def test_optimal_actions(
     policy_type: Literal["Minimax", "MCTS"],
 ) -> None:
 
-    blue_agent = get_agent(fixture.gs, policy_type)
-    action_results: list[AiActionResult[AiSearchLog]] = []
+    add_agent_config(fixture.gs, policy_type)
+
+    action_results: list[AiActionResult[Any]] = []
     for _ in range(10):
-        result = blue_agent.perform_action(fixture.gs)
+        result = AiSystem.perform_action(
+            gs=fixture.gs,
+            faction=InitiativeState.Faction.BLUE,
+        )
         if result == None:
             break
         action_results.append(result)

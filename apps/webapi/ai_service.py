@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.ai_system import AiSystem
@@ -9,7 +10,6 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (

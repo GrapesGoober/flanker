@@ -16,11 +16,10 @@ from experiment_models import (
     MatchResult,
     SceneManifest,
 )
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
-from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import AiConfigComponent
-from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -195,6 +194,9 @@ def get_matches(
             0,
             experiment.n_matches - current_tally.n_matches,
         )
+        # TODO: should there be an explicit precompute stage
+        # so that each match can be quicker? Need some flat
+        # serializable precomputation.
         gs = deepcopy(experiment.gs)
         for _ in range(remaining_matches):
             matches.append(
@@ -231,11 +233,6 @@ def get_game_state(
 
     gs = GameState.load(entities)
 
-    # TODO: modify agents to static class. There should be a manual
-    # initialization method to precompute the agent before copy.
-    # Alternatively, have it precompute lazily (remove manual precompute step).
-    AiSystem._get_agent(gs, InitiativeState.Faction.BLUE)
-    AiSystem._get_agent(gs, InitiativeState.Faction.RED)
     return gs
 
 

@@ -3,6 +3,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 import pytest
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
@@ -12,8 +13,6 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
-from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_ai.states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
@@ -180,10 +179,10 @@ def fixture() -> Fixture:
     )
 
 
-def get_agent(
+def add_agent_config(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],
-) -> IAiAgent[Any]:
+) -> SearchPolicyConfig:
     match policy_type:
         case "MCTS":
             policy = PolicyConfig.MctsPolicy(
@@ -198,37 +197,36 @@ def get_agent(
                 depth=4,
             )
 
+    config = SearchPolicyConfig(
+        policy=policy,
+        state=WaypointsStateConfig(
+            type="WaypointsStateConfig",
+            waypoints=PointsConfig.HandDrawn(
+                type="HandDrawnConfig",
+                points=fixture.waypoint_coordinates,
+            ),
+            move_candidates_filter=[],
+            path_tolerance=20,
+        ),
+    )
     fixture.gs.add_entity(
         AiConfigComponent(
             faction=InitiativeState.Faction.BLUE,
-            config=SearchPolicyConfig(
-                policy=policy,
-                state=WaypointsStateConfig(
-                    type="WaypointsStateConfig",
-                    waypoints=PointsConfig.HandDrawn(
-                        type="HandDrawnConfig",
-                        points=fixture.waypoint_coordinates,
-                    ),
-                    move_candidates_filter=[],
-                    path_tolerance=20,
-                ),
-            ),
-        )
+            config=config,
+        ),
     )
 
-    # TODO: modify agents to static class
-    return AiSystem._get_agent(fixture.gs, faction=InitiativeState.Faction.BLUE)
+    return config
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
-    agent = get_agent(fixture, policy_type="Minimax")
-    assert isinstance(agent, AiSearchAgent), "BLUE agent must be a search agent"
-    rs = agent.rs
-    assert isinstance(
-        rs, WaypointsState
-    ), "Configured agent's state representation must be waypoints state."
-    rs.update_state(fixture.gs)
-    waypoints = WaypointsGraph.get_waypoints(rs.gs)
+    config = add_agent_config(fixture, policy_type="Minimax")
+    state = AiSearchAgent.get_state(
+        gs=fixture.gs,
+        config=config,
+    )
+    assert isinstance(state, WaypointsState)
+    waypoints = WaypointsGraph.get_waypoints(state.gs)
 
     # The pathing is arbitrary, since node's neighbors are not
     # fully defined. Should this be modelled?
@@ -243,14 +241,13 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
-    agent = get_agent(fixture, policy_type="Minimax")
-    assert isinstance(agent, AiSearchAgent), "BLUE agent must be a search agent"
-    rs = agent.rs
-    assert isinstance(
-        rs, WaypointsState
-    ), "Configured agent's state representation must be waypoints state."
-    rs.update_state(fixture.gs)
-    waypoints = WaypointsGraph.get_waypoints(rs.gs)
+    config = add_agent_config(fixture, policy_type="Minimax")
+    state = AiSearchAgent.get_state(
+        gs=fixture.gs,
+        config=config,
+    )
+    assert isinstance(state, WaypointsState)
+    waypoints = WaypointsGraph.get_waypoints(state.gs)
     assert set(waypoints[5].visible_nodes) == {0, 1, 2, 3, 4, 5, 6}
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
@@ -260,10 +257,13 @@ def test_optimal_actions(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],
 ) -> None:
-    blue_agent = get_agent(fixture, policy_type)
-    action_results: list[AiActionResult[AiSearchLog]] = []
+    add_agent_config(fixture, policy_type)
+    action_results: list[AiActionResult[Any]] = []
     for _ in range(10):
-        result = blue_agent.perform_action(fixture.gs)
+        result = AiSystem.perform_action(
+            gs=fixture.gs,
+            faction=InitiativeState.Faction.BLUE,
+        )
         if result == None:
             break
         action_results.append(result)

@@ -140,9 +140,6 @@ class LosSystem:
         spotter_transform = gs.get_component(spotter_id, Transform)
         cache_key: tuple[Vec2, float] = (
             spotter_transform.position,
-            # TODO: should this not cache rotation if not using FOV?
-            # Perhaps a dedicated noneness tuple[Vec2, float | None]?
-            # Perhaps restructure the cache to handle with and without FOV?
             spotter_transform.degrees,
         )
 

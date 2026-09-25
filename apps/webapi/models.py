@@ -2,8 +2,8 @@ from enum import Enum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
-from flanker_ai.i_ai_agent import AiActionResult
 from flanker_ai.policies.search_log_models import AiSearchLog
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
