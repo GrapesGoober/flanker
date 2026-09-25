@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.states.common.ai_branch_abstraction_service import (
+from flanker_ai.search_states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
-from flanker_ai.states.common.ai_branching_service import AiBranchingService
+from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (

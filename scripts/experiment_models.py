@@ -3,7 +3,7 @@ from typing import Literal
 from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.config_models import AiConfigComponent
-from flanker_ai.policies.search_log_models import AiSearchLog
+from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel

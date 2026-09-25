@@ -10,7 +10,7 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.policies.search_log_models import AiSearchLog
+from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     AssaultAction,

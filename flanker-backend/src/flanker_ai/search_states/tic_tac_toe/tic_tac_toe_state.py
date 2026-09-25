@@ -1,8 +1,8 @@
 from copy import deepcopy
 from typing import Literal, Optional, Sequence, override
 
-from flanker_ai.i_search_state import ISearchState
-from flanker_ai.states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
+from flanker_ai.search_states.i_search_state import ISearchState
+from flanker_ai.search_states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 

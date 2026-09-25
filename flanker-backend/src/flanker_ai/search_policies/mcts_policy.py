@@ -4,9 +4,9 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
-from flanker_ai.i_search_policy import ISearchPolicy
-from flanker_ai.i_search_state import ISearchState
-from flanker_ai.policies.search_log_models import MctsSearchLog
+from flanker_ai.search_policies.i_search_policy import ISearchPolicy
+from flanker_ai.search_policies.search_log_models import MctsSearchLog
+from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
 
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE

@@ -8,15 +8,15 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.i_search_state import ISearchState
-from flanker_ai.policies.expectimax_policy import ExpectimaxPolicy
-from flanker_ai.policies.mcts_policy import MctsPolicy
-from flanker_ai.policies.minimax_policy import MinimaxPolicy
-from flanker_ai.policies.random_heuristic_policy import RandomHeuristicPolicy
-from flanker_ai.policies.random_policy import RandomPolicy
-from flanker_ai.policies.search_log_models import AiSearchLog
-from flanker_ai.states.unabstracted.unabstracted_state import UnabstractedState
-from flanker_ai.states.waypoints.waypoints_state import WaypointsState
+from flanker_ai.search_policies.expectimax_policy import ExpectimaxPolicy
+from flanker_ai.search_policies.mcts_policy import MctsPolicy
+from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
+from flanker_ai.search_policies.random_heuristic_policy import RandomHeuristicPolicy
+from flanker_ai.search_policies.random_policy import RandomPolicy
+from flanker_ai.search_policies.search_log_models import AiSearchLog
+from flanker_ai.search_states.i_search_state import ISearchState
+from flanker_ai.search_states.unabstracted.unabstracted_state import UnabstractedState
+from flanker_ai.search_states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
 from flanker_core.models.outcomes import InvalidAction

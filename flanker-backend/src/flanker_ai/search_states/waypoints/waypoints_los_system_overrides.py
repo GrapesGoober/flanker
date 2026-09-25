@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from flanker_ai.states.waypoints.waypoints_graph import WaypointsGraph
+from flanker_ai.search_states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import FireControls, Transform
 from flanker_core.models.vec2 import Vec2

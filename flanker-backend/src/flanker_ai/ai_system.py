@@ -11,7 +11,7 @@ from flanker_ai.config_models import (
     HeuristicPolicyConfig,
     SearchPolicyConfig,
 )
-from flanker_ai.policies.search_log_models import AiSearchLog
+from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 

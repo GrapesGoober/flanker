@@ -5,7 +5,7 @@ from typing import Iterable
 import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
-from flanker_ai.policies.search_log_models import MinimaxSearchLog
+from flanker_ai.search_policies.search_log_models import MinimaxSearchLog
 from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
