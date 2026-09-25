@@ -1,6 +1,6 @@
 from typing import Protocol, runtime_checkable
 
-from flanker_ai.i_search_state import ISearchState
+from flanker_ai.search_states.i_search_state import ISearchState
 
 
 @runtime_checkable
