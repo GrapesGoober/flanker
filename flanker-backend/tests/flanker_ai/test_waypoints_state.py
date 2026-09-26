@@ -3,8 +3,8 @@ from typing import Any, Literal
 from uuid import UUID
 
 import pytest
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_action_result import AiActionResult
-from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,

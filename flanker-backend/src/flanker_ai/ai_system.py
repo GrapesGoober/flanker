@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from flanker_ai.ai_action_result import AiActionResult
-from flanker_ai.ai_random_heuristic_agent import (
+from flanker_ai.agents.ai_random_heuristic_agent import (
     AiRandomHeuristicAgent,
     RandomHeuristicLog,
 )
-from flanker_ai.ai_search_agent import AiSearchAgent
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.config_models import (
     AiConfigComponent,
     HeuristicPolicyConfig,

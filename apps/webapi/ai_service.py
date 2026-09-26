@@ -1,8 +1,8 @@
 from copy import deepcopy
 
+from flanker_ai.agents.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
