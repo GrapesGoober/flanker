@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from time import perf_counter
 
 from flanker_ai.agents.ai_random_heuristic_agent import AiRandomHeuristicAgent
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
@@ -24,6 +25,7 @@ class AiSystem:
     @dataclass
     class ActionResult:
         faction: InitiativeState.Faction
+        actionRuntimeSeconds: float
         action: Action
         result: ActionResult
         policy_log: AiSearchLog | None
@@ -34,6 +36,7 @@ class AiSystem:
         faction: InitiativeState.Faction,
     ) -> ActionResult | None:
 
+        start_time = perf_counter()
         config_component: AiConfigComponent | None = None
         for _, component in gs.query(AiConfigComponent):
             if component.faction == faction:
@@ -52,6 +55,7 @@ class AiSystem:
                     return None
                 return AiSystem.ActionResult(
                     faction=faction,
+                    actionRuntimeSeconds=perf_counter() - start_time,
                     action=result.action,
                     result=result.result,
                     policy_log=None,
@@ -65,6 +69,7 @@ class AiSystem:
                     return None
                 return AiSystem.ActionResult(
                     faction=faction,
+                    actionRuntimeSeconds=perf_counter() - start_time,
                     action=result.action,
                     result=result.result,
                     policy_log=result.search_log,
