@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any
+from typing import Callable
 
-from flanker_ai.search_policies.i_search_policy import ISearchPolicy
 from flanker_ai.search_policies.search_log_models import MctsSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
@@ -26,17 +25,17 @@ class _MctsTreeNode[TAction]:
     action: TAction | None
 
 
-class MctsPolicy[TAction](ISearchPolicy[TAction, MctsSearchLog]):
+class MctsPolicy[TAction]:
 
     def __init__(
         self,
         max_iterations: int,
         max_simulate_length: int,
-        simulate_policy: ISearchPolicy[TAction, Any],
+        simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
     ) -> None:
         self._max_iterations: int = max_iterations
         self._max_simulate_length: int = max_simulate_length
-        self._simulate_policy: ISearchPolicy[TAction, Any] = simulate_policy
+        self._simulate_policy = simulate_policy
 
     def get_action(
         self,
@@ -160,7 +159,7 @@ class MctsPolicy[TAction](ISearchPolicy[TAction, MctsSearchLog]):
                 break
 
             # Pick a legal action to perform
-            action, _ = self._simulate_policy.get_action(current_state)
+            action = self._simulate_policy(current_state)
 
             # If no legal action found, pass initiative
             if action == None:

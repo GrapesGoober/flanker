@@ -1,6 +1,5 @@
 import random
 
-from flanker_ai.search_policies.i_search_policy import ISearchPolicy
 from flanker_ai.search_policies.search_log_models import RandomHeuristicLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.actions import (
@@ -12,7 +11,7 @@ from flanker_core.models.actions import (
 )
 
 
-class RandomHeuristicPolicy(ISearchPolicy[Action, RandomHeuristicLog]):
+class RandomHeuristicPolicy:
     """
     Random Heuristic baseline agent.
     Logic:

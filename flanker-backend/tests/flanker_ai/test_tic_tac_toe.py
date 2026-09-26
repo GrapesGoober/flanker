@@ -4,6 +4,7 @@ import pytest
 from flanker_ai.search_policies.mcts_policy import MctsPolicy
 from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
 from flanker_ai.search_policies.random_policy import RandomPolicy
+from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_ai.search_states.tic_tac_toe.tic_tac_toe_actions import TicTacToeAction
 from flanker_ai.search_states.tic_tac_toe.tic_tac_toe_state import TicTacToeState
 from flanker_core.models.components import InitiativeState
@@ -50,10 +51,17 @@ def test_optimal_action(
         case "Minimax":
             policy = MinimaxPolicy[TicTacToeAction](depth=1)
         case "MCTS":
+
+            def simulate_policy(
+                rs: ISearchState[TicTacToeAction],
+            ) -> TicTacToeAction | None:
+                action, _ = RandomPolicy[TicTacToeAction]().get_action(rs)
+                return action
+
             policy = MctsPolicy[TicTacToeAction](
                 max_iterations=10_000,
                 max_simulate_length=20,
-                simulate_policy=RandomPolicy[TicTacToeAction](),
+                simulate_policy=simulate_policy,
             )
 
     action, _ = policy.get_action(fixture)

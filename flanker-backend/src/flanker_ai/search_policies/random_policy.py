@@ -1,11 +1,10 @@
 import random
 
-from flanker_ai.search_policies.i_search_policy import ISearchPolicy
 from flanker_ai.search_policies.search_log_models import RandomSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
 
 
-class RandomPolicy[TAction](ISearchPolicy[TAction, RandomSearchLog]):
+class RandomPolicy[TAction]:
     """True random baseline policy."""
 
     def get_action(

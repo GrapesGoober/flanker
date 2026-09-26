@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Any
 
 from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.config_models import (
@@ -72,9 +71,16 @@ class AiSearchAgent:
             case PolicyConfig.MctsPolicy():
                 match config.policy.simulation_policy:
                     case "random":
-                        simulate_policy = RandomPolicy[Any]()
+
+                        def simulate_policy(rs: ISearchState[Action]) -> Action | None:
+                            action, _ = RandomPolicy[Action]().get_action(rs)
+                            return action
+
                     case "rh":
-                        simulate_policy = RandomHeuristicPolicy()
+
+                        def simulate_policy(rs: ISearchState[Action]) -> Action | None:
+                            action, _ = RandomHeuristicPolicy().get_action(rs)
+                            return action
 
                 policy = MctsPolicy[Action](
                     max_iterations=config.policy.max_iterations,

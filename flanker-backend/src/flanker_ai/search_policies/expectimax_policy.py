@@ -3,7 +3,6 @@ from itertools import count
 from math import inf
 from typing import Any
 
-from flanker_ai.search_policies.i_search_policy import ISearchPolicy
 from flanker_ai.search_policies.search_log_models import ExpectimaxSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
@@ -17,7 +16,7 @@ class _TranspositionCacheKey:
     current_depth: int
 
 
-class ExpectimaxPolicy[TAction](ISearchPolicy[TAction, ExpectimaxSearchLog]):
+class ExpectimaxPolicy[TAction]:
 
     def __init__(self, depth: int) -> None:
         self._depth = depth
