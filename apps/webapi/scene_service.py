@@ -4,9 +4,8 @@ from pathlib import Path
 from typing import Any, FrozenSet, Iterable
 from uuid import UUID
 
-from flanker_ai.ai_agent_factory import AiAgentFactory
 from flanker_ai.ai_search_agent import AiSearchAgent
-from flanker_ai.config_models import AiConfigComponent
+from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.actions import MoveAction
@@ -187,7 +186,9 @@ class SceneService:
         )
 
     @staticmethod
-    def get_inspection(gs: GameState) -> GameStateInspection:
+    def get_inspection(
+        gs: GameState,
+    ) -> GameStateInspection:
         los_polygons: list[GameStateInspection.LosPolygon] = []
         for _, unit, transform, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
@@ -215,11 +216,21 @@ class SceneService:
                 )
             )
 
-        agent = AiAgentFactory.get_agent(gs, InitiativeState.Faction.BLUE)
+        config: SearchPolicyConfig | None = None
+        for _, component in gs.query(AiConfigComponent):
+            if component.faction != InitiativeState.Faction.BLUE:
+                continue
+            if not isinstance(component.config, SearchPolicyConfig):
+                continue
+            config = component.config
+
         move_candidates: list[Vec2] = []
-        if isinstance(agent, AiSearchAgent):
-            agent.rs.update_state(gs)
-            actions = [a for a in agent.rs.get_actions() if isinstance(a, MoveAction)]
+        if config != None:
+            state = AiSearchAgent.get_state(
+                gs=gs,
+                config=config,
+            )
+            actions = [a for a in state.get_actions() if isinstance(a, MoveAction)]
             unit_id = actions[0].unit_id if actions else None
             move_candidates = [a.to for a in actions if a.unit_id == unit_id]
 

@@ -7,54 +7,69 @@ from flanker_core.models.vec2 import Vec2
 
 @dataclass
 class MoveAction:
+    """
+    Moves a unit to a destination. This pivots toward the movement path
+    first. Movement draws reactive fires, which may interrupt the move
+    and can lose initiative.
+    """
+
     unit_id: UUID
     to: Vec2
 
 
 @dataclass
 class PivotAction:
+    """
+    Pivots a unit toward a destination. Pivoting draws reactive fires
+    and can lose initiative. Pivoting always complete regardless
+    """
+
     unit_id: UUID
     to: Vec2
 
 
 @dataclass
 class FireAction:
+    """
+    Fires at an enemy unit. The target must be within line of sight.
+    Fire modifies the target's status and creates a persistent fire effect.
+    A failed fire can lose initiative.
+    """
+
     unit_id: UUID
     target_id: UUID
 
 
 @dataclass
 class AssaultAction:
+    """
+    Moves a unit toward a target and performs an assault on arrival.
+    Movement draws reactive fires, which may interrupt the move.
+    The loser of the assault is killed.
+    """
+
     unit_id: UUID
     target_id: UUID
 
 
 @dataclass
 class MoveActionResult:
-    """Result of a move action as any reactive fire."""
-
     move_interrupted: bool
     reactive_fire_outcomes: list[FireOutcomes]
 
 
 @dataclass
 class PivotActionResult:
-    """Result of a pivot action as any reactive fire."""
-
     reactive_fire_outcomes: list[FireOutcomes]
 
 
 @dataclass
 class FireActionResult:
-    """Result of a fire action as outcome."""
-
     outcome: FireOutcomes | None
 
 
 @dataclass
 class AssaultActionResult:
-    """Result of an assault action as assault outcome, and any reactive fire."""
-
     outcome: AssaultOutcomes | None
     reactive_fire_outcomes: list[FireOutcomes]
 

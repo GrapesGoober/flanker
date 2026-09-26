@@ -1,8 +1,9 @@
 from typing import Literal
 
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.config_models import AiConfigComponent
-from flanker_ai.policies.search_log_models import AiSearchLog
+from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -13,7 +14,9 @@ class MatchResult(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    policy_logs: list[AiSearchLog | RandomHeuristicLog]
+    action_results: list[
+        AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
+    ]
 
 
 class ExperimentMetadata(BaseModel):

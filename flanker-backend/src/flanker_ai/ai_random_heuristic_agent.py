@@ -2,7 +2,7 @@ import random
 from copy import deepcopy
 from dataclasses import dataclass
 
-from flanker_ai.i_ai_agent import AiActionResult, IAiAgent
+from flanker_ai.ai_action_result import AiActionResult
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireAction, MoveAction
 from flanker_core.models.components import CombatUnit, InitiativeState, Transform
@@ -16,10 +16,10 @@ class RandomHeuristicLog:
     faction: InitiativeState.Faction
 
 
-class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
+class AiRandomHeuristicAgent:
 
+    @staticmethod
     def perform_action(
-        self,
         gs: GameState,
     ) -> AiActionResult[RandomHeuristicLog] | None:
         initiative = InitiativeSystem.get_initiative(gs)
@@ -41,9 +41,9 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
             if not isinstance(result, InvalidAction):
                 return deepcopy(
                     AiActionResult(
+                        faction=initiative,
                         action=fire_action,
                         result=result,
-                        result_gs=gs,
                         policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )
@@ -73,9 +73,9 @@ class AiRandomHeuristicAgent(IAiAgent[RandomHeuristicLog]):
             if not isinstance(result, InvalidAction):
                 return deepcopy(
                     AiActionResult(
+                        faction=initiative,
                         action=move_action,
                         result=result,
-                        result_gs=gs,
                         policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )

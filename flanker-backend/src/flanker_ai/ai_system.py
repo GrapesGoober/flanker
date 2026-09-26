@@ -1,12 +1,17 @@
 from dataclasses import dataclass
 
-from flanker_ai.ai_random_heuristic_agent import AiRandomHeuristicAgent
+from flanker_ai.ai_action_result import AiActionResult
+from flanker_ai.ai_random_heuristic_agent import (
+    AiRandomHeuristicAgent,
+    RandomHeuristicLog,
+)
 from flanker_ai.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
     AiConfigComponent,
     HeuristicPolicyConfig,
     SearchPolicyConfig,
 )
+from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
@@ -17,21 +22,14 @@ class _AiAgentInstanceComponent:
     agent: AiSearchAgent | AiRandomHeuristicAgent
 
 
-class AiAgentFactory:
+class AiSystem:
+
     @staticmethod
-    def get_agent(
+    def perform_action(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> AiSearchAgent | AiRandomHeuristicAgent:
-        """Use the config to build an AI agent, or reuse agent if exists."""
+    ) -> AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog] | None:
 
-        # Get the agent instance component if already exists
-        for _, agent_instance in gs.query(_AiAgentInstanceComponent):
-            if agent_instance.faction != faction:
-                continue
-            return agent_instance.agent
-
-        # Agent not exist; use the config to create a new one
         config_component: AiConfigComponent | None = None
         for _, component in gs.query(AiConfigComponent):
             if component.faction == faction:
@@ -40,18 +38,14 @@ class AiAgentFactory:
         if config_component == None:
             raise ValueError(f"{AiConfigComponent} not found")
 
+        # TODO: each agent should have its own result models, even private,
+        # which is then mapped to AI system's result models. This keeps it
+        # nice and decoupled.
         match config_component.config:
             case HeuristicPolicyConfig():
-                agent = AiRandomHeuristicAgent()
+                return AiRandomHeuristicAgent.perform_action(gs)
             case SearchPolicyConfig():
-                agent = AiSearchAgent.get_search_agent(
-                    gs, faction=faction, config=config_component.config
+                return AiSearchAgent.perform_action(
+                    gs=gs,
+                    config=config_component.config,
                 )
-
-        gs.add_entity(
-            _AiAgentInstanceComponent(
-                faction=faction,
-                agent=agent,
-            )
-        )
-        return agent
