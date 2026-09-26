@@ -1,6 +1,5 @@
 import random
 
-from flanker_ai.search_policies.i_search_policy import ISearchPolicy
 from flanker_ai.search_policies.search_log_models import RandomHeuristicLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.actions import (
@@ -12,19 +11,15 @@ from flanker_core.models.actions import (
 )
 
 
-class RandomHeuristicPolicy(ISearchPolicy[Action, RandomHeuristicLog]):
+class RandomHeuristicPolicy:
     """
-    Random Heuristic baseline agent.
-    Logic:
-    1. If an enemy is in LOF, Fire.
-    2. Else, makes random move actions, assaults, or pivots.
-
-    It searches through the representation and finds the action that
-    best match the heuristic criteria.
+    A Random-Heuristic search baseline policy.
+    It prioritizes fire action first if legal, otherwise
+    picks random moves, pivots, and assualt.
     """
 
+    @staticmethod
     def get_action(
-        self,
         rs: ISearchState[Action],
     ) -> tuple[Action | None, RandomHeuristicLog]:
 

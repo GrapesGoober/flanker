@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, FrozenSet, Iterable
 from uuid import UUID
 
-from flanker_ai.ai_search_agent import AiSearchAgent
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
