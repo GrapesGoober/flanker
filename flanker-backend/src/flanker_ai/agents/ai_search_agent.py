@@ -59,14 +59,18 @@ class AiSearchAgent:
         Returns `None` if no legal actions possible.
         """
 
+        # Prepare the representation and run the policy on it
+        state = AiSearchAgent.get_state(gs, config)
+        action: Action | None
+        log: AiSearchLog
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
-                policy = ExpectimaxPolicy[Action](
-                    depth=config.policy.depth,
+                action, log = ExpectimaxPolicy[Action].get_action(
+                    rs=state, depth=config.policy.depth
                 )
             case PolicyConfig.MinimaxPolicy():
-                policy = MinimaxPolicy[Action](
-                    depth=config.policy.depth,
+                action, log = MinimaxPolicy[Action].get_action(
+                    rs=state, depth=config.policy.depth
                 )
             case PolicyConfig.MctsPolicy():
                 match config.policy.simulation_policy:
@@ -82,15 +86,13 @@ class AiSearchAgent:
                             action, _ = RandomHeuristicPolicy().get_action(rs)
                             return action
 
-                policy = MctsPolicy[Action](
+                action, log = MctsPolicy[Action].get_action(
+                    rs=state,
                     max_iterations=config.policy.max_iterations,
                     max_simulate_length=config.policy.max_simulate_length,
                     simulate_policy=simulate_policy,
                 )
 
-        # Prepare the representation and run the policy on it
-        state = AiSearchAgent.get_state(gs, config)
-        action, log = policy.get_action(state)
         if action == None:
             return None
 

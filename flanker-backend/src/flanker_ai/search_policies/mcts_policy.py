@@ -27,19 +27,12 @@ class _MctsTreeNode[TAction]:
 
 class MctsPolicy[TAction]:
 
-    def __init__(
-        self,
+    @staticmethod
+    def get_action(
+        rs: ISearchState[TAction],
         max_iterations: int,
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
-    ) -> None:
-        self._max_iterations: int = max_iterations
-        self._max_simulate_length: int = max_simulate_length
-        self._simulate_policy = simulate_policy
-
-    def get_action(
-        self,
-        rs: ISearchState[TAction],
     ) -> tuple[TAction | None, MctsSearchLog]:
         root = _MctsTreeNode(
             state=rs,
@@ -54,12 +47,16 @@ class MctsPolicy[TAction]:
         # Expand the game tree. MCTS is stop-any-time, so run
         # until _max_iterations to stop, as deep as it needs.
         max_depth = 0
-        for _ in range(self._max_iterations):
+        for _ in range(max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
-            leaf = self._select_leaf_best_uct(root)
-            child = self._expand(leaf)
-            value = self._simulate(child)
+            leaf = MctsPolicy[TAction]._select_leaf_best_uct(root)
+            child = MctsPolicy[TAction]._expand(leaf)
+            value = MctsPolicy[TAction]._simulate(
+                node=child,
+                max_simulate_length=max_simulate_length,
+                simulate_policy=simulate_policy,
+            )
 
             # Back propagate each node (while tracking depth)
             depth = 0
@@ -83,8 +80,8 @@ class MctsPolicy[TAction]:
             tree_depth=max_depth,
         )
 
+    @staticmethod
     def _select_leaf_best_uct(
-        self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
         """Search node's subtree for leaf node with max UCT."""
@@ -110,8 +107,8 @@ class MctsPolicy[TAction]:
 
         return current_node
 
+    @staticmethod
     def _expand(
-        self,
         node: _MctsTreeNode[TAction],
     ) -> _MctsTreeNode[TAction]:
         """
@@ -142,9 +139,11 @@ class MctsPolicy[TAction]:
         node.children.append(child)
         return child
 
+    @staticmethod
     def _simulate(
-        self,
         node: _MctsTreeNode[TAction],
+        max_simulate_length: int,
+        simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
     ) -> float:
 
         # Make a copy so it doesn't mutate the node itself
@@ -152,14 +151,14 @@ class MctsPolicy[TAction]:
 
         # Run simulation until hit the max limit
         stagnate_counter: int = 0
-        for _ in range(self._max_simulate_length):
+        for _ in range(max_simulate_length):
             if current_state.get_winner() != None:
                 break
             if stagnate_counter >= 2:
                 break
 
             # Pick a legal action to perform
-            action = self._simulate_policy(current_state)
+            action = simulate_policy(current_state)
 
             # If no legal action found, pass initiative
             if action == None:

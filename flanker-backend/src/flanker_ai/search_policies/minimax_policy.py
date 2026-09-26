@@ -18,17 +18,15 @@ class _TranspositionCacheKey:
 
 class MinimaxPolicy[TAction]:
 
-    def __init__(self, depth: int) -> None:
-        self._depth = depth
-
+    @staticmethod
     def get_action(
-        self,
         rs: ISearchState[TAction],
+        depth: int,
     ) -> tuple[TAction | None, MinimaxSearchLog]:
         counter = count()
-        _, action = self._search(
+        _, action = MinimaxPolicy[TAction]._search(
             rs=rs,
-            depth=self._depth,
+            depth=depth,
             alpha=-inf,
             beta=inf,
             counter=counter,
@@ -38,8 +36,8 @@ class MinimaxPolicy[TAction]:
             tree_size=next(counter) - 1,
         )
 
+    @staticmethod
     def _search(
-        self,
         rs: ISearchState[TAction],
         depth: int,
         alpha: float,
@@ -81,7 +79,7 @@ class MinimaxPolicy[TAction]:
 
             score = transposition_table.get(cache_key, None)
             if score == None:  # Reuse the cached reward if possible
-                score, _ = self._search(
+                score, _ = MinimaxPolicy[TAction]._search(
                     rs=branch,
                     depth=depth - 1,
                     alpha=alpha,

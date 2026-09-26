@@ -18,20 +18,18 @@ class _TranspositionCacheKey:
 
 class ExpectimaxPolicy[TAction]:
 
-    def __init__(self, depth: int) -> None:
-        self._depth = depth
-
+    @staticmethod
     def get_action(
-        self,
         rs: ISearchState[TAction],
+        depth: int,
     ) -> tuple[TAction | None, ExpectimaxSearchLog]:
         """
         Returns the best actions sequence given a current game state.
         """
         counter = count(0)
-        _, action = self._search(
+        _, action = ExpectimaxPolicy[TAction]._search(
             state=rs,
-            depth=self._depth,
+            depth=depth,
             counter=counter,
             transposition_table={},
         )
@@ -39,8 +37,8 @@ class ExpectimaxPolicy[TAction]:
             tree_size=next(counter) - 1,
         )
 
+    @staticmethod
     def _search(
-        self,
         state: ISearchState[TAction],
         depth: int,
         counter: "count[int]",
@@ -84,7 +82,7 @@ class ExpectimaxPolicy[TAction]:
                 )
                 score = transposition_table.get(cache_key, None)
                 if score == None:  # Reuse the cached reward if possible
-                    score, _ = self._search(
+                    score, _ = ExpectimaxPolicy[TAction]._search(
                         state=branch,
                         depth=depth - 1,
                         counter=counter,

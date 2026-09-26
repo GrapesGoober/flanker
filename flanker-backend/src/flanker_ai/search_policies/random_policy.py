@@ -7,8 +7,8 @@ from flanker_ai.search_states.i_search_state import ISearchState
 class RandomPolicy[TAction]:
     """True random baseline policy."""
 
+    @staticmethod
     def get_action(
-        self,
         rs: ISearchState[TAction],
     ) -> tuple[TAction | None, RandomSearchLog]:
 
