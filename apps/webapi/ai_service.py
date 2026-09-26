@@ -1,7 +1,5 @@
 from copy import deepcopy
 
-from flanker_ai.agents.ai_random_heuristic_agent import RandomHeuristicLog
-from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
@@ -10,7 +8,6 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     AssaultAction,
@@ -52,9 +49,7 @@ class AiService:
         if InitiativeSystem.get_initiative(gs) != InitiativeState.Faction.RED:
             return
 
-        action_results: list[
-            AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
-        ] = []
+        action_results: list[AiSystem.ActionResult] = []
         gs_snapshots: list[GameState] = []
         for _ in range(max_actions):
 
@@ -112,7 +107,7 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]],
+        results: list[AiSystem.ActionResult],
         gs_snapshots: list[GameState],
     ) -> None:
         for result, gs_snapshot in zip(results, gs_snapshots):

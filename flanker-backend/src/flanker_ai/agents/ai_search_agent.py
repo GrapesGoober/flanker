@@ -1,6 +1,6 @@
 from copy import deepcopy
+from dataclasses import dataclass
 
-from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.config_models import (
     PolicyConfig,
     SearchPolicyConfig,
@@ -17,13 +17,18 @@ from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_ai.search_states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.search_states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action
+from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 class AiSearchAgent:
+
+    @dataclass
+    class ActionResult:
+        action: Action
+        result: ActionResult
+        search_log: AiSearchLog
 
     @staticmethod
     def get_state(
@@ -53,7 +58,7 @@ class AiSearchAgent:
     def perform_action(
         gs: GameState,
         config: SearchPolicyConfig,
-    ) -> AiActionResult[AiSearchLog] | None:
+    ) -> ActionResult | None:
         """
         Performs an action and return its result.
         Returns `None` if no legal actions possible.
@@ -102,10 +107,9 @@ class AiSearchAgent:
 
         # Prevent mutation shenanigans by returning a copy
         return deepcopy(
-            AiActionResult(
-                faction=InitiativeSystem.get_initiative(gs),
+            AiSearchAgent.ActionResult(
                 action=action,
                 result=result,
-                policy_log=log,
+                search_log=log,
             )
         )
