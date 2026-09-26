@@ -7,7 +7,7 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 ### Prerequisites
 
 - Node.js and npm (for the `webui`)
-- Python 3.13+ (for the `webapi` and `core`)
+- Python 3.13+ (for the `flanker-backend` package and the `webapi` app)
 - Recommended: `pip` for Python dependencies
 
 ### Development Installation
@@ -18,16 +18,18 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   pip install -r requirements.txt
   ```
 
-- Pytest can be set up in vscode using `.vscode/settings.json`
-
-  ```
-  "python.testing.pytestEnabled": true,
-  ```
-
-  Or alternatively, run pytest manually in terminal
+- Run tests from the repository root:
 
   ```
   python -m pytest
+  ```
+
+  Pytest can also be enabled in VS Code via `.vscode/settings.json`:
+
+  ```json
+  {
+    "python.testing.pytestEnabled": true
+  }
   ```
 
 - Install Node.js dependencies:
@@ -37,7 +39,7 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
   npm install
   ```
 
-- Add environment variable file to `/apps/webui/.env`. For `VITE_WEBAPI_URL`, use the same URL that the FastApi app is using; the default is `localhost:8000`.
+- Add an environment variable file at `/apps/webui/.env`. For `VITE_WEBAPI_URL`, use the same URL as the FastAPI app; the default is `http://localhost:8000`.
   ```
   # Note: "VITE_" prefix is required
   VITE_WEBAPI_URL=http://localhost:8000
@@ -45,31 +47,34 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 
 ## Running App
 
-- Start the `./apps/webapi/` FastAPI server, defaults to `http://localhost:8000`.
+- Start the `./apps/webapi/` FastAPI server, which defaults to `http://localhost:8000`.
 
   ```
-  fastapi dev ./apps/webapi --reload
+  cd ./apps
+  python -m uvicorn webapi:app --reload
   ```
 
   Alternatively start via vscode Python debugger using `.vscode/launch.json`.
 
-  ```
-  "name": "Python Debugger: FastAPI",
-  "type": "debugpy",
-  "request": "launch",
-  "module": "uvicorn",
-  "args": ["webapi:app", "--reload", "--app-dir", "./apps/"],
-  "jinja": true
+  ```json
+  {
+    "name": "Python Debugger: FastAPI",
+    "type": "debugpy",
+    "request": "launch",
+    "module": "uvicorn",
+    "args": ["webapi:app", "--reload", "--app-dir", "./apps/"],
+    "jinja": true
+  }
   ```
 
-  You can use your own port with `--port` argument if the default can't be used on your device. The rest of FastAPI arguments can be found in its official docs. The URL of `./apps/webapi/` FastAPI server must match the `VITE_WEBAPI_URL` environment variable.
+  You can use your own port with `--port` if the default cannot be used on your device. The URL of the FastAPI server must match the `VITE_WEBAPI_URL` environment variable.
 
-- Run the `./apps/webui/` development server, defaults to `http://localhost:5173/`. Run the script `dev` for development server.
+- Run the `./apps/webui/` development server, which defaults to `http://localhost:5173/`.
   ```
   cd ./apps/webui
   npm run dev
   ```
-  Or alternatively run the script `dev-expose` to expose to local network. The app would be discoverable to every device on the same WIFI.
+  Or, to expose to the local network, use:
   ```
   npm run dev-expose
   ```
@@ -94,10 +99,12 @@ Python FastApi app serving the game logic and running the scenes. The game rules
 
 ### `./flanker-backend/`
 
+This is the core Python backend package. It is installed in editable mode via `pip install -r requirements.txt` and contains the engine and AI logic used by the web API.
+
 - `/src/flanker_core`
-  - Core game engine logic in Python. The is the domain level gameplay logic implemented in ECS architecture. The components (data models) and systems are defined here.
-  - Contains `GameState` object for ECS architecture. Here implements the entities table and various ECS operations to the game state.
-  - Systems represent the gameplay logic, implemented as static methods. Some system methods represent player actions, while some other represent other non-action mechanics.
+  - Core game engine logic in Python. This is the domain-level gameplay logic implemented in an ECS architecture.
+  - Contains the `GameState` object as the entity-components table and ECS operations.
+  - Systems represent the gameplay logic, implemented as static methods. It operates on the `GameState` by querying and mutating entities' component models.
 - `/src/flanker_ai`
   - Game-playing AI related logic, including state representations, search policies, game-playing agent framework, and other utils.
   - This has minimal game rules interpretation. Ideally the state would interpret and handle the game rules as best as it can. The policies would be game rule agnostic.
