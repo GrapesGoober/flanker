@@ -44,9 +44,6 @@ class AiSystem:
         if config_component == None:
             raise ValueError(f"{AiConfigComponent} not found")
 
-        # TODO: each agent should have its own result models, even private,
-        # which is then mapped to AI system's result models. This keeps it
-        # nice and decoupled.
         match config_component.config:
             case HeuristicPolicyConfig():
                 result = AiRandomHeuristicAgent.perform_action(gs)
