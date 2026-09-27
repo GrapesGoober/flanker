@@ -8,7 +8,6 @@ Flanker is a web-app strategy game adaptation of Arty Concliffe's **_Crossfire_*
 
 - Node.js and npm (for the `webui`)
 - Python 3.13+ (for the `flanker-backend` package and the `webapi` app)
-- Recommended: `pip` for Python dependencies
 
 ### Development Installation
 
