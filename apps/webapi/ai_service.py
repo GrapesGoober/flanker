@@ -59,7 +59,7 @@ class AiService:
             )
 
             if result == None:
-                ActionSystem.flip_initiative(gs)
+                ActionSystem.set_initiative(gs, InitiativeState.Faction.BLUE)
                 break
             action_results.append(result)
             gs_snapshots.append(deepcopy(gs))
