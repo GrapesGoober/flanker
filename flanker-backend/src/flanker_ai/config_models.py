@@ -22,7 +22,7 @@ class PointsConfig:
         type: Literal["Random"]
         count: int
 
-    ALL = Grid | HandDrawn | Random
+    type ALL = Grid | HandDrawn | Random
 
 
 class FilterConfig:
@@ -35,7 +35,7 @@ class FilterConfig:
     class IngressLosSignaturesFilter:
         type: Literal["IngressLosSignaturesFilter"]
 
-    ALL = LosSignaturesFilter | IngressLosSignaturesFilter
+    type ALL = LosSignaturesFilter | IngressLosSignaturesFilter
 
 
 @dataclass

@@ -182,7 +182,7 @@ class SceneManifestResponse(BaseModel, CamelCaseConfig):
     scene_names: list[str]
 
 
-ActionRequest = Annotated[
+type ActionRequest = Annotated[
     Union[
         MoveActionRequest,
         PivotActionRequest,
@@ -193,7 +193,7 @@ ActionRequest = Annotated[
 ]
 
 
-ActionLog = Annotated[
+type ActionLog = Annotated[
     Union[
         MoveActionLog,
         PivotActionLog,
