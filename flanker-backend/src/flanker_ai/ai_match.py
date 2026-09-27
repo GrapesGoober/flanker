@@ -2,10 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from time import perf_counter
 
-from flanker_ai.ai_action_result import AiActionResult
-from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
 from flanker_ai.ai_system import AiSystem
-from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.initiative_system import InitiativeSystem
@@ -15,9 +12,7 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 @dataclass
 class _AiMatchResult:
     total_runtime_seconds: float
-    action_results: list[
-        AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
-    ]
+    action_results: list[AiSystem.ActionResult]
     gs_snapshots: list[GameState]
     winner: InitiativeState.Faction | None
 
@@ -31,9 +26,7 @@ class AiMatch:
     ) -> _AiMatchResult:
         """Runs the given game match with 2 AIs and returns results."""
 
-        action_results: list[
-            AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
-        ] = []
+        action_results: list[AiSystem.ActionResult] = []
         start_time = perf_counter()
         no_action_count = 0
         gs_snapshots: list[GameState] = []

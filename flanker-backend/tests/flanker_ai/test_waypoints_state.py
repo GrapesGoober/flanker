@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.ai_action_result import AiActionResult
-from flanker_ai.ai_search_agent import AiSearchAgent
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
@@ -258,7 +257,7 @@ def test_optimal_actions(
     policy_type: Literal["Minimax", "MCTS"],
 ) -> None:
     add_agent_config(fixture, policy_type)
-    action_results: list[AiActionResult[Any]] = []
+    action_results: list[AiSystem.ActionResult] = []
     for _ in range(10):
         result = AiSystem.perform_action(
             gs=fixture.gs,

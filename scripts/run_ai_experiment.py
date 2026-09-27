@@ -16,11 +16,9 @@ from experiment_models import (
     MatchResult,
     SceneManifest,
 )
-from flanker_ai.ai_action_result import AiActionResult
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_random_heuristic_agent import RandomHeuristicLog
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import AiConfigComponent
-from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import InitiativeState
@@ -59,9 +57,7 @@ class _MatchResultApiResponse(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    action_results: list[
-        AiActionResult[AiSearchLog] | AiActionResult[RandomHeuristicLog]
-    ]
+    action_results: list[AiSystem.ActionResult]
 
 
 def main() -> None:

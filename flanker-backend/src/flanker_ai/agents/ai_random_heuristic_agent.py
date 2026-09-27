@@ -2,26 +2,25 @@ import random
 from copy import deepcopy
 from dataclasses import dataclass
 
-from flanker_ai.ai_action_result import AiActionResult
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import FireAction, MoveAction
-from flanker_core.models.components import CombatUnit, InitiativeState, Transform
+from flanker_core.models.actions import Action, ActionResult, FireAction, MoveAction
+from flanker_core.models.components import CombatUnit, Transform
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.initiative_system import InitiativeSystem
 
 
-@dataclass
-class RandomHeuristicLog:
-    faction: InitiativeState.Faction
-
-
 class AiRandomHeuristicAgent:
+
+    @dataclass
+    class ActionResult:
+        action: Action
+        result: ActionResult
 
     @staticmethod
     def perform_action(
         gs: GameState,
-    ) -> AiActionResult[RandomHeuristicLog] | None:
+    ) -> ActionResult | None:
         initiative = InitiativeSystem.get_initiative(gs)
 
         units = list(gs.query(CombatUnit))
@@ -40,11 +39,9 @@ class AiRandomHeuristicAgent:
             result = ActionSystem.perform(gs, fire_action)
             if not isinstance(result, InvalidAction):
                 return deepcopy(
-                    AiActionResult(
-                        faction=initiative,
+                    AiRandomHeuristicAgent.ActionResult(
                         action=fire_action,
                         result=result,
-                        policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )
 
@@ -72,11 +69,9 @@ class AiRandomHeuristicAgent:
             result = ActionSystem.perform(gs, move_action)
             if not isinstance(result, InvalidAction):
                 return deepcopy(
-                    AiActionResult(
-                        faction=initiative,
+                    AiRandomHeuristicAgent.ActionResult(
                         action=move_action,
                         result=result,
-                        policy_log=RandomHeuristicLog(faction=initiative),
                     )
                 )
 

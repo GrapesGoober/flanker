@@ -74,7 +74,7 @@ class AssaultActionResult:
     reactive_fire_outcomes: list[FireOutcomes]
 
 
-Action = MoveAction | PivotAction | FireAction | AssaultAction
-ActionResult = (
+type Action = MoveAction | PivotAction | FireAction | AssaultAction
+type ActionResult = (
     MoveActionResult | PivotActionResult | FireActionResult | AssaultActionResult
 )
