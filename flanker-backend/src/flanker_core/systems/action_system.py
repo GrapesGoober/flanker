@@ -22,7 +22,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import (
     AssaultOutcomes,
-    FireEffect,
     FireOutcomes,
     InvalidAction,
 )
@@ -184,27 +183,23 @@ class ActionSystem:
     def _update_unit_status(
         gs: GameState,
     ) -> None:
-        """Updates unit status of a combat unit using fire effects."""
+        """Updates unit status of combat units from fire effects."""
 
         for unit_id, unit in gs.query(CombatUnit):
-
             if unit.faction != ActionSystem.get_initiative(gs):
                 continue
 
-            # Record each fire effects of each firer
-            fire_effects: set[FireEffect] = set()
+            # Start at ACTIVE, accumulate each fire effect.
+            unit.status = CombatUnit.Status.ACTIVE
             for _, fire_controls in gs.query(FireControls):
                 if fire_controls.firing_at == None:
                     continue
                 fire_at_id, fire_effect = fire_controls.firing_at
                 if fire_at_id != unit_id:
                     continue
-                fire_effects.add(fire_effect)
 
-            # Apply each fire effect; SUPPRESSING surpass PINNING
-            if FireEffect.SUPPRESSING in fire_effects:
-                unit.status = CombatUnit.Status.SUPPRESSED
-            elif fire_effects == {FireEffect.PINNING}:
-                unit.status = CombatUnit.Status.PINNED
-            else:
-                unit.status = CombatUnit.Status.ACTIVE
+                FireSystem.apply_fire_effect(
+                    gs,
+                    target_id=unit_id,
+                    fire_effect=fire_effect,
+                )
