@@ -1,7 +1,7 @@
 import random
+from dataclasses import dataclass
 
 from flanker_ai.search_states.i_search_state import ISearchState
-from pydantic.dataclasses import dataclass
 
 
 @dataclass
