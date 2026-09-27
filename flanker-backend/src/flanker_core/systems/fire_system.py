@@ -7,7 +7,6 @@ from flanker_core.models.actions import FireActionResult
 from flanker_core.models.components import CombatUnit, FireControls, Transform
 from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -124,15 +123,12 @@ class FireSystem:
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
-        if not InitiativeSystem.has_initiative(gs, attacker_id):
-            return InvalidAction.NO_INITIATIVE
 
         # Reset stall count after validity checks
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         ObjectiveSystem.reset_stall(gs, attacker_unit.faction)
 
         # Apply outcome
-        target_unit = gs.get_component(target_id, CombatUnit)
         fire_outcome = FireSystem.get_fire_outcome(gs, attacker_id)
         FireSystem.apply_fire_outcome(
             gs,
@@ -140,8 +136,6 @@ class FireSystem:
             target_id=target_id,
             fire_outcome=fire_outcome,
         )
-        if fire_outcome in (FireOutcomes.MISS, FireOutcomes.PIN):
-            InitiativeSystem.set_initiative(gs, target_unit.faction)
         return FireActionResult(outcome=fire_outcome)
 
     @staticmethod

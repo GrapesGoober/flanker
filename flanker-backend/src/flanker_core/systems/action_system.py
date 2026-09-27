@@ -1,4 +1,5 @@
 from typing import overload
+from uuid import UUID
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
@@ -13,11 +14,20 @@ from flanker_core.models.actions import (
     PivotAction,
     PivotActionResult,
 )
-from flanker_core.models.components import Transform
-from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.components import (
+    CombatUnit,
+    FireControls,
+    InitiativeState,
+    Transform,
+)
+from flanker_core.models.outcomes import (
+    AssaultOutcomes,
+    FireEffect,
+    FireOutcomes,
+    InvalidAction,
+)
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 
 
@@ -58,15 +68,46 @@ class ActionSystem:
     ) -> ActionResult | InvalidAction:
         """Performs an action."""
 
+        if not ActionSystem.has_initiative(gs, action.unit_id):
+            return InvalidAction.NO_INITIATIVE
+
         match action:
             case MoveAction():
-                return MoveSystem.move(gs, action.unit_id, action.to)
+                result = MoveSystem.move(gs, action.unit_id, action.to)
+                if not isinstance(result, InvalidAction):
+                    if {
+                        FireOutcomes.SUPPRESS,
+                        FireOutcomes.KILL,
+                    } & set(result.reactive_fire_outcomes):
+                        ActionSystem.flip_initiative(gs)
+
             case PivotAction():
-                return MoveSystem.pivot(gs, action.unit_id, action.to)
+                result = MoveSystem.pivot(gs, action.unit_id, action.to)
+                if not isinstance(result, InvalidAction):
+                    if {
+                        FireOutcomes.SUPPRESS,
+                        FireOutcomes.KILL,
+                    } & set(result.reactive_fire_outcomes):
+                        ActionSystem.flip_initiative(gs)
+
             case FireAction():
-                return FireSystem.fire(gs, action.unit_id, action.target_id)
+                result = FireSystem.fire(gs, action.unit_id, action.target_id)
+                if not isinstance(result, InvalidAction):
+                    if result.outcome in (FireOutcomes.MISS, FireOutcomes.PIN):
+                        ActionSystem.flip_initiative(gs)
+
             case AssaultAction():
-                return AssaultSystem.assault(gs, action.unit_id, action.target_id)
+                result = AssaultSystem.assault(gs, action.unit_id, action.target_id)
+                if not isinstance(result, InvalidAction):
+                    if {
+                        FireOutcomes.SUPPRESS,
+                        FireOutcomes.KILL,
+                    } & set(result.reactive_fire_outcomes):
+                        ActionSystem.flip_initiative(gs)
+                    if result.outcome == AssaultOutcomes.FAIL:
+                        ActionSystem.flip_initiative(gs)
+
+        return result
 
     @staticmethod
     def is_legal(
@@ -74,7 +115,7 @@ class ActionSystem:
         action: Action,
     ) -> bool:
         """Checks whether an action is legal."""
-        if not InitiativeSystem.has_initiative(gs, action.unit_id):
+        if not ActionSystem.has_initiative(gs, action.unit_id):
             return False
 
         match action:
@@ -104,3 +145,66 @@ class ActionSystem:
                         to=target_transform.position,
                     )
         return not isinstance(invalid_reason, InvalidAction)
+
+    # TODO: this flip_initiative is not idempotent. This smells bad.
+    # Perhaps the initiative should be handled at the action level?
+    # If so, it keeps intiatives mutation centralized and idempotent.
+    @staticmethod
+    def flip_initiative(gs: GameState) -> None:
+        """Mutates the current initiative to the other faction."""
+        for _, initiative in gs.query(InitiativeState):
+            match initiative.faction:
+                case InitiativeState.Faction.RED:
+                    initiative.faction = InitiativeState.Faction.BLUE
+                case InitiativeState.Faction.BLUE:
+                    initiative.faction = InitiativeState.Faction.RED
+        ActionSystem._update_unit_status(gs)
+
+    @staticmethod
+    def set_initiative(gs: GameState, faction: InitiativeState.Faction) -> None:
+        """Mutates the given faction to have the initiative."""
+        for _, initiative_state in gs.query(InitiativeState):
+            initiative_state.faction = faction
+        ActionSystem._update_unit_status(gs)
+
+    @staticmethod
+    def has_initiative(gs: GameState, unit_id: UUID) -> bool:
+        """Check whether the unit's faction has initiative."""
+        unit = gs.get_component(unit_id, CombatUnit)
+        return unit.faction == ActionSystem.get_initiative(gs)
+
+    @staticmethod
+    def get_initiative(gs: GameState) -> InitiativeState.Faction:
+        """Get the faction that has the current initiative."""
+        for _, faction in gs.query(InitiativeState):
+            return faction.faction
+        raise Exception("InitiativeState component not found")
+
+    @staticmethod
+    def _update_unit_status(
+        gs: GameState,
+    ) -> None:
+        """Updates unit status of a combat unit using fire effects."""
+
+        for unit_id, unit in gs.query(CombatUnit):
+
+            if unit.faction != ActionSystem.get_initiative(gs):
+                continue
+
+            # Record each fire effects of each firer
+            fire_effects: set[FireEffect] = set()
+            for _, fire_controls in gs.query(FireControls):
+                if fire_controls.firing_at == None:
+                    continue
+                fire_at_id, fire_effect = fire_controls.firing_at
+                if fire_at_id != unit_id:
+                    continue
+                fire_effects.add(fire_effect)
+
+            # Apply each fire effect; SUPPRESSING surpass PINNING
+            if FireEffect.SUPPRESSING in fire_effects:
+                unit.status = CombatUnit.Status.SUPPRESSED
+            elif fire_effects == {FireEffect.PINNING}:
+                unit.status = CombatUnit.Status.PINNED
+            else:
+                unit.status = CombatUnit.Status.ACTIVE

@@ -11,7 +11,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.outcomes import FireEffect
-from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.action_system import ActionSystem
 
 
 @dataclass(frozen=True)
@@ -99,7 +99,7 @@ class AiCacheKeyService:
             )
 
         return CacheKey(
-            initiative=InitiativeSystem.get_initiative(gs),
+            initiative=ActionSystem.get_initiative(gs),
             combat_units=tuple(combat_units),
             eliminations=tuple(eliminations),
             stalls=tuple(stalls),

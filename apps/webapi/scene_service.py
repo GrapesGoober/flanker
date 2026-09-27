@@ -17,7 +17,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.serializer import Serializer
-from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
@@ -162,7 +162,7 @@ class SceneService:
                     )
 
         # Grab all the game match data
-        has_initiative = InitiativeSystem.get_initiative(gs) == faction
+        has_initiative = ActionSystem.get_initiative(gs) == faction
         winning_faction = ObjectiveSystem.get_winning_faction(gs)
         if winning_faction == faction:
             objective_state = GameViewState.ObjectiveState.COMPLETED

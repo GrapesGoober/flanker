@@ -27,7 +27,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -146,11 +145,11 @@ class UnabstractedState(ISearchState[Action]):
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
-        return InitiativeSystem.get_initiative(self._gs)
+        return ActionSystem.get_initiative(self._gs)
 
     @override
     def flip_initiative(self) -> None:
-        InitiativeSystem.flip_initiative(self._gs)
+        ActionSystem.flip_initiative(self._gs)
 
     @override
     def update_state(self, gs: GameState) -> None:

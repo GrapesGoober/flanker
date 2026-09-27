@@ -5,7 +5,7 @@ from time import perf_counter
 from flanker_ai.ai_system import AiSystem
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
-from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
 
@@ -35,7 +35,7 @@ class AiMatch:
         while (winner := ObjectiveSystem.get_winning_faction(gs)) is None:
 
             # Have the agent play its initiative
-            current_faction = InitiativeSystem.get_initiative(gs)
+            current_faction = ActionSystem.get_initiative(gs)
             action_result = AiSystem.perform_action(gs, current_faction)
 
             # If no legal actions are performed, flip initiative or draw
@@ -45,7 +45,7 @@ class AiMatch:
                 if no_action_count >= 2:
                     break
 
-                InitiativeSystem.flip_initiative(gs)
+                ActionSystem.flip_initiative(gs)
                 continue
             else:  # An action was performed, so reset the counter
                 no_action_count = 0

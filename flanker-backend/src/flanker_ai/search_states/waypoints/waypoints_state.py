@@ -28,7 +28,6 @@ from flanker_core.models.components import CombatUnit, InitiativeState, Transfor
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystemOverrides
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -49,11 +48,11 @@ class WaypointsState(ISearchState[Action]):
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
-        return InitiativeSystem.get_initiative(self.gs)
+        return ActionSystem.get_initiative(self.gs)
 
     @override
     def flip_initiative(self) -> None:
-        InitiativeSystem.flip_initiative(self.gs)
+        ActionSystem.flip_initiative(self.gs)
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -119,7 +118,7 @@ class WaypointsState(ISearchState[Action]):
         }
         return AiActionService.get_actions(
             gs=self.gs,
-            initiative=InitiativeSystem.get_initiative(self.gs),
+            initiative=ActionSystem.get_initiative(self.gs),
             move_candidates=[
                 move_candidate
                 for move_candidate in self._move_candidates

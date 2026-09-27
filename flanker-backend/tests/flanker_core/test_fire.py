@@ -15,7 +15,6 @@ from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.command_system import CommandSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass
@@ -94,7 +93,7 @@ def test_no_los(fixture: Fixture) -> None:
         target_unit.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as it is obstructed"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
+        ActionSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects shooter to retain initiative"
 
 
@@ -113,7 +112,7 @@ def test_no_fire(fixture: Fixture) -> None:
         target_unit.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE as fire action MISS"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
+        ActionSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
 
@@ -133,7 +132,7 @@ def test_pin_fire(fixture: Fixture) -> None:
         target_unit.status == CombatUnit.Status.PINNED
     ), "Target expects to be PINNED as it is shot"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
+        ActionSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
 
     # If kills the firer, the fire effect is gone, but status remains
@@ -143,7 +142,7 @@ def test_pin_fire(fixture: Fixture) -> None:
     ), "Target expects to remain PINNED even if fire effect is gone"
 
     # The status would only revert automatically once unit regains initiative
-    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
+    ActionSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     assert (
         target_unit.status == CombatUnit.Status.ACTIVE
     ), "Target expects to be ACTIVE once fire is gone and regains initiative."
@@ -184,7 +183,7 @@ def test_suppress_fire(fixture: Fixture) -> None:
         target_unit.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be SUPPRESSED as it is shot"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
+        ActionSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
 
@@ -201,7 +200,7 @@ def test_kill_fire(fixture: Fixture) -> None:
     target = fixture.gs.try_component(fixture.target_id, CombatUnit)
     assert target == None, "Target expects to be KILLED as it is shot"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
+        ActionSystem.has_initiative(fixture.gs, fixture.attacker_id) == True
     ), "Expects attacker to retain initiative"
 
 

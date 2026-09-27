@@ -14,7 +14,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.fire_system import FireSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.intersect_utils import IntersectUtils
@@ -41,8 +40,6 @@ class MoveSystem:
         # Check game state is valid for move action
         if move_unit.status != CombatUnit.Status.ACTIVE:
             return InvalidAction.INACTIVE_UNIT
-        if not InitiativeSystem.has_initiative(gs, unit_id):
-            return InvalidAction.NO_INITIATIVE
 
         # Check move action though correct terrain type
         movable_mask = 0
@@ -212,13 +209,6 @@ class MoveSystem:
         result = MoveSystem._atomic_move(gs, unit_id, to)
         if not isinstance(result, MoveActionResult):
             return result
-        # If there are any SUPPRESS or KILL reactive fires,
-        # the initiative is lost.
-        if {
-            FireOutcomes.SUPPRESS,
-            FireOutcomes.KILL,
-        } & set(result.reactive_fire_outcomes):
-            InitiativeSystem.flip_initiative(gs)
 
         return result
 
@@ -241,14 +231,6 @@ class MoveSystem:
 
         if isinstance(result, InvalidAction):
             return result
-
-        # If there are any SUPPRESS or KILL reactive fires,
-        # the initiative is lost.
-        if {
-            FireOutcomes.SUPPRESS,
-            FireOutcomes.KILL,
-        } & set(result.reactive_fire_outcomes):
-            InitiativeSystem.flip_initiative(gs)
 
         # Then put it back to where it were so it's not actually moved
         transform.position = initial_position

@@ -12,7 +12,6 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass
@@ -38,7 +37,7 @@ def fixture() -> Fixture:
 
 def test_no_initiative(fixture: Fixture) -> None:
     # Test with no initiative
-    InitiativeSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
+    ActionSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
     # Try to move the unit
     ActionSystem.perform(fixture.gs, MoveAction(fixture.unit_id, Vec2(10, 10)))
     transform = fixture.gs.get_component(fixture.unit_id, Transform)
