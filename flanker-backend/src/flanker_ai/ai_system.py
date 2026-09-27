@@ -2,13 +2,12 @@ from dataclasses import dataclass
 from time import perf_counter
 
 from flanker_ai.agents.ai_random_heuristic_agent import AiRandomHeuristicAgent
-from flanker_ai.agents.ai_search_agent import AiSearchAgent
+from flanker_ai.agents.ai_search_agent import AiSearchAgent, AiSearchLog
 from flanker_ai.config_models import (
     AiConfigComponent,
     HeuristicPolicyConfig,
     SearchPolicyConfig,
 )
-from flanker_ai.search_policies.search_log_models import AiSearchLog
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.components import InitiativeState

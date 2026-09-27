@@ -3,7 +3,6 @@ from itertools import count
 from math import inf
 from typing import Any
 
-from flanker_ai.search_policies.search_log_models import ExpectimaxSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
 
@@ -14,6 +13,11 @@ _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 class _TranspositionCacheKey:
     state_snapshot: Any
     current_depth: int
+
+
+@dataclass
+class ExpectimaxSearchLog:
+    tree_size: int
 
 
 class ExpectimaxPolicy[TAction]:

@@ -1,7 +1,12 @@
 import random
 
-from flanker_ai.search_policies.search_log_models import RandomSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
+from pydantic.dataclasses import dataclass
+
+
+@dataclass
+class RandomSearchLog:
+    actions_length: int
 
 
 class RandomPolicy[TAction]:

@@ -1,6 +1,6 @@
 import random
+from dataclasses import dataclass
 
-from flanker_ai.search_policies.search_log_models import RandomHeuristicLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.actions import (
     Action,
@@ -9,6 +9,11 @@ from flanker_core.models.actions import (
     MoveAction,
     PivotAction,
 )
+
+
+@dataclass
+class RandomHeuristicLog:
+    actions_length: int
 
 
 class RandomHeuristicPolicy:

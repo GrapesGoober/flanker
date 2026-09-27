@@ -3,7 +3,6 @@ from itertools import count
 from math import inf
 from typing import Any
 
-from flanker_ai.search_policies.search_log_models import MinimaxSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
 
@@ -14,6 +13,11 @@ MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 class _TranspositionCacheKey:
     state_snapshot: Any
     current_depth: int
+
+
+@dataclass
+class MinimaxSearchLog:
+    tree_size: int
 
 
 class MinimaxPolicy[TAction]:

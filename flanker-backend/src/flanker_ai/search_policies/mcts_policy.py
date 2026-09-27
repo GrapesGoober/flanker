@@ -4,7 +4,6 @@ import math
 from dataclasses import dataclass
 from typing import Callable
 
-from flanker_ai.search_policies.search_log_models import MctsSearchLog
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
 
@@ -23,6 +22,11 @@ class _MctsTreeNode[TAction]:
     total_value: float  # Q(v) total simulation reward of all visited children
 
     action: TAction | None
+
+
+@dataclass
+class MctsSearchLog:
+    tree_depth: int
 
 
 class MctsPolicy[TAction]:
