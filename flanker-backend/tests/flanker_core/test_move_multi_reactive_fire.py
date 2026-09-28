@@ -16,7 +16,6 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 @dataclass
@@ -117,7 +116,7 @@ def test_no_interrupt(fixture: Fixture) -> None:
         5, -15
     ), "Move action expects to not be interrupted"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
+        ActionSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
     ), "NO reactive fire mustn't flip initiative."
 
 
@@ -130,7 +129,7 @@ def test_both_miss(fixture: Fixture) -> None:
         20, -10
     ), "Move action expects to not be interrupted"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
+        ActionSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == False
     ), "MISS reactive fire mustn't flip initiative"
 
 
@@ -145,7 +144,7 @@ def test_one_pin(fixture: Fixture) -> None:
     unit_move = fixture.gs.get_component(fixture.unit_move_id, CombatUnit)
     assert unit_move.status == CombatUnit.Status.PINNED, "Target expects to be pinned"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move_id) == True
+        ActionSystem.has_initiative(fixture.gs, fixture.unit_move_id) == True
     ), "PINNED reactive fire must maintain initiative for moving unit."
 
 
@@ -162,7 +161,7 @@ def test_one_pin_one_suppress(fixture: Fixture) -> None:
         unit_move.status == CombatUnit.Status.SUPPRESSED
     ), "Target expects to be suppressed"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_move_id) == False
+        ActionSystem.has_initiative(fixture.gs, fixture.unit_move_id) == False
     ), "SUPPRESS reactive fire lose initiative for moving unit."
 
 
@@ -173,5 +172,5 @@ def test_both_suppress(fixture: Fixture) -> None:
     transform = fixture.gs.try_component(fixture.unit_move_id, Transform)
     assert transform == None, "Target expects to be killed"
     assert (
-        InitiativeSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == True
+        ActionSystem.has_initiative(fixture.gs, fixture.unit_shoot_1) == True
     ), "KILL reactive fire lose initiative for moving unit."

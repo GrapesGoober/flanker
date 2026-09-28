@@ -7,7 +7,6 @@ from flanker_core.models.actions import Action, ActionResult, FireAction, MoveAc
 from flanker_core.models.components import CombatUnit, Transform
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 
 
 class AiRandomHeuristicAgent:
@@ -21,7 +20,7 @@ class AiRandomHeuristicAgent:
     def perform_action(
         gs: GameState,
     ) -> ActionResult | None:
-        initiative = InitiativeSystem.get_initiative(gs)
+        initiative = ActionSystem.get_initiative(gs)
 
         units = list(gs.query(CombatUnit))
         friendly_ids = [id for id, unit in units if unit.faction == initiative]

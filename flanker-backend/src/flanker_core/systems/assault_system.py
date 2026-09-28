@@ -6,7 +6,6 @@ from flanker_core.models.actions import AssaultActionResult
 from flanker_core.models.components import AssaultControls, CombatUnit, Transform
 from flanker_core.models.outcomes import AssaultOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -31,9 +30,7 @@ class AssaultSystem:
         target_unit = gs.get_component(target_id, CombatUnit)
 
         if attacker_unit.status != CombatUnit.Status.ACTIVE:
-            return InvalidAction.NO_INITIATIVE
-        if not InitiativeSystem.has_initiative(gs, attacker_id):
-            return InvalidAction.NO_INITIATIVE
+            return InvalidAction.BAD_ENTITY
         if attacker_unit.faction == target_unit.faction:
             return InvalidAction.BAD_ENTITY
 

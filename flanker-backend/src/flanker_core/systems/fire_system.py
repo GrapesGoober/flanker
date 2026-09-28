@@ -7,7 +7,6 @@ from flanker_core.models.actions import FireActionResult
 from flanker_core.models.components import CombatUnit, FireControls, Transform
 from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
-from flanker_core.systems.initiative_system import InitiativeSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
@@ -90,28 +89,48 @@ class FireSystem:
     ) -> None:
         """Applies the fire outcome to the target combat unit."""
         fire_controls = gs.get_component(attacker_id, FireControls)
-        target_fire_controls = gs.try_component(target_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
 
         match fire_outcome:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                fire_controls.firing_at = (target_id, FireEffect.PINNING)
-                # SUPPRESSED target doesn't get PINNED.
-                if target_unit.status == CombatUnit.Status.ACTIVE:
-                    target_unit.status = CombatUnit.Status.PINNED
+                fire_effect = FireEffect.PINNING
+                fire_controls.firing_at = (target_id, fire_effect)
+                FireSystem.apply_fire_effect(gs, target_id, fire_effect)
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
-                    fire_controls.firing_at = (target_id, FireEffect.SUPPRESSING)
-                    target_unit.status = CombatUnit.Status.SUPPRESSED
-                    # Reset the target's fire effect because SUPPRESSED unit can't fire.
-                    if target_fire_controls != None:
-                        target_fire_controls.firing_at = None
+                    fire_effect = FireEffect.SUPPRESSING
+                    fire_controls.firing_at = (target_id, fire_effect)
+                    FireSystem.apply_fire_effect(gs, target_id, fire_effect)
                 else:  # Kills the unit if it is already suppressed
                     CommandSystem.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
                 CommandSystem.kill_unit(gs, target_id)
+
+    @staticmethod
+    def apply_fire_effect(
+        gs: GameState,
+        target_id: UUID,
+        fire_effect: FireEffect,
+    ) -> None:
+        target_unit = gs.get_component(target_id, CombatUnit)
+        target_fire_controls = gs.try_component(target_id, FireControls)
+
+        match fire_effect:
+            case FireEffect.PINNING:
+                if target_unit.status == CombatUnit.Status.ACTIVE:
+                    target_unit.status = CombatUnit.Status.PINNED
+            case FireEffect.SUPPRESSING:
+                if target_unit.status in [
+                    CombatUnit.Status.ACTIVE,
+                    CombatUnit.Status.PINNED,
+                ]:
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
+                    if target_fire_controls != None:
+                        # Reset the target's fire effect because
+                        # SUPPRESSED units can't fire.
+                        target_fire_controls.firing_at = None
 
     @staticmethod
     def fire(
@@ -124,15 +143,12 @@ class FireSystem:
         # Validate fire actors
         if reason := FireSystem.validate_fire_actors(gs, attacker_id, target_id):
             return reason
-        if not InitiativeSystem.has_initiative(gs, attacker_id):
-            return InvalidAction.NO_INITIATIVE
 
         # Reset stall count after validity checks
         attacker_unit = gs.get_component(attacker_id, CombatUnit)
         ObjectiveSystem.reset_stall(gs, attacker_unit.faction)
 
         # Apply outcome
-        target_unit = gs.get_component(target_id, CombatUnit)
         fire_outcome = FireSystem.get_fire_outcome(gs, attacker_id)
         FireSystem.apply_fire_outcome(
             gs,
@@ -140,8 +156,6 @@ class FireSystem:
             target_id=target_id,
             fire_outcome=fire_outcome,
         )
-        if fire_outcome in (FireOutcomes.MISS, FireOutcomes.PIN):
-            InitiativeSystem.set_initiative(gs, target_unit.faction)
         return FireActionResult(outcome=fire_outcome)
 
     @staticmethod

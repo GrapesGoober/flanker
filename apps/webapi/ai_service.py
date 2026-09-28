@@ -20,7 +20,7 @@ from flanker_core.models.actions import (
     PivotActionResult,
 )
 from flanker_core.models.components import InitiativeState
-from flanker_core.systems.initiative_system import InitiativeSystem
+from flanker_core.systems.action_system import ActionSystem
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AiMatchResponse,
@@ -46,7 +46,7 @@ class AiService:
         max_actions: int = 10,
     ) -> None:
         """Runs the default RED AI for entire RED initiative."""
-        if InitiativeSystem.get_initiative(gs) != InitiativeState.Faction.RED:
+        if ActionSystem.get_initiative(gs) != InitiativeState.Faction.RED:
             return
 
         action_results: list[AiSystem.ActionResult] = []
@@ -55,11 +55,11 @@ class AiService:
 
             result = AiSystem.perform_action(
                 gs=gs,
-                faction=InitiativeSystem.get_initiative(gs),
+                faction=ActionSystem.get_initiative(gs),
             )
 
             if result == None:
-                InitiativeSystem.flip_initiative(gs)
+                ActionSystem.set_initiative(gs, InitiativeState.Faction.BLUE)
                 break
             action_results.append(result)
             gs_snapshots.append(deepcopy(gs))
