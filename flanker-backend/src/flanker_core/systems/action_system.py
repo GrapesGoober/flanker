@@ -99,12 +99,6 @@ class ActionSystem:
                 result = AssaultSystem.assault(gs, action.unit_id, action.target_id)
                 if not isinstance(result, InvalidAction):
                     if (
-                        FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
-                        or FireOutcomes.KILL in result.reactive_fire_outcomes
-                    ):
-                        ActionSystem.flip_initiative(gs)
-
-                    if (
                         result.outcome == AssaultOutcomes.FAIL
                         or FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
