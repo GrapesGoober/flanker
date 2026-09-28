@@ -145,12 +145,11 @@ class ActionSystem:
                     )
         return not isinstance(invalid_reason, InvalidAction)
 
-    # TODO: this flip_initiative is not idempotent. This smells bad.
-    # Perhaps the initiative should be handled at the action level?
-    # If so, it keeps intiatives mutation centralized and idempotent.
     @staticmethod
-    def flip_initiative(gs: GameState) -> None:
-        """Mutates the current initiative to the other faction."""
+    def flip_initiative(
+        gs: GameState,
+    ) -> None:
+        """Flips the current initiative to the opposing faction."""
         for _, initiative in gs.query(InitiativeState):
             match initiative.faction:
                 case InitiativeState.Faction.RED:
@@ -160,20 +159,28 @@ class ActionSystem:
         ActionSystem._update_unit_status(gs)
 
     @staticmethod
-    def set_initiative(gs: GameState, faction: InitiativeState.Faction) -> None:
-        """Mutates the given faction to have the initiative."""
+    def set_initiative(
+        gs: GameState,
+        faction: InitiativeState.Faction,
+    ) -> None:
+        """Sets the given faction to have the initiative."""
         for _, initiative_state in gs.query(InitiativeState):
             initiative_state.faction = faction
         ActionSystem._update_unit_status(gs)
 
     @staticmethod
-    def has_initiative(gs: GameState, unit_id: UUID) -> bool:
+    def has_initiative(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> bool:
         """Check whether the unit's faction has initiative."""
         unit = gs.get_component(unit_id, CombatUnit)
         return unit.faction == ActionSystem.get_initiative(gs)
 
     @staticmethod
-    def get_initiative(gs: GameState) -> InitiativeState.Faction:
+    def get_initiative(
+        gs: GameState,
+    ) -> InitiativeState.Faction:
         """Get the faction that has the current initiative."""
         for _, faction in gs.query(InitiativeState):
             return faction.faction
