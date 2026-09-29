@@ -135,6 +135,21 @@ export async function DeleteTerrainData(
 	return data;
 }
 
+/** Delete terrain data for the current game. */
+export async function UpdateUnit(
+	jsonState: string,
+	unit: RifleSquadData
+): Promise<GameViewStateResponse> {
+	const { data, error } = await client.POST('/api/unit/update', {
+		body: {
+			state: jsonState,
+			unit: unit
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
 /** Get current combat unit states for the game. */
 export async function GetViewStatesData(
 	jsonState: string

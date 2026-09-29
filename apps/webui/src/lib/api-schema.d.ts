@@ -255,10 +255,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/unit/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Update Unit
+         * @description Edit the combat unit.
+         */
+        post: operations["update_unit_api_unit_update_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Action: components["schemas"]["MoveAction"] | components["schemas"]["PivotAction"] | components["schemas"]["FireAction"] | components["schemas"]["AssaultAction"];
+        ActionLog: components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"];
         /**
          * AiMatchResponse
          * @description Response model for AI match contains match result and final game state.
@@ -267,16 +289,35 @@ export interface components {
             winner: components["schemas"]["Faction"] | null;
             /** Totalruntimeseconds */
             totalRuntimeSeconds: number;
-            /** Searchlogs */
-            searchLogs: (components["schemas"]["MinimaxSearchLog"] | components["schemas"]["MctsSearchLog"] | components["schemas"]["ExpectimaxSearchLog"] | components["schemas"]["RandomHeuristicLog"] | components["schemas"]["RandomSearchLog"])[];
+            /** Actionresults */
+            actionResults: components["schemas"]["flanker_ai__ai_system__AiSystem__ActionResult"][];
             /** Jsonstate */
             jsonState: string;
         };
+        AiSearchLog: components["schemas"]["MinimaxSearchLog"] | components["schemas"]["MctsSearchLog"] | components["schemas"]["ExpectimaxSearchLog"] | components["schemas"]["RandomHeuristicLog"] | components["schemas"]["RandomSearchLog"];
         /** AiWaypointConfigRequest */
         AiWaypointConfigRequest: {
             faction: components["schemas"]["Faction"];
             /** Points */
             points: components["schemas"]["Vec2"][];
+        };
+        /**
+         * AssaultAction
+         * @description Moves a unit toward a target and performs an assault on arrival.
+         *     Movement draws reactive fires, which may interrupt the move.
+         *     The loser of the assault is killed.
+         */
+        AssaultAction: {
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+            /**
+             * Targetid
+             * Format: uuid
+             */
+            targetId: string;
         };
         /** AssaultActionLog */
         AssaultActionLog: {
@@ -313,6 +354,12 @@ export interface components {
              */
             targetId: string;
         };
+        /** AssaultActionResult */
+        AssaultActionResult: {
+            outcome: components["schemas"]["AssaultOutcomes"] | null;
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
+        };
         /**
          * AssaultOutcomes
          * @description Defines an assault outcome as fail or success.
@@ -344,9 +391,14 @@ export interface components {
             state: string;
             terrain: components["schemas"]["TerrainModel"];
         };
+        /** Body_update_unit_api_unit_update_post */
+        Body_update_unit_api_unit_update_post: {
+            /** State */
+            state: string;
+            unit: components["schemas"]["SquadModel"];
+        };
         /** ExpectimaxSearchLog */
         ExpectimaxSearchLog: {
-            faction: components["schemas"]["Faction"];
             /** Treesize */
             treeSize: number;
         };
@@ -355,6 +407,24 @@ export interface components {
          * @enum {string}
          */
         Faction: "BLUE" | "RED";
+        /**
+         * FireAction
+         * @description Fires at an enemy unit. The target must be within line of sight.
+         *     Fire modifies the target's status and creates a persistent fire effect.
+         *     A failed fire can lose initiative.
+         */
+        FireAction: {
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+            /**
+             * Targetid
+             * Format: uuid
+             */
+            targetId: string;
+        };
         /** FireActionLog */
         FireActionLog: {
             /**
@@ -387,6 +457,10 @@ export interface components {
              * Format: uuid
              */
             targetId: string;
+        };
+        /** FireActionResult */
+        FireActionResult: {
+            outcome: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * FireEffect
@@ -465,15 +539,27 @@ export interface components {
         };
         /** MctsSearchLog */
         MctsSearchLog: {
-            faction: components["schemas"]["Faction"];
             /** Treedepth */
             treeDepth: number;
         };
         /** MinimaxSearchLog */
         MinimaxSearchLog: {
-            faction: components["schemas"]["Faction"];
             /** Treesize */
             treeSize: number;
+        };
+        /**
+         * MoveAction
+         * @description Moves a unit to a destination. This pivots toward the movement path
+         *     first. Movement draws reactive fires, which may interrupt the move
+         *     and can lose initiative.
+         */
+        MoveAction: {
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+            to: components["schemas"]["Vec2"];
         };
         /** MoveActionLog */
         MoveActionLog: {
@@ -505,11 +591,31 @@ export interface components {
             unitId: string;
             to: components["schemas"]["Vec2"];
         };
+        /** MoveActionResult */
+        MoveActionResult: {
+            /** Moveinterrupted */
+            moveInterrupted: boolean;
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
+        };
         /**
          * ObjectiveState
          * @enum {string}
          */
         ObjectiveState: "INCOMPLETE" | "COMPLETED" | "FAILED";
+        /**
+         * PivotAction
+         * @description Pivots a unit toward a destination. Pivoting draws reactive fires
+         *     and can lose initiative. Pivoting always complete regardless
+         */
+        PivotAction: {
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+            to: components["schemas"]["Vec2"];
+        };
         /** PivotActionLog */
         PivotActionLog: {
             /**
@@ -540,15 +646,18 @@ export interface components {
             unitId: string;
             to: components["schemas"]["Vec2"];
         };
+        /** PivotActionResult */
+        PivotActionResult: {
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
+        };
         /** RandomHeuristicLog */
         RandomHeuristicLog: {
-            faction: components["schemas"]["Faction"];
             /** Actionslength */
             actionsLength: number;
         };
         /** RandomSearchLog */
         RandomSearchLog: {
-            faction: components["schemas"]["Faction"];
             /** Actionslength */
             actionsLength: number;
         };
@@ -634,6 +743,16 @@ export interface components {
             /** Y */
             y: number;
         };
+        /** ActionResult */
+        flanker_ai__ai_system__AiSystem__ActionResult: {
+            faction: components["schemas"]["Faction"];
+            /** Actionruntimeseconds */
+            actionRuntimeSeconds: number;
+            action: components["schemas"]["Action"];
+            result: components["schemas"]["flanker_core__models__actions__ActionResult"];
+            policyLog: components["schemas"]["AiSearchLog"] | null;
+        };
+        flanker_core__models__actions__ActionResult: components["schemas"]["MoveActionResult"] | components["schemas"]["PivotActionResult"] | components["schemas"]["FireActionResult"] | components["schemas"]["AssaultActionResult"];
     };
     responses: never;
     parameters: never;
@@ -876,7 +995,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": (components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"])[];
+                    "application/json": components["schemas"]["ActionLog"][];
                 };
             };
             /** @description Validation Error */
@@ -1034,6 +1153,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameViewStateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_unit_api_unit_update_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_update_unit_api_unit_update_post"];
             };
         };
         responses: {
