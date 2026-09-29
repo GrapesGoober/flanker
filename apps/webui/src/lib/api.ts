@@ -135,7 +135,7 @@ export async function DeleteTerrainData(
 	return data;
 }
 
-/** Delete terrain data for the current game. */
+/** Updates the unit data for the current game. */
 export async function UpdateUnit(
 	jsonState: string,
 	unit: RifleSquadData

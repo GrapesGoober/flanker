@@ -37,44 +37,42 @@
 		controller.addWaypoint(worldPos);
 	}
 
-	/** Resets the editor mode and refreshes terrain. */
 	function resetMode() {
 		controller.refreshData();
 		controller.reset();
 	}
 
-	/** Switches the editor to draw mode. */
 	function drawMode() {
 		controller.drawMode();
 	}
 
-	/** Finishes the current draw and saves as terrain. */
 	async function deleteTerrain() {
 		await controller.deleteTerrainAsync();
 		resetMode();
 	}
-	/** Finishes the current draw and saves as terrain. */
+
 	async function updateTerrain() {
 		await controller.updateTerrainAsync();
 		resetMode();
 	}
 
-	/** Switches the editor to waypoints mode. */
+	async function updateUnit() {
+		await controller.updateUnitAsync();
+		resetMode();
+	}
+
 	function waypointsMode() {
 		controller.waypointsMode('RED');
 	}
 
-	/** Updates the waypoints to the webapi. */
 	function confirmsWaypoints() {
 		controller.updateWaypoint();
 	}
-	/** Finishes the current draw and saves as terrain. */
 	async function finishDraw() {
 		await controller.finishDraw();
 	}
 
-	/* Informs the controller that a unit is selected */
-	function SelectUnit(unitId: string, event: MouseEvent) {
+	function selectUnit(unitId: string, event: MouseEvent) {
 		event.stopPropagation(); // Prevent the terrain's onclick trigger
 		controller.selectUnit(unitId);
 	}
@@ -103,7 +101,7 @@
 	</svg>
 	{#each controller.viewState.squads as unit, index}
 		{#if controller.viewState.squads[index] != undefined}
-			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+			<g onclick={(event) => selectUnit(unit.unitId, event)}>
 				<RifleSquad bind:rifleSquadData={controller.viewState.squads[index]} />
 			</g>
 		{/if}
@@ -160,7 +158,6 @@ mode = {controller.state.type}
 	<button onclick={deleteTerrain} style="margin-bottom: 1em;"
 		>Delete Terrain</button
 	>
-
 	<button onclick={updateTerrain} style="margin-bottom: 1em;"
 		>Update Terrain Changes</button
 	>
@@ -194,6 +191,10 @@ mode = {controller.state.type}
 		<option value={true}>BLUE</option>
 		<option value={false}>RED</option>
 	</select>
+
+	<button onclick={updateUnit} style="margin-bottom: 1em;"
+		>Update Unit Changes</button
+	>
 {:else if controller.state.type == 'draw'}
 	<select bind:value={controller.state.terrainType}>
 		<option value="FOREST">FOREST</option>
