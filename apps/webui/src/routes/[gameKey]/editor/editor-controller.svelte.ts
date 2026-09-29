@@ -30,7 +30,8 @@ export class EditorController {
 	combatUnitsData: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
-		squads: []
+		squads: [],
+		fireEffectPairs: []
 	});
 	state: EditorControllerState = $state({ type: 'default' });
 	gameKey: string = $state('');

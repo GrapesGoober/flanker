@@ -5,7 +5,7 @@
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 	import { onMount } from 'svelte';
 	import { EditorController } from './editor-controller.svelte';
-	import EditorTerrainLayer from './editor-terrain-layer.svelte';
+	import EditorOverlay from './editor-overlay.svelte';
 
 	const editorController = ExceptionProxy.wrap(new EditorController());
 	let controller: EditorController = $state(editorController);
@@ -64,11 +64,15 @@
 </script>
 
 {#snippet mapSvgSnippet()}
+	<!-- Draw the base terrains and units -->
 	<TerrainLayer mapData={controller.mapData} />
 	{#each controller.combatUnitsData.squads as squad}
 		<RifleSquad rifleSquadData={squad} />
 	{/each}
-	<EditorTerrainLayer {controller} />
+	<!-- Draw the overlay on top -->
+	<EditorOverlay {controller} />
+
+	<!-- Draw the purple drawing mode UIs -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	{#if controller.state.type == 'draw'}
