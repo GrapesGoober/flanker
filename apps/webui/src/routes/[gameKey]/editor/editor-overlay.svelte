@@ -20,7 +20,7 @@
 
 	/** Returns true if the terrain is currently selected. */
 	function isSelected(terrain: TerrainModel) {
-		if (props.controller.state.type === 'selected') {
+		if (props.controller.state.type === 'selected-terrain') {
 			return props.controller.state.terrain === terrain;
 		}
 		return false;

@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 type EditorControllerState =
 	| { type: 'default' }
-	| { type: 'selected'; terrain: TerrainModel }
+	| { type: 'selected-terrain'; terrain: TerrainModel }
 	| { type: 'selected-unit'; unit: RifleSquadData }
 	| { type: 'draw'; drawPolygon: Vec2[]; terrainType: TerrainType }
 	| { type: 'draw-waypoints'; waypoints: AiWaypointsModel };
@@ -100,31 +100,11 @@ export class EditorController {
 
 	/** Selects a terrain object and updates its data if already selected. */
 	async selectTerrain(terrain: TerrainModel) {
-		if (this.state.type != 'default' && this.state.type != 'selected') return;
-		const gameStateJson = this.getGameStateJson();
-		if (this.state.type == 'selected') {
-			// Update the already selected terrain if selecting a new one.
-			const viewState = await UpdateTerrainData(
-				gameStateJson,
-				this.state.terrain
-			);
-			this.updateGameStateJson(viewState.jsonState);
-			await this.refreshData();
-			const selectedTerrain = this.mapData.terrains.find(
-				(i) => i.terrainId === terrain.terrainId
-			);
-			if (selectedTerrain != undefined) {
-				this.state = {
-					type: 'selected',
-					terrain: selectedTerrain
-				};
-			}
-		} else {
-			this.state = {
-				type: 'selected',
-				terrain: terrain
-			};
-		}
+		if (this.state.type != 'default') return;
+		this.state = {
+			type: 'selected-terrain',
+			terrain: terrain
+		};
 	}
 
 	/** Selects a combat unit for editing */
@@ -138,8 +118,8 @@ export class EditorController {
 	}
 
 	/** Deletes the selected terrain */
-	async deleteTerrain() {
-		if (this.state.type != 'selected') return;
+	async deleteTerrainAsync() {
+		if (this.state.type != 'selected-terrain') return;
 		const gameStateJson = this.getGameStateJson();
 		const viewState = await DeleteTerrainData(
 			gameStateJson,
@@ -150,7 +130,7 @@ export class EditorController {
 	}
 	/** Asynchronously updates the selected terrain data via the API. */
 	async updateTerrainAsync() {
-		if (this.state.type != 'selected') return;
+		if (this.state.type != 'selected-terrain') return;
 		const gameStateJson = this.getGameStateJson();
 		const viewState = await UpdateTerrainData(
 			gameStateJson,

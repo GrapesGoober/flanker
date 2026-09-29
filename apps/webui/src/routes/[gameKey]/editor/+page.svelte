@@ -50,7 +50,12 @@
 
 	/** Finishes the current draw and saves as terrain. */
 	async function deleteTerrain() {
-		await controller.deleteTerrain();
+		await controller.deleteTerrainAsync();
+		resetMode();
+	}
+	/** Finishes the current draw and saves as terrain. */
+	async function updateTerrain() {
+		await controller.updateTerrainAsync();
 		resetMode();
 	}
 
@@ -132,7 +137,7 @@ mode = {controller.state.type}
 	>Waypoints Mode</button
 >
 
-{#if controller.state.type == 'selected'}
+{#if controller.state.type == 'selected-terrain'}
 	id = {controller.state.terrain.terrainId}
 	x =
 	<input
@@ -154,6 +159,10 @@ mode = {controller.state.type}
 	/>
 	<button onclick={deleteTerrain} style="margin-bottom: 1em;"
 		>Delete Terrain</button
+	>
+
+	<button onclick={updateTerrain} style="margin-bottom: 1em;"
+		>Update Terrain Changes</button
 	>
 {:else if controller.state.type == 'selected-unit'}
 	id = {controller.state.unit.unitId}
