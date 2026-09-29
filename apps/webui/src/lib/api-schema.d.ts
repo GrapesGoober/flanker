@@ -255,6 +255,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/unit/add": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Unit
+         * @description Deletes a combat unit.
+         */
+        post: operations["delete_unit_api_unit_add_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/unit/update": {
         parameters: {
             query?: never;
@@ -372,11 +392,27 @@ export interface components {
             state: string;
             terrain: components["schemas"]["TerrainModel"];
         };
+        /** Body_add_unit_api_unit_add_post */
+        Body_add_unit_api_unit_add_post: {
+            /** State */
+            state: string;
+            unit: components["schemas"]["SquadModel"];
+        };
         /** Body_ai_config_waypoints_api_ai_config_waypoints_post */
         Body_ai_config_waypoints_api_ai_config_waypoints_post: {
             /** State */
             state: string;
             configRequest: components["schemas"]["AiWaypointConfigRequest"];
+        };
+        /** Body_delete_unit_api_unit_add_post */
+        Body_delete_unit_api_unit_add_post: {
+            /** State */
+            state: string;
+            /**
+             * Unit Id
+             * Format: uuid
+             */
+            unit_id: string;
         };
         /** Body_perform_action_api_perform_post */
         Body_perform_action_api_perform_post: {
@@ -679,8 +715,8 @@ export interface components {
              */
             unitId: string;
             position: components["schemas"]["Vec2"];
-            /** Degree */
-            degree: number;
+            /** Degrees */
+            degrees: number;
             status: components["schemas"]["Status"];
             /** Isfriendly */
             isFriendly: boolean;
@@ -1153,6 +1189,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameViewStateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_unit_api_unit_add_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_delete_unit_api_unit_add_post"];
             };
         };
         responses: {

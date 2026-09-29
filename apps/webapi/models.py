@@ -23,7 +23,7 @@ class SquadModel(BaseModel, CamelCaseConfig):
 
     unit_id: UUID
     position: Vec2
-    degree: float
+    degrees: float
     status: CombatUnit.Status
     is_friendly: bool
     fov_degrees: float | None

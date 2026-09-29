@@ -164,6 +164,28 @@ async def delete_terrain(
     return SceneService.get_view_state_response(gs)
 
 
+@app.post("/api/unit/add")
+async def add_unit(
+    state: str = Body(...),
+    unit: SquadModel = Body(...),
+) -> GameViewStateResponse:
+    """Add a new combat unit."""
+    gs = SceneService.deserialize(state)
+    SceneService.add_unit(gs, unit)
+    return SceneService.get_view_state_response(gs)
+
+
+@app.post("/api/unit/delete")
+async def delete_unit(
+    state: str = Body(...),
+    unit_id: UUID = Body(...),
+) -> GameViewStateResponse:
+    """Deletes a combat unit."""
+    gs = SceneService.deserialize(state)
+    SceneService.delete_unit(gs, unit_id)
+    return SceneService.get_view_state_response(gs)
+
+
 @app.post("/api/unit/update")
 async def update_unit(
     state: str = Body(...),
@@ -173,4 +195,3 @@ async def update_unit(
     gs = SceneService.deserialize(state)
     SceneService.update_unit(gs, unit)
     return SceneService.get_view_state_response(gs)
-    ...

@@ -22,12 +22,12 @@
 	let leftRay: Vec2 | null = $derived.by(() => {
 		if (rifleSquadData.fovDegrees == null) return null;
 		const FOV_HALF = rifleSquadData.fovDegrees / 2;
-		return ray(rifleSquadData.degree - FOV_HALF);
+		return ray(rifleSquadData.degrees - FOV_HALF);
 	});
 	let rightRay: Vec2 | null = $derived.by(() => {
 		if (rifleSquadData.fovDegrees == null) return null;
 		const FOV_HALF = rifleSquadData.fovDegrees / 2;
-		return ray(rifleSquadData.degree + FOV_HALF);
+		return ray(rifleSquadData.degrees + FOV_HALF);
 	});
 </script>
 

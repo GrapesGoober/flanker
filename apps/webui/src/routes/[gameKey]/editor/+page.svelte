@@ -179,7 +179,7 @@ mode = {controller.state.type}
 	<input
 		type="number"
 		class="number-input"
-		bind:value={controller.state.unit.degree}
+		bind:value={controller.state.unit.degrees}
 	/>
 	fov =
 	<input
