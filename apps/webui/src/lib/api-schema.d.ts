@@ -64,7 +64,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/view": {
+    "/api/scenes/view": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,14 +77,14 @@ export interface paths {
          * Get View State
          * @description Get all the scene's view state for the player faction.
          */
-        post: operations["get_view_state_api_view_post"];
+        post: operations["get_view_state_api_scenes_view_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/inspect": {
+    "/api/scenes/inspect": {
         parameters: {
             query?: never;
             header?: never;
@@ -97,7 +97,7 @@ export interface paths {
          * Get State Inspection
          * @description Get the detailed inspection data of the scene.
          */
-        post: operations["get_state_inspection_api_inspect_post"];
+        post: operations["get_state_inspection_api_scenes_inspect_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -178,7 +178,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/ai-waypoints": {
+    "/api/ai-config-waypoints": {
         parameters: {
             query?: never;
             header?: never;
@@ -186,16 +186,16 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
         /** Ai Config Waypoints */
-        put: operations["ai_config_waypoints_api_ai_waypoints_put"];
-        post?: never;
+        post: operations["ai_config_waypoints_api_ai_config_waypoints_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/terrain": {
+    "/api/terrain/update": {
         parameters: {
             query?: never;
             header?: never;
@@ -203,27 +203,19 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
         /**
          * Update Terrain
          * @description Edit the terrain polygon.
          */
-        put: operations["update_terrain_api_terrain_put"];
-        /**
-         * Add Terrain
-         * @description Edit the terrain polygon.
-         */
-        post: operations["add_terrain_api_terrain_post"];
-        /**
-         * Delete Terrain
-         * @description Edit the terrain polygon.
-         */
-        delete: operations["delete_terrain_api_terrain_delete"];
+        post: operations["update_terrain_api_terrain_update_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/unit": {
+    "/api/terrain/add": {
         parameters: {
             query?: never;
             header?: never;
@@ -231,12 +223,52 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        put?: never;
+        /**
+         * Add Terrain
+         * @description Edit the terrain polygon.
+         */
+        post: operations["add_terrain_api_terrain_add_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/terrain/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Terrain
+         * @description Edit the terrain polygon.
+         */
+        post: operations["delete_terrain_api_terrain_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/unit/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Update Unit
          * @description Edit the combat unit.
          */
-        put: operations["update_unit_api_unit_put"];
-        post?: never;
+        post: operations["update_unit_api_unit_update_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -334,14 +366,14 @@ export interface components {
          * @enum {string}
          */
         AssaultOutcomes: "FAIL" | "SUCCESS";
-        /** Body_add_terrain_api_terrain_post */
-        Body_add_terrain_api_terrain_post: {
+        /** Body_add_terrain_api_terrain_add_post */
+        Body_add_terrain_api_terrain_add_post: {
             /** State */
             state: string;
             terrain: components["schemas"]["TerrainModel"];
         };
-        /** Body_ai_config_waypoints_api_ai_waypoints_put */
-        Body_ai_config_waypoints_api_ai_waypoints_put: {
+        /** Body_ai_config_waypoints_api_ai_config_waypoints_post */
+        Body_ai_config_waypoints_api_ai_config_waypoints_post: {
             /** State */
             state: string;
             configRequest: components["schemas"]["AiWaypointConfigRequest"];
@@ -353,14 +385,14 @@ export interface components {
             /** State */
             state: string;
         };
-        /** Body_update_terrain_api_terrain_put */
-        Body_update_terrain_api_terrain_put: {
+        /** Body_update_terrain_api_terrain_update_post */
+        Body_update_terrain_api_terrain_update_post: {
             /** State */
             state: string;
             terrain: components["schemas"]["TerrainModel"];
         };
-        /** Body_update_unit_api_unit_put */
-        Body_update_unit_api_unit_put: {
+        /** Body_update_unit_api_unit_update_post */
+        Body_update_unit_api_unit_update_post: {
             /** State */
             state: string;
             unit: components["schemas"]["SquadModel"];
@@ -812,7 +844,7 @@ export interface operations {
             };
         };
     };
-    get_view_state_api_view_post: {
+    get_view_state_api_scenes_view_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -845,7 +877,7 @@ export interface operations {
             };
         };
     };
-    get_state_inspection_api_inspect_post: {
+    get_state_inspection_api_scenes_inspect_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1010,7 +1042,7 @@ export interface operations {
             };
         };
     };
-    ai_config_waypoints_api_ai_waypoints_put: {
+    ai_config_waypoints_api_ai_config_waypoints_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1019,7 +1051,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_ai_config_waypoints_api_ai_waypoints_put"];
+                "application/json": components["schemas"]["Body_ai_config_waypoints_api_ai_config_waypoints_post"];
             };
         };
         responses: {
@@ -1043,7 +1075,7 @@ export interface operations {
             };
         };
     };
-    update_terrain_api_terrain_put: {
+    update_terrain_api_terrain_update_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1052,7 +1084,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_update_terrain_api_terrain_put"];
+                "application/json": components["schemas"]["Body_update_terrain_api_terrain_update_post"];
             };
         };
         responses: {
@@ -1076,7 +1108,7 @@ export interface operations {
             };
         };
     };
-    add_terrain_api_terrain_post: {
+    add_terrain_api_terrain_add_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1085,7 +1117,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_add_terrain_api_terrain_post"];
+                "application/json": components["schemas"]["Body_add_terrain_api_terrain_add_post"];
             };
         };
         responses: {
@@ -1109,7 +1141,7 @@ export interface operations {
             };
         };
     };
-    delete_terrain_api_terrain_delete: {
+    delete_terrain_api_terrain_delete_post: {
         parameters: {
             query: {
                 terrainId: string;
@@ -1144,7 +1176,7 @@ export interface operations {
             };
         };
     };
-    update_unit_api_unit_put: {
+    update_unit_api_unit_update_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1153,7 +1185,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_update_unit_api_unit_put"];
+                "application/json": components["schemas"]["Body_update_unit_api_unit_update_post"];
             };
         };
         responses: {
