@@ -17,6 +17,7 @@ from webapi.models import (
     GameViewStateResponse,
     MapViewState,
     SceneManifestResponse,
+    SquadModel,
     TerrainModel,
 )
 from webapi.scene_service import SceneService
@@ -161,3 +162,15 @@ async def delete_terrain(
     gs = SceneService.deserialize(state)
     TerrainService.delete_terrain(gs, terrain_id)
     return SceneService.get_view_state_response(gs)
+
+
+@app.post("/api/unit/update")
+async def update_unit(
+    state: str = Body(...),
+    unit: SquadModel = Body(...),
+) -> GameViewStateResponse:
+    """Edit the combat unit."""
+    gs = SceneService.deserialize(state)
+    SceneService.update_unit(gs, unit)
+    return SceneService.get_view_state_response(gs)
+    ...

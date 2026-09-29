@@ -239,3 +239,23 @@ class SceneService:
             los_polygons=los_polygons,
             move_candidates=move_candidates,
         )
+
+    @staticmethod
+    def update_unit(
+        gs: GameState,
+        unit: SquadModel,
+    ) -> None:
+        unit_component = gs.get_component(unit.unit_id, CombatUnit)
+        transform = gs.get_component(unit.unit_id, Transform)
+        fire_controls = gs.get_component(unit.unit_id, FireControls)
+
+        transform.position = unit.position
+        transform.degrees = unit.degree
+        unit_component.status = unit.status
+        unit_component.faction = (
+            InitiativeState.Faction.BLUE
+            if unit.is_friendly
+            else InitiativeState.Faction.RED
+        )
+        fire_controls.fov_degrees = unit.fov_degrees
+        fire_controls.firing_at = unit.firing_at
