@@ -265,10 +265,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
+         * Add Unit
+         * @description Add a new combat unit.
+         */
+        post: operations["add_unit_api_unit_add_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/unit/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
          * Delete Unit
          * @description Deletes a combat unit.
          */
-        post: operations["delete_unit_api_unit_add_post"];
+        post: operations["delete_unit_api_unit_delete_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -403,16 +423,6 @@ export interface components {
             /** State */
             state: string;
             configRequest: components["schemas"]["AiWaypointConfigRequest"];
-        };
-        /** Body_delete_unit_api_unit_add_post */
-        Body_delete_unit_api_unit_add_post: {
-            /** State */
-            state: string;
-            /**
-             * Unit Id
-             * Format: uuid
-             */
-            unit_id: string;
         };
         /** Body_perform_action_api_perform_post */
         Body_perform_action_api_perform_post: {
@@ -1212,7 +1222,7 @@ export interface operations {
             };
         };
     };
-    delete_unit_api_unit_add_post: {
+    add_unit_api_unit_add_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1221,7 +1231,42 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_delete_unit_api_unit_add_post"];
+                "application/json": components["schemas"]["Body_add_unit_api_unit_add_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameViewStateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_unit_api_unit_delete_post: {
+        parameters: {
+            query: {
+                unitId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
             };
         };
         responses: {

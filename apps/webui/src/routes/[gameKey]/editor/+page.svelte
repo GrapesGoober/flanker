@@ -33,8 +33,14 @@
 		const x = event.clientX - rect.x;
 		const y = event.clientY - rect.y;
 		let worldPos = map.ToWorldCoords({ x, y });
-		controller.addVertex(worldPos);
-		controller.addWaypoint(worldPos);
+
+		if (controller.state.type == 'draw') {
+			controller.addVertex(worldPos);
+		} else if (controller.state.type == 'adding-units') {
+			controller.addUnit(worldPos);
+		} else if (controller.state.type == 'draw-waypoints') {
+			controller.addWaypoint(worldPos);
+		}
 	}
 
 	function resetMode() {
@@ -61,8 +67,17 @@
 		resetMode();
 	}
 
+	async function deleteUnit() {
+		await controller.deleteUnitAsync();
+		resetMode();
+	}
+
 	function waypointsMode() {
 		controller.waypointsMode('RED');
+	}
+
+	function addUnitsMode() {
+		controller.addUnitsMode();
 	}
 
 	function confirmsWaypoints() {
@@ -134,6 +149,9 @@ mode = {controller.state.type}
 <button onclick={waypointsMode} style="margin-bottom: 1em;"
 	>Waypoints Mode</button
 >
+<button onclick={addUnitsMode} style="margin-bottom: 1em;"
+	>Add Units Mode</button
+>
 
 {#if controller.state.type == 'selected-terrain'}
 	id = {controller.state.terrain.terrainId}
@@ -192,6 +210,7 @@ mode = {controller.state.type}
 		<option value={false}>RED</option>
 	</select>
 
+	<button onclick={deleteUnit} style="margin-bottom: 1em;">Delete Unit</button>
 	<button onclick={updateUnit} style="margin-bottom: 1em;"
 		>Update Unit Changes</button
 	>

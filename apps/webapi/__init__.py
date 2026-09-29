@@ -178,7 +178,7 @@ async def add_unit(
 @app.post("/api/unit/delete")
 async def delete_unit(
     state: str = Body(...),
-    unit_id: UUID = Body(...),
+    unit_id: UUID = Query(..., alias="unitId"),
 ) -> GameViewStateResponse:
     """Deletes a combat unit."""
     gs = SceneService.deserialize(state)

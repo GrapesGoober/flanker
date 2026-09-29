@@ -1,6 +1,8 @@
 import {
 	AddTerrainData,
+	AddUnit,
 	DeleteTerrainData,
+	DeleteUnit,
 	GetMapData,
 	GetViewStatesData,
 	UpdateTerrainData,
@@ -20,6 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 type EditorControllerState =
 	| { type: 'default' }
+	| { type: 'adding-units' }
 	| { type: 'selected-terrain'; terrain: TerrainModel }
 	| { type: 'selected-unit'; unit: RifleSquadData }
 	| { type: 'draw'; drawPolygon: Vec2[]; terrainType: TerrainType }
@@ -71,6 +74,10 @@ export class EditorController {
 	waypointsMode(faction: 'BLUE' | 'RED') {
 		this.state = { type: 'draw-waypoints', waypoints: { faction, points: [] } };
 	}
+	/** Switches the editor to adding units mode. */
+	addUnitsMode() {
+		this.state = { type: 'adding-units' };
+	}
 
 	/** Adds a vertex to the current draw polygon if in draw mode. */
 	addVertex(worldPos: Vec2) {
@@ -119,10 +126,36 @@ export class EditorController {
 	}
 
 	/** Async confirm changes to a combat unit and updates it via API */
+	async addUnit(worldPos: Vec2) {
+		if (this.state.type != 'adding-units') return;
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await AddUnit(gameStateJson, {
+			unitId: uuidv4(),
+			position: worldPos,
+			degrees: 0,
+			status: 'ACTIVE',
+			isFriendly: true,
+			fovDegrees: 90,
+			firingAt: null
+		});
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
+	}
+
+	/** Async confirm changes to a combat unit and updates it via API */
 	async updateUnitAsync() {
 		if (this.state.type != 'selected-unit') return;
 		const gameStateJson = this.getGameStateJson();
 		const viewState = await UpdateUnit(gameStateJson, this.state.unit);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
+	}
+
+	/** Async confirm changes to a combat unit and updates it via API */
+	async deleteUnitAsync() {
+		if (this.state.type != 'selected-unit') return;
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await DeleteUnit(gameStateJson, this.state.unit.unitId);
 		this.updateGameStateJson(viewState.jsonState);
 		await this.refreshData();
 	}

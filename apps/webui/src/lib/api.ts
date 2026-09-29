@@ -135,6 +135,21 @@ export async function DeleteTerrainData(
 	return data;
 }
 
+/** Adds a new combat unit to the current game. */
+export async function AddUnit(
+	jsonState: string,
+	unit: RifleSquadData
+): Promise<GameViewStateResponse> {
+	const { data, error } = await client.POST('/api/unit/add', {
+		body: {
+			state: jsonState,
+			unit: unit
+		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
 /** Updates the unit data for the current game. */
 export async function UpdateUnit(
 	jsonState: string,
@@ -145,6 +160,23 @@ export async function UpdateUnit(
 			state: jsonState,
 			unit: unit
 		}
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
+/** Adds a new combat unit to the current game. */
+export async function DeleteUnit(
+	jsonState: string,
+	unitId: string
+): Promise<GameViewStateResponse> {
+	const { data, error } = await client.POST('/api/unit/delete', {
+		params: {
+			query: {
+				unitId: unitId
+			}
+		},
+		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
 	return data;
