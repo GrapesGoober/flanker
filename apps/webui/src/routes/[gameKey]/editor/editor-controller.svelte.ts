@@ -8,6 +8,7 @@ import {
 	type AiWaypointsModel,
 	type GameViewState,
 	type MapViewState,
+	type RifleSquadData,
 	type TerrainModel,
 	type TerrainType,
 	type Vec2
@@ -19,6 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 type EditorControllerState =
 	| { type: 'default' }
 	| { type: 'selected'; terrain: TerrainModel }
+	| { type: 'selected-unit'; unit: RifleSquadData }
 	| { type: 'draw'; drawPolygon: Vec2[]; terrainType: TerrainType }
 	| { type: 'draw-waypoints'; waypoints: AiWaypointsModel };
 
@@ -27,7 +29,7 @@ export class EditorController {
 		terrains: [],
 		boundary: []
 	});
-	combatUnitsData: GameViewState = $state({
+	viewState: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: [],
@@ -53,7 +55,7 @@ export class EditorController {
 	async refreshData() {
 		const gameStateJson = this.getGameStateJson();
 		this.mapData = await GetMapData(gameStateJson);
-		this.combatUnitsData = await GetViewStatesData(gameStateJson);
+		this.viewState = await GetViewStatesData(gameStateJson);
 	}
 
 	/** Resets the editor state to default. */
@@ -123,6 +125,16 @@ export class EditorController {
 				terrain: terrain
 			};
 		}
+	}
+
+	/** Selects a combat unit for editing */
+	async selectUnit(unitId: string) {
+		let unit = this.viewState.squads.find((squad) => squad.unitId == unitId);
+		if (!unit) return;
+		this.state = {
+			type: 'selected-unit',
+			unit: unit
+		};
 	}
 
 	/** Deletes the selected terrain */

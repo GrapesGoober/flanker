@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
+	import {
+		BorderFriendlyUnit,
+		BorderHostileUnit,
+		RifleSquad,
+		SvgMap,
+		TerrainLayer
+	} from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 	import { onMount } from 'svelte';
@@ -61,20 +67,46 @@
 	async function finishDraw() {
 		await controller.finishDraw();
 	}
+
+	/* Informs the controller that a unit is selected */
+	function SelectUnit(unitId: string, event: MouseEvent) {
+		event.stopPropagation(); // Prevent the terrain's onclick trigger
+		controller.selectUnit(unitId);
+	}
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
 	<!-- Draw the base terrains and units -->
 	<TerrainLayer mapData={controller.mapData} />
-	{#each controller.combatUnitsData.squads as squad}
-		<RifleSquad rifleSquadData={squad} />
+	<svg overflow="visible" class="transparent-icons">
+		{#if controller.state.type === 'selected-unit'}
+			{@const selectedUnit = controller.state.unit}
+			{@const position = controller.state.unit.position}
+
+			{#if selectedUnit.isFriendly}
+				<g transform="translate({position.x}, {position.y})"
+					><BorderFriendlyUnit /></g
+				>
+			{:else if !selectedUnit.isFriendly}
+				<g transform="translate({position.x}, {position.y})"
+					><BorderHostileUnit /></g
+				>
+			{/if}
+		{/if}
+	</svg>
+	{#each controller.viewState.squads as unit, index}
+		{#if controller.viewState.squads[index] != undefined}
+			<g onclick={(event) => SelectUnit(unit.unitId, event)}>
+				<RifleSquad bind:rifleSquadData={controller.viewState.squads[index]} />
+			</g>
+		{/if}
 	{/each}
 	<!-- Draw the overlay on top -->
 	<EditorOverlay {controller} />
 
 	<!-- Draw the purple drawing mode UIs -->
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	{#if controller.state.type == 'draw'}
 		<path
 			d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)}
@@ -153,5 +185,8 @@ mode = {controller.state.type}
 		fill: #d2aed588;
 		stroke: #c2a0cc;
 		stroke-width: @stroke-width;
+	}
+	.transparent-icons {
+		opacity: 0.5;
 	}
 </style>
