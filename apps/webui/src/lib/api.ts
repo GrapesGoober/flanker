@@ -93,7 +93,7 @@ export async function UpdateTerrainData(
 	jsonState: string,
 	terrain: TerrainModel
 ): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/terrain/update', {
+	const { data, error } = await client.PUT('/api/terrain', {
 		body: {
 			state: jsonState,
 			terrain: terrain
@@ -108,7 +108,7 @@ export async function AddTerrainData(
 	jsonState: string,
 	terrain: TerrainModel
 ): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/terrain/add', {
+	const { data, error } = await client.POST('/api/terrain', {
 		body: {
 			state: jsonState,
 			terrain: terrain
@@ -123,7 +123,7 @@ export async function DeleteTerrainData(
 	jsonState: string,
 	terrainId: string
 ): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/terrain/delete', {
+	const { data, error } = await client.DELETE('/api/terrain', {
 		params: {
 			query: {
 				terrainId: terrainId
@@ -140,7 +140,7 @@ export async function UpdateUnit(
 	jsonState: string,
 	unit: RifleSquadData
 ): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/unit/update', {
+	const { data, error } = await client.PUT('/api/unit', {
 		body: {
 			state: jsonState,
 			unit: unit
@@ -154,7 +154,7 @@ export async function UpdateUnit(
 export async function GetViewStatesData(
 	jsonState: string
 ): Promise<GameViewState> {
-	const { data, error } = await client.POST('/api/scenes/view', {
+	const { data, error } = await client.POST('/api/view', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -165,7 +165,7 @@ export async function GetViewStatesData(
 export async function GetStatesInspectionData(
 	jsonState: string
 ): Promise<GameStateInspection> {
-	const { data, error } = await client.POST('/api/scenes/inspect', {
+	const { data, error } = await client.POST('/api/inspect', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -200,7 +200,7 @@ export async function UpdateWaypointsData(
 	jsonState: string,
 	waypoints: AiWaypointsModel
 ): Promise<GameViewStateResponse> {
-	const { data, error } = await client.POST('/api/ai-config-waypoints', {
+	const { data, error } = await client.PUT('/api/ai-waypoints', {
 		body: {
 			state: jsonState,
 			configRequest: waypoints

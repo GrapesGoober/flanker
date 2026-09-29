@@ -66,7 +66,7 @@ async def get_game_state_json_from_quick_access(
     return SceneService.serialize(gs, indent=False)
 
 
-@app.post("/api/scenes/view")
+@app.post("/api/view")
 async def get_view_state(
     state: str = Body(...),
 ) -> GameViewState:
@@ -75,7 +75,7 @@ async def get_view_state(
     return SceneService.get_view_state(gs)
 
 
-@app.post("/api/scenes/inspect")
+@app.post("/api/inspect")
 async def get_state_inspection(
     state: str = Body(...),
 ) -> GameStateInspection:
@@ -121,7 +121,7 @@ async def run_match(
     return AiService.run_match(gs)
 
 
-@app.post("/api/ai-config-waypoints")
+@app.put("/api/ai-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
     config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
@@ -131,7 +131,7 @@ async def ai_config_waypoints(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain/update")
+@app.put("/api/terrain")
 async def update_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -142,7 +142,7 @@ async def update_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain/add")
+@app.post("/api/terrain")
 async def add_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -153,7 +153,7 @@ async def add_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain/delete")
+@app.delete("/api/terrain")
 async def delete_terrain(
     state: str = Body(...),
     terrain_id: UUID = Query(..., alias="terrainId"),
@@ -164,7 +164,7 @@ async def delete_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/unit/update")
+@app.put("/api/unit")
 async def update_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
