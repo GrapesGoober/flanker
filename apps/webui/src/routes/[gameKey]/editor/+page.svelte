@@ -155,6 +155,36 @@ mode = {controller.state.type}
 	<button onclick={deleteTerrain} style="margin-bottom: 1em;"
 		>Delete Terrain</button
 	>
+{:else if controller.state.type == 'selected-unit'}
+	id = {controller.state.unit.unitId}
+	x =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.position.x}
+	/>
+	y =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.position.y}
+	/>
+	degrees =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.degree}
+	/>
+	fov =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.fovDegrees}
+	/>
+	<select bind:value={controller.state.unit.isFriendly}>
+		<option value={true}>BLUE</option>
+		<option value={false}>RED</option>
+	</select>
 {:else if controller.state.type == 'draw'}
 	<select bind:value={controller.state.terrainType}>
 		<option value="FOREST">FOREST</option>
