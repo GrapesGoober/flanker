@@ -93,14 +93,6 @@ async def get_map(
     return TerrainService.get_map(gs)
 
 
-@app.post("/api/logs")
-async def get_logs(
-    state: str = Body(...),
-) -> list[ActionLog]:
-    gs = SceneService.deserialize(state)
-    return LoggingService.get_logs(gs)
-
-
 @app.post("/api/perform")
 async def perform_action(
     action: ActionRequest = Body(...),
@@ -111,6 +103,14 @@ async def perform_action(
     ActionService.perform(gs, action)
     AiService.play_red_initiative(gs)
     return SceneService.get_view_state_response(gs)
+
+
+@app.post("/api/logs")
+async def get_logs(
+    state: str = Body(...),
+) -> list[ActionLog]:
+    gs = SceneService.deserialize(state)
+    return LoggingService.get_logs(gs)
 
 
 @app.post("/api/ai-play")
