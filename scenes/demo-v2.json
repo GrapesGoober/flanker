@@ -286,6 +286,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -301,6 +302,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -316,6 +318,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -331,6 +334,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -346,6 +350,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -361,6 +366,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -373,6 +379,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -388,6 +395,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -403,6 +411,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -418,6 +427,7 @@
       "MoveControls": {
         "move_type": "FOOT"
       },
+      "AssaultControls": {},
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,

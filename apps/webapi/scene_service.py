@@ -10,6 +10,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
     FireControls,
     InitiativeState,
@@ -296,5 +297,6 @@ class SceneService:
                 fov_degrees=unit.fov_degrees,
                 firing_at=unit.firing_at,
             ),
+            AssaultControls(),
             id=unit.unit_id,
         )
