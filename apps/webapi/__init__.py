@@ -33,8 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-id_counter = 0
-
 
 @app.exception_handler(ValueError)
 @app.exception_handler(ValidationError)
