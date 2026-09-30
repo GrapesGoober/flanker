@@ -121,7 +121,7 @@ async def run_match(
     return AiService.run_match(gs)
 
 
-@app.post("/api/ai-config-waypoints")
+@app.put("/api/ai-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
     config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
@@ -131,7 +131,7 @@ async def ai_config_waypoints(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain/update")
+@app.put("/api/terrain")
 async def update_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -142,7 +142,7 @@ async def update_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain/add")
+@app.post("/api/terrain")
 async def add_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -153,7 +153,7 @@ async def add_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain/delete")
+@app.delete("/api/terrain")
 async def delete_terrain(
     state: str = Body(...),
     terrain_id: UUID = Query(..., alias="terrainId"),
@@ -164,7 +164,7 @@ async def delete_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/unit/add")
+@app.post("/api/unit")
 async def add_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
@@ -175,7 +175,7 @@ async def add_unit(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/unit/delete")
+@app.delete("/api/unit")
 async def delete_unit(
     state: str = Body(...),
     unit_id: UUID = Query(..., alias="unitId"),
@@ -186,7 +186,7 @@ async def delete_unit(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/unit/update")
+@app.put("/api/unit")
 async def update_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
