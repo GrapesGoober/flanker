@@ -46,12 +46,12 @@ class AiService:
         max_actions: int = 10,
     ) -> None:
         """Runs the default RED AI for entire RED initiative."""
-        if ActionSystem.get_initiative(gs) != InitiativeState.Faction.RED:
-            return
 
         action_results: list[AiSystem.ActionResult] = []
         gs_snapshots: list[GameState] = []
         for _ in range(max_actions):
+            if ActionSystem.get_initiative(gs) != InitiativeState.Faction.RED:
+                break
 
             result = AiSystem.perform_action(
                 gs=gs,
@@ -64,12 +64,13 @@ class AiService:
             action_results.append(result)
             gs_snapshots.append(deepcopy(gs))
 
-        action_results = [action_result for action_result in action_results]
-        AiService._log_ai_action_results(
-            gs=gs,
-            results=action_results,
-            gs_snapshots=gs_snapshots,
-        )
+        if action_results != []:
+            action_results = [action_result for action_result in action_results]
+            AiService._log_ai_action_results(
+                gs=gs,
+                results=action_results,
+                gs_snapshots=gs_snapshots,
+            )
 
     @staticmethod
     def run_match(gs: GameState) -> AiMatchResponse:
