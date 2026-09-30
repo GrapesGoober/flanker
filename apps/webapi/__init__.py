@@ -64,7 +64,7 @@ async def get_game_state_json_from_quick_access(
     return SceneService.serialize(gs, indent=False)
 
 
-@app.post("/api/scenes/view")
+@app.post("/api/game/view")
 async def get_view_state(
     state: str = Body(...),
 ) -> GameViewState:
@@ -73,7 +73,7 @@ async def get_view_state(
     return SceneService.get_view_state(gs)
 
 
-@app.post("/api/scenes/inspect")
+@app.post("/api/game/inspect")
 async def get_state_inspection(
     state: str = Body(...),
 ) -> GameStateInspection:
@@ -82,7 +82,7 @@ async def get_state_inspection(
     return SceneService.get_inspection(gs)
 
 
-@app.post("/api/map")
+@app.post("/api/game/map")
 async def get_map(
     state: str = Body(...),
 ) -> MapViewState:
@@ -91,7 +91,7 @@ async def get_map(
     return TerrainService.get_map(gs)
 
 
-@app.post("/api/perform")
+@app.post("/api/game/perform")
 async def perform_action(
     action: ActionRequest = Body(...),
     state: str = Body(...),
@@ -103,7 +103,7 @@ async def perform_action(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/logs")
+@app.post("/api/game/logs")
 async def get_logs(
     state: str = Body(...),
 ) -> list[ActionLog]:
@@ -111,7 +111,7 @@ async def get_logs(
     return LoggingService.get_logs(gs)
 
 
-@app.post("/api/ai-play")
+@app.post("/api/game/ai-play")
 async def run_match(
     state: str = Body(...),
 ) -> AiMatchResponse:
@@ -119,7 +119,7 @@ async def run_match(
     return AiService.run_match(gs)
 
 
-@app.put("/api/ai-waypoints")
+@app.put("/api/editor/ai-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
     config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
@@ -129,7 +129,7 @@ async def ai_config_waypoints(
     return SceneService.get_view_state_response(gs)
 
 
-@app.put("/api/terrain")
+@app.put("/api/editor/terrain")
 async def update_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -140,7 +140,7 @@ async def update_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/terrain")
+@app.post("/api/editor/terrain")
 async def add_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -151,7 +151,7 @@ async def add_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.delete("/api/terrain")
+@app.delete("/api/editor/terrain")
 async def delete_terrain(
     state: str = Body(...),
     terrain_id: UUID = Query(..., alias="terrainId"),
@@ -162,7 +162,7 @@ async def delete_terrain(
     return SceneService.get_view_state_response(gs)
 
 
-@app.post("/api/unit")
+@app.post("/api/editor/unit")
 async def add_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
@@ -173,7 +173,7 @@ async def add_unit(
     return SceneService.get_view_state_response(gs)
 
 
-@app.delete("/api/unit")
+@app.delete("/api/editor/unit")
 async def delete_unit(
     state: str = Body(...),
     unit_id: UUID = Query(..., alias="unitId"),
@@ -184,7 +184,7 @@ async def delete_unit(
     return SceneService.get_view_state_response(gs)
 
 
-@app.put("/api/unit")
+@app.put("/api/editor/unit")
 async def update_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
