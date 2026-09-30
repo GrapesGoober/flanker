@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
+	import {
+		BorderFriendlyUnit,
+		BorderHostileUnit,
+		RifleSquad,
+		SvgMap,
+		TerrainLayer
+	} from '$lib/components';
 	import { ExceptionProxy } from '$lib/exception-proxy';
 	import { GetSmoothedClosedPath } from '$lib/map-utils';
 	import { onMount } from 'svelte';
 	import { EditorController } from './editor-controller.svelte';
-	import EditorTerrainLayer from './editor-terrain-layer.svelte';
+	import EditorOverlay from './editor-overlay.svelte';
 
 	const editorController = ExceptionProxy.wrap(new EditorController());
 	let controller: EditorController = $state(editorController);
@@ -27,50 +33,98 @@
 		const x = event.clientX - rect.x;
 		const y = event.clientY - rect.y;
 		let worldPos = map.ToWorldCoords({ x, y });
-		controller.addVertex(worldPos);
-		controller.addWaypoint(worldPos);
+
+		if (controller.state.type == 'draw') {
+			controller.addVertex(worldPos);
+		} else if (controller.state.type == 'adding-units') {
+			controller.addUnit(worldPos);
+		} else if (controller.state.type == 'draw-waypoints') {
+			controller.addWaypoint(worldPos);
+		}
 	}
 
-	/** Resets the editor mode and refreshes terrain. */
 	function resetMode() {
 		controller.refreshData();
 		controller.reset();
 	}
 
-	/** Switches the editor to draw mode. */
 	function drawMode() {
 		controller.drawMode();
 	}
 
-	/** Finishes the current draw and saves as terrain. */
 	async function deleteTerrain() {
-		await controller.deleteTerrain();
+		await controller.deleteTerrainAsync();
 		resetMode();
 	}
 
-	/** Switches the editor to waypoints mode. */
+	async function updateTerrain() {
+		await controller.updateTerrainAsync();
+		resetMode();
+	}
+
+	async function updateUnit() {
+		await controller.updateUnitAsync();
+		resetMode();
+	}
+
+	async function deleteUnit() {
+		await controller.deleteUnitAsync();
+		resetMode();
+	}
+
 	function waypointsMode() {
 		controller.waypointsMode('RED');
 	}
 
-	/** Updates the waypoints to the webapi. */
+	function addUnitsMode() {
+		controller.addUnitsMode();
+	}
+
 	function confirmsWaypoints() {
 		controller.updateWaypoint();
 	}
-	/** Finishes the current draw and saves as terrain. */
 	async function finishDraw() {
 		await controller.finishDraw();
 	}
+
+	function selectUnit(unitId: string, event: MouseEvent) {
+		event.stopPropagation(); // Prevent the terrain's onclick trigger
+		controller.selectUnit(unitId);
+	}
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
+	<!-- Draw the base terrains and units -->
 	<TerrainLayer mapData={controller.mapData} />
-	{#each controller.combatUnitsData.squads as squad}
-		<RifleSquad rifleSquadData={squad} />
+	<svg overflow="visible" class="transparent-icons">
+		{#if controller.state.type === 'selected-unit'}
+			{@const selectedUnit = controller.state.unit}
+			{@const position = controller.state.unit.position}
+
+			{#if selectedUnit.isFriendly}
+				<g transform="translate({position.x}, {position.y})"
+					><BorderFriendlyUnit /></g
+				>
+			{:else if !selectedUnit.isFriendly}
+				<g transform="translate({position.x}, {position.y})"
+					><BorderHostileUnit /></g
+				>
+			{/if}
+		{/if}
+	</svg>
+	{#each controller.viewState.squads as unit, index}
+		{#if controller.viewState.squads[index] != undefined}
+			<g onclick={(event) => selectUnit(unit.unitId, event)}>
+				<RifleSquad bind:rifleSquadData={controller.viewState.squads[index]} />
+			</g>
+		{/if}
 	{/each}
-	<EditorTerrainLayer {controller} />
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<!-- Draw the overlay on top -->
+	<EditorOverlay {controller} />
+
+	<!-- Draw the purple drawing mode UIs -->
 	{#if controller.state.type == 'draw'}
 		<path
 			d={GetSmoothedClosedPath(controller.state.drawPolygon, 0.7)}
@@ -95,8 +149,11 @@ mode = {controller.state.type}
 <button onclick={waypointsMode} style="margin-bottom: 1em;"
 	>Waypoints Mode</button
 >
+<button onclick={addUnitsMode} style="margin-bottom: 1em;"
+	>Add Units Mode</button
+>
 
-{#if controller.state.type == 'selected'}
+{#if controller.state.type == 'selected-terrain'}
 	id = {controller.state.terrain.terrainId}
 	x =
 	<input
@@ -118,6 +175,44 @@ mode = {controller.state.type}
 	/>
 	<button onclick={deleteTerrain} style="margin-bottom: 1em;"
 		>Delete Terrain</button
+	>
+	<button onclick={updateTerrain} style="margin-bottom: 1em;"
+		>Update Terrain Changes</button
+	>
+{:else if controller.state.type == 'selected-unit'}
+	id = {controller.state.unit.unitId}
+	x =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.position.x}
+	/>
+	y =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.position.y}
+	/>
+	degrees =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.degrees}
+	/>
+	fov =
+	<input
+		type="number"
+		class="number-input"
+		bind:value={controller.state.unit.fovDegrees}
+	/>
+	<select bind:value={controller.state.unit.isFriendly}>
+		<option value={true}>BLUE</option>
+		<option value={false}>RED</option>
+	</select>
+
+	<button onclick={deleteUnit} style="margin-bottom: 1em;">Delete Unit</button>
+	<button onclick={updateUnit} style="margin-bottom: 1em;"
+		>Update Unit Changes</button
 	>
 {:else if controller.state.type == 'draw'}
 	<select bind:value={controller.state.terrainType}>
@@ -149,5 +244,8 @@ mode = {controller.state.type}
 		fill: #d2aed588;
 		stroke: #c2a0cc;
 		stroke-width: @stroke-width;
+	}
+	.transparent-icons {
+		opacity: 0.5;
 	}
 </style>

@@ -1,13 +1,17 @@
 import {
 	AddTerrainData,
+	AddUnit,
 	DeleteTerrainData,
+	DeleteUnit,
 	GetMapData,
 	GetViewStatesData,
 	UpdateTerrainData,
+	UpdateUnit,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
 	type GameViewState,
 	type MapViewState,
+	type RifleSquadData,
 	type TerrainModel,
 	type TerrainType,
 	type Vec2
@@ -18,7 +22,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 type EditorControllerState =
 	| { type: 'default' }
-	| { type: 'selected'; terrain: TerrainModel }
+	| { type: 'adding-units' }
+	| { type: 'selected-terrain'; terrain: TerrainModel }
+	| { type: 'selected-unit'; unit: RifleSquadData }
 	| { type: 'draw'; drawPolygon: Vec2[]; terrainType: TerrainType }
 	| { type: 'draw-waypoints'; waypoints: AiWaypointsModel };
 
@@ -27,10 +33,11 @@ export class EditorController {
 		terrains: [],
 		boundary: []
 	});
-	combatUnitsData: GameViewState = $state({
+	viewState: GameViewState = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
-		squads: []
+		squads: [],
+		fireEffectPairs: []
 	});
 	state: EditorControllerState = $state({ type: 'default' });
 	gameKey: string = $state('');
@@ -52,7 +59,7 @@ export class EditorController {
 	async refreshData() {
 		const gameStateJson = this.getGameStateJson();
 		this.mapData = await GetMapData(gameStateJson);
-		this.combatUnitsData = await GetViewStatesData(gameStateJson);
+		this.viewState = await GetViewStatesData(gameStateJson);
 	}
 
 	/** Resets the editor state to default. */
@@ -66,6 +73,10 @@ export class EditorController {
 	/** Switches the editor to draw-waypoints mode and sets a new empty waypoints list. */
 	waypointsMode(faction: 'BLUE' | 'RED') {
 		this.state = { type: 'draw-waypoints', waypoints: { faction, points: [] } };
+	}
+	/** Switches the editor to adding units mode. */
+	addUnitsMode() {
+		this.state = { type: 'adding-units' };
 	}
 
 	/** Adds a vertex to the current draw polygon if in draw mode. */
@@ -96,37 +107,62 @@ export class EditorController {
 	}
 
 	/** Selects a terrain object and updates its data if already selected. */
-	async selectTerrain(terrain: TerrainModel) {
-		if (this.state.type != 'default' && this.state.type != 'selected') return;
+	selectTerrain(terrain: TerrainModel) {
+		if (this.state.type != 'default') return;
+		this.state = {
+			type: 'selected-terrain',
+			terrain: terrain
+		};
+	}
+
+	/** Selects a combat unit for editing */
+	selectUnit(unitId: string) {
+		let unit = this.viewState.squads.find((squad) => squad.unitId == unitId);
+		if (!unit) return;
+		this.state = {
+			type: 'selected-unit',
+			unit: unit
+		};
+	}
+
+	/** Async confirm changes to a combat unit and updates it via API */
+	async addUnit(worldPos: Vec2) {
+		if (this.state.type != 'adding-units') return;
 		const gameStateJson = this.getGameStateJson();
-		if (this.state.type == 'selected') {
-			// Update the already selected terrain if selecting a new one.
-			const viewState = await UpdateTerrainData(
-				gameStateJson,
-				this.state.terrain
-			);
-			this.updateGameStateJson(viewState.jsonState);
-			await this.refreshData();
-			const selectedTerrain = this.mapData.terrains.find(
-				(i) => i.terrainId === terrain.terrainId
-			);
-			if (selectedTerrain != undefined) {
-				this.state = {
-					type: 'selected',
-					terrain: selectedTerrain
-				};
-			}
-		} else {
-			this.state = {
-				type: 'selected',
-				terrain: terrain
-			};
-		}
+		const viewState = await AddUnit(gameStateJson, {
+			unitId: uuidv4(),
+			position: worldPos,
+			degrees: 0,
+			status: 'ACTIVE',
+			isFriendly: true,
+			fovDegrees: 90,
+			firingAt: null
+		});
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
+	}
+
+	/** Async confirm changes to a combat unit and updates it via API */
+	async updateUnitAsync() {
+		if (this.state.type != 'selected-unit') return;
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await UpdateUnit(gameStateJson, this.state.unit);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
+	}
+
+	/** Async confirm changes to a combat unit and updates it via API */
+	async deleteUnitAsync() {
+		if (this.state.type != 'selected-unit') return;
+		const gameStateJson = this.getGameStateJson();
+		const viewState = await DeleteUnit(gameStateJson, this.state.unit.unitId);
+		this.updateGameStateJson(viewState.jsonState);
+		await this.refreshData();
 	}
 
 	/** Deletes the selected terrain */
-	async deleteTerrain() {
-		if (this.state.type != 'selected') return;
+	async deleteTerrainAsync() {
+		if (this.state.type != 'selected-terrain') return;
 		const gameStateJson = this.getGameStateJson();
 		const viewState = await DeleteTerrainData(
 			gameStateJson,
@@ -137,7 +173,7 @@ export class EditorController {
 	}
 	/** Asynchronously updates the selected terrain data via the API. */
 	async updateTerrainAsync() {
-		if (this.state.type != 'selected') return;
+		if (this.state.type != 'selected-terrain') return;
 		const gameStateJson = this.getGameStateJson();
 		const viewState = await UpdateTerrainData(
 			gameStateJson,

@@ -75,7 +75,7 @@
 				(
 				{unit.position.x.toFixed()},
 				{unit.position.y.toFixed()},
-				{unit.degree.toFixed()}&deg )
+				{unit.degrees.toFixed()}&deg )
 				<br />
 				{unit.status}
 			</foreignObject>
