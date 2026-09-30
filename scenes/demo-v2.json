@@ -5,9 +5,9 @@
       "MapBoundary": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": 500.0, "y": 0.0 },
-          { "x": 500.0, "y": 500.0 },
-          { "x": 0.0, "y": 500.0 }
+          { "x": 300.0, "y": 0.0 },
+          { "x": 300.0, "y": 400.0 },
+          { "x": 0.0, "y": 400.0 }
         ]
       }
     },
@@ -27,242 +27,6 @@
         "units_eliminated_counter": 0
       }
     },
-    "e157da26-b7ed-404d-86dd-7ee0b96a8ab8": {
-      "Transform": { "position": { "x": 100.0, "y": 33.0 }, "degrees": 0.0 },
-      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "7b6962de-4952-4869-801b-5bdff1cbc69f": {
-      "Transform": { "position": { "x": 88.0, "y": 53.0 }, "degrees": 20.0 },
-      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "55764876-1068-4515-aaab-4d43118e18a7": {
-      "Transform": { "position": { "x": 67.0, "y": 74.0 }, "degrees": 40.0 },
-      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "be3d8e8d-2dce-41bd-b798-b203e81305fc": {
-      "Transform": { "position": { "x": 52.0, "y": 13.0 }, "degrees": 40.0 },
-      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "505de7ef-08c4-48e6-83a0-1f11eddd5190": {
-      "Transform": { "position": { "x": 40.0, "y": 31.0 }, "degrees": 50.0 },
-      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "afcd5a6a-4b04-4e39-9958-8e55a637884d": {
-      "Transform": { "position": { "x": 20.0, "y": 51.0 }, "degrees": 60.0 },
-      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "459beae7-8240-4fb9-92a4-e626c27bd3d5": {
-      "Transform": {
-        "position": { "x": 225.0, "y": 175.0 },
-        "degrees": -130.0
-      },
-      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "f2428d5b-1d4a-4ed5-adc4-7355acd1311f": {
-      "Transform": {
-        "position": { "x": 190.0, "y": 212.0 },
-        "degrees": -140.0
-      },
-      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "b1508ca4-edfe-4f79-8929-96207a5e1f95": {
-      "Transform": {
-        "position": { "x": 169.0, "y": 232.0 },
-        "degrees": -140.0
-      },
-      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
-      "MoveControls": { "move_type": "FOOT" },
-      "FireControls": {
-        "fov_degrees": 90.0,
-        "override": null,
-        "firing_at": null
-      },
-      "AssaultControls": { "override": null }
-    },
-    "0b9d6919-2386-43fb-a4f0-04ae60f0d102": {
-      "Transform": { "position": { "x": -5.0, "y": 53.0 }, "degrees": 0.0 },
-      "TerrainFeature": {
-        "vertices": [
-          { "x": 0.0, "y": 0.0 },
-          { "x": 8.5, "y": 12.0 },
-          { "x": 15.5, "y": 35.0 },
-          { "x": 24.5, "y": 48.0 },
-          { "x": 56.0, "y": 65.0 },
-          { "x": 74.0, "y": 79.0 },
-          { "x": 76.0, "y": 90.0 },
-          { "x": 66.0, "y": 105.0 },
-          { "x": 44.0, "y": 112.5 },
-          { "x": 1.0, "y": 108.0 },
-          { "x": -31.5, "y": 90.0 },
-          { "x": -44.0, "y": 64.0 },
-          { "x": -41.5, "y": 36.5 },
-          { "x": -29.5, "y": 15.0 },
-          { "x": -18.0, "y": 0.0 },
-          { "x": -8.0, "y": -2.5 }
-        ],
-        "is_closed_loop": true,
-        "flag": 3
-      },
-      "TerrainTypeTag": { "type": "FOREST" }
-    },
-    "221b93c6-279c-4a50-afba-56b768d273a1": {
-      "Transform": { "position": { "x": 83.0, "y": 153.0 }, "degrees": 0.0 },
-      "TerrainFeature": {
-        "vertices": [
-          { "x": 0.0, "y": 0.0 },
-          { "x": -3.5, "y": 16.5 },
-          { "x": -0.5, "y": 30.5 },
-          { "x": 15.5, "y": 40.0 },
-          { "x": 32.0, "y": 39.5 },
-          { "x": 48.5, "y": 31.0 },
-          { "x": 55.5, "y": 17.0 },
-          { "x": 52.5, "y": 0.0 },
-          { "x": 47.5, "y": -10.5 },
-          { "x": 23.0, "y": -17.0 },
-          { "x": 9.0, "y": -14.0 }
-        ],
-        "is_closed_loop": true,
-        "flag": 3
-      },
-      "TerrainTypeTag": { "type": "FOREST" }
-    },
-    "2319d3e0-5523-45e5-9eca-4ecc861eda17": {
-      "Transform": { "position": { "x": 141.0, "y": 26.0 }, "degrees": 0.0 },
-      "TerrainFeature": {
-        "vertices": [
-          { "x": 0.0, "y": 0.0 },
-          { "x": -3.0, "y": 10.0 },
-          { "x": -16.0, "y": 53.5 },
-          { "x": -37.0, "y": 85.0 },
-          { "x": -41.5, "y": 92.0 },
-          { "x": -41.5, "y": 96.0 },
-          { "x": -38.0, "y": 98.5 },
-          { "x": -30.5, "y": 96.5 },
-          { "x": -15.0, "y": 77.5 },
-          { "x": -5.5, "y": 59.5 },
-          { "x": 2.5, "y": 36.5 },
-          { "x": 8.0, "y": 15.0 },
-          { "x": 8.0, "y": 7.0 },
-          { "x": 5.0, "y": -1.0 }
-        ],
-        "is_closed_loop": true,
-        "flag": 3
-      },
-      "TerrainTypeTag": { "type": "FOREST" }
-    },
-    "7988117f-7ee8-4008-82e0-c5bff106b9af": {
-      "Transform": { "position": { "x": 113.5, "y": 216.0 }, "degrees": 0.0 },
-      "TerrainFeature": {
-        "vertices": [
-          { "x": 0.0, "y": 0.0 },
-          { "x": -7.0, "y": 15.0 },
-          { "x": -24.0, "y": 26.5 },
-          { "x": -52.0, "y": 33.0 },
-          { "x": -85.0, "y": 33.0 },
-          { "x": -94.5, "y": 36.5 },
-          { "x": -100.0, "y": 41.0 },
-          { "x": -99.0, "y": 46.5 },
-          { "x": -90.0, "y": 49.0 },
-          { "x": -78.0, "y": 46.5 },
-          { "x": -56.5, "y": 45.0 },
-          { "x": -35.5, "y": 45.5 },
-          { "x": -21.0, "y": 43.5 },
-          { "x": -11.5, "y": 40.0 },
-          { "x": 3.0, "y": 32.5 },
-          { "x": 8.5, "y": 19.5 },
-          { "x": 12.5, "y": 5.0 },
-          { "x": 12.5, "y": -1.5 },
-          { "x": 8.0, "y": -5.5 },
-          { "x": 5.0, "y": -5.0 }
-        ],
-        "is_closed_loop": true,
-        "flag": 3
-      },
-      "TerrainTypeTag": { "type": "FOREST" }
-    },
-    "c279263e-67c0-4553-bea4-09d6c699fc1f": {
-      "Transform": { "position": { "x": 18.0, "y": 368.5 }, "degrees": 0.0 },
-      "TerrainFeature": {
-        "vertices": [
-          { "x": 0.0, "y": 0.0 },
-          { "x": 37.5, "y": -12.5 },
-          { "x": 50.5, "y": -20.0 },
-          { "x": 68.5, "y": -38.0 },
-          { "x": 71.5, "y": -47.0 },
-          { "x": 71.0, "y": -55.0 },
-          { "x": 65.0, "y": -60.5 },
-          { "x": 53.5, "y": -61.5 },
-          { "x": 36.5, "y": -61.0 },
-          { "x": 23.5, "y": -58.5 },
-          { "x": 13.0, "y": -53.0 },
-          { "x": -2.5, "y": -41.0 },
-          { "x": -13.0, "y": -29.0 },
-          { "x": -18.5, "y": -18.5 },
-          { "x": -20.0, "y": -9.5 },
-          { "x": -16.5, "y": -3.0 },
-          { "x": -9.0, "y": 0.5 }
-        ],
-        "is_closed_loop": true,
-        "flag": 3
-      },
-      "TerrainTypeTag": { "type": "FOREST" }
-    },
     "4a19f452-1458-428e-adc9-a8f388948d3a": {
       "AiConfigComponent": {
         "config": { "policy": { "type": "RandomHeuristicPolicy" } },
@@ -275,25 +39,341 @@
         "faction": "RED"
       }
     },
-    "0ab9ba0b-695d-407f-b9ab-8b5e5a5d92d3": {
+    "c2dd2521-fce3-4089-9ac0-85fd748a7353": {
       "Transform": {
-        "position": { "x": 265.70902600453644, "y": 32.334442667722115 },
+        "position": { "x": 115.78802600080606, "y": 44.85911160440335 },
         "degrees": 0.0
       },
       "TerrainFeature": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": -50.39757583647065, "y": 4.168220557903588 },
-          { "x": -73.51225347575416, "y": 23.872535922538724 },
-          { "x": -73.51225347575416, "y": 45.09256785368426 },
-          { "x": -39.40863072927027, "y": 47.74507184507745 },
-          { "x": 6.062866266041567, "y": 40.54541815415307 },
-          { "x": 15.915023948359135, "y": 18.94645708137994 }
+          { "x": 29.999999999999986, "y": -6.0 },
+          { "x": 68.49999999999996, "y": 3.0 },
+          { "x": 84.99999999999993, "y": 22.999999999999986 },
+          { "x": 76.49999999999993, "y": 33.49999999999997 },
+          { "x": 48.99999999999996, "y": 31.99999999999997 },
+          { "x": 12.499999999999986, "y": 31.99999999999997 },
+          { "x": -7.0, "y": 27.499999999999986 },
+          { "x": -11.0, "y": 11.999999999999993 }
         ],
         "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "430df11a-8369-4168-912f-cb9a0a6ccfed": {
+      "Transform": {
+        "position": { "x": -0.898078728102334, "y": 86.61811795879845 },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 25.68124161723566, "y": 11.75243260449767 },
+          { "x": 65.72656752885737, "y": 17.846286547570543 },
+          { "x": 102.28969118729458, "y": 23.50486520899534 },
+          { "x": 117.0890507633287, "y": 32.21037084195659 },
+          { "x": 120.13597773486514, "y": 42.65697760151008 },
+          { "x": 110.12464625695969, "y": 47.00973041799071 },
+          { "x": 88.3608821745566, "y": 45.703904573046515 },
+          { "x": 40.04532591162171, "y": 35.692573095141086 },
+          { "x": 8.27023035131318, "y": 30.904544997012394 },
+          { "x": 0.0, "y": 25.245966335587596 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "d7d9843e-d278-4d10-b537-75d96ba31757": {
+      "Transform": { "position": { "x": 301.0, "y": 48.0 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": -20.5, "y": 0.5 },
+          { "x": -53.5, "y": 17.0 },
+          { "x": -58.5, "y": 38.0 },
+          { "x": -49.0, "y": 51.5 },
+          { "x": -28.5, "y": 57.500000000000014 },
+          { "x": -6.5, "y": 56.500000000000014 },
+          { "x": 0.5, "y": 56.500000000000014 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "ea4021f8-0f19-4d8b-90d1-cbdb15daf1e4": {
+      "Transform": {
+        "position": { "x": 164.56975406826234, "y": 123.18360266636664 },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": -19.152112392514738, "y": -3.4822022531844965 },
+          { "x": -34.822022531844965, "y": 6.529129224720933 },
+          { "x": -30.904544997012408, "y": 19.587387674162798 },
+          { "x": -12.187707886145745, "y": 26.116516898883717 },
+          { "x": 2.176376408240287, "y": 20.022662955810844 },
+          { "x": 6.093853943072872, "y": 11.31715732284961 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "56d5cd94-cf54-42bf-b6db-cb4e3f215e17": {
+      "Transform": {
+        "position": { "x": 251.62481039787474, "y": 106.0 },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 17.84628654757057, "y": 4.352752816480631 },
+          { "x": 21.328488800755053, "y": 15.669910139330227 },
+          { "x": 13.928809012737986, "y": 29.163443870420167 },
+          { "x": -6.093853943072872, "y": 43.09225288315815 },
+          { "x": -13.058258449441865, "y": 67.03239337380157 },
+          { "x": -24.810691053939536, "y": 78.78482597829924 },
+          { "x": -38.73950006667752, "y": 69.20876978204186 },
+          { "x": -36.99839894008528, "y": 43.09225288315815 },
+          { "x": -28.292893307124046, "y": 23.069589927347295 },
+          { "x": -15.669910139330227, "y": 3.4822022531845107 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "94f3ed76-b64e-4bc0-b2f2-d75a80a0da1d": {
+      "Transform": { "position": { "x": 239.0, "y": 86.0 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 1.1367874248827832, "y": 13.641449098593569 },
+          { "x": -9.852157682317568, "y": 23.493606780911136 },
+          { "x": -25.009323347421542, "y": 18.567527939752367 },
+          { "x": -26.52503991393195, "y": 3.0314331330207978 },
+          { "x": -12.504661673710757, "y": -6.062866266041581 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "ba9bfff3-f45e-4c6f-8b20-1dce71fbc126": {
+      "Transform": { "position": { "x": 304.0, "y": 346.0 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": -28.5, "y": -19.5 },
+          { "x": -69.99999999999991, "y": -43.49999999999994 },
+          { "x": -114.99999999999983, "y": -48.49999999999994 },
+          { "x": -131.4999999999998, "y": -65.99999999999989 },
+          { "x": -137.99999999999977, "y": -85.49999999999986 },
+          { "x": -115.49999999999983, "y": -93.49999999999986 },
+          { "x": -83.49999999999989, "y": -93.99999999999986 },
+          { "x": -33.49999999999994, "y": -68.99999999999989 },
+          { "x": -0.5, "y": -48.49999999999994 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "8cc7e6f1-6191-4a17-98e7-0cf1f61ba02f": {
+      "Transform": { "position": { "x": 186.0, "y": 239.0 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": -27.49999999999997, "y": 6.499999999999972 },
+          { "x": -50.499999999999915, "y": -5.5 },
+          { "x": -69.49999999999989, "y": -25.99999999999997 },
+          { "x": -55.499999999999915, "y": -36.99999999999994 },
+          { "x": -27.49999999999997, "y": -30.999999999999943 },
+          { "x": -4.0, "y": -19.49999999999997 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "f02cdf31-5a00-45ac-8d39-bde464f2c7a8": {
+      "Transform": { "position": { "x": 77.0, "y": 189.0 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 10.499999999999986, "y": 13.499999999999972 },
+          { "x": 1.5, "y": 30.499999999999943 },
+          { "x": -31.999999999999943, "y": 24.499999999999943 },
+          { "x": -41.99999999999992, "y": 11.499999999999972 },
+          { "x": -30.499999999999943, "y": -3.5 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "68980a26-20b6-4700-a157-087d01e25dbd": {
+      "Transform": {
+        "position": { "x": 27.516098245997973, "y": 404.74102116199884 },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 13.499999999999979, "y": -33.49999999999994 },
+          { "x": 19.499999999999964, "y": -62.499999999999886 },
+          { "x": 34.499999999999936, "y": -71.99999999999983 },
+          { "x": 49.49999999999991, "y": -68.99999999999983 },
+          { "x": 47.49999999999992, "y": -53.499999999999886 },
+          { "x": 36.499999999999936, "y": -30.499999999999943 },
+          { "x": 33.49999999999994, "y": -3.0 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "758edc81-4c9e-467e-8e94-3051a3c69889": {
+      "Transform": {
+        "position": { "x": 59.51609824599792, "y": 324.741021161999 },
+        "degrees": 0.0
+      },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": -6.499999999999986, "y": -9.0 },
+          { "x": -3.999999999999993, "y": -32.99999999999994 },
+          { "x": 5.999999999999993, "y": -50.99999999999994 },
+          { "x": 20.499999999999964, "y": -49.49999999999994 },
+          { "x": 24.99999999999995, "y": -32.99999999999994 },
+          { "x": 23.499999999999964, "y": -8.5 },
+          { "x": 14.499999999999979, "y": -0.5 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "28783813-7e6a-47a2-8d64-cc5a1385c1fd": {
+      "Transform": {
+        "position": { "x": 22.88329602362041, "y": 24.60570459417577 },
+        "degrees": 64.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "1dda8af4-0177-4ee3-9434-f26428e23abb": {
+      "Transform": {
+        "position": { "x": 47.6939870775599, "y": 22.429328185935464 },
+        "degrees": 64.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "fec48ea1-fd85-4e5e-818a-111b0763d91a": {
+      "Transform": {
+        "position": { "x": 74.6810545397397, "y": 19.817676496047095 },
+        "degrees": 64.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "a94a3558-f504-4b99-bb72-d05ecf4ace4d": {
+      "Transform": {
+        "position": { "x": 20.343051200447185, "y": 71.08085058389865 },
+        "degrees": 64.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "14fca90a-e076-4bcf-a717-b80d0f761a82": {
+      "Transform": {
+        "position": { "x": 46.45956809933086, "y": 62.375344950937425 },
+        "degrees": 64.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "834b0081-7208-44a1-b432-49154af72fe5": {
+      "Transform": {
+        "position": { "x": 75.62301196975096, "y": 56.28149100786457 },
+        "degrees": 64.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "c3e908fb-4ff2-436f-a13a-36a595901963": {
+      "Transform": { "position": { "x": 100.0, "y": 212.0 }, "degrees": -87.0 },
+      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "e1bd61dc-06bd-41da-9600-846656c4383f": {
+      "Transform": {
+        "position": { "x": 63.55043757287254, "y": 200.3154662868815 },
+        "degrees": -83.0
+      },
+      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "9e9225b6-e213-4239-8bc0-2886f44c5f18": {
+      "Transform": {
+        "position": { "x": 68.88468727325954, "y": 290.546535145187 },
+        "degrees": -79.0
+      },
+      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
+    },
+    "5bfe7fac-1b65-4abc-a471-77b450406e29": {
+      "Transform": {
+        "position": { "x": 107.88468727325953, "y": 307.046535145187 },
+        "degrees": -61.0
+      },
+      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "FireControls": {
+        "fov_degrees": 90.0,
+        "override": null,
+        "firing_at": null
+      }
     }
   }
 }
