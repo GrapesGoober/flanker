@@ -282,7 +282,7 @@ class SceneService:
                     if unit.is_friendly
                     else InitiativeState.Faction.RED
                 ),
-                status=CombatUnit.Status.ACTIVE,
+                status=unit.status,
             ),
             Transform(
                 position=unit.position,
