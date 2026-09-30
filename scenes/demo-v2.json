@@ -11,6 +11,25 @@
         ]
       }
     },
+    "beecf185-723a-4678-82bc-21f81158dcb9": {
+      "AiConfigComponent": {
+        "faction": "RED",
+        "config": {
+          "policy": {
+            "type": "MinimaxPolicy",
+            "depth": 4
+          },
+          "state": {
+            "type": "UnabstractedStateConfig",
+            "move_candidates_pool": {
+              "type": "Random",
+              "count": 10
+            },
+            "move_candidates_filter": []
+          }
+        }
+      }
+    },
     "50a9913d-2bde-4b98-b663-b4877f80d7bc": {
       "EliminationWinCondition": {
         "target_faction": "RED",
@@ -264,6 +283,9 @@
         "degrees": 64.0
       },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -276,6 +298,9 @@
         "degrees": 64.0
       },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -288,6 +313,9 @@
         "degrees": 64.0
       },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -300,6 +328,9 @@
         "degrees": 64.0
       },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -312,6 +343,9 @@
         "degrees": 64.0
       },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -324,6 +358,9 @@
         "degrees": 64.0
       },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -333,6 +370,9 @@
     "c3e908fb-4ff2-436f-a13a-36a595901963": {
       "Transform": { "position": { "x": 100.0, "y": 212.0 }, "degrees": -87.0 },
       "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -345,6 +385,9 @@
         "degrees": -83.0
       },
       "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -357,6 +400,9 @@
         "degrees": -79.0
       },
       "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,
@@ -369,6 +415,9 @@
         "degrees": -61.0
       },
       "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "MoveControls": {
+        "move_type": "FOOT"
+      },
       "FireControls": {
         "fov_degrees": 90.0,
         "override": null,

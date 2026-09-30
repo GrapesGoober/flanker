@@ -13,6 +13,7 @@ from flanker_core.models.components import (
     CombatUnit,
     FireControls,
     InitiativeState,
+    MoveControls,
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
@@ -287,6 +288,9 @@ class SceneService:
             Transform(
                 position=unit.position,
                 degrees=unit.degrees,
+            ),
+            MoveControls(
+                move_type=MoveControls.MoveType.FOOT,
             ),
             FireControls(
                 fov_degrees=unit.fov_degrees,
