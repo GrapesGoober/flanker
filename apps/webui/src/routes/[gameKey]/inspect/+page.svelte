@@ -32,7 +32,7 @@
 		unitsAspects: []
 	});
 
-	let drawFov: boolean = $state(true);
+	let losPolygonDrawMode: 'No Draw' | 'LOS' | 'FOV' = $state('FOV');
 	let drawMoveCandidates: boolean = $state(true);
 	let drawUnitTexts: boolean = $state(true);
 	let drawAspects: boolean = $state(true);
@@ -63,7 +63,7 @@
 	<TerrainLayer {mapData} />
 	<InspectLayer
 		{inspectionData}
-		bind:drawFov
+		bind:losPolygonDrawMode
 		bind:drawMoveCandidates
 		bind:drawUnitTexts
 		bind:positionMarkers
@@ -76,8 +76,15 @@
 <div onclick={placeMarker} bind:this={clickTarget}>
 	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
 </div>
-<input type="checkbox" bind:checked={drawFov} />
-Draw LOS Polygon as FOV <br />
+
+LOS Polygon Draw Mode
+<select bind:value={losPolygonDrawMode}>
+	<option value="No Draw">No Draw</option>
+	<option value="LOS">LOS</option>
+	<option value="FOV">FOV</option>
+</select>
+<br />
+
 <input type="checkbox" bind:checked={drawMoveCandidates} />
 Draw Move Candidates <br />
 <input type="checkbox" bind:checked={drawUnitTexts} />

@@ -5,7 +5,7 @@
 
 	type Props = {
 		inspectionData: GameStateInspection;
-		drawFov: boolean;
+		losPolygonDrawMode: 'No Draw' | 'LOS' | 'FOV';
 		drawMoveCandidates: boolean;
 		drawUnitTexts: boolean;
 		drawAspects: boolean;
@@ -13,7 +13,7 @@
 	};
 	let {
 		inspectionData,
-		drawFov = $bindable(),
+		losPolygonDrawMode = $bindable(),
 		drawMoveCandidates = $bindable(),
 		drawUnitTexts = $bindable(),
 		drawAspects = $bindable(),
@@ -26,15 +26,20 @@
 		<RifleSquad rifleSquadData={unit} />
 	{/each}
 
-	{#each inspectionData.losPolygons as losPolygon}
-		{@const polygon = drawFov ? losPolygon.fovPolygon : losPolygon.losPolygon}
+	{#if losPolygonDrawMode != 'No Draw'}
+		{#each inspectionData.losPolygons as losPolygon}
+			{@const polygon =
+				losPolygonDrawMode == 'FOV'
+					? losPolygon.fovPolygon
+					: losPolygon.losPolygon}
 
-		{#if losPolygon.faction === 'BLUE'}
-			<path d={GetClosedPath(polygon)} class="blue-los" />
-		{:else if losPolygon.faction === 'RED'}
-			<path d={GetClosedPath(polygon)} class="red-los" />
-		{/if}
-	{/each}
+			{#if losPolygon.faction === 'BLUE'}
+				<path d={GetClosedPath(polygon)} class="blue-los" />
+			{:else if losPolygon.faction === 'RED'}
+				<path d={GetClosedPath(polygon)} class="red-los" />
+			{/if}
+		{/each}
+	{/if}
 
 	{#if drawMoveCandidates}
 		{#each inspectionData.moveCandidates as moveCandidate}
