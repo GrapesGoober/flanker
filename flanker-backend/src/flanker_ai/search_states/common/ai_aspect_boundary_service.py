@@ -16,14 +16,12 @@ class AiAspectBoundaryService:
         transform: Transform,
     ) -> list[float]:
         """
-        Returns a list of aspect boundary angles of a given position.
+        Returns a list of angles where the aspect changes, from a given position.
+        An aspect change is when a small change in angle leads to significant
+        change in what the terrain is visible.
         """
 
-        obstacle_pairs = list(LosSystem.get_obstacles(gs, transform.position))
-        obstacles = [
-            Obstacle(polyline=vertices, metadata=terrain_id)
-            for terrain_id, vertices in obstacle_pairs
-        ]
+        obstacles = list(LosSystem.get_obstacles(gs, transform.position))
         vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
         aspects: list[float] = []
 
@@ -31,7 +29,7 @@ class AiAspectBoundaryService:
             if AiAspectBoundaryService._is_aspect_boundary(
                 vertex,
                 transform.position,
-                obstacle_pairs,
+                obstacles,
             ):
                 aspects.append(transform.position.angle_to(vertex) % 360)
 
@@ -41,7 +39,7 @@ class AiAspectBoundaryService:
     def _is_aspect_boundary(
         vertex: Vec2,
         spotter_pos: Vec2,
-        obstacles: list[tuple[UUID, list[Vec2]]],
+        obstacles: list[Obstacle[UUID]],
     ) -> bool:
         """
         Checks whether the given vertex is an aspect boundary.
@@ -52,8 +50,8 @@ class AiAspectBoundaryService:
             return False
 
         jitter = direction.rotated(90) * 1e-6
-        hit_terrain_ids = [
-            AiAspectBoundaryService._get_first_hit_terrain_id(
+        hit_obstacle_ids = [
+            AiAspectBoundaryService._get_first_hit_obstacle_id(
                 cast_from,
                 direction,
                 spotter_pos,
@@ -61,32 +59,32 @@ class AiAspectBoundaryService:
             )
             for cast_from in (spotter_pos - jitter, spotter_pos + jitter)
         ]
-        return hit_terrain_ids[0] != hit_terrain_ids[1]
+        return hit_obstacle_ids[0] != hit_obstacle_ids[1]
 
     @staticmethod
-    def _get_first_hit_terrain_id(
+    def _get_first_hit_obstacle_id(
         cast_from: Vec2,
         direction: Vec2,
         spotter_pos: Vec2,
-        obstacles: list[tuple[UUID, list[Vec2]]],
+        obstacles: list[Obstacle[UUID]],
     ) -> UUID | None:
         """
         Casts a ray in the given direction and returns the closest obstacle.
         """
 
-        # Track each intersected terrain ID and their distance
+        # Track each intersected obstacle ID and its distance from the spotter.
         intersection_distances: list[tuple[float, UUID]] = [
-            ((intersection_point - spotter_pos).length(), terrain_id)
-            for terrain_id, polyline in obstacles
+            ((intersection_point - spotter_pos).length(), obstacle.metadata)
+            for obstacle in obstacles
             for intersection_point in IntersectUtils.get_intersects(
                 line=(cast_from, cast_from + direction * 1000),
-                polyline=polyline,
+                polyline=obstacle.polyline,
             )
         ]
         if not intersection_distances:
             return None
 
-        # Grab the terrain with the nearest intersect
+        # Grab the obstacle with the nearest intersection.
         nearest_intersection = min(
             intersection_distances,
             key=lambda intersection: intersection[0],
