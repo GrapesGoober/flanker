@@ -72,6 +72,9 @@ class AiAspectBoundaryService:
         Casts a ray in the given direction and returns the closest obstacle.
         """
 
+        # TODO: this aspect concept is pretty similar to LOS in many ways.
+        # This should use LOS criteria.
+
         # Track each intersected obstacle ID and its distance from the spotter.
         intersection_distances: list[tuple[float, UUID]] = [
             ((intersection_point - spotter_pos).length(), obstacle.metadata)

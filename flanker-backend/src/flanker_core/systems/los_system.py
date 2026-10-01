@@ -251,7 +251,8 @@ class LosSystem:
             intersects: list[ObstacleIntersection[UUID]],
         ) -> Vec2:
 
-            # Selects points that are not boundaries.
+            # Selects points that are not boundaries, but
+            # include the last boundary point.
             points_in_bound: list[Vec2] = []
             last_boundary_index: int = -1
             last_boundary: Vec2 | None = None
