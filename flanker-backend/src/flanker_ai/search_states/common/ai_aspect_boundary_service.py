@@ -25,6 +25,7 @@ class AiAspectBoundaryService:
         vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
         aspects: list[float] = []
 
+        # TODO: add the FOV boundary lines as aspect boundaries too.
         for vertex in vertices:
             if AiAspectBoundaryService._is_aspect_boundary(
                 vertex,
