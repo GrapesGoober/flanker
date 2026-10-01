@@ -24,15 +24,18 @@
 		viewState: {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
-			squads: []
+			squads: [],
+			fireEffectPairs: []
 		},
 		losPolygons: [],
-		moveCandidates: []
+		moveCandidates: [],
+		unitsAspects: []
 	});
 
 	let drawFov: boolean = $state(true);
 	let drawMoveCandidates: boolean = $state(true);
 	let drawUnitTexts: boolean = $state(true);
+	let drawAspects: boolean = $state(true);
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
@@ -64,6 +67,7 @@
 		bind:drawMoveCandidates
 		bind:drawUnitTexts
 		bind:positionMarkers
+		bind:drawAspects
 	/>
 {/snippet}
 
@@ -78,3 +82,5 @@ Draw LOS Polygon as FOV <br />
 Draw Move Candidates <br />
 <input type="checkbox" bind:checked={drawUnitTexts} />
 Draw Unit Texts <br />
+<input type="checkbox" bind:checked={drawAspects} />
+Draw Aspects <br />

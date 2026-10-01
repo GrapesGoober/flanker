@@ -6,6 +6,9 @@ from uuid import UUID
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
+from flanker_ai.search_states.common.ai_aspect_boundary_service import (
+    AiAspectBoundaryService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.actions import MoveAction
@@ -192,6 +195,7 @@ class SceneService:
         gs: GameState,
     ) -> GameStateInspection:
         los_polygons: list[GameStateInspection.LosPolygon] = []
+        unit_aspects: list[tuple[Vec2, list[float]]] = []
         for _, unit, transform, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
         ):
@@ -218,6 +222,9 @@ class SceneService:
                 )
             )
 
+            aspect = AiAspectBoundaryService.get_aspects(gs, transform)
+            unit_aspects.append((transform.position, aspect))
+
         config: SearchPolicyConfig | None = None
         for _, component in gs.query(AiConfigComponent):
             if component.faction != InitiativeState.Faction.BLUE:
@@ -240,6 +247,7 @@ class SceneService:
             view_state=SceneService.get_view_state(gs),
             los_polygons=los_polygons,
             move_candidates=move_candidates,
+            units_aspects=unit_aspects,
         )
 
     @staticmethod
