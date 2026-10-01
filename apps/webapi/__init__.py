@@ -1,27 +1,11 @@
 from typing import NoReturn
-from uuid import UUID
 
-from fastapi import Body, FastAPI, HTTPException, Query, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
-from webapi.action_service import ActionService
-from webapi.ai_service import AiService
-from webapi.logging_service import LoggingService
-from webapi.models import (
-    ActionLog,
-    ActionRequest,
-    AiMatchResponse,
-    AiWaypointConfigRequest,
-    GameStateInspection,
-    GameViewState,
-    GameViewStateResponse,
-    MapViewState,
-    SceneManifestResponse,
-    SquadModel,
-    TerrainModel,
-)
-from webapi.scene_service import SceneService
-from webapi.terrain_service import TerrainService
+from webapi.editor_api import router as editor_router
+from webapi.game_api import router as game_router
+from webapi.scenes_api import router as scenes_router
 
 app = FastAPI()
 
@@ -33,8 +17,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-id_counter = 0
-
 
 @app.exception_handler(ValueError)
 @app.exception_handler(ValidationError)
@@ -42,156 +24,6 @@ async def value_error_handler(_: Request, exc: Exception) -> NoReturn:
     raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
 
 
-@app.get("/api/scenes")
-async def get_scenes() -> SceneManifestResponse:
-    """Gets a list of scenes."""
-    return SceneService.get_scenes()
-
-
-@app.get("/api/scenes/json")
-async def get_game_state_json(
-    scene_names: list[str] = Query(..., alias="sceneNames"),
-) -> str:
-    """Gets a game state serialized entities table."""
-    gs = SceneService.load_game_state(scene_names)
-    return SceneService.serialize(gs, indent=False)
-
-
-@app.get("/api/scenes/quick-access/json")
-async def get_game_state_json_from_quick_access(
-    quick_access_name: str = Query(..., alias="quickAccessName"),
-) -> str:
-    """Gets a game state serialized entities table."""
-    gs = SceneService.load_from_quick_access(quick_access_name)
-    return SceneService.serialize(gs, indent=False)
-
-
-@app.post("/api/scenes/view")
-async def get_view_state(
-    state: str = Body(...),
-) -> GameViewState:
-    """Get all the scene's view state for the player faction."""
-    gs = SceneService.deserialize(state)
-    return SceneService.get_view_state(gs)
-
-
-@app.post("/api/scenes/inspect")
-async def get_state_inspection(
-    state: str = Body(...),
-) -> GameStateInspection:
-    """Get the detailed inspection data of the scene."""
-    gs = SceneService.deserialize(state)
-    return SceneService.get_inspection(gs)
-
-
-@app.post("/api/map")
-async def get_map(
-    state: str = Body(...),
-) -> MapViewState:
-    """Get map data from a scene."""
-    gs = SceneService.deserialize(state)
-    return TerrainService.get_map(gs)
-
-
-@app.post("/api/perform")
-async def perform_action(
-    action: ActionRequest = Body(...),
-    state: str = Body(...),
-) -> GameViewStateResponse:
-    """Move a unit and return updated rifle squads."""
-    gs = SceneService.deserialize(state)
-    ActionService.perform(gs, action)
-    AiService.play_red_initiative(gs)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/logs")
-async def get_logs(
-    state: str = Body(...),
-) -> list[ActionLog]:
-    gs = SceneService.deserialize(state)
-    return LoggingService.get_logs(gs)
-
-
-@app.post("/api/ai-play")
-async def run_match(
-    state: str = Body(...),
-) -> AiMatchResponse:
-    gs = SceneService.deserialize(state)
-    return AiService.run_match(gs)
-
-
-@app.post("/api/ai-config-waypoints")
-async def ai_config_waypoints(
-    state: str = Body(...),
-    config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
-) -> GameViewStateResponse:
-    gs = SceneService.deserialize(state)
-    AiService.set_ai_waypoints_coordinates(gs, config_request)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/terrain/update")
-async def update_terrain(
-    state: str = Body(...),
-    terrain: TerrainModel = Body(...),
-) -> GameViewStateResponse:
-    """Edit the terrain polygon."""
-    gs = SceneService.deserialize(state)
-    TerrainService.update_terrain(gs, terrain)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/terrain/add")
-async def add_terrain(
-    state: str = Body(...),
-    terrain: TerrainModel = Body(...),
-) -> GameViewStateResponse:
-    """Edit the terrain polygon."""
-    gs = SceneService.deserialize(state)
-    TerrainService.add_terrain(gs, terrain)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/terrain/delete")
-async def delete_terrain(
-    state: str = Body(...),
-    terrain_id: UUID = Query(..., alias="terrainId"),
-) -> GameViewStateResponse:
-    """Edit the terrain polygon."""
-    gs = SceneService.deserialize(state)
-    TerrainService.delete_terrain(gs, terrain_id)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/unit/add")
-async def add_unit(
-    state: str = Body(...),
-    unit: SquadModel = Body(...),
-) -> GameViewStateResponse:
-    """Add a new combat unit."""
-    gs = SceneService.deserialize(state)
-    SceneService.add_unit(gs, unit)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/unit/delete")
-async def delete_unit(
-    state: str = Body(...),
-    unit_id: UUID = Query(..., alias="unitId"),
-) -> GameViewStateResponse:
-    """Deletes a combat unit."""
-    gs = SceneService.deserialize(state)
-    SceneService.delete_unit(gs, unit_id)
-    return SceneService.get_view_state_response(gs)
-
-
-@app.post("/api/unit/update")
-async def update_unit(
-    state: str = Body(...),
-    unit: SquadModel = Body(...),
-) -> GameViewStateResponse:
-    """Edit the combat unit."""
-    gs = SceneService.deserialize(state)
-    SceneService.update_unit(gs, unit)
-    return SceneService.get_view_state_response(gs)
+app.include_router(scenes_router)
+app.include_router(game_router)
+app.include_router(editor_router)

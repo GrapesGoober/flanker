@@ -96,8 +96,11 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 {#snippet mapSvgSnippet()}
-	<!-- Draw the base terrains and units -->
+	<!-- Draw the base terrains editor overlay -->
 	<TerrainLayer mapData={controller.mapData} />
+	<EditorOverlay {controller} />
+
+	<!-- Draw the units on top of the terrains -->
 	<svg overflow="visible" class="transparent-icons">
 		{#if controller.state.type === 'selected-unit'}
 			{@const selectedUnit = controller.state.unit}
@@ -121,8 +124,6 @@
 			</g>
 		{/if}
 	{/each}
-	<!-- Draw the overlay on top -->
-	<EditorOverlay {controller} />
 
 	<!-- Draw the purple drawing mode UIs -->
 	{#if controller.state.type == 'draw'}
