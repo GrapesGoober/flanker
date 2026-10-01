@@ -222,7 +222,7 @@ class SceneService:
                 )
             )
 
-            aspect = AiAspectBoundaryService.get_aspects(gs, transform)
+            aspect = AiAspectBoundaryService.get_aspects_boundaries(gs, transform)
             unit_aspects.append((transform.position, aspect))
 
         config: SearchPolicyConfig | None = None

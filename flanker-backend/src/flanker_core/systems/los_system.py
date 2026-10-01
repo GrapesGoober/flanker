@@ -97,7 +97,7 @@ class LosSystem:
 
         # Check each intersection; allow see into and out-from terrain.
         passed_one_terrain = False
-        for _, vertices in LosSystem._get_obstacles(gs, spotter_pos):
+        for _, vertices in LosSystem.get_obstacles(gs, spotter_pos):
 
             # Ignore spotter's terrain (allow to see out-from terrain)
             if PolygonUtils.is_inside(point=spotter_pos, polygon=vertices):
@@ -247,7 +247,7 @@ class LosSystem:
                 polyline=vertices,
                 metadata=id,
             )
-            for id, vertices in LosSystem._get_obstacles(gs, spotter_pos)
+            for id, vertices in LosSystem.get_obstacles(gs, spotter_pos)
         ]
 
         def criteria(
@@ -291,12 +291,12 @@ class LosSystem:
         )
 
     @staticmethod
-    def _get_obstacles(
+    def get_obstacles(
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = TerrainFeature.Flag.OPAQUE,
     ) -> Iterable[tuple[UUID, list[Vec2]]]:
-        """Yields relevant terrains and its transformed vertices."""
+        """Yields necessary obstacles for LOS game rule."""
         for id, boundary in gs.query(MapBoundary):
             vertices = list(boundary.vertices) + [boundary.vertices[0]]
             yield (id, vertices)
