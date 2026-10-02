@@ -134,13 +134,13 @@ class PolygonUtils:
         center_point: Vec2,
         heading_degree: float,
         fov_degrees: float,
-        radius: float = 10000,
     ) -> list[Vec2]:
         """Returns a new clipped polygon to the specified cone."""
 
         # Create some rays that defines this FOV cone
+        ray_length = max((vertex - center_point).length() for vertex in polyline)
         forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)
-        forward_ray = forward_direction * radius
+        forward_ray = forward_direction * ray_length
         left_ray: Vec2 = center_point + forward_ray.rotated(fov_degrees / 2)
         right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degrees / 2)
 
