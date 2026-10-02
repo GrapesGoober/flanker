@@ -254,6 +254,9 @@ class LosSystem:
         Returns the furthest reaching LOS point from a given obstacles.
         This is the canonical LOS definition. The line intersects must
         be sorted from nearest to furthest.
+
+        Note that since LOS is allowed to be seen out from a terrain,
+        the obstacles must not include the terrain originating LOS.
         """
 
         # NOTE
