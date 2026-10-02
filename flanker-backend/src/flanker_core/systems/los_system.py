@@ -95,27 +95,24 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
-        # Check each intersection; allow see into and out-from terrain.
-        passed_one_terrain = False
+        # Find all intersections towards the target point
+        obstacle_intersections: list[ObstacleIntersection[UUID]] = []
         for obstacle in LosSystem.get_obstacles(gs, spotter_pos):
-
-            # Ignore spotter's terrain (allow to see out-from terrain)
-            if PolygonUtils.is_inside(
-                point=spotter_pos,
-                polygon=obstacle.polyline,
-            ):
-                continue
-
-            # Count whether it passes one terrain
-            for _ in IntersectUtils.get_intersects(
+            intersections: list[Vec2] = IntersectUtils.get_intersects(
                 line=(spotter_pos, target_pos),
                 polyline=obstacle.polyline,
-            ):
-                if passed_one_terrain:
-                    return False
-                passed_one_terrain = True
+            )
+            obstacle_intersections += [
+                ObstacleIntersection(obstacle, intersection)
+                for intersection in intersections
+            ]
 
-        return True
+        obstacle_intersections = sorted(
+            obstacle_intersections, key=lambda i: (i.point - spotter_pos).length()
+        )
+
+        # LOS is valid if there's no obstacles blocking it
+        return LosSystem.get_furthest_los_point(obstacle_intersections) == None
 
     @staticmethod
     def get_los_from_line(
@@ -239,7 +236,7 @@ class LosSystem:
         return polygon
 
     @staticmethod
-    def _compute_los_polygon(
+    def _compute_los_polygon(  # TODO inline this method since it's simple
         gs: GameState,
         spotter_pos: Vec2,
     ) -> list[Vec2]:
@@ -252,30 +249,36 @@ class LosSystem:
             for vertex in boundary.vertices
         ]
 
-        def los_reachable_criteria(
-            intersects: list[ObstacleIntersection[UUID]],
-        ) -> Vec2 | None:
-
-            # Right now, assumes all intersections are normal terrains.
-            # If there are different terrain types, then the UUID
-            # needs to be used to define how intersections work.
-
-            # Allow see-into terrain, so select the second point.
-            if len(intersects) > 1:
-                return intersects[1].point
-
-            # Only 1 intersects found doesn't count as LOS blocking.
-            # Must be allowed to see through.
-            elif len(intersects) == 1:
-                return None
-            return None
-
         return PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
             boundary_vertices=boundary_vertices,
-            criteria=los_reachable_criteria,
+            criteria=LosSystem.get_furthest_los_point,
         )
+
+    @staticmethod
+    def get_furthest_los_point(
+        obstacle_intersections: list[ObstacleIntersection[UUID]],
+    ) -> Vec2 | None:
+        """
+        Returns the furthest reaching LOS point from a given obstacles.
+        This is the canonical LOS definition. The line intersects must
+        be sorted from nearest to furthest.
+        """
+
+        # Right now, assumes all intersections are normal terrains.
+        # If there are different terrain types, then the UUID
+        # needs to be used to define how intersections work.
+
+        # Allow see-into terrain, so select the second point.
+        if len(obstacle_intersections) > 1:
+            return obstacle_intersections[1].point
+
+        # Only 1 intersects found doesn't count as LOS blocking.
+        # Must be allowed to see through.
+        elif len(obstacle_intersections) == 1:
+            return None
+        return None
 
     @staticmethod
     def get_obstacles(
