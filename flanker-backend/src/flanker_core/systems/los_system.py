@@ -246,6 +246,11 @@ class LosSystem:
         """Helper method for `get_los_polygon`. Generates a new LOS polygon."""
 
         obstacles = list(LosSystem.get_obstacles(gs, spotter_pos))
+        boundary_vertices = [
+            vertex
+            for _, boundary in gs.query(MapBoundary)
+            for vertex in boundary.vertices
+        ]
 
         def criteria(
             intersects: list[ObstacleIntersection[UUID]],
@@ -285,6 +290,7 @@ class LosSystem:
         return PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
+            boundary_vertices=boundary_vertices,
             criteria=criteria,
         )
 

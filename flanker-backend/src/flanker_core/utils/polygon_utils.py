@@ -50,10 +50,9 @@ class PolygonUtils:
     def get_reachable_polygon[T](
         center_point: Vec2,
         obstacles: list[Obstacle[T]],
+        boundary_vertices: list[Vec2],
         criteria: Callable[[list[ObstacleIntersection[T]]], Vec2],
         jitter_size: float = 1e-6,  # Smaller values will break t-u bezier checks
-        # TODO: consider an explicit boundary box instead?
-        radius: float = 1000,
     ) -> list[Vec2]:
         """
         Returns a polygon of all reachable region from the center point.
@@ -63,6 +62,7 @@ class PolygonUtils:
 
         vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
         vertices = sorted(vertices, key=center_point.angle_to)
+        radius = 1000
         polygon: list[Vec2] = []
         for target_vertex in vertices:
             direction = (target_vertex - center_point).normalized()
