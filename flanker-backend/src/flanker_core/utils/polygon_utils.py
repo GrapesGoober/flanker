@@ -90,53 +90,14 @@ class PolygonUtils:
             left_point = center_point - jitter
             right_point = center_point + jitter
             for cast_from in [left_point, right_point]:
-
-                # Determine the fallback boundary point
-                boundary_intersections = IntersectUtils.get_intersects(
-                    line=(cast_from, cast_from + ray),
-                    polyline=boundary_polyline,
+                # Cast the ray can get the furthest reachable point
+                new_point = PolygonUtils._get_reachable_point_from_ray(
+                    ray_cast_from=cast_from,
+                    ray_cast_to=cast_from + ray,
+                    boundary_polyline=boundary_polyline,
+                    criteria=criteria,
+                    obstacles=obstacles,
                 )
-                furthest_boundary_point = max(
-                    boundary_intersections,
-                    key=lambda point: (point - cast_from).length(),
-                )
-
-                # Calculates intersections against each obstacle
-                intersections: list[ObstacleIntersection[T]] = []
-                for obstacle in obstacles:
-                    intersects = IntersectUtils.get_intersects(
-                        line=(cast_from, cast_from + ray),
-                        polyline=obstacle.polyline,
-                    )
-                    for intersect in intersects:
-                        # Don't include intersections that is outside the boundary
-                        boundary_distance = (
-                            furthest_boundary_point - cast_from
-                        ).length()
-                        if (intersect - cast_from).length() > boundary_distance:
-                            continue
-
-                        intersections.append(
-                            ObstacleIntersection(
-                                obstacle=obstacle,
-                                point=intersect,
-                            )
-                        )
-                intersections = sorted(
-                    intersections,
-                    key=lambda i: (i.point - center_point).length(),
-                )
-
-                # Choose which point from the intersects to append
-                new_point: Vec2
-                if intersections != []:
-                    if (criterion_point := criteria(intersections)) is not None:
-                        new_point = criterion_point
-                    else:
-                        new_point = furthest_boundary_point
-                else:  # No intersects, use fallback point using the ray
-                    new_point = furthest_boundary_point
-
                 # Snap new point to target vertex
                 if new_point.is_close(target_vertex, abs_tol=1e-3):
                     new_point = target_vertex
@@ -151,6 +112,59 @@ class PolygonUtils:
 
         polygon.append(polygon[0])
         return polygon
+
+    @staticmethod
+    def _get_reachable_point_from_ray[T](
+        ray_cast_from: Vec2,
+        ray_cast_to: Vec2,
+        boundary_polyline: list[Vec2],
+        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2 | None],
+        obstacles: list[Obstacle[T]],
+    ) -> Vec2:
+
+        # Determine the fallback point as furthest boundary point
+        boundary_intersections = IntersectUtils.get_intersects(
+            line=(ray_cast_from, ray_cast_to),
+            polyline=boundary_polyline,
+        )
+        furthest_boundary_point = max(
+            boundary_intersections,
+            key=lambda point: (point - ray_cast_from).length(),
+        )
+
+        # Calculates intersections against each obstacle
+        intersections: list[ObstacleIntersection[T]] = []
+        for obstacle in obstacles:
+            intersects = IntersectUtils.get_intersects(
+                line=(ray_cast_from, ray_cast_to),
+                polyline=obstacle.polyline,
+            )
+            for intersect in intersects:
+                # Don't include intersections that is outside the boundary
+                boundary_distance = (furthest_boundary_point - ray_cast_from).length()
+                if (intersect - ray_cast_from).length() > boundary_distance:
+                    continue
+
+                intersections.append(
+                    ObstacleIntersection(
+                        obstacle=obstacle,
+                        point=intersect,
+                    )
+                )
+        intersections = sorted(
+            intersections,
+            key=lambda i: (i.point - ray_cast_from).length(),
+        )
+
+        # If intersects, use fallback point
+        if intersections == []:
+            return furthest_boundary_point
+
+        # Choose which point from the intersects to append
+        if (criterion_point := criteria(intersections)) is not None:
+            return criterion_point
+        else:
+            return furthest_boundary_point
 
     @staticmethod
     def clip_by_fov_cone(
