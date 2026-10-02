@@ -252,46 +252,29 @@ class LosSystem:
             for vertex in boundary.vertices
         ]
 
-        def criteria(
+        def los_reachable_criteria(
             intersects: list[ObstacleIntersection[UUID]],
-        ) -> Vec2:
+        ) -> Vec2 | None:
 
-            # Selects points that are not boundaries, but
-            # include the last boundary point.
-            points_in_bound: list[Vec2] = []
-            last_boundary_index: int = -1
-            last_boundary: Vec2 | None = None
-            for intersect in intersects:
-                entity_id = intersect.obstacle.metadata
-                boundary = gs.try_component(entity_id, MapBoundary)
-                if boundary == None:  # Not a boundary
-                    points_in_bound.append(intersect.point)
-                else:  # Is a boundary
-                    last_boundary_index = len(points_in_bound)
-                    last_boundary = intersect.point
+            # Right now, assumes all intersections are normal terrains.
+            # If there are different terrain types, then the UUID
+            # needs to be used to define how intersections work.
 
-            # Select points only within boundary, and reinclude boundary itself
-            points_in_bound = points_in_bound[:last_boundary_index]
-            if last_boundary is not None:
-                points_in_bound.append(last_boundary)
+            # Allow see-into terrain, so select the second point.
+            if len(intersects) > 1:
+                return intersects[1].point
 
-            # Selects the second (or first) point to satisfy LOS rule.
-            # Allow see-into terrain if possible, otherwise use first point.
-            if len(points_in_bound) > 1:
-                new_point = points_in_bound[1]
-            elif len(points_in_bound) == 1:
-                new_point = points_in_bound[0]
-            else:
-                raise ValueError(
-                    "No intersections found; is given point inside boundary?"
-                )
-            return new_point
+            # Only 1 intersects found doesn't count as LOS blocking.
+            # Must be allowed to see through.
+            elif len(intersects) == 1:
+                return None
+            return None
 
         return PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
             boundary_vertices=boundary_vertices,
-            criteria=criteria,
+            criteria=los_reachable_criteria,
         )
 
     @staticmethod

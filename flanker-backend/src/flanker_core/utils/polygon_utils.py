@@ -51,7 +51,7 @@ class PolygonUtils:
         center_point: Vec2,
         obstacles: list[Obstacle[T]],
         boundary_vertices: list[Vec2],
-        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2],
+        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2 | None],
         jitter_size: float = 1e-6,  # Smaller values will break t-u bezier checks
     ) -> list[Vec2]:
         """
@@ -90,6 +90,17 @@ class PolygonUtils:
             left_point = center_point - jitter
             right_point = center_point + jitter
             for cast_from in [left_point, right_point]:
+
+                # Determine the fallback boundary point
+                boundary_intersections = IntersectUtils.get_intersects(
+                    line=(cast_from, cast_from + ray),
+                    polyline=boundary_polyline,
+                )
+                furthest_boundary_point = max(
+                    boundary_intersections,
+                    key=lambda point: (point - cast_from).length(),
+                )
+
                 # Calculates intersections against each obstacle
                 intersections: list[ObstacleIntersection[T]] = []
                 for obstacle in obstacles:
@@ -98,6 +109,13 @@ class PolygonUtils:
                         polyline=obstacle.polyline,
                     )
                     for intersect in intersects:
+                        # Don't include intersections that is outside the boundary
+                        boundary_distance = (
+                            furthest_boundary_point - cast_from
+                        ).length()
+                        if (intersect - cast_from).length() > boundary_distance:
+                            continue
+
                         intersections.append(
                             ObstacleIntersection(
                                 obstacle=obstacle,
@@ -110,10 +128,14 @@ class PolygonUtils:
                 )
 
                 # Choose which point from the intersects to append
+                new_point: Vec2
                 if intersections != []:
-                    new_point: Vec2 = criteria(intersections)
+                    if (criterion_point := criteria(intersections)) is not None:
+                        new_point = criterion_point
+                    else:
+                        new_point = furthest_boundary_point
                 else:  # No intersects, use fallback point using the ray
-                    new_point = center_point + ray
+                    new_point = furthest_boundary_point
 
                 # Snap new point to target vertex
                 if new_point.is_close(target_vertex, abs_tol=1e-3):
@@ -226,6 +248,9 @@ class PolygonUtils:
         vertices: list[Vec2] = []
         for obstacle in obstacles:
             vertices += obstacle.polyline
+
+        # Include vertices of the boundary too
+        vertices += boundary_polyline
 
         # Include each obstacle intersections as special vertices
         for obstacle in obstacles:
