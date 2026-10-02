@@ -61,7 +61,7 @@ class PolygonUtils:
         list of given obstacle intersections.
         """
 
-        vertices = PolygonUtils._get_relevant_vertices(obstacles)
+        vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
         vertices = sorted(vertices, key=center_point.angle_to)
         polygon: list[Vec2] = []
         for target_vertex in vertices:
@@ -191,11 +191,12 @@ class PolygonUtils:
         return False
 
     @staticmethod
-    def _get_relevant_vertices(
+    def get_vertices_from_obstacles(
         obstacles: list[Obstacle[Any]],
     ) -> list[Vec2]:
         """
-        Returns relevant vertices to cast against for polygon.
+        Returns relevant vertices to cast against for a polygon.
+        All vertices of the obstacles are considered along with intersections.
         """
         vertices: list[Vec2] = []
         for obstacle in obstacles:

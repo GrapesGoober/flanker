@@ -5,16 +5,18 @@
 
 	type Props = {
 		inspectionData: GameStateInspection;
-		drawFov: boolean;
+		losPolygonDrawMode: 'No Draw' | 'LOS' | 'FOV';
 		drawMoveCandidates: boolean;
 		drawUnitTexts: boolean;
+		drawAspects: boolean;
 		positionMarkers: Vec2[];
 	};
 	let {
 		inspectionData,
-		drawFov = $bindable(),
+		losPolygonDrawMode = $bindable(),
 		drawMoveCandidates = $bindable(),
 		drawUnitTexts = $bindable(),
+		drawAspects = $bindable(),
 		positionMarkers = $bindable()
 	}: Props = $props();
 </script>
@@ -24,15 +26,20 @@
 		<RifleSquad rifleSquadData={unit} />
 	{/each}
 
-	{#each inspectionData.losPolygons as losPolygon}
-		{@const polygon = drawFov ? losPolygon.fovPolygon : losPolygon.losPolygon}
+	{#if losPolygonDrawMode != 'No Draw'}
+		{#each inspectionData.losPolygons as losPolygon}
+			{@const polygon =
+				losPolygonDrawMode == 'FOV'
+					? losPolygon.fovPolygon
+					: losPolygon.losPolygon}
 
-		{#if losPolygon.faction === 'BLUE'}
-			<path d={GetClosedPath(polygon)} class="blue-los" />
-		{:else if losPolygon.faction === 'RED'}
-			<path d={GetClosedPath(polygon)} class="red-los" />
-		{/if}
-	{/each}
+			{#if losPolygon.faction === 'BLUE'}
+				<path d={GetClosedPath(polygon)} class="blue-los" />
+			{:else if losPolygon.faction === 'RED'}
+				<path d={GetClosedPath(polygon)} class="red-los" />
+			{/if}
+		{/each}
+	{/if}
 
 	{#if drawMoveCandidates}
 		{#each inspectionData.moveCandidates as moveCandidate}
@@ -81,6 +88,24 @@
 			</foreignObject>
 		{/each}
 	{/if}
+
+	{#if drawAspects}
+		{#each inspectionData.unitsAspects as unitAspect}
+			{@const position = unitAspect[0]}
+			{@const angles = unitAspect[1]}
+
+			{#each angles as angle}
+				<line
+					x1={position.x}
+					y1={position.y}
+					x2={position.x + 1000}
+					y2={position.y}
+					transform="rotate({angle}, {position.x}, {position.y})"
+					class="aspect-line"
+				/>
+			{/each}
+		{/each}
+	{/if}
 </svg>
 
 <style lang="less">
@@ -111,5 +136,9 @@
 	}
 	.in-map-text {
 		font-size: 0.3em;
+	}
+	.aspect-line {
+		stroke: rgba(255, 0, 212, 0.33);
+		stroke-width: 1;
 	}
 </style>

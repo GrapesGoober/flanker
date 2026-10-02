@@ -473,6 +473,11 @@ export interface components {
             losPolygons: components["schemas"]["LosPolygon"][];
             /** Movecandidates */
             moveCandidates: components["schemas"]["Vec2"][];
+            /** Unitsaspects */
+            unitsAspects: [
+                components["schemas"]["Vec2"],
+                number[]
+            ][];
         };
         /**
          * GameViewState
