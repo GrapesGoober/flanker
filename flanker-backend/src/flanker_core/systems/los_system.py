@@ -230,31 +230,21 @@ class LosSystem:
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
-        # Not in cache; recompute LOS polygon
-        polygon = LosSystem._compute_los_polygon(gs, spotter_pos)
-        cache.los_polygon_by_point[spotter_pos] = polygon
-        return polygon
-
-    @staticmethod
-    def _compute_los_polygon(  # TODO inline this method since it's simple
-        gs: GameState,
-        spotter_pos: Vec2,
-    ) -> list[Vec2]:
-        """Helper method for `get_los_polygon`. Generates a new LOS polygon."""
-
+        # Not in cache; recompute LOS polygon and update cache
         obstacles = list(LosSystem.get_obstacles(gs, spotter_pos))
         boundary_vertices = [
             vertex
             for _, boundary in gs.query(MapBoundary)
             for vertex in boundary.vertices
         ]
-
-        return PolygonUtils.get_reachable_polygon(
+        los_polygon = PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
             boundary_vertices=boundary_vertices,
             criteria=LosSystem.get_furthest_los_point,
         )
+        cache.los_polygon_by_point[spotter_pos] = los_polygon
+        return los_polygon
 
     @staticmethod
     def get_furthest_los_point(
