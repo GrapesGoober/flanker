@@ -60,13 +60,28 @@ class PolygonUtils:
         list of given obstacle intersections.
         """
 
+        # Make sure the received boundary is closed loop
+        boundary_polyline = list(boundary_vertices)
+        if boundary_polyline[-1] != boundary_polyline[0]:
+            boundary_polyline.append(boundary_polyline[0])
+
+        # The center point must be inside
+        if not PolygonUtils.is_inside(center_point, boundary_polyline):
+            raise ValueError(f"The point {center_point} is not in boundary.")
+
+        # Determine the length of the rays to make sure it reaches the boundary
         vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
         vertices = sorted(vertices, key=center_point.angle_to)
-        radius = 1000
+        ray_length = (
+            max((vertex - center_point).length() for vertex in boundary_polyline)
+            + jitter_size
+        )
+
+        # Cast the rays to each vertices and build the reachable polygon
         polygon: list[Vec2] = []
         for target_vertex in vertices:
             direction = (target_vertex - center_point).normalized()
-            ray = direction * radius
+            ray = direction * ray_length
             # Instead of casting one ray, casts two rays slightly to the left and right.
             # This prevents boundary sensitivity when casting rays at the vertices.
             jitter = direction.rotated(90) * jitter_size
@@ -119,9 +134,9 @@ class PolygonUtils:
         center_point: Vec2,
         heading_degree: float,
         fov_degrees: float,
-        radius: float = 1000,
+        radius: float = 10000,
     ) -> list[Vec2]:
-        """Returns a new clipped a polygon to the specified cone."""
+        """Returns a new clipped polygon to the specified cone."""
 
         # Create some rays that defines this FOV cone
         forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)

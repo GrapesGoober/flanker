@@ -81,7 +81,6 @@ def fixture() -> Fixture:
                 Vec2(10, 0),
                 Vec2(10, 10),
                 Vec2(0, 10),
-                Vec2(0, 0),
             ],
             flag=TerrainFeature.Flag.OPAQUE,
         ),
@@ -94,7 +93,6 @@ def fixture() -> Fixture:
                 Vec2(1000, -1000),
                 Vec2(1000, 1000),
                 Vec2(-1000, 1000),
-                Vec2(-1000, -1000),
             ],
         ),
     )
