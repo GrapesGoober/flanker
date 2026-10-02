@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import Transform
+from flanker_core.models.components import MapBoundary, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.intersect_utils import IntersectUtils
@@ -20,9 +20,16 @@ class AiAspectBoundaryService:
         An aspect change is when a small change in angle leads to significant
         change in what the terrain is visible.
         """
+        boundary_vertices = [
+            vertex
+            for _, boundary in gs.query(MapBoundary)
+            for vertex in boundary.vertices
+        ]
 
         obstacles = list(LosSystem.get_obstacles(gs, transform.position))
-        vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
+        vertices = PolygonUtils.get_vertices_from_obstacles(
+            obstacles, boundary_vertices
+        )
         aspects: list[float] = []
 
         # TODO: add the FOV boundary lines as aspect boundaries too.

@@ -301,10 +301,9 @@ class LosSystem:
         mask: int = TerrainFeature.Flag.OPAQUE,
     ) -> Iterable[Obstacle[UUID]]:
         """Yields necessary obstacles for LOS game rule."""
-        for obstacle_id, boundary in gs.query(MapBoundary):
-            vertices = list(boundary.vertices) + [boundary.vertices[0]]
-            yield Obstacle(polyline=vertices, metadata=obstacle_id)
 
+        # Currently, only terrains are needed for obstacles.
+        # This might not be the case as the game grows.
         for obstacle_id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = TransformUtils.apply(terrain.vertices, transform)

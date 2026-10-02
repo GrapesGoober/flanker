@@ -70,7 +70,9 @@ class PolygonUtils:
             raise ValueError(f"The point {center_point} is not in boundary.")
 
         # Determine the length of the rays to make sure it reaches the boundary
-        vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
+        vertices = PolygonUtils.get_vertices_from_obstacles(
+            obstacles, boundary_vertices
+        )
         vertices = sorted(vertices, key=center_point.angle_to)
         ray_length = (
             max((vertex - center_point).length() for vertex in boundary_polyline)
@@ -208,16 +210,24 @@ class PolygonUtils:
     @staticmethod
     def get_vertices_from_obstacles(
         obstacles: list[Obstacle[Any]],
+        boundary_vertices: list[Vec2],
     ) -> list[Vec2]:
         """
         Returns relevant vertices to cast against for a polygon.
         All vertices of the obstacles are considered along with intersections.
         """
+
+        # Make sure the received boundary is closed loop
+        boundary_polyline = list(boundary_vertices)
+        if boundary_polyline[-1] != boundary_polyline[0]:
+            boundary_polyline.append(boundary_polyline[0])
+
+        # Include each vertices in the obstacle
         vertices: list[Vec2] = []
         for obstacle in obstacles:
-            # FIXME: since polyline is closed loop, its [0] == [-1]
             vertices += obstacle.polyline
 
+        # Include each obstacle intersections as special vertices
         for obstacle in obstacles:
             for other_obstacle in obstacles:
                 for line in pairwise(obstacle.polyline):
@@ -226,6 +236,15 @@ class PolygonUtils:
                         polyline=other_obstacle.polyline,
                     )
                     vertices += intersects
+
+        # Include boundary-obstacle intersections too
+        for obstacle in obstacles:
+            for line in pairwise(obstacle.polyline):
+                intersects = IntersectUtils.get_intersects(
+                    line=line,
+                    polyline=boundary_polyline,
+                )
+                vertices += intersects
         vertices = PolygonUtils._filter_colocated(vertices)
         return vertices
 
