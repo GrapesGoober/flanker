@@ -256,9 +256,11 @@ class LosSystem:
         be sorted from nearest to furthest.
         """
 
+        # NOTE
         # Right now, assumes all intersections are normal terrains.
-        # If there are different terrain types, then the UUID
-        # needs to be used to define how intersections work.
+        # If there are different terrain types, then the metadata
+        # terrain UUID needs to be used to determine LOS.
+        # For now, just return the second point.
 
         # Allow see-into terrain, so select the second point.
         if len(obstacle_intersections) > 1:
