@@ -11,7 +11,7 @@ class IntersectUtils:
     def get_intersects(
         line: tuple[Vec2, Vec2],
         polyline: list[Vec2],
-    ) -> set[Vec2]:
+    ) -> list[Vec2]:
         """
         Returns intersection points between a line and a polyline.
         For a closed loop, the vertices must repeat `polyline[-1] == polyline[0]`.
@@ -28,8 +28,7 @@ class IntersectUtils:
             polyline=np.array([[v.x, v.y] for v in polyline], dtype=np.float64),
         )
         # Convert to Vec2
-        points = [Vec2(float(x), float(y)) for x, y in intersections]
-        return set(points)
+        return [Vec2(float(x), float(y)) for x, y in intersections]
 
     @staticmethod
     @njit  # type: ignore

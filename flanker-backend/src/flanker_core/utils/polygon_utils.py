@@ -50,10 +50,9 @@ class PolygonUtils:
     def get_reachable_polygon[T](
         center_point: Vec2,
         obstacles: list[Obstacle[T]],
-        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2],
+        boundary_vertices: list[Vec2],
+        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2 | None],
         jitter_size: float = 1e-6,  # Smaller values will break t-u bezier checks
-        # TODO: consider an explicit boundary box instead?
-        radius: float = 1000,
     ) -> list[Vec2]:
         """
         Returns a polygon of all reachable region from the center point.
@@ -61,43 +60,43 @@ class PolygonUtils:
         list of given obstacle intersections.
         """
 
-        vertices = PolygonUtils.get_vertices_from_obstacles(obstacles)
+        # Make sure the received boundary is closed loop
+        boundary_polyline = list(boundary_vertices)
+        if boundary_polyline[-1] != boundary_polyline[0]:
+            boundary_polyline.append(boundary_polyline[0])
+
+        # The center point must be inside
+        if not PolygonUtils.is_inside(center_point, boundary_polyline):
+            raise ValueError(f"The point {center_point} is not in boundary.")
+
+        # Determine the length of the rays to make sure it reaches the boundary
+        vertices = PolygonUtils.get_vertices_from_obstacles(
+            obstacles, boundary_vertices
+        )
         vertices = sorted(vertices, key=center_point.angle_to)
+        ray_length = max(
+            (vertex - center_point).length() for vertex in boundary_polyline
+        )
+
+        # Cast the rays to each vertices and build the reachable polygon
         polygon: list[Vec2] = []
         for target_vertex in vertices:
             direction = (target_vertex - center_point).normalized()
-            ray = direction * radius
+            ray = direction * (ray_length + 1)
             # Instead of casting one ray, casts two rays slightly to the left and right.
             # This prevents boundary sensitivity when casting rays at the vertices.
             jitter = direction.rotated(90) * jitter_size
             left_point = center_point - jitter
             right_point = center_point + jitter
             for cast_from in [left_point, right_point]:
-                # Calculates intersections against each obstacle
-                intersections: list[ObstacleIntersection[T]] = []
-                for obstacle in obstacles:
-                    intersects = IntersectUtils.get_intersects(
-                        line=(cast_from, cast_from + ray),
-                        polyline=obstacle.polyline,
-                    )
-                    for intersect in intersects:
-                        intersections.append(
-                            ObstacleIntersection(
-                                obstacle=obstacle,
-                                point=intersect,
-                            )
-                        )
-                intersections = sorted(
-                    intersections,
-                    key=lambda i: (i.point - center_point).length(),
+                # Cast the ray can get the furthest reachable point
+                new_point = PolygonUtils._get_reachable_point_from_ray(
+                    ray_cast_from=cast_from,
+                    ray_cast_to=cast_from + ray,
+                    boundary_polyline=boundary_polyline,
+                    criteria=criteria,
+                    obstacles=obstacles,
                 )
-
-                # Choose which point from the intersects to append
-                if intersections != []:
-                    new_point: Vec2 = criteria(intersections)
-                else:  # No intersects, use fallback point using the ray
-                    new_point = center_point + ray
-
                 # Snap new point to target vertex
                 if new_point.is_close(target_vertex, abs_tol=1e-3):
                     new_point = target_vertex
@@ -114,18 +113,73 @@ class PolygonUtils:
         return polygon
 
     @staticmethod
+    def _get_reachable_point_from_ray[T](
+        ray_cast_from: Vec2,
+        ray_cast_to: Vec2,
+        boundary_polyline: list[Vec2],
+        criteria: Callable[[list[ObstacleIntersection[T]]], Vec2 | None],
+        obstacles: list[Obstacle[T]],
+    ) -> Vec2:
+
+        # Determine the fallback point as furthest boundary point
+        boundary_intersections = IntersectUtils.get_intersects(
+            line=(ray_cast_from, ray_cast_to),
+            polyline=boundary_polyline,
+        )
+        furthest_boundary_point = max(
+            boundary_intersections,
+            key=lambda point: (point - ray_cast_from).length(),
+        )
+
+        # Calculates intersections against each obstacle
+        intersections: list[ObstacleIntersection[T]] = []
+        for obstacle in obstacles:
+            intersects = IntersectUtils.get_intersects(
+                line=(ray_cast_from, ray_cast_to),
+                polyline=obstacle.polyline,
+            )
+            for intersect in intersects:
+                # Don't include intersections that is outside the boundary
+                boundary_distance = (furthest_boundary_point - ray_cast_from).length()
+                if (intersect - ray_cast_from).length() > boundary_distance:
+                    continue
+
+                intersections.append(
+                    ObstacleIntersection(
+                        obstacle=obstacle,
+                        point=intersect,
+                    )
+                )
+        intersections = sorted(
+            intersections,
+            key=lambda i: (i.point - ray_cast_from).length(),
+        )
+
+        # If intersects, use fallback point
+        if intersections == []:
+            return furthest_boundary_point
+
+        # Choose which point from the intersects to append
+        if (criterion_point := criteria(intersections)) is not None:
+            return criterion_point
+        else:
+            return furthest_boundary_point
+
+    @staticmethod
     def clip_by_fov_cone(
         polyline: list[Vec2],
         center_point: Vec2,
         heading_degree: float,
         fov_degrees: float,
-        radius: float = 1000,
     ) -> list[Vec2]:
-        """Returns a new clipped a polygon to the specified cone."""
+        """Returns a new clipped polygon to the specified cone."""
 
         # Create some rays that defines this FOV cone
+        ray_length = max(
+            ((vertex - center_point).length() for vertex in polyline),
+        )
         forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)
-        forward_ray = forward_direction * radius
+        forward_ray = forward_direction * (ray_length + 1)
         left_ray: Vec2 = center_point + forward_ray.rotated(fov_degrees / 2)
         right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degrees / 2)
 
@@ -193,16 +247,27 @@ class PolygonUtils:
     @staticmethod
     def get_vertices_from_obstacles(
         obstacles: list[Obstacle[Any]],
+        boundary_vertices: list[Vec2],
     ) -> list[Vec2]:
         """
         Returns relevant vertices to cast against for a polygon.
         All vertices of the obstacles are considered along with intersections.
         """
+
+        # Make sure the received boundary is closed loop
+        boundary_polyline = list(boundary_vertices)
+        if boundary_polyline[-1] != boundary_polyline[0]:
+            boundary_polyline.append(boundary_polyline[0])
+
+        # Include each vertices in the obstacle
         vertices: list[Vec2] = []
         for obstacle in obstacles:
-            # FIXME: since polyline is closed loop, its [0] == [-1]
             vertices += obstacle.polyline
 
+        # Include vertices of the boundary too
+        vertices += boundary_polyline
+
+        # Include each obstacle intersections as special vertices
         for obstacle in obstacles:
             for other_obstacle in obstacles:
                 for line in pairwise(obstacle.polyline):
@@ -211,6 +276,15 @@ class PolygonUtils:
                         polyline=other_obstacle.polyline,
                     )
                     vertices += intersects
+
+        # Include boundary-obstacle intersections too
+        for obstacle in obstacles:
+            for line in pairwise(obstacle.polyline):
+                intersects = IntersectUtils.get_intersects(
+                    line=line,
+                    polyline=boundary_polyline,
+                )
+                vertices += intersects
         vertices = PolygonUtils._filter_colocated(vertices)
         return vertices
 

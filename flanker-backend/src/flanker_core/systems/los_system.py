@@ -64,15 +64,22 @@ class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
-    def in_fov(  # TODO This method feels like utils. Where should it be placed?
-        spotter_transform: Transform,
+    def in_fov(
+        gs: GameState,
+        spotter_id: UUID,
         target_pos: Vec2,
-        fov_degrees: float,
     ) -> bool:
         """
-        Util method returns `True` the target position `target_pos`
-        is in FOV cone of spotter position `spotter_transform`.
+        Returns whether the target's position is in spotter's FOV.
         """
+
+        spotter_transform = gs.get_component(spotter_id, Transform)
+        spotter_fire_controls = gs.get_component(spotter_id, FireControls)
+
+        fov_degrees = spotter_fire_controls.fov_degrees
+        if fov_degrees == None:
+            return True
+
         target_angle = spotter_transform.position.angle_to(target_pos)
 
         # Wraps around to be in range [-180, 180]
@@ -81,7 +88,7 @@ class LosSystem:
         return abs(angle_diff) <= fov_degrees / 2
 
     @staticmethod
-    def has_los(  # TODO: should this be refactored to reuse LOS criteria?
+    def has_los(
         gs: GameState,
         spotter_pos: Vec2,
         target_pos: Vec2,
@@ -95,27 +102,24 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
-        # Check each intersection; allow see into and out-from terrain.
-        passed_one_terrain = False
+        # Find all intersections towards the target point
+        obstacle_intersections: list[ObstacleIntersection[UUID]] = []
         for obstacle in LosSystem.get_obstacles(gs, spotter_pos):
-
-            # Ignore spotter's terrain (allow to see out-from terrain)
-            if PolygonUtils.is_inside(
-                point=spotter_pos,
-                polygon=obstacle.polyline,
-            ):
-                continue
-
-            # Count whether it passes one terrain
-            for _ in IntersectUtils.get_intersects(
+            intersections: list[Vec2] = IntersectUtils.get_intersects(
                 line=(spotter_pos, target_pos),
                 polyline=obstacle.polyline,
-            ):
-                if passed_one_terrain:
-                    return False
-                passed_one_terrain = True
+            )
+            obstacle_intersections += [
+                ObstacleIntersection(obstacle, intersection)
+                for intersection in intersections
+            ]
 
-        return True
+        obstacle_intersections = sorted(
+            obstacle_intersections, key=lambda i: (i.point - spotter_pos).length()
+        )
+
+        # LOS is valid if there's no obstacles blocking it
+        return LosSystem.get_furthest_los_point(obstacle_intersections) == None
 
     @staticmethod
     def get_los_from_line(
@@ -233,60 +237,50 @@ class LosSystem:
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
-        # Not in cache; recompute LOS polygon
-        polygon = LosSystem._compute_los_polygon(gs, spotter_pos)
-        cache.los_polygon_by_point[spotter_pos] = polygon
-        return polygon
-
-    @staticmethod
-    def _compute_los_polygon(
-        gs: GameState,
-        spotter_pos: Vec2,
-    ) -> list[Vec2]:
-        """Helper method for `get_los_polygon`. Generates a new LOS polygon."""
-
+        # Not in cache; recompute LOS polygon and update cache
         obstacles = list(LosSystem.get_obstacles(gs, spotter_pos))
-
-        def criteria(
-            intersects: list[ObstacleIntersection[UUID]],
-        ) -> Vec2:
-
-            # Selects points that are not boundaries, but
-            # include the last boundary point.
-            points_in_bound: list[Vec2] = []
-            last_boundary_index: int = -1
-            last_boundary: Vec2 | None = None
-            for intersect in intersects:
-                entity_id = intersect.obstacle.metadata
-                boundary = gs.try_component(entity_id, MapBoundary)
-                if boundary == None:  # Not a boundary
-                    points_in_bound.append(intersect.point)
-                else:  # Is a boundary
-                    last_boundary_index = len(points_in_bound)
-                    last_boundary = intersect.point
-
-            # Select points only within boundary, and reinclude boundary itself
-            points_in_bound = points_in_bound[:last_boundary_index]
-            if last_boundary is not None:
-                points_in_bound.append(last_boundary)
-
-            # Selects the second (or first) point to satisfy LOS rule.
-            # Allow see-into terrain if possible, otherwise use first point.
-            if len(points_in_bound) > 1:
-                new_point = points_in_bound[1]
-            elif len(points_in_bound) == 1:
-                new_point = points_in_bound[0]
-            else:
-                raise ValueError(
-                    "No intersections found; is given point inside boundary?"
-                )
-            return new_point
-
-        return PolygonUtils.get_reachable_polygon(
+        boundary_vertices = [
+            vertex
+            for _, boundary in gs.query(MapBoundary)
+            for vertex in boundary.vertices
+        ]
+        los_polygon = PolygonUtils.get_reachable_polygon(
             center_point=spotter_pos,
             obstacles=obstacles,
-            criteria=criteria,
+            boundary_vertices=boundary_vertices,
+            criteria=LosSystem.get_furthest_los_point,
         )
+        cache.los_polygon_by_point[spotter_pos] = los_polygon
+        return los_polygon
+
+    @staticmethod
+    def get_furthest_los_point(
+        obstacle_intersections: list[ObstacleIntersection[UUID]],
+    ) -> Vec2 | None:
+        """
+        Returns the furthest reaching LOS point from a given obstacles.
+        This is the canonical LOS definition. The line intersects must
+        be sorted from nearest to furthest.
+
+        Note that since LOS is allowed to be seen out from a terrain,
+        the obstacles must not include the terrain originating LOS.
+        """
+
+        # NOTE
+        # Right now, assumes all intersections are normal terrains.
+        # If there are different terrain types, then the metadata
+        # terrain UUID needs to be used to determine LOS.
+        # For now, just return the second point.
+
+        # Allow see-into terrain, so select the second point.
+        if len(obstacle_intersections) > 1:
+            return obstacle_intersections[1].point
+
+        # Only 1 intersects found doesn't count as LOS blocking.
+        # Must be allowed to see through.
+        elif len(obstacle_intersections) == 1:
+            return None
+        return None
 
     @staticmethod
     def get_obstacles(
@@ -295,10 +289,9 @@ class LosSystem:
         mask: int = TerrainFeature.Flag.OPAQUE,
     ) -> Iterable[Obstacle[UUID]]:
         """Yields necessary obstacles for LOS game rule."""
-        for obstacle_id, boundary in gs.query(MapBoundary):
-            vertices = list(boundary.vertices) + [boundary.vertices[0]]
-            yield Obstacle(polyline=vertices, metadata=obstacle_id)
 
+        # Currently, only terrains are needed for obstacles.
+        # This might not be the case as the game grows.
         for obstacle_id, terrain, transform in gs.query(TerrainFeature, Transform):
             if terrain.flag & mask:
                 vertices = TransformUtils.apply(terrain.vertices, transform)
