@@ -64,7 +64,7 @@ class LosSystem:
     """Static system class for checking Line-of-Sight (LOS) against terrain."""
 
     @staticmethod
-    def in_fov(  # TODO This method feels like utils. Where should it be placed?
+    def in_fov(
         spotter_transform: Transform,
         target_pos: Vec2,
         fov_degrees: float,
@@ -81,7 +81,7 @@ class LosSystem:
         return abs(angle_diff) <= fov_degrees / 2
 
     @staticmethod
-    def has_los(  # TODO: should this be refactored to reuse LOS criteria?
+    def has_los(
         gs: GameState,
         spotter_pos: Vec2,
         target_pos: Vec2,
