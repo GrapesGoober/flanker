@@ -107,11 +107,7 @@ class AiActionService:
                 target_transform = gs.get_component(target_id, Transform)
 
                 # Only pivot if not already looking there.
-                if LosSystem.in_fov(
-                    spotter_transform=friendly_transform,
-                    target_pos=target_transform.position,
-                    fov_degrees=friendly_fire_controls.fov_degrees,
-                ):
+                if LosSystem.in_fov(gs, friendly_id, target_transform.position):
                     continue
                 if not LosSystem.has_los(
                     gs,

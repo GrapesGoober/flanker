@@ -2,7 +2,7 @@ from uuid import UUID
 
 from flanker_ai.search_states.waypoints.waypoints_graph import WaypointsGraph
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import FireControls, Transform
+from flanker_core.models.components import Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 
@@ -39,7 +39,6 @@ class WaypointsLosSystemOverrides:
         start_waypoint = WaypointsGraph.get_waypoint(gs, line[0])
         end_waypoint_id = WaypointsGraph.get_waypoint_id(gs, line[1])
         spotter_transform = gs.get_component(spotter_id, Transform)
-        spotter_fire_controls = gs.get_component(spotter_id, FireControls)
         spotter_waypoint_id = WaypointsGraph.get_waypoint_id(
             gs, spotter_transform.position
         )
@@ -51,13 +50,8 @@ class WaypointsLosSystemOverrides:
             path_waypoint = waypoints[path_id]
             if spotter_waypoint_id not in path_waypoint.visible_nodes:
                 continue
-            if spotter_fire_controls.fov_degrees != None:
-                if not LosSystem.in_fov(
-                    spotter_transform=spotter_transform,
-                    target_pos=path_waypoint.position,
-                    fov_degrees=spotter_fire_controls.fov_degrees,
-                ):
-                    continue
+            if not LosSystem.in_fov(gs, spotter_id, path_waypoint.position):
+                continue
             return path_waypoint.position
 
         return None

@@ -65,14 +65,21 @@ class LosSystem:
 
     @staticmethod
     def in_fov(
-        spotter_transform: Transform,
+        gs: GameState,
+        spotter_id: UUID,
         target_pos: Vec2,
-        fov_degrees: float,
     ) -> bool:
         """
-        Util method returns `True` the target position `target_pos`
-        is in FOV cone of spotter position `spotter_transform`.
+        Returns whether the target's position is in spotter's FOV.
         """
+
+        spotter_transform = gs.get_component(spotter_id, Transform)
+        spotter_fire_controls = gs.get_component(spotter_id, FireControls)
+
+        fov_degrees = spotter_fire_controls.fov_degrees
+        if fov_degrees == None:
+            return True
+
         target_angle = spotter_transform.position.angle_to(target_pos)
 
         # Wraps around to be in range [-180, 180]
