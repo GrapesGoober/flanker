@@ -74,16 +74,15 @@ class PolygonUtils:
             obstacles, boundary_vertices
         )
         vertices = sorted(vertices, key=center_point.angle_to)
-        ray_length = (
-            max((vertex - center_point).length() for vertex in boundary_polyline)
-            + jitter_size
+        ray_length = max(
+            (vertex - center_point).length() for vertex in boundary_polyline
         )
 
         # Cast the rays to each vertices and build the reachable polygon
         polygon: list[Vec2] = []
         for target_vertex in vertices:
             direction = (target_vertex - center_point).normalized()
-            ray = direction * ray_length
+            ray = direction * (ray_length + 1)
             # Instead of casting one ray, casts two rays slightly to the left and right.
             # This prevents boundary sensitivity when casting rays at the vertices.
             jitter = direction.rotated(90) * jitter_size
@@ -176,9 +175,11 @@ class PolygonUtils:
         """Returns a new clipped polygon to the specified cone."""
 
         # Create some rays that defines this FOV cone
-        ray_length = max((vertex - center_point).length() for vertex in polyline)
+        ray_length = max(
+            ((vertex - center_point).length() for vertex in polyline),
+        )
         forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)
-        forward_ray = forward_direction * ray_length
+        forward_ray = forward_direction * (ray_length + 1)
         left_ray: Vec2 = center_point + forward_ray.rotated(fov_degrees / 2)
         right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degrees / 2)
 
