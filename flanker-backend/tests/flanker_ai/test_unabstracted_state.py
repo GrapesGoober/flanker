@@ -10,6 +10,7 @@ from flanker_ai.config_models import (
     PointsConfig,
     PolicyConfig,
     SearchPolicyConfig,
+    TranspositionScheme,
     UnabstractedStateConfig,
 )
 from flanker_core.gamestate import GameState
@@ -206,6 +207,9 @@ def add_agent_config(
                 points=move_candidate_points,
             ),
             move_candidates_filter=[],
+            transposition_scheme=TranspositionScheme.NearestInteger(
+                type="NearestInteger"
+            ),
         ),
     )
     gs.add_entity(

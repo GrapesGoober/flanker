@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
+from flanker_ai.config_models import TranspositionScheme
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -13,12 +14,15 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireEffect
 from flanker_core.systems.action_system import ActionSystem
 
+type CombatUnitPositionalKeys = tuple[int, int]
+type CombatUnitRotationalKeys = int
+
 
 @dataclass(frozen=True)
 class CombatUnitKey:
     id: UUID
-    position: tuple[int, int]
-    degrees: int
+    position: CombatUnitPositionalKeys
+    degrees: CombatUnitRotationalKeys
     faction: InitiativeState.Faction
     firing_at: tuple[UUID, FireEffect] | None = None
 
@@ -53,28 +57,12 @@ class AiCacheKeyService:
     @staticmethod
     def get_key(
         gs: GameState,
+        transposition_scheme: TranspositionScheme.ALL,
     ) -> CacheKey:
         """
         Get a hashable cache key given this game state. This key is
         a unique representation of the game state.
         """
-
-        combat_units: list[CombatUnitKey] = []
-        for id, transform, unit, fire_controls in gs.query(
-            Transform, CombatUnit, FireControls
-        ):
-            combat_units.append(
-                CombatUnitKey(
-                    id=id,
-                    position=(
-                        int(round(transform.position.x)),
-                        int(round(transform.position.y)),
-                    ),
-                    degrees=int(round(transform.degrees)),
-                    faction=unit.faction,
-                    firing_at=fire_controls.firing_at,
-                )
-            )
 
         eliminations: list[EliminationKey] = []
         for _, elimination in gs.query(EliminationWinCondition):
@@ -98,9 +86,39 @@ class AiCacheKeyService:
                 )
             )
 
+        combat_units_keys = AiCacheKeyService.get_combat_unit_key(
+            gs, transposition_scheme
+        )
+
         return CacheKey(
             initiative=ActionSystem.get_initiative(gs),
-            combat_units=tuple(combat_units),
+            combat_units=tuple(combat_units_keys),
             eliminations=tuple(eliminations),
             stalls=tuple(stalls),
         )
+
+    @staticmethod
+    def get_combat_unit_key(
+        gs: GameState,
+        transposition_scheme: TranspositionScheme.ALL,
+    ) -> list[CombatUnitKey]:
+
+        match transposition_scheme:
+            case TranspositionScheme.NearestInteger():
+                combat_units: list[CombatUnitKey] = []
+                for id, transform, unit, fire_controls in gs.query(
+                    Transform, CombatUnit, FireControls
+                ):
+                    combat_units.append(
+                        CombatUnitKey(
+                            id=id,
+                            position=(
+                                int(round(transform.position.x)),
+                                int(round(transform.position.y)),
+                            ),
+                            degrees=int(round(transform.degrees)),
+                            faction=unit.faction,
+                            firing_at=fire_controls.firing_at,
+                        )
+                    )
+                return combat_units

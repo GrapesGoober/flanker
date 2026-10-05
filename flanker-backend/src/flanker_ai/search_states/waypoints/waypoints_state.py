@@ -4,6 +4,7 @@ from typing import Sequence, override
 from flanker_ai.config_models import (
     FilterConfig,
     PointsConfig,
+    TranspositionScheme,
 )
 from flanker_ai.search_states.common.ai_action_service import AiActionService
 from flanker_ai.search_states.common.ai_branch_abstraction_service import (
@@ -185,4 +186,9 @@ class WaypointsState(ISearchState[Action]):
 
     @override
     def get_hashable_key(self) -> object:
-        return AiCacheKeyService.get_key(self.gs)
+        return AiCacheKeyService.get_key(
+            gs=self.gs,
+            transposition_scheme=TranspositionScheme.NearestInteger(
+                type="NearestInteger"
+            ),
+        )

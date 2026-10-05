@@ -38,6 +38,15 @@ class FilterConfig:
     type ALL = LosSignaturesFilter | IngressLosSignaturesFilter
 
 
+class TranspositionScheme:
+
+    @dataclass
+    class NearestInteger:
+        type: Literal["NearestInteger"]
+
+    type ALL = NearestInteger
+
+
 @dataclass
 class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
@@ -51,6 +60,7 @@ class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
     move_candidates_pool: PointsConfig.ALL
     move_candidates_filter: list[FilterConfig.ALL]
+    transposition_scheme: TranspositionScheme.ALL
 
 
 class PolicyConfig:
