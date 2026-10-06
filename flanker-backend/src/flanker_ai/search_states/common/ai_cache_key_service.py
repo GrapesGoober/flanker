@@ -19,10 +19,10 @@ from flanker_core.systems.los_system import LosSystem
 @dataclass(frozen=True)
 class CombatUnitKey:
 
-    type PositionalFeature = tuple[int, int]
-    type RotationalFeature = int
-    type LosSignatureFeature = tuple[bool, ...]
-    type Feature = PositionalFeature | RotationalFeature | LosSignatureFeature
+    type RoundedPosition = tuple[int, int]
+    type RoundedRotation = int
+    type LosSignature = tuple[bool, ...]
+    type Feature = RoundedPosition | RoundedRotation | LosSignature
 
     id: UUID
     features: tuple[Feature, ...]
@@ -64,7 +64,7 @@ class AiCacheKeyService:
     ) -> CacheKey:
         """
         Get a hashable cache key given this game state. This key is
-        a unique representation of the game state.
+        a uniqueness value-based identifier of the game state.
         """
 
         eliminations: list[EliminationKey] = []
