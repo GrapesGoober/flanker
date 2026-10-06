@@ -41,14 +41,16 @@ class FilterConfig:
 class TranspositionScheme:
 
     @dataclass
-    class NearestPositionInteger:
-        type: Literal["NearestPositionInteger"]
+    class QuantizedPosition:
+        type: Literal["QuantizedPosition"]
+        step_size: int
 
     @dataclass
-    class NearestRotationInteger:
-        type: Literal["NearestRotationInteger"]
+    class QuantizedRotation:
+        type: Literal["QuantizedRotation"]
+        step_size: int
 
-    type ALL = NearestPositionInteger | NearestRotationInteger
+    type ALL = QuantizedPosition | QuantizedRotation
 
 
 @dataclass

@@ -208,11 +208,13 @@ def add_agent_config(
             ),
             move_candidates_filter=[],
             transposition_schemes=[
-                TranspositionScheme.NearestPositionInteger(
-                    type="NearestPositionInteger"
+                TranspositionScheme.QuantizedPosition(
+                    type="QuantizedPosition",
+                    step_size=1,
                 ),
-                TranspositionScheme.NearestRotationInteger(
-                    type="NearestRotationInteger"
+                TranspositionScheme.QuantizedRotation(
+                    type="QuantizedRotation",
+                    step_size=1,
                 ),
             ],
         ),
