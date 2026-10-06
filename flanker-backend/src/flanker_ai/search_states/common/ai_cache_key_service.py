@@ -14,15 +14,18 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import FireEffect
 from flanker_core.systems.action_system import ActionSystem
 
-type CombatUnitPositionalKeys = tuple[int, int]
-type CombatUnitRotationalKeys = int
-
 
 @dataclass(frozen=True)
 class CombatUnitKey:
+
+    type PositionalFeature = tuple[int, int]
+    type RotationalFeature = int
+
     id: UUID
-    position: CombatUnitPositionalKeys
-    degrees: CombatUnitRotationalKeys
+    features: tuple[
+        PositionalFeature | RotationalFeature,
+        ...,
+    ]
     faction: InitiativeState.Faction
     firing_at: tuple[UUID, FireEffect] | None = None
 
@@ -112,11 +115,13 @@ class AiCacheKeyService:
                     combat_units.append(
                         CombatUnitKey(
                             id=id,
-                            position=(
-                                int(round(transform.position.x)),
-                                int(round(transform.position.y)),
+                            features=(
+                                (
+                                    int(round(transform.position.x)),
+                                    int(round(transform.position.y)),
+                                ),
+                                int(round(transform.degrees)),
                             ),
-                            degrees=int(round(transform.degrees)),
                             faction=unit.faction,
                             firing_at=fire_controls.firing_at,
                         )
