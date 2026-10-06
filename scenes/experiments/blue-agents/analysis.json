@@ -18,6 +18,16 @@
               {
                 "type": "LosSignaturesFilter"
               }
+            ],
+            "transposition_schemes": [
+              {
+                "type": "RoundedPosition",
+                "to_nearest": 1
+              },
+              {
+                "type": "RoundedRotation",
+                "to_nearest": 1
+              }
             ]
           }
         },
