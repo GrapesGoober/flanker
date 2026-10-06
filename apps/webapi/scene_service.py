@@ -90,11 +90,11 @@ class SceneService:
     ) -> GameState:
         component_types = list(SceneService._get_component_types())
         scenes_directory = SceneService._get_scenes_directory(root_path="./scenes")
-        scene_identifier_paths = SceneService._get_scene_identifiers(scenes_directory)
+        scene_paths = SceneService._get_scene_identifiers(scenes_directory)
 
         entities: dict[UUID, Any] = {}
         for scene_identifier in scene_identifiers:
-            scene_path = scene_identifier_paths[scene_identifier]
+            scene_path = scene_paths[scene_identifier]
             with open(scene_path, "r") as f:
                 entities.update(
                     Serializer.deserialize(
