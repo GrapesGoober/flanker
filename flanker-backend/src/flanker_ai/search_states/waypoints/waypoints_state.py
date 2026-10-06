@@ -11,12 +11,14 @@ from flanker_ai.search_states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
-from flanker_ai.search_states.common.ai_cache_key_service import AiCacheKeyService
 from flanker_ai.search_states.common.ai_points_filter_service import (
     AiPointsFilterService,
 )
 from flanker_ai.search_states.common.ai_points_initialize_service import (
     AiPointsInitializeService,
+)
+from flanker_ai.search_states.common.ai_transposition_key_service import (
+    AiTranspositionKeyService,
 )
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_ai.search_states.waypoints.waypoints_graph import WaypointsGraph
@@ -186,7 +188,7 @@ class WaypointsState(ISearchState[Action]):
 
     @override
     def get_hashable_key(self) -> object:
-        return AiCacheKeyService.get_key(
+        return AiTranspositionKeyService.get_key(
             gs=self.gs,
             transposition_schemes=[
                 TranspositionScheme.RoundedPosition(

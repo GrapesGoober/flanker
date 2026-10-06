@@ -54,8 +54,8 @@ class CacheKey:
     stalls: tuple[StallsKey, ...]
 
 
-class AiCacheKeyService:
-    """Utility for creating a cache key of a game state."""
+class AiTranspositionKeyService:
+    """Utility for creating a transposition key of a game state."""
 
     @staticmethod
     def get_key(
@@ -63,8 +63,8 @@ class AiCacheKeyService:
         transposition_schemes: list[TranspositionScheme.ALL],
     ) -> CacheKey:
         """
-        Get a hashable cache key given this game state. This key is
-        a uniqueness value-based identifier of the game state.
+        Get a hashable transposition key object of a game state.
+        This key is a compressed value-based descriptor of a state.
         """
 
         eliminations: list[EliminationKey] = []
@@ -89,7 +89,7 @@ class AiCacheKeyService:
                 )
             )
 
-        combat_units_keys = AiCacheKeyService.get_combat_unit_key(
+        combat_units_keys = AiTranspositionKeyService.get_combat_unit_key(
             gs, transposition_schemes
         )
 
@@ -124,7 +124,7 @@ class AiCacheKeyService:
                         to_nearest = transposition_scheme.to_nearest
                         feature = int(round(transform.degrees / to_nearest))
                     case TranspositionScheme.LosSignatures():
-                        feature = AiCacheKeyService._get_los_signature_of_unit(
+                        feature = AiTranspositionKeyService._get_los_signature_of_unit(
                             gs=gs,
                             unit_id=id,
                             with_fov=transposition_scheme.with_fov,
