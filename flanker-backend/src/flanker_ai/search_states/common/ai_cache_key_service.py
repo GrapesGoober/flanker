@@ -112,15 +112,15 @@ class AiCacheKeyService:
             features: list[CombatUnitKey.Feature] = []
             for transposition_scheme in transposition_schemes:
                 match transposition_scheme:
-                    case TranspositionScheme.QuantizedPosition():
-                        step_size = transposition_scheme.step_size
+                    case TranspositionScheme.RoundedPosition():
+                        to_nearest = transposition_scheme.to_nearest
                         feature = (
-                            int(round(transform.position.x / step_size)),
-                            int(round(transform.position.y / step_size)),
+                            int(round(transform.position.x / to_nearest)),
+                            int(round(transform.position.y / to_nearest)),
                         )
-                    case TranspositionScheme.QuantizedRotation():
-                        step_size = transposition_scheme.step_size
-                        feature = int(round(transform.degrees / step_size))
+                    case TranspositionScheme.RoundedRotation():
+                        to_nearest = transposition_scheme.to_nearest
+                        feature = int(round(transform.degrees / to_nearest))
                 features.append(feature)
 
             combat_units.append(

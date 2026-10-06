@@ -189,9 +189,9 @@ class WaypointsState(ISearchState[Action]):
         return AiCacheKeyService.get_key(
             gs=self.gs,
             transposition_schemes=[
-                TranspositionScheme.QuantizedPosition(
-                    type="QuantizedPosition",
-                    step_size=1,
+                TranspositionScheme.RoundedPosition(
+                    type="RoundedPosition",
+                    to_nearest=1,
                 )
             ],
         )

@@ -41,16 +41,16 @@ class FilterConfig:
 class TranspositionScheme:
 
     @dataclass
-    class QuantizedPosition:
-        type: Literal["QuantizedPosition"]
-        step_size: int
+    class RoundedPosition:
+        type: Literal["RoundedPosition"]
+        to_nearest: int
 
     @dataclass
-    class QuantizedRotation:
-        type: Literal["QuantizedRotation"]
-        step_size: int
+    class RoundedRotation:
+        type: Literal["RoundedRotation"]
+        to_nearest: int
 
-    type ALL = QuantizedPosition | QuantizedRotation
+    type ALL = RoundedPosition | RoundedRotation
 
 
 @dataclass
