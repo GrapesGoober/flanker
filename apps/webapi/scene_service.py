@@ -33,6 +33,8 @@ from webapi.models import (
     GameStateInspection,
     GameViewState,
     GameViewStateResponse,
+    SceneDirectory,
+    SceneEntry,
     SceneManifest,
     SceneManifestResponse,
     SquadModel,
@@ -41,60 +43,80 @@ from webapi.models import (
 
 class SceneService:
 
-    type ScenesDirectory = dict[str, "str | ScenesDirectory"]
-
     @staticmethod
-    def _get_scenes_directory(
-        root_path: str,
-    ) -> ScenesDirectory:
+    def get_scene_directory(
+        directory_path: str,
+        directory_name: str,
+        parent_names: list[str] = [],
+    ) -> SceneDirectory:
 
-        scenes: SceneService.ScenesDirectory = {}
-        with os.scandir(root_path) as entries:
+        scenes = SceneDirectory(type="SceneDirectory", name=directory_name, entries=[])
+
+        with os.scandir(directory_path) as entries:
             for entry in entries:
+                name, extension = os.path.splitext(entry.name)
+                full_names: list[str] = parent_names + [name]
                 if entry.is_dir():
-                    scenes[entry.name] = SceneService._get_scenes_directory(
-                        root_path=entry.path,
+                    scenes.entries.append(
+                        SceneService.get_scene_directory(
+                            directory_path=entry.path,
+                            directory_name=name,
+                            parent_names=full_names,
+                        )
                     )
                 elif entry.is_file():
-                    name, extension = os.path.splitext(entry.name)
                     if extension != ".json":
                         continue
-                    scenes[name] = entry.path
+                    scenes.entries.append(
+                        SceneEntry(
+                            type="SceneEntry",
+                            name=name,
+                            identifier=".".join(full_names),
+                            path=entry.path,
+                        )
+                    )
+
         return scenes
 
     @staticmethod
-    def _get_scene_identifiers(
-        scene_directory: ScenesDirectory,
-        parent_names: list[str] = [],
-    ) -> dict[int, str]:
+    def _get_scene_path(
+        scenes_directory: SceneDirectory,
+        identifier: str,
+    ) -> str | None:
 
-        scene_identifiers: dict[int, str] = {}
-        for name, entry in scene_directory.items():
-            full_names: list[str] = parent_names + [name]
+        for entry in scenes_directory.entries:
             match entry:
-                case str():
-                    identifier = hash(full_names)
-                    scene_identifiers[identifier] = entry
-                case _:
-                    nested_identifiers = SceneService._get_scene_identifiers(
-                        scene_directory=entry,
-                        parent_names=full_names,
+                case SceneEntry():
+                    if entry.identifier == identifier:
+                        return entry.path
+                case SceneDirectory():
+                    path = SceneService._get_scene_path(
+                        scenes_directory=entry, identifier=identifier
                     )
-                    scene_identifiers.update(nested_identifiers)
+                    if path == None:
+                        continue
+                    return path
 
-        return scene_identifiers
+        return None
 
     @staticmethod
     def load_game_state_via_identifiers(
-        scene_identifiers: list[int],
+        scene_identifiers: list[str],
     ) -> GameState:
         component_types = list(SceneService._get_component_types())
-        scenes_directory = SceneService._get_scenes_directory(root_path="./scenes")
-        scene_paths = SceneService._get_scene_identifiers(scenes_directory)
+        scenes_directory = SceneService.get_scene_directory(
+            directory_path="./scenes",
+            directory_name="scenes",
+        )
 
         entities: dict[UUID, Any] = {}
         for scene_identifier in scene_identifiers:
-            scene_path = scene_paths[scene_identifier]
+            scene_path = SceneService._get_scene_path(
+                scenes_directory,
+                scene_identifier,
+            )
+            if scene_path == None:
+                raise ValueError(f"Scene {scene_identifier} not found")
             with open(scene_path, "r") as f:
                 entities.update(
                     Serializer.deserialize(
