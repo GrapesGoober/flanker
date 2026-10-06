@@ -210,7 +210,10 @@ def add_agent_config(
             transposition_schemes=[
                 TranspositionScheme.NearestPositionInteger(
                     type="NearestPositionInteger"
-                )
+                ),
+                TranspositionScheme.NearestRotationInteger(
+                    type="NearestRotationInteger"
+                ),
             ],
         ),
     )
