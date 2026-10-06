@@ -1,3 +1,4 @@
+import os
 from dataclasses import is_dataclass
 from inspect import isclass
 from pathlib import Path
@@ -39,6 +40,56 @@ from webapi.models import (
 
 
 class SceneService:
+
+    type ScenesDirectory = dict[str, "str | ScenesDirectory"]
+
+    @staticmethod
+    def _get_scenes_directory(
+        root_path: str,
+    ) -> ScenesDirectory:
+
+        scenes: SceneService.ScenesDirectory = {}
+        with os.scandir(root_path) as entries:
+            for entry in entries:
+                if entry.is_dir():
+                    scenes[entry.name] = SceneService._get_scenes_directory(
+                        root_path=entry.path,
+                    )
+                elif entry.is_file():
+                    name, extension = os.path.splitext(entry.name)
+                    if extension != ".json":
+                        continue
+                    scenes[name] = entry.path
+        return scenes
+
+    @staticmethod
+    def load_game_state_via_directory(
+        scene_identifier: list[str],
+    ) -> GameState:
+        component_types = list(SceneService._get_component_types())
+        entities: dict[UUID, Any] = {}
+
+        scenes_directory = SceneService._get_scenes_directory(root_path="./scenes")
+
+        scene_path = scenes_directory
+        for entry in scene_identifier:
+            if isinstance(scene_path, str):
+                break
+            scene_path = scene_path[entry]
+
+        if not isinstance(scene_path, str):
+            raise ValueError(f"Scene {scene_path} not found.")
+
+        with open(scene_path, "r") as f:
+            entities.update(
+                Serializer.deserialize(
+                    json_data=f.read(),
+                    component_types=component_types,
+                )
+            )
+
+        gs = GameState.load(entities)
+        return gs
 
     @staticmethod
     def _get_component_types() -> Iterable[type[Any]]:

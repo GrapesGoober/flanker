@@ -27,3 +27,12 @@ async def get_game_state_json_from_quick_access(
     """Gets a game state serialized entities table."""
     gs = SceneService.load_from_quick_access(quick_access_name)
     return SceneService.serialize(gs, indent=False)
+
+
+@router.get("/json/new")
+async def get_game_state_json_new_manifest(
+    scene_identifier: list[str] = Query(..., alias="sceneIdentifier"),
+) -> str:
+    """Gets a game state serialized entities table."""
+    gs = SceneService.load_game_state_via_directory(scene_identifier)
+    return SceneService.serialize(gs, indent=False)
