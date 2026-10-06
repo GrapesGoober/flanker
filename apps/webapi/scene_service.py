@@ -63,30 +63,45 @@ class SceneService:
         return scenes
 
     @staticmethod
-    def load_game_state_via_directory(
-        scene_identifier: list[str],
+    def _get_scene_identifiers(
+        scene_directory: ScenesDirectory,
+        parent_names: list[str] = [],
+    ) -> dict[int, str]:
+
+        scene_identifiers: dict[int, str] = {}
+        for name, entry in scene_directory.items():
+            full_names: list[str] = parent_names + [name]
+            match entry:
+                case str():
+                    identifier = hash(full_names)
+                    scene_identifiers[identifier] = entry
+                case _:
+                    nested_identifiers = SceneService._get_scene_identifiers(
+                        scene_directory=entry,
+                        parent_names=full_names,
+                    )
+                    scene_identifiers.update(nested_identifiers)
+
+        return scene_identifiers
+
+    @staticmethod
+    def load_game_state_via_identifiers(
+        scene_identifiers: list[int],
     ) -> GameState:
         component_types = list(SceneService._get_component_types())
-        entities: dict[UUID, Any] = {}
-
         scenes_directory = SceneService._get_scenes_directory(root_path="./scenes")
+        scene_identifier_paths = SceneService._get_scene_identifiers(scenes_directory)
 
-        scene_path = scenes_directory
-        for entry in scene_identifier:
-            if isinstance(scene_path, str):
-                break
-            scene_path = scene_path[entry]
-
-        if not isinstance(scene_path, str):
-            raise ValueError(f"Scene {scene_path} not found.")
-
-        with open(scene_path, "r") as f:
-            entities.update(
-                Serializer.deserialize(
-                    json_data=f.read(),
-                    component_types=component_types,
+        entities: dict[UUID, Any] = {}
+        for scene_identifier in scene_identifiers:
+            scene_path = scene_identifier_paths[scene_identifier]
+            with open(scene_path, "r") as f:
+                entities.update(
+                    Serializer.deserialize(
+                        json_data=f.read(),
+                        component_types=component_types,
+                    )
                 )
-            )
 
         gs = GameState.load(entities)
         return gs
