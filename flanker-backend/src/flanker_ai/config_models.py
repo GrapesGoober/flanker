@@ -50,7 +50,12 @@ class TranspositionScheme:
         type: Literal["RoundedRotation"]
         to_nearest: int
 
-    type ALL = RoundedPosition | RoundedRotation
+    @dataclass
+    class LosSignatures:
+        type: Literal["LosSignature"]
+        with_fov: bool
+
+    type ALL = RoundedPosition | RoundedRotation | LosSignatures
 
 
 @dataclass

@@ -13,6 +13,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireEffect
 from flanker_core.systems.action_system import ActionSystem
+from flanker_core.systems.los_system import LosSystem
 
 
 @dataclass(frozen=True)
@@ -20,7 +21,8 @@ class CombatUnitKey:
 
     type PositionalFeature = tuple[int, int]
     type RotationalFeature = int
-    type Feature = PositionalFeature | RotationalFeature
+    type LosSignatureFeature = tuple[bool, ...]
+    type Feature = PositionalFeature | RotationalFeature | LosSignatureFeature
 
     id: UUID
     features: tuple[Feature, ...]
@@ -121,6 +123,13 @@ class AiCacheKeyService:
                     case TranspositionScheme.RoundedRotation():
                         to_nearest = transposition_scheme.to_nearest
                         feature = int(round(transform.degrees / to_nearest))
+                    case TranspositionScheme.LosSignatures():
+                        feature = AiCacheKeyService._get_los_signature_of_unit(
+                            gs=gs,
+                            unit_id=id,
+                            with_fov=transposition_scheme.with_fov,
+                        )
+
                 features.append(feature)
 
             combat_units.append(
@@ -132,3 +141,28 @@ class AiCacheKeyService:
                 )
             )
         return combat_units
+
+    @staticmethod
+    def _get_los_signature_of_unit(
+        gs: GameState,
+        unit_id: UUID,
+        with_fov: bool,
+    ) -> tuple[bool, ...]:
+        unit_position = gs.get_component(unit_id, Transform).position
+        los_signatures: list[bool] = []
+        for other_id, _, other_transform, other_fire_controls in gs.query(
+            CombatUnit, Transform, FireControls
+        ):
+            has_los = LosSystem.has_los(
+                gs,
+                other_transform.position,
+                unit_position,
+            )
+
+            if with_fov == True and other_fire_controls.fov_degrees != None:
+                in_fov = LosSystem.in_fov(gs, other_id, unit_position)
+                has_los = has_los and in_fov
+
+            los_signatures.append(has_los)
+
+        return tuple(los_signatures)
