@@ -36,13 +36,13 @@ class UnabstractedState(ISearchState[Action]):
         self,
         move_pool_config: PointsConfig.ALL,
         move_filter_config: list[FilterConfig.ALL],
-        transposition_scheme: TranspositionScheme.ALL,
+        transposition_schemes: list[TranspositionScheme.ALL],
     ) -> None:
         self._gs = GameState()
         self._move_pool_config = move_pool_config
         self._move_filter_config = move_filter_config
         self._move_candidates: list[Vec2] = []
-        self._transposition_scheme = transposition_scheme
+        self._transposition_schemes = transposition_schemes
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -125,7 +125,7 @@ class UnabstractedState(ISearchState[Action]):
         new_state = UnabstractedState(
             move_pool_config=self._move_pool_config,
             move_filter_config=self._move_filter_config,
-            transposition_scheme=self._transposition_scheme,
+            transposition_schemes=self._transposition_schemes,
         )
         new_state._move_candidates = self._move_candidates
         new_state._gs = new_gs
@@ -170,4 +170,4 @@ class UnabstractedState(ISearchState[Action]):
 
     @override
     def get_hashable_key(self) -> object:
-        return AiCacheKeyService.get_key(self._gs, self._transposition_scheme)
+        return AiCacheKeyService.get_key(self._gs, self._transposition_schemes)

@@ -65,7 +65,7 @@ class AiSearchAgent:
                 state = UnabstractedState(
                     move_pool_config=state_config.move_candidates_pool,
                     move_filter_config=state_config.move_candidates_filter,
-                    transposition_scheme=state_config.transposition_scheme,
+                    transposition_schemes=state_config.transposition_schemes,
                 )
             case WaypointsStateConfig():
                 state_config = config.state

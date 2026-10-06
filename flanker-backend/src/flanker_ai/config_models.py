@@ -41,10 +41,14 @@ class FilterConfig:
 class TranspositionScheme:
 
     @dataclass
-    class NearestInteger:
-        type: Literal["NearestInteger"]
+    class NearestPositionInteger:
+        type: Literal["NearestPositionInteger"]
 
-    type ALL = NearestInteger
+    @dataclass
+    class NearestRotationInteger:
+        type: Literal["NearestRotationInteger"]
+
+    type ALL = NearestPositionInteger | NearestRotationInteger
 
 
 @dataclass
@@ -60,7 +64,7 @@ class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
     move_candidates_pool: PointsConfig.ALL
     move_candidates_filter: list[FilterConfig.ALL]
-    transposition_scheme: TranspositionScheme.ALL
+    transposition_schemes: list[TranspositionScheme.ALL]
 
 
 class PolicyConfig:

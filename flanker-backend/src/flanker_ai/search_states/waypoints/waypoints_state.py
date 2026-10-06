@@ -188,7 +188,9 @@ class WaypointsState(ISearchState[Action]):
     def get_hashable_key(self) -> object:
         return AiCacheKeyService.get_key(
             gs=self.gs,
-            transposition_scheme=TranspositionScheme.NearestInteger(
-                type="NearestInteger"
-            ),
+            transposition_schemes=[
+                TranspositionScheme.NearestPositionInteger(
+                    type="NearestPositionInteger"
+                )
+            ],
         )

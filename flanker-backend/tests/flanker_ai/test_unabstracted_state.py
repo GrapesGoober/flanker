@@ -207,9 +207,11 @@ def add_agent_config(
                 points=move_candidate_points,
             ),
             move_candidates_filter=[],
-            transposition_scheme=TranspositionScheme.NearestInteger(
-                type="NearestInteger"
-            ),
+            transposition_schemes=[
+                TranspositionScheme.NearestPositionInteger(
+                    type="NearestPositionInteger"
+                )
+            ],
         ),
     )
     gs.add_entity(

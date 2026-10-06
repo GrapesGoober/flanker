@@ -20,12 +20,10 @@ class CombatUnitKey:
 
     type PositionalFeature = tuple[int, int]
     type RotationalFeature = int
+    type Feature = PositionalFeature | RotationalFeature
 
     id: UUID
-    features: tuple[
-        PositionalFeature | RotationalFeature,
-        ...,
-    ]
+    features: tuple[Feature, ...]
     faction: InitiativeState.Faction
     firing_at: tuple[UUID, FireEffect] | None = None
 
@@ -60,7 +58,7 @@ class AiCacheKeyService:
     @staticmethod
     def get_key(
         gs: GameState,
-        transposition_scheme: TranspositionScheme.ALL,
+        transposition_schemes: list[TranspositionScheme.ALL],
     ) -> CacheKey:
         """
         Get a hashable cache key given this game state. This key is
@@ -90,7 +88,7 @@ class AiCacheKeyService:
             )
 
         combat_units_keys = AiCacheKeyService.get_combat_unit_key(
-            gs, transposition_scheme
+            gs, transposition_schemes
         )
 
         return CacheKey(
@@ -103,27 +101,32 @@ class AiCacheKeyService:
     @staticmethod
     def get_combat_unit_key(
         gs: GameState,
-        transposition_scheme: TranspositionScheme.ALL,
+        transposition_schemes: list[TranspositionScheme.ALL],
     ) -> list[CombatUnitKey]:
 
-        match transposition_scheme:
-            case TranspositionScheme.NearestInteger():
-                combat_units: list[CombatUnitKey] = []
-                for id, transform, unit, fire_controls in gs.query(
-                    Transform, CombatUnit, FireControls
-                ):
-                    combat_units.append(
-                        CombatUnitKey(
-                            id=id,
-                            features=(
-                                (
-                                    int(round(transform.position.x)),
-                                    int(round(transform.position.y)),
-                                ),
-                                int(round(transform.degrees)),
-                            ),
-                            faction=unit.faction,
-                            firing_at=fire_controls.firing_at,
+        combat_units: list[CombatUnitKey] = []
+
+        for id, transform, unit, fire_controls in gs.query(
+            Transform, CombatUnit, FireControls
+        ):
+            features: list[CombatUnitKey.Feature] = []
+            for transposition_scheme in transposition_schemes:
+                match transposition_scheme:
+                    case TranspositionScheme.NearestPositionInteger():
+                        feature = (
+                            int(round(transform.position.x)),
+                            int(round(transform.position.y)),
                         )
-                    )
-                return combat_units
+                    case TranspositionScheme.NearestRotationInteger():
+                        feature = int(round(transform.degrees))
+                features.append(feature)
+
+            combat_units.append(
+                CombatUnitKey(
+                    id=id,
+                    features=tuple(features),
+                    faction=unit.faction,
+                    firing_at=fire_controls.firing_at,
+                )
+            )
+        return combat_units
