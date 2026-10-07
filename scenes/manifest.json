@@ -1,37 +1,33 @@
 {
-  "quickAccess": {
+  "quick_access": {
     "demo-simple": ["demo-simple"],
     "demo-v2": ["demo-v2"],
     "experiment-rh-rh-scene-1": ["scene-1", "blue-rh", "red-rh", "experiment"],
     "experiment-rh-rh-scene-2": ["scene-2", "blue-rh", "red-rh", "experiment"]
   },
-  "scenePaths": {
-    "demo": "./scenes/demo.json",
-    "demo-v2": "./scenes/demo-v2.json",
-    "demo-simple": "./scenes/demo-simple.json",
-
-    "scene-1": "./scenes/experiments/scenes/scene-1.json",
-    "scene-2": "./scenes/experiments/scenes/scene-2.json",
-    "scene-1-no-fov": "./scenes/experiments/scenes/scene-1-no-fov.json",
-    "scene-2-no-fov": "./scenes/experiments/scenes/scene-2-no-fov.json",
-
-    "blue-handdrawn-s1": "./scenes/experiments/blue-agents/handdrawn-s1.json",
-    "blue-handdrawn-s2": "./scenes/experiments/blue-agents/handdrawn-s2.json",
-    "blue-analysis": "./scenes/experiments/blue-agents/analysis.json",
-    "blue-grid": "./scenes/experiments/blue-agents/grid.json",
-    "blue-mcts": "./scenes/experiments/blue-agents/mcts.json",
-    "blue-rh": "./scenes/experiments/blue-agents/rh.json",
-
-    "red-analysis": "./scenes/experiments/red-agents/analysis.json",
-    "red-grid": "./scenes/experiments/red-agents/grid.json",
-    "red-rh": "./scenes/experiments/red-agents/rh.json",
-
-    "experiment": "./scenes/experiments/settings.json",
-
-    "visualize-expansion": "./scenes/visualizations/expansion.json",
-    "visualize-interrupt": "./scenes/visualizations/interrupt.json",
-    "visualize-los": "./scenes/visualizations/los.json",
-    "visualize-peeking": "./scenes/visualizations/peeking.json",
-    "visualize-polytope": "./scenes/visualizations/polytope.json"
+  "scene_paths": {
+    "demo-simple": ".\\scenes\\demo-simple.json",
+    "demo-v2": ".\\scenes\\demo-v2.json",
+    "demo": ".\\scenes\\demo.json",
+    "blue-analysis": ".\\scenes\\experiments\\blue-agents\\analysis.json",
+    "blue-grid": ".\\scenes\\experiments\\blue-agents\\grid.json",
+    "blue-handdrawn-s1": ".\\scenes\\experiments\\blue-agents\\handdrawn-s1.json",
+    "blue-handdrawn-s2": ".\\scenes\\experiments\\blue-agents\\handdrawn-s2.json",
+    "blue-mcts": ".\\scenes\\experiments\\blue-agents\\mcts.json",
+    "blue-rh": ".\\scenes\\experiments\\blue-agents\\rh.json",
+    "blue-waypoints": ".\\scenes\\experiments\\blue-agents\\waypoints.json",
+    "red-analysis": ".\\scenes\\experiments\\red-agents\\analysis.json",
+    "red-grid": ".\\scenes\\experiments\\red-agents\\grid.json",
+    "red-rh": ".\\scenes\\experiments\\red-agents\\rh.json",
+    "scene-1-no-fov": ".\\scenes\\experiments\\scenes\\scene-1-no-fov.json",
+    "scene-1": ".\\scenes\\experiments\\scenes\\scene-1.json",
+    "scene-2-no-fov": ".\\scenes\\experiments\\scenes\\scene-2-no-fov.json",
+    "scene-2": ".\\scenes\\experiments\\scenes\\scene-2.json",
+    "experiment-settings": ".\\scenes\\experiments\\settings.json",
+    "visualize-expansion": ".\\scenes\\visualizations\\expansion.json",
+    "visualize-interrupt": ".\\scenes\\visualizations\\interrupt.json",
+    "visualize-los": ".\\scenes\\visualizations\\los.json",
+    "visualize-peeking": ".\\scenes\\visualizations\\peeking.json",
+    "visualize-polytope": ".\\scenes\\visualizations\\polytope.json"
   }
 }

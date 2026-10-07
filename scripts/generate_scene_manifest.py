@@ -1,13 +1,13 @@
-import json
 import os
 from dataclasses import dataclass
 from typing import Iterable
+
+from experiment_models import SceneManifest
 
 
 @dataclass
 class SceneEntry:
     path_sequence: list[str]
-    name: str
     path: str
 
 
@@ -28,9 +28,10 @@ def get_scene_entries(
             elif entry.is_file():
                 if extension != ".json":
                     continue
+                if name == "manifest":
+                    continue
                 yield SceneEntry(
                     path_sequence=path_sequence,
-                    name=name,
                     path=entry.path,
                 )
 
@@ -41,7 +42,7 @@ def get_scene_path_by_name(
 
     scene_path_by_name: dict[str, str] = {}
     for scene_entry in get_scene_entries(directory_path):
-        name = scene_entry.name
+        name = "-".join(scene_entry.path_sequence)
         if name not in scene_path_by_name:
             scene_path_by_name[name] = scene_entry.path
 
@@ -49,9 +50,13 @@ def get_scene_path_by_name(
 
 
 if __name__ == "__main__":
-    print(
-        json.dumps(
-            get_scene_path_by_name(directory_path=".\\scenes"),
-            indent=2,
-        )
+
+    with open("./scenes/manifest.json", "r") as f:
+        manifest = SceneManifest.model_validate_json(f.read())
+
+    manifest.scene_paths = get_scene_path_by_name(
+        directory_path=".\\scenes",
     )
+
+    with open("./scenes/manifest.json", "w") as f:
+        f.write(manifest.model_dump_json(indent=2))
