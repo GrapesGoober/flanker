@@ -1,24 +1,25 @@
 <script lang="ts">
 	import {
 		GetGameStateJSON,
-		GetGameStateQuickAccessJSON,
 		GetSceneNames,
 		type SceneManifest
 	} from '$lib/api';
 	import {
 		deleteGameLocal,
 		getGameKeys,
-		saveGameLocal
+		getQuickAccesses,
+		saveGameLocal,
+		type QuickAccess
 	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 
 	let saveGameKeys: string[] = $state([]);
 	let sceneNames: SceneManifest = $state({
-		quickAccessScenes: [],
 		sceneNames: []
 	});
 	let selectedScenes: string[] = $state([]);
 	let newGameName: string = $state('');
+	let quickAccesses: QuickAccess[] = $state([]);
 
 	onMount(reloadList);
 
@@ -29,6 +30,7 @@
 	async function reloadList() {
 		saveGameKeys = getGameKeys();
 		sceneNames = await GetSceneNames();
+		quickAccesses = getQuickAccesses();
 	}
 
 	async function createNewGameFromSelection() {
@@ -39,7 +41,17 @@
 	}
 
 	async function createNewFromQuickAccess(quickAccessName: string) {
-		const stateJson = await GetGameStateQuickAccessJSON(quickAccessName);
+		const quickAccess = quickAccesses.find(
+			(access) => access.quickAccessName === quickAccessName
+		);
+		const quickAccessSceneNames = quickAccess?.sceneNames ?? [];
+
+		if (quickAccessSceneNames.length === 0) {
+			alert('Cannot create a game from this quick access');
+			return;
+		}
+
+		const stateJson = await GetGameStateJSON(quickAccessSceneNames);
 		saveGameLocal(quickAccessName, stateJson);
 		reloadList();
 	}
@@ -78,17 +90,17 @@
 
 <h3>Load From Quick Access</h3>
 
-{#if sceneNames.quickAccessScenes.length === 0}
+{#if quickAccesses.length === 0}
 	<p>No quick access.</p>
 {:else}
 	<ul>
-		{#each sceneNames.quickAccessScenes as quickAccessName}
+		{#each quickAccesses as quickAccess}
 			<li>
 				<input
 					type="button"
-					value={quickAccessName}
+					value={quickAccess.quickAccessName}
 					onclick={() => {
-						createNewFromQuickAccess(quickAccessName);
+						createNewFromQuickAccess(quickAccess.quickAccessName);
 					}}
 				/>
 			</li>
