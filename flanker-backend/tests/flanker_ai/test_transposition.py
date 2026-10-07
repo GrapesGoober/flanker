@@ -1,8 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass
+from inspect import isclass
+from typing import Any, Iterable, Literal
 from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
+from flanker_core.models import components
 from flanker_core.models.components import (
     AssaultControls,
     CombatUnit,
@@ -17,6 +20,14 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
+from flanker_core.serializer import Serializer
+
+
+@dataclass
+class TerrainTypeTag:
+    """Tag to store the terrain type."""
+
+    type: Literal["FOREST"]
 
 
 @dataclass
@@ -36,7 +47,7 @@ def fixture() -> Fixture:
             faction=InitiativeState.Faction.BLUE,
             status=CombatUnit.Status.ACTIVE,
         ),
-        Transform(position=Vec2(15, 5), degrees=-90),
+        Transform(position=Vec2(75, 25), degrees=90),
         FireControls(
             fov_degrees=90,
             override=FireOutcomes.PIN,
@@ -50,7 +61,7 @@ def fixture() -> Fixture:
             faction=InitiativeState.Faction.BLUE,
             status=CombatUnit.Status.ACTIVE,
         ),
-        Transform(position=Vec2(15, 25), degrees=90),
+        Transform(position=Vec2(75, 175), degrees=-90),
         FireControls(
             fov_degrees=90,
             override=FireOutcomes.PIN,
@@ -65,25 +76,32 @@ def fixture() -> Fixture:
         ),
         TerrainFeature(
             vertices=[
-                Vec2(10, 15),
-                Vec2(10, 25),
-                Vec2(20, 25),
-                Vec2(20, 15),
-            ]
+                Vec2(50, 75),
+                Vec2(50, 125),
+                Vec2(100, 125),
+                Vec2(100, 75),
+            ],
+            flag=TerrainFeature.Flag.OPAQUE,
         ),
+        TerrainTypeTag(type="FOREST"),
     )
 
     gs.add_entity(
         MapBoundary(
             vertices=[
                 Vec2(0, 0),
-                Vec2(0, 50),
-                Vec2(30, 50),
-                Vec2(30, 0),
+                Vec2(0, 200),
+                Vec2(150, 200),
+                Vec2(150, 0),
             ]
         ),
     )
 
+    gs.add_entity(
+        InitiativeState(
+            faction=InitiativeState.Faction.BLUE,
+        )
+    )
     gs.add_entity(
         EliminationWinCondition(
             target_faction=InitiativeState.Faction.RED,
@@ -122,3 +140,25 @@ def fixture() -> Fixture:
         friendly_id=friendly_id,
         enemy_id=enemy_id,
     )
+
+
+# TODO: remove this once test is over
+def test_write(fixture: Fixture) -> None:
+
+    def get_component_types() -> Iterable[type[Any]]:
+        for _, cls in vars(components).items():
+            if isclass(cls) and is_dataclass(cls):
+                yield cls
+        yield TerrainTypeTag
+
+    def serialize(gs: GameState, indent: int | None = None) -> str:
+        component_types = list(get_component_types())
+        entities = gs.dump()
+        return Serializer.serialize(
+            entities,
+            component_types,
+            indent=indent,
+        )
+
+    with open("./scenes/local/test-transposition.json", "w") as f:
+        f.write(serialize(fixture.gs, indent=2))
