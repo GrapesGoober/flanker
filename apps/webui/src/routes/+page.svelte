@@ -154,47 +154,77 @@
 	</ul>
 {/if}
 
-<h3>Add Quick Access</h3>
+<details class="collapsible-section">
+	<summary>
+		<span>Add Quick Access</span>
+	</summary>
 
-<input
-	type="text"
-	placeholder="Quick access name"
-	bind:value={newQuickAccessName}
-/>
+	<div class="collapsible-content">
+		<input
+			type="text"
+			placeholder="Quick access name"
+			bind:value={newQuickAccessName}
+		/>
 
-{#if sceneNames.sceneNames.length === 0}
-	<p>No scenes available to add.</p>
-{:else}
-	<ul>
-		{#each sceneNames.sceneNames as sceneName}
-			<li>
-				<input
-					type="checkbox"
-					value={sceneName}
-					bind:group={newQuickAccessSceneNames}
-				/>
-				{sceneName}
-			</li>
-		{/each}
-	</ul>
-{/if}
+		{#if sceneNames.sceneNames.length === 0}
+			<p>No scenes available to add.</p>
+		{:else}
+			<ul>
+				{#each sceneNames.sceneNames as sceneName}
+					<li>
+						<input
+							type="checkbox"
+							value={sceneName}
+							bind:group={newQuickAccessSceneNames}
+						/>
+						{sceneName}
+					</li>
+				{/each}
+			</ul>
+		{/if}
 
-<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
+		<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
+	</div>
+</details>
 
-<h3>Load From Each Scenes</h3>
+<details class="collapsible-section">
+	<summary>
+		<span>Load From Each Scenes</span>
+	</summary>
 
-{#if sceneNames.sceneNames.length === 0}
-	<p>No scenes.</p>
-{:else}
-	<ul>
-		{#each sceneNames.sceneNames as sceneName}
-			<li>
-				<input type="checkbox" value={sceneName} bind:group={selectedScenes} />
-				{sceneName}
-			</li>
-		{/each}
-	</ul>
-{/if}
+	<div class="collapsible-content">
+		{#if sceneNames.sceneNames.length === 0}
+			<p>No scenes.</p>
+		{:else}
+			<ul>
+				{#each sceneNames.sceneNames as sceneName}
+					<li>
+						<input
+							type="checkbox"
+							value={sceneName}
+							bind:group={selectedScenes}
+						/>
+						{sceneName}
+					</li>
+				{/each}
+			</ul>
+		{/if}
 
-<input type="text" bind:value={newGameName} />
-<input type="button" value="New Game" onclick={createNewGameFromSelection} />
+		<input type="text" bind:value={newGameName} />
+		<input
+			type="button"
+			value="New Game"
+			onclick={createNewGameFromSelection}
+		/>
+	</div>
+</details>
+
+<style>
+	.collapsible-section {
+		margin-bottom: 1rem;
+	}
+
+	.collapsible-content {
+		padding: 0.75rem 0 0;
+	}
+</style>
