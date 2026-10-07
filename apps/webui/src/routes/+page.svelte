@@ -9,6 +9,7 @@
 		getGameKeys,
 		getQuickAccesses,
 		saveGameLocal,
+		setQuickAccesses,
 		type QuickAccess
 	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
@@ -20,6 +21,8 @@
 	let selectedScenes: string[] = $state([]);
 	let newGameName: string = $state('');
 	let quickAccesses: QuickAccess[] = $state([]);
+	let newQuickAccessName: string = $state('');
+	let newQuickAccessSceneNames: string[] = $state([]);
 
 	onMount(reloadList);
 
@@ -31,6 +34,35 @@
 		saveGameKeys = getGameKeys();
 		sceneNames = await GetSceneNames();
 		quickAccesses = getQuickAccesses();
+	}
+
+	function addQuickAccess() {
+		const quickAccessName = newQuickAccessName.trim();
+		const sceneNamesForQuickAccess = newQuickAccessSceneNames.slice();
+
+		if (quickAccessName.length === 0) {
+			alert('Quick access name is required');
+			return;
+		}
+		if (sceneNamesForQuickAccess.length === 0) {
+			alert('Select at least one scene');
+			return;
+		}
+		if (
+			quickAccesses.some((access) => access.quickAccessName === quickAccessName)
+		) {
+			alert('A quick access with this name already exists');
+			return;
+		}
+
+		const newQuickAccess: QuickAccess = {
+			quickAccessName,
+			sceneNames: sceneNamesForQuickAccess
+		};
+		quickAccesses = [...quickAccesses, newQuickAccess];
+		setQuickAccesses(quickAccesses);
+		newQuickAccessName = '';
+		newQuickAccessSceneNames = [];
 	}
 
 	async function createNewGameFromSelection() {
@@ -56,8 +88,17 @@
 		reloadList();
 	}
 
+	function deleteQuickAccess(quickAccessName: string) {
+		if (confirm(`Confirm delete quick access ${quickAccessName}?`)) {
+			quickAccesses = quickAccesses.filter(
+				(access) => access.quickAccessName !== quickAccessName
+			);
+			setQuickAccesses(quickAccesses);
+		}
+	}
+
 	function deleteGameSave(gameKey: string) {
-		if (confirm(`Confirm delete ${gameKey}?`)) {
+		if (confirm(`Confirm delete save ${gameKey}?`)) {
 			deleteGameLocal(gameKey);
 			reloadList();
 		}
@@ -103,10 +144,42 @@
 						createNewFromQuickAccess(quickAccess.quickAccessName);
 					}}
 				/>
+				<input
+					type="button"
+					value="❌"
+					onclick={() => deleteQuickAccess(quickAccess.quickAccessName)}
+				/>
 			</li>
 		{/each}
 	</ul>
 {/if}
+
+<h3>Add Quick Access</h3>
+
+<input
+	type="text"
+	placeholder="Quick access name"
+	bind:value={newQuickAccessName}
+/>
+
+{#if sceneNames.sceneNames.length === 0}
+	<p>No scenes available to add.</p>
+{:else}
+	<ul>
+		{#each sceneNames.sceneNames as sceneName}
+			<li>
+				<input
+					type="checkbox"
+					value={sceneName}
+					bind:group={newQuickAccessSceneNames}
+				/>
+				{sceneName}
+			</li>
+		{/each}
+	</ul>
+{/if}
+
+<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
 
 <h3>Load From Each Scenes</h3>
 
