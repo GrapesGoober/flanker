@@ -27,6 +27,7 @@ class CombatUnitKey:
     id: UUID
     features: tuple[Feature, ...]
     faction: InitiativeState.Faction
+    status: CombatUnit.Status
     firing_at: tuple[UUID, FireEffect] | None = None
 
 
@@ -137,6 +138,7 @@ class AiTranspositionKeyService:
                     id=id,
                     features=tuple(features),
                     faction=unit.faction,
+                    status=unit.status,
                     firing_at=fire_controls.firing_at,
                 )
             )
