@@ -183,20 +183,6 @@ class SceneManifestResponse(BaseModel, CamelCaseConfig):
     scene_names: list[str]
 
 
-class SceneEntry(BaseModel, CamelCaseConfig):
-    type: Literal["SceneEntry"]
-    name: str
-    identifier: str
-    path: str
-
-
-# TODO: rename this to Manifest when rolling out
-class SceneDirectory(BaseModel, CamelCaseConfig):
-    type: Literal["SceneDirectory"]
-    name: str
-    entries: list["SceneEntry | SceneDirectory"]
-
-
 type ActionRequest = Annotated[
     Union[
         MoveActionRequest,

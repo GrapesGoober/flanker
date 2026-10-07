@@ -1,4 +1,3 @@
-import os
 from dataclasses import is_dataclass
 from inspect import isclass
 from pathlib import Path
@@ -33,8 +32,6 @@ from webapi.models import (
     GameStateInspection,
     GameViewState,
     GameViewStateResponse,
-    SceneDirectory,
-    SceneEntry,
     SceneManifest,
     SceneManifestResponse,
     SquadModel,
@@ -42,91 +39,6 @@ from webapi.models import (
 
 
 class SceneService:
-
-    @staticmethod
-    def get_scene_directory(
-        directory_path: str,
-        directory_name: str,
-        parent_names: list[str] = [],
-    ) -> SceneDirectory:
-
-        scenes = SceneDirectory(type="SceneDirectory", name=directory_name, entries=[])
-
-        with os.scandir(directory_path) as entries:
-            for entry in entries:
-                name, extension = os.path.splitext(entry.name)
-                full_names: list[str] = parent_names + [name]
-                if entry.is_dir():
-                    scenes.entries.append(
-                        SceneService.get_scene_directory(
-                            directory_path=entry.path,
-                            directory_name=name,
-                            parent_names=full_names,
-                        )
-                    )
-                elif entry.is_file():
-                    if extension != ".json":
-                        continue
-                    scenes.entries.append(
-                        SceneEntry(
-                            type="SceneEntry",
-                            name=name,
-                            identifier=".".join(full_names),
-                            path=entry.path,
-                        )
-                    )
-
-        return scenes
-
-    @staticmethod
-    def _get_scene_path(
-        scenes_directory: SceneDirectory,
-        identifier: str,
-    ) -> str | None:
-
-        for entry in scenes_directory.entries:
-            match entry:
-                case SceneEntry():
-                    if entry.identifier == identifier:
-                        return entry.path
-                case SceneDirectory():
-                    path = SceneService._get_scene_path(
-                        scenes_directory=entry, identifier=identifier
-                    )
-                    if path == None:
-                        continue
-                    return path
-
-        return None
-
-    @staticmethod
-    def load_game_state_via_identifiers(
-        scene_identifiers: list[str],
-    ) -> GameState:
-        component_types = list(SceneService._get_component_types())
-        scenes_directory = SceneService.get_scene_directory(
-            directory_path="./scenes",
-            directory_name="scenes",
-        )
-
-        entities: dict[UUID, Any] = {}
-        for scene_identifier in scene_identifiers:
-            scene_path = SceneService._get_scene_path(
-                scenes_directory,
-                scene_identifier,
-            )
-            if scene_path == None:
-                raise ValueError(f"Scene {scene_identifier} not found")
-            with open(scene_path, "r") as f:
-                entities.update(
-                    Serializer.deserialize(
-                        json_data=f.read(),
-                        component_types=component_types,
-                    )
-                )
-
-        gs = GameState.load(entities)
-        return gs
 
     @staticmethod
     def _get_component_types() -> Iterable[type[Any]]:
