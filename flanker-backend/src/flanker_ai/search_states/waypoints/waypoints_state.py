@@ -194,6 +194,10 @@ class WaypointsState(ISearchState[Action]):
                 TranspositionScheme.RoundedPosition(
                     type="RoundedPosition",
                     to_nearest=1,
-                )
+                ),
+                TranspositionScheme.RoundedRotation(
+                    type="RoundedRotation",
+                    to_nearest=1,
+                ),
             ],
         )
