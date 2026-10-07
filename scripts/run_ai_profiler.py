@@ -47,9 +47,9 @@ def get_game_state(
 if __name__ == "__main__":
     gs = get_game_state(
         scene_names=[
-            "experiment",
-            "scene-2",
-            "blue-analysis",
+            "experiment-settings",
+            "scene-1",
+            "blue-transposition",
             "red-rh",
         ]
     )
