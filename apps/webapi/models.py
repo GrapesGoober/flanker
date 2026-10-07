@@ -174,27 +174,11 @@ class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
 
 
 class SceneManifest(BaseModel, CamelCaseConfig):
-    quick_access: dict[str, list[str]]
     scene_paths: dict[str, str]
 
 
 class SceneManifestResponse(BaseModel, CamelCaseConfig):
-    quick_access_scenes: list[str]  # This can be local data at client
     scene_names: list[str]
-
-
-class SceneEntry(BaseModel, CamelCaseConfig):
-    type: Literal["SceneEntry"]
-    name: str
-    identifier: str
-    path: str
-
-
-# TODO: rename this to Manifest when rolling out
-class SceneDirectory(BaseModel, CamelCaseConfig):
-    type: Literal["SceneDirectory"]
-    name: str
-    entries: list["SceneEntry | SceneDirectory"]
 
 
 type ActionRequest = Annotated[

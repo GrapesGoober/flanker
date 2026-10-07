@@ -48,22 +48,6 @@ export async function GetSceneNames(): Promise<SceneManifest> {
 	return data;
 }
 
-/** Get game state entities table from quick access in JSON string. */
-export async function GetGameStateQuickAccessJSON(
-	quickAccessName: string
-): Promise<string> {
-	const { data, error } = await client.GET('/api/scenes/quick-access/json', {
-		params: {
-			query: {
-				quickAccessName: quickAccessName
-			}
-		}
-	});
-	if (error) throw new Error(JSON.stringify(error));
-
-	return data;
-}
-
 /** Get current combat unit states for the game. */
 export async function GetViewStatesData(
 	jsonState: string

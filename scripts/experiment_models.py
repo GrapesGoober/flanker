@@ -40,6 +40,4 @@ class SceneManifest(BaseModel):
         alias_generator=to_camel,
         populate_by_name=True,
     )
-
-    quick_access: dict[str, list[str]]
     scene_paths: dict[str, str]

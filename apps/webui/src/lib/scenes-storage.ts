@@ -1,5 +1,22 @@
 const prefix = 'game:';
 
+export type QuickAccess = {
+	quickAccessName: string;
+	sceneNames: string[];
+};
+
+const QUICK_ACCESS_KEY = 'QUICK_ACCESSES';
+
+export function getQuickAccesses(): QuickAccess[] {
+	const quickAccesses = localStorage.getItem(QUICK_ACCESS_KEY);
+	if (quickAccesses === null) return [];
+	return JSON.parse(quickAccesses) as QuickAccess[];
+}
+
+export function setQuickAccesses(quick_accesses: QuickAccess[]) {
+	localStorage.setItem(QUICK_ACCESS_KEY, JSON.stringify(quick_accesses));
+}
+
 export function getGameKeys(): string[] {
 	const keys: string[] = [];
 	for (let i = 0; i < localStorage.length; i++) {
