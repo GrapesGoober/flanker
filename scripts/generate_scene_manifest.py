@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import dataclass
 from typing import Iterable
@@ -7,6 +8,7 @@ from typing import Iterable
 class SceneEntry:
     path_sequence: list[str]
     name: str
+    path: str
 
 
 def get_scene_entries(
@@ -29,8 +31,27 @@ def get_scene_entries(
                 yield SceneEntry(
                     path_sequence=path_sequence,
                     name=name,
+                    path=entry.path,
                 )
 
 
+def get_scene_path_by_name(
+    directory_path: str = "./scenes",
+) -> dict[str, str]:
+
+    scene_path_by_name: dict[str, str] = {}
+    for scene_entry in get_scene_entries(directory_path):
+        name = scene_entry.name
+        if name not in scene_path_by_name:
+            scene_path_by_name[name] = scene_entry.path
+
+    return scene_path_by_name
+
+
 if __name__ == "__main__":
-    print(list(get_scene_entries(directory_path="./scenes")))
+    print(
+        json.dumps(
+            get_scene_path_by_name(directory_path=".\\scenes"),
+            indent=2,
+        )
+    )
