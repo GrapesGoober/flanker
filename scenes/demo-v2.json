@@ -27,7 +27,17 @@
               "type": "Random",
               "count": 10
             },
-            "move_candidates_filter": []
+            "move_candidates_filter": [],
+            "transposition_schemes": [
+              {
+                "type": "RoundedPosition",
+                "to_nearest": 1
+              },
+              {
+                "type": "RoundedRotation",
+                "to_nearest": 1
+              }
+            ]
           }
         }
       }

@@ -4,18 +4,21 @@ from typing import Sequence, override
 from flanker_ai.config_models import (
     FilterConfig,
     PointsConfig,
+    TranspositionScheme,
 )
 from flanker_ai.search_states.common.ai_action_service import AiActionService
 from flanker_ai.search_states.common.ai_branch_abstraction_service import (
     AiBranchAbstractionService,
 )
 from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
-from flanker_ai.search_states.common.ai_cache_key_service import AiCacheKeyService
 from flanker_ai.search_states.common.ai_points_filter_service import (
     AiPointsFilterService,
 )
 from flanker_ai.search_states.common.ai_points_initialize_service import (
     AiPointsInitializeService,
+)
+from flanker_ai.search_states.common.ai_transposition_key_service import (
+    AiTranspositionKeyService,
 )
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.gamestate import GameState
@@ -35,11 +38,13 @@ class UnabstractedState(ISearchState[Action]):
         self,
         move_pool_config: PointsConfig.ALL,
         move_filter_config: list[FilterConfig.ALL],
+        transposition_schemes: list[TranspositionScheme.ALL],
     ) -> None:
         self._gs = GameState()
         self._move_pool_config = move_pool_config
         self._move_filter_config = move_filter_config
         self._move_candidates: list[Vec2] = []
+        self._transposition_schemes = transposition_schemes
 
     @override
     def get_score(self, maximizing_faction: InitiativeState.Faction) -> float:
@@ -122,6 +127,7 @@ class UnabstractedState(ISearchState[Action]):
         new_state = UnabstractedState(
             move_pool_config=self._move_pool_config,
             move_filter_config=self._move_filter_config,
+            transposition_schemes=self._transposition_schemes,
         )
         new_state._move_candidates = self._move_candidates
         new_state._gs = new_gs
@@ -166,4 +172,4 @@ class UnabstractedState(ISearchState[Action]):
 
     @override
     def get_hashable_key(self) -> object:
-        return AiCacheKeyService.get_key(self._gs)
+        return AiTranspositionKeyService.get_key(self._gs, self._transposition_schemes)

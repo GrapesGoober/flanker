@@ -38,6 +38,26 @@ class FilterConfig:
     type ALL = LosSignaturesFilter | IngressLosSignaturesFilter
 
 
+class TranspositionScheme:
+
+    @dataclass
+    class RoundedPosition:
+        type: Literal["RoundedPosition"]
+        to_nearest: int
+
+    @dataclass
+    class RoundedRotation:
+        type: Literal["RoundedRotation"]
+        to_nearest: int
+
+    @dataclass
+    class LosSignatures:
+        type: Literal["LosSignature"]
+        with_fov: bool
+
+    type ALL = RoundedPosition | RoundedRotation | LosSignatures
+
+
 @dataclass
 class WaypointsStateConfig:
     type: Literal["WaypointsStateConfig"]
@@ -51,6 +71,7 @@ class UnabstractedStateConfig:
     type: Literal["UnabstractedStateConfig"]
     move_candidates_pool: PointsConfig.ALL
     move_candidates_filter: list[FilterConfig.ALL]
+    transposition_schemes: list[TranspositionScheme.ALL]
 
 
 class PolicyConfig:
