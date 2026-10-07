@@ -219,21 +219,21 @@ def test_different_unit(fixture: Fixture) -> None:
         gs=gs_2,
         transposition_schemes=fixture.transposition_schemes,
     )
-    assert key_1 != key_2, "The unit does not have same status."
+    assert key_1 != key_2, "The units does not have same status."
 
     unit_2.status = CombatUnit.Status.ACTIVE
     key_2 = AiTranspositionKeyService.get_key(
         gs=gs_2,
         transposition_schemes=fixture.transposition_schemes,
     )
-    assert key_1 == key_2, "The two states are the same."
+    assert key_1 == key_2, "The units are the same."
 
     unit_2.faction = InitiativeState.Faction.RED
     key_2 = AiTranspositionKeyService.get_key(
         gs=gs_2,
         transposition_schemes=fixture.transposition_schemes,
     )
-    assert key_1 != key_2, "The unit does not have same factions."
+    assert key_1 != key_2, "The units does not have same factions."
 
 
 def test_position_rounding(fixture: Fixture) -> None:
@@ -300,3 +300,36 @@ def test_rotation_rounding(fixture: Fixture) -> None:
     assert (
         key_1 != key_2
     ), f"Rotation {initial_degrees} is not the same as {new_degrees}"
+
+
+def test_los_signatures(fixture: Fixture) -> None:
+    gs_1 = deepcopy(fixture.gs)
+    gs_2 = deepcopy(fixture.gs)
+
+    position_with_no_los = Vec2(29, 126)
+    position_with_los = Vec2(22, 120)
+
+    gs_2_unit_2_transform = gs_2.get_component(fixture.unit_2_id, Transform)
+    gs_2_unit_2_transform.position = position_with_no_los
+
+    gs_1_unit_2_transform = gs_1.get_component(fixture.unit_2_id, Transform)
+    gs_1_unit_2_transform.position = position_with_no_los
+
+    key_1 = AiTranspositionKeyService.get_key(
+        gs=gs_1,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    assert key_1 == key_2, "Two states must compare the same."
+
+    gs_1_unit_2_transform = gs_1.get_component(fixture.unit_2_id, Transform)
+    gs_2_unit_2_transform.position = position_with_los
+
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    assert key_1 != key_2, "The two units doesn't share LOS."
