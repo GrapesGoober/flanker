@@ -21,6 +21,7 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
+from webapi.game_view_service import GameViewService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     AiMatchResponse,
@@ -120,7 +121,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=SceneService.get_view_state(gs_snapshot),
+                        view_state=GameViewService.get_view_state(gs_snapshot),
                     )
 
                 case PivotAction(), PivotActionResult():
@@ -130,7 +131,7 @@ class AiService:
                             to=result.action.to,
                         ),
                         reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=SceneService.get_view_state(gs_snapshot),
+                        view_state=GameViewService.get_view_state(gs_snapshot),
                     )
                 case FireAction(), FireActionResult():
                     log = FireActionLog(
@@ -139,7 +140,7 @@ class AiService:
                             target_id=result.action.target_id,
                         ),
                         outcome=result.result.outcome,
-                        view_state=SceneService.get_view_state(gs_snapshot),
+                        view_state=GameViewService.get_view_state(gs_snapshot),
                     )
                 case AssaultAction(), AssaultActionResult():
                     log = AssaultActionLog(
@@ -149,7 +150,7 @@ class AiService:
                         ),
                         outcome=result.result.outcome,
                         reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=SceneService.get_view_state(gs_snapshot),
+                        view_state=GameViewService.get_view_state(gs_snapshot),
                     )
 
                 case _:

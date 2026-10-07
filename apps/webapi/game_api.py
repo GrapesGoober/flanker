@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body
 from webapi.action_service import ActionService
 from webapi.ai_service import AiService
+from webapi.game_view_service import GameViewService
 from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
@@ -23,7 +24,7 @@ async def get_view_state(
 ) -> GameViewState:
     """Get all the scene's view state for the player faction."""
     gs = SceneService.deserialize(state)
-    return SceneService.get_view_state(gs)
+    return GameViewService.get_view_state(gs)
 
 
 @router.post("/inspect")
@@ -32,7 +33,7 @@ async def get_state_inspection(
 ) -> GameStateInspection:
     """Get the detailed inspection data of the scene."""
     gs = SceneService.deserialize(state)
-    return SceneService.get_inspection(gs)
+    return GameViewService.get_inspection(gs)
 
 
 @router.post("/map")
@@ -53,7 +54,7 @@ async def perform_action(
     gs = SceneService.deserialize(state)
     ActionService.perform(gs, action)
     AiService.play_red_initiative(gs)
-    return SceneService.get_view_state_response(gs)
+    return GameViewService.get_view_state_response(gs)
 
 
 @router.post("/logs")
