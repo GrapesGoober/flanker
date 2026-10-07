@@ -43,16 +43,16 @@ class TranspositionScheme:
     @dataclass
     class RoundedPosition:
         type: Literal["RoundedPosition"]
-        to_nearest: int
+        to_nearest: float
 
     @dataclass
     class RoundedRotation:
         type: Literal["RoundedRotation"]
-        to_nearest: int
+        to_nearest: float
 
     @dataclass
     class LosSignatures:
-        type: Literal["LosSignature"]
+        type: Literal["LosSignatures"]
         with_fov: bool
 
     type ALL = RoundedPosition | RoundedRotation | LosSignatures

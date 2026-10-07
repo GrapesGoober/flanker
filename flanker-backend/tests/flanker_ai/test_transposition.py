@@ -1,9 +1,14 @@
+from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
 from inspect import isclass
 from typing import Any, Iterable, Literal
 from uuid import UUID
 
 import pytest
+from flanker_ai.config_models import TranspositionScheme
+from flanker_ai.search_states.common.ai_transposition_key_service import (
+    AiTranspositionKeyService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import (
@@ -33,15 +38,16 @@ class TerrainTypeTag:
 @dataclass
 class Fixture:
     gs: GameState
-    friendly_id: UUID
-    enemy_id: UUID
+    unit_1_id: UUID
+    unit_2_id: UUID
+    transposition_schemes: list[TranspositionScheme.ALL]
 
 
 @pytest.fixture
 def fixture() -> Fixture:
     gs = GameState()
 
-    friendly_id = gs.add_entity(
+    unit_1_id = gs.add_entity(
         MoveControls(),
         CombatUnit(
             faction=InitiativeState.Faction.BLUE,
@@ -55,7 +61,7 @@ def fixture() -> Fixture:
         AssaultControls(),
     )
 
-    enemy_id = gs.add_entity(
+    unit_2_id = gs.add_entity(
         MoveControls(),
         CombatUnit(
             faction=InitiativeState.Faction.BLUE,
@@ -137,13 +143,34 @@ def fixture() -> Fixture:
 
     return Fixture(
         gs=gs,
-        friendly_id=friendly_id,
-        enemy_id=enemy_id,
+        unit_1_id=unit_1_id,
+        unit_2_id=unit_2_id,
+        transposition_schemes=[
+            TranspositionScheme.RoundedPosition(
+                type="RoundedPosition",
+                to_nearest=33.33,
+            ),
+            TranspositionScheme.RoundedRotation(
+                type="RoundedRotation",
+                to_nearest=22.5,
+            ),
+            TranspositionScheme.LosSignatures(
+                type="LosSignatures",
+                with_fov=False,
+            ),
+            TranspositionScheme.LosSignatures(
+                type="LosSignatures",
+                with_fov=True,
+            ),
+        ],
     )
 
 
 # TODO: remove this once test is over
-def test_write(fixture: Fixture) -> None:
+def serialize_state(
+    gs: GameState,
+    name: str,
+) -> None:
 
     def get_component_types() -> Iterable[type[Any]]:
         for _, cls in vars(components).items():
@@ -160,5 +187,85 @@ def test_write(fixture: Fixture) -> None:
             indent=indent,
         )
 
-    with open("./scenes/local/test-transposition.json", "w") as f:
-        f.write(serialize(fixture.gs, indent=2))
+    with open(f"./scenes/local/{name}.json", "w") as f:
+        f.write(serialize(gs, indent=2))
+
+
+def test_same_state(fixture: Fixture) -> None:
+    gs_1 = deepcopy(fixture.gs)
+    gs_2 = deepcopy(fixture.gs)
+    key_1 = AiTranspositionKeyService.get_key(
+        gs=gs_1,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    assert key_1 == key_2, "Two states must compare the same."
+
+
+def test_position_rounding(fixture: Fixture) -> None:
+    gs_1 = deepcopy(fixture.gs)
+    gs_2 = deepcopy(fixture.gs)
+
+    unit_2_transform = gs_2.get_component(fixture.unit_2_id, Transform)
+    initial_position = unit_2_transform.position
+    new_position = Vec2(65, 175)
+    unit_2_transform.position = new_position
+
+    key_1 = AiTranspositionKeyService.get_key(
+        gs=gs_1,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    assert (
+        key_1 == key_2
+    ), f"Position {initial_position} rounds to the same as {new_position}"
+
+    new_position = Vec2(85, 175)
+    unit_2_transform.position = new_position
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+
+    assert (
+        key_1 != key_2
+    ), f"Position {initial_position} is not the same as {new_position}"
+
+
+def test_rotation_rounding(fixture: Fixture) -> None:
+    gs_1 = deepcopy(fixture.gs)
+    gs_2 = deepcopy(fixture.gs)
+
+    unit_2_transform = gs_2.get_component(fixture.unit_2_id, Transform)
+    initial_degrees = unit_2_transform.position
+    new_degrees = -80
+    unit_2_transform.degrees = new_degrees
+
+    key_1 = AiTranspositionKeyService.get_key(
+        gs=gs_1,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+    assert (
+        key_1 == key_2
+    ), f"Rotation {initial_degrees} rounds to the same as {new_degrees}"
+
+    new_degrees = -45
+    unit_2_transform.degrees = new_degrees
+    key_2 = AiTranspositionKeyService.get_key(
+        gs=gs_2,
+        transposition_schemes=fixture.transposition_schemes,
+    )
+
+    assert (
+        key_1 != key_2
+    ), f"Rotation {initial_degrees} is not the same as {new_degrees}"
