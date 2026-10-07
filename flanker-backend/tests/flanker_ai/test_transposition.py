@@ -220,6 +220,8 @@ def test_different_unit(fixture: Fixture) -> None:
         transposition_schemes=fixture.transposition_schemes,
     )
     assert key_1 != key_2, "The units does not have same status."
+    serialize_state(gs_1, "test-different-unit-gs-1")
+    serialize_state(gs_2, "test-different-unit-gs-2a")
 
     unit_2.status = CombatUnit.Status.ACTIVE
     key_2 = AiTranspositionKeyService.get_key(
@@ -227,6 +229,7 @@ def test_different_unit(fixture: Fixture) -> None:
         transposition_schemes=fixture.transposition_schemes,
     )
     assert key_1 == key_2, "The units are the same."
+    serialize_state(gs_2, "test-different-unit-gs-2b")
 
     unit_2.faction = InitiativeState.Faction.RED
     key_2 = AiTranspositionKeyService.get_key(
@@ -234,6 +237,7 @@ def test_different_unit(fixture: Fixture) -> None:
         transposition_schemes=fixture.transposition_schemes,
     )
     assert key_1 != key_2, "The units does not have same factions."
+    serialize_state(gs_2, "test-different-unit-gs-2c")
 
 
 def test_position_rounding(fixture: Fixture) -> None:
@@ -256,6 +260,8 @@ def test_position_rounding(fixture: Fixture) -> None:
     assert (
         key_1 == key_2
     ), f"Position {initial_position} rounds to the same as {new_position}"
+    serialize_state(gs_1, "test-pos-rounding-base")
+    serialize_state(gs_2, "test-pos-rounding-same")
 
     new_position = Vec2(85, 175)
     unit_2_transform.position = new_position
@@ -267,6 +273,7 @@ def test_position_rounding(fixture: Fixture) -> None:
     assert (
         key_1 != key_2
     ), f"Position {initial_position} is not the same as {new_position}"
+    serialize_state(gs_2, "test-pos-rounding-different")
 
 
 def test_rotation_rounding(fixture: Fixture) -> None:
@@ -289,6 +296,8 @@ def test_rotation_rounding(fixture: Fixture) -> None:
     assert (
         key_1 == key_2
     ), f"Rotation {initial_degrees} rounds to the same as {new_degrees}"
+    serialize_state(gs_1, "test-rot-rounding-base")
+    serialize_state(gs_2, "test-rot-rounding-same")
 
     new_degrees = -45
     unit_2_transform.degrees = new_degrees
@@ -300,6 +309,7 @@ def test_rotation_rounding(fixture: Fixture) -> None:
     assert (
         key_1 != key_2
     ), f"Rotation {initial_degrees} is not the same as {new_degrees}"
+    serialize_state(gs_2, "test-rot-rounding-different")
 
 
 def test_los_signatures(fixture: Fixture) -> None:
@@ -324,6 +334,8 @@ def test_los_signatures(fixture: Fixture) -> None:
         transposition_schemes=fixture.transposition_schemes,
     )
     assert key_1 == key_2, "Two states must compare the same."
+    serialize_state(gs_1, "test-los-base")
+    serialize_state(gs_2, "test-los-same")
 
     gs_1_unit_2_transform = gs_1.get_component(fixture.unit_2_id, Transform)
     gs_2_unit_2_transform.position = position_with_los
@@ -333,3 +345,4 @@ def test_los_signatures(fixture: Fixture) -> None:
         transposition_schemes=fixture.transposition_schemes,
     )
     assert key_1 != key_2, "The two units doesn't share LOS."
+    serialize_state(gs_2, "test-los-different")
