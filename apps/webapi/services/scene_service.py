@@ -36,12 +36,11 @@ class SceneService:
         local_manifest = (
             SceneManifest.model_validate_json(local_manifest_path.read_text())
             if local_manifest_path.exists()
-            else SceneManifest(quick_access={}, scene_paths={})
+            else SceneManifest(scene_paths={})
         )
 
         # Combine both. Local takes priority (right hand side)
         return SceneManifest(
-            quick_access=manifest.quick_access | local_manifest.quick_access,
             scene_paths=manifest.scene_paths | local_manifest.scene_paths,
         )
 
@@ -50,7 +49,6 @@ class SceneService:
         manifest = SceneService.get_manifest()
 
         return SceneManifestResponse(
-            quick_access_scenes=list(manifest.quick_access.keys()),
             scene_names=list(manifest.scene_paths.keys()),
         )
 
@@ -91,11 +89,3 @@ class SceneService:
 
         gs = GameState.load(entities)
         return gs
-
-    @staticmethod
-    def load_from_quick_access(
-        quick_access_name: str,
-    ) -> GameState:
-        manifest = SceneService.get_manifest()
-        scene_names = manifest.quick_access[quick_access_name]
-        return SceneService.load_game_state(scene_names)

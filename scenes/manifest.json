@@ -1,10 +1,4 @@
 {
-  "quick_access": {
-    "demo-simple": ["demo-simple"],
-    "demo-v2": ["demo-v2"],
-    "experiment-rh-rh-scene-1": ["scene-1", "blue-rh", "red-rh", "experiment"],
-    "experiment-rh-rh-scene-2": ["scene-2", "blue-rh", "red-rh", "experiment"]
-  },
   "scene_paths": {
     "demo-simple": "scenes\\demo-simple.json",
     "demo-v2": "scenes\\demo-v2.json",
