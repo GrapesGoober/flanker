@@ -18,11 +18,11 @@
             "transposition_schemes": [
               {
                 "type": "RoundedPosition",
-                "to_nearest": 33.33
+                "to_nearest": 100
               },
               {
                 "type": "RoundedRotation",
-                "to_nearest": 33.33
+                "to_nearest": 45
               },
               {
                 "type": "LosSignatures",
