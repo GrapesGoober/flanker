@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Query
 from webapi.ai_service import AiService
+from webapi.combat_unit_service import CombatUnitService
 from webapi.models import (
     AiWaypointConfigRequest,
     GameViewStateResponse,
@@ -64,7 +65,7 @@ async def add_unit(
 ) -> GameViewStateResponse:
     """Add a new combat unit."""
     gs = SceneService.deserialize(state)
-    SceneService.add_unit(gs, unit)
+    CombatUnitService.add_unit(gs, unit)
     return SceneService.get_view_state_response(gs)
 
 
@@ -75,7 +76,7 @@ async def delete_unit(
 ) -> GameViewStateResponse:
     """Deletes a combat unit."""
     gs = SceneService.deserialize(state)
-    SceneService.delete_unit(gs, unit_id)
+    CombatUnitService.delete_unit(gs, unit_id)
     return SceneService.get_view_state_response(gs)
 
 
@@ -86,5 +87,5 @@ async def update_unit(
 ) -> GameViewStateResponse:
     """Edit the combat unit."""
     gs = SceneService.deserialize(state)
-    SceneService.update_unit(gs, unit)
+    CombatUnitService.update_unit(gs, unit)
     return SceneService.get_view_state_response(gs)
