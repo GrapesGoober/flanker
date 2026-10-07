@@ -21,8 +21,6 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
-from webapi.game_view_service import GameViewService
-from webapi.logging_service import LoggingService
 from webapi.models import (
     AiMatchResponse,
     AiWaypointConfigRequest,
@@ -35,7 +33,9 @@ from webapi.models import (
     PivotActionLog,
     PivotActionRequest,
 )
-from webapi.scene_service import SceneService
+from webapi.services.game_view_service import GameViewService
+from webapi.services.logging_service import LoggingService
+from webapi.services.scene_service import SceneService
 
 
 class AiService:

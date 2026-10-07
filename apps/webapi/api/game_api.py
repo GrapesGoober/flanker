@@ -1,8 +1,4 @@
 from fastapi import APIRouter, Body
-from webapi.action_service import ActionService
-from webapi.ai_service import AiService
-from webapi.game_view_service import GameViewService
-from webapi.logging_service import LoggingService
 from webapi.models import (
     ActionLog,
     ActionRequest,
@@ -12,8 +8,12 @@ from webapi.models import (
     GameViewStateResponse,
     MapViewState,
 )
-from webapi.scene_service import SceneService
-from webapi.terrain_service import TerrainService
+from webapi.services.action_service import ActionService
+from webapi.services.ai_service import AiService
+from webapi.services.game_view_service import GameViewService
+from webapi.services.logging_service import LoggingService
+from webapi.services.scene_service import SceneService
+from webapi.services.terrain_service import TerrainService
 
 router = APIRouter(prefix="/api/game")
 

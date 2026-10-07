@@ -26,7 +26,7 @@ from webapi.models import (
     GameViewStateResponse,
     SquadModel,
 )
-from webapi.scene_service import SceneService
+from webapi.services.scene_service import SceneService
 
 
 class GameViewService:

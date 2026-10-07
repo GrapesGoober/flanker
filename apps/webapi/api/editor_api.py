@@ -1,17 +1,17 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Query
-from webapi.ai_service import AiService
-from webapi.combat_unit_service import CombatUnitService
-from webapi.game_view_service import GameViewService
 from webapi.models import (
     AiWaypointConfigRequest,
     GameViewStateResponse,
     SquadModel,
     TerrainModel,
 )
-from webapi.scene_service import SceneService
-from webapi.terrain_service import TerrainService
+from webapi.services.ai_service import AiService
+from webapi.services.combat_unit_service import CombatUnitService
+from webapi.services.game_view_service import GameViewService
+from webapi.services.scene_service import SceneService
+from webapi.services.terrain_service import TerrainService
 
 router = APIRouter(prefix="/api/editor")
 
