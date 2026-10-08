@@ -51,24 +51,26 @@ class MinimaxPolicy[TAction]:
 
         next(counter)
 
+        # Have early return for terminal states and leaf nodes.
+        # Have it prefer early wins and later losses by offsetting depth.
         winner = rs.get_winner()
         if winner is not None:
             if winner == MAXIMIZING_FACTION:
                 return rs.get_score(MAXIMIZING_FACTION) + depth_remaining, None
             else:
                 return rs.get_score(MAXIMIZING_FACTION) - depth_remaining, None
-
         if depth_remaining == 0:
             return rs.get_score(MAXIMIZING_FACTION), None
 
+        # If no legal actions are possible, then consider it as lost
         actions = rs.get_actions()
         if not actions:
             return rs.get_score(MAXIMIZING_FACTION), None
 
+        # Loop through each action and recursively expand tree
         maximizing = rs.get_initiative() == MAXIMIZING_FACTION
         best_score = -inf if maximizing else inf
         best_action: TAction | None = None
-
         for action in actions:
             branch = rs.get_one_branch(action)
             if branch == None:
@@ -99,6 +101,7 @@ class MinimaxPolicy[TAction]:
                     depth_remaining=new_branch_depth,
                 )
 
+            # Handle alpha-beta pruning
             if maximizing:
                 if score > best_score:
                     best_score = score
@@ -109,8 +112,7 @@ class MinimaxPolicy[TAction]:
                     best_score = score
                     best_action = action
                 beta = min(beta, best_score)
-
             if beta <= alpha:
-                break  # Alpha-beta cutoff
+                break  # Skip subtree if cutoff
 
         return best_score, best_action
