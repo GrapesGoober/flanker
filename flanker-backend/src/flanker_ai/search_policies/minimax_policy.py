@@ -5,7 +5,7 @@ from math import inf
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
 
-MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
+_MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
 @dataclass
@@ -20,15 +20,22 @@ class MinimaxSearchLog:
 
 
 class MinimaxPolicy[TAction]:
+    """
+    Implements Minimax game-tree search with alpha-beta pruning.
+    """
 
     @staticmethod
     def get_action(
-        rs: ISearchState[TAction],
+        state: ISearchState[TAction],
         depth: int,
     ) -> tuple[TAction | None, MinimaxSearchLog]:
+        """
+        Returns the best actions sequence given a current game state.
+        """
+
         counter = count()
         _, action = MinimaxPolicy[TAction]._search(
-            rs=rs,
+            state=state,
             depth_remaining=depth,
             alpha=-inf,
             beta=inf,
@@ -41,7 +48,7 @@ class MinimaxPolicy[TAction]:
 
     @staticmethod
     def _search(
-        rs: ISearchState[TAction],
+        state: ISearchState[TAction],
         depth_remaining: int,
         alpha: float,
         beta: float,
@@ -52,26 +59,26 @@ class MinimaxPolicy[TAction]:
         next(counter)
 
         # Have early return for terminal states and leaf nodes.
-        winner = rs.get_winner()
+        winner = state.get_winner()
         if winner is not None:
-            if winner == MAXIMIZING_FACTION:
-                return rs.get_score(MAXIMIZING_FACTION), None
+            if winner == _MAXIMIZING_FACTION:
+                return state.get_score(_MAXIMIZING_FACTION), None
             else:
-                return rs.get_score(MAXIMIZING_FACTION), None
+                return state.get_score(_MAXIMIZING_FACTION), None
         if depth_remaining == 0:
-            return rs.get_score(MAXIMIZING_FACTION), None
+            return state.get_score(_MAXIMIZING_FACTION), None
 
         # If no legal actions are possible, then consider it as lost
-        actions = rs.get_actions()
+        actions = state.get_actions()
         if not actions:
-            return rs.get_score(MAXIMIZING_FACTION), None
+            return state.get_score(_MAXIMIZING_FACTION), None
 
         # Loop through each action and recursively expand tree
-        maximizing = rs.get_initiative() == MAXIMIZING_FACTION
-        best_score = -inf if maximizing else inf
+        is_maximizing = state.get_initiative() == _MAXIMIZING_FACTION
+        best_score = -inf if is_maximizing else inf
         best_action: TAction | None = None
         for action in actions:
-            branch = rs.get_one_branch(action)
+            branch = state.get_one_branch(action)
             if branch == None:
                 continue
 
@@ -88,7 +95,7 @@ class MinimaxPolicy[TAction]:
                 score = cached_entry.score
             else:
                 score, _ = MinimaxPolicy[TAction]._search(
-                    rs=branch,
+                    state=branch,
                     depth_remaining=new_branch_depth,
                     alpha=alpha,
                     beta=beta,
@@ -105,8 +112,8 @@ class MinimaxPolicy[TAction]:
                     depth_remaining=new_branch_depth,
                 )
 
-            # Handle alpha-beta pruning
-            if maximizing:
+            # Update score and handle alpha-beta pruning
+            if is_maximizing:
                 if score > best_score:
                     best_score = score
                     best_action = action

@@ -98,7 +98,7 @@ class AiSearchAgent:
                 )
             case PolicyConfig.MinimaxPolicy():
                 action, log = MinimaxPolicy[Action].get_action(
-                    rs=state, depth=config.policy.depth
+                    state=state, depth=config.policy.depth
                 )
             case PolicyConfig.MctsPolicy():
                 match config.policy.simulation_policy:
