@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
+      "AiConfigComponent": {
+        "config": {
+          "policy": {
+            "type": "MinimaxPolicy",
+            "depth": 4
+          },
+          "state": {
+            "type": "UnabstractedStateConfig",
+            "move_candidates_pool": {
+              "type": "GridConfig",
+              "spacing": 50,
+              "offset": 50.1
+            },
+            "move_candidates_filter": [],
+            "transposition_schemes": [
+              {
+                "type": "RoundedPosition",
+                "to_nearest": 100
+              },
+              {
+                "type": "RoundedRotation",
+                "to_nearest": 90
+              }
+            ]
+          }
+        },
+        "faction": "BLUE"
+      }
+    }
+  }
+}

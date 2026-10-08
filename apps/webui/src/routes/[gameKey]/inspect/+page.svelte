@@ -35,7 +35,7 @@
 	let losPolygonDrawMode: 'No Draw' | 'LOS' | 'FOV' = $state('FOV');
 	let drawMoveCandidates: boolean = $state(true);
 	let drawUnitTexts: boolean = $state(true);
-	let drawAspects: boolean = $state(true);
+	let drawAspects: boolean = $state(false);
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {

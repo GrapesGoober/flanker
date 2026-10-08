@@ -134,7 +134,7 @@ def run_match(
         while True:
             try:
                 response = requests.post(
-                    f"{match_config.target}/api/ai-play",
+                    f"{match_config.target}/api/game/ai-play",
                     data=scene_data,
                 )
                 response.raise_for_status()
