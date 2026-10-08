@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from itertools import count
 from math import inf
-from typing import Any
 
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
@@ -9,10 +8,10 @@ from flanker_core.models.components import InitiativeState
 MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
-@dataclass(frozen=True)
-class _TranspositionCacheKey:
-    state_snapshot: Any
-    current_depth: int
+@dataclass
+class _TranspositionEntry:
+    score: float
+    depth_remaining: int
 
 
 @dataclass
@@ -30,7 +29,7 @@ class MinimaxPolicy[TAction]:
         counter = count()
         _, action = MinimaxPolicy[TAction]._search(
             rs=rs,
-            depth=depth,
+            depth_remaining=depth,
             alpha=-inf,
             beta=inf,
             counter=counter,
@@ -43,11 +42,11 @@ class MinimaxPolicy[TAction]:
     @staticmethod
     def _search(
         rs: ISearchState[TAction],
-        depth: int,
+        depth_remaining: int,
         alpha: float,
         beta: float,
         counter: "count[int]",
-        transposition_table: dict[object, float],
+        transposition_table: dict[object, _TranspositionEntry],
     ) -> tuple[float, TAction | None]:
 
         next(counter)
@@ -55,11 +54,11 @@ class MinimaxPolicy[TAction]:
         winner = rs.get_winner()
         if winner is not None:
             if winner == MAXIMIZING_FACTION:
-                return rs.get_score(MAXIMIZING_FACTION) + depth, None
+                return rs.get_score(MAXIMIZING_FACTION) + depth_remaining, None
             else:
-                return rs.get_score(MAXIMIZING_FACTION) - depth, None
+                return rs.get_score(MAXIMIZING_FACTION) - depth_remaining, None
 
-        if depth == 0:
+        if depth_remaining == 0:
             return rs.get_score(MAXIMIZING_FACTION), None
 
         actions = rs.get_actions()
@@ -75,23 +74,30 @@ class MinimaxPolicy[TAction]:
             if branch == None:
                 continue
 
+            new_branch_depth = depth_remaining - 1
             state_key = branch.get_hashable_key()
-            cache_key = _TranspositionCacheKey(
-                state_snapshot=state_key,
-                current_depth=depth - 1,
-            )
+            cached_entry = transposition_table.get(state_key)
 
-            score = transposition_table.get(cache_key, None)
-            if score == None:  # Reuse the cached reward if possible
+            # Reuse the cached score value if exist, but also only if the
+            # cached entry is shallower than the current ply.
+            if (
+                cached_entry is not None
+                and cached_entry.depth_remaining >= new_branch_depth
+            ):
+                score = cached_entry.score
+            else:
                 score, _ = MinimaxPolicy[TAction]._search(
                     rs=branch,
-                    depth=depth - 1,
+                    depth_remaining=new_branch_depth,
                     alpha=alpha,
                     beta=beta,
                     counter=counter,
                     transposition_table=transposition_table,
                 )
-                transposition_table[cache_key] = score
+                transposition_table[state_key] = _TranspositionEntry(
+                    score=score,
+                    depth_remaining=new_branch_depth,
+                )
 
             if maximizing:
                 if score > best_score:
