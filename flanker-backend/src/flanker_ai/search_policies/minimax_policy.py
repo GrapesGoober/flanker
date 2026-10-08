@@ -52,13 +52,12 @@ class MinimaxPolicy[TAction]:
         next(counter)
 
         # Have early return for terminal states and leaf nodes.
-        # Have it prefer early wins and later losses by offsetting depth.
         winner = rs.get_winner()
         if winner is not None:
             if winner == MAXIMIZING_FACTION:
-                return rs.get_score(MAXIMIZING_FACTION) + depth_remaining, None
+                return rs.get_score(MAXIMIZING_FACTION), None
             else:
-                return rs.get_score(MAXIMIZING_FACTION) - depth_remaining, None
+                return rs.get_score(MAXIMIZING_FACTION), None
         if depth_remaining == 0:
             return rs.get_score(MAXIMIZING_FACTION), None
 
@@ -96,6 +95,11 @@ class MinimaxPolicy[TAction]:
                     counter=counter,
                     transposition_table=transposition_table,
                 )
+                # Have scores be closer to zero the further down the tree.
+                # This numbs the impact of future gains or future losses.
+                # Ex: future wins is less preferable than closer wins.
+                score = score * 0.9
+
                 transposition_table[state_key] = _TranspositionEntry(
                     score=score,
                     depth_remaining=new_branch_depth,
