@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from itertools import count
 from math import inf
-from typing import Any
 
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
@@ -9,10 +8,10 @@ from flanker_core.models.components import InitiativeState
 _MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
-@dataclass(frozen=True)
-class _TranspositionCacheKey:
-    state_snapshot: Any
-    current_depth: int
+@dataclass
+class _TranspositionEntry:
+    score: float
+    depth_remaining: int
 
 
 @dataclass
@@ -21,6 +20,9 @@ class ExpectimaxSearchLog:
 
 
 class ExpectimaxPolicy[TAction]:
+    """
+    Implements Expectimax game-tree search.
+    """
 
     @staticmethod
     def get_action(
@@ -30,10 +32,11 @@ class ExpectimaxPolicy[TAction]:
         """
         Returns the best actions sequence given a current game state.
         """
+
         counter = count(0)
         _, action = ExpectimaxPolicy[TAction]._search(
             state=rs,
-            depth=depth,
+            depth_remaining=depth,
             counter=counter,
             transposition_table={},
         )
@@ -44,34 +47,33 @@ class ExpectimaxPolicy[TAction]:
     @staticmethod
     def _search(
         state: ISearchState[TAction],
-        depth: int,
+        depth_remaining: int,
         counter: "count[int]",
-        transposition_table: dict[object, float],
+        transposition_table: dict[object, _TranspositionEntry],
     ) -> tuple[float, TAction | None]:
-        """
-        Returns (best_score, best_action)
-        """
+
         next(counter)
 
-        # Check for early cutoff
+        # Have early return for terminal states and leaf nodes.
         winner = state.get_winner()
-        if winner is not None:  # Winner found
+        if winner is not None:
             # Have it prefer earlier win by offsetting score with depth
             if winner == _MAXIMIZING_FACTION:
-                return state.get_score(_MAXIMIZING_FACTION) + depth, None
+                return state.get_score(_MAXIMIZING_FACTION), None
             else:
-                return state.get_score(_MAXIMIZING_FACTION) - depth, None
-
-        if depth == 0:
+                return state.get_score(_MAXIMIZING_FACTION), None
+        if depth_remaining == 0:
             return state.get_score(_MAXIMIZING_FACTION), None
 
+        # If no legal actions are possible, then consider it as lost
         actions = state.get_actions()
-        if not actions:  # No moves available
+        if not actions:
             return state.get_score(_MAXIMIZING_FACTION), None
 
+        # Loop through each action and recursively expand tree
+        is_maximizing = state.get_initiative() == _MAXIMIZING_FACTION
         best_action: TAction | None = None
-        best_score = -inf if state.get_initiative() == _MAXIMIZING_FACTION else inf
-
+        best_score = -inf if is_maximizing else inf
         for action in actions:
             branches = state.get_branches(action)
             if branches == []:
@@ -79,22 +81,38 @@ class ExpectimaxPolicy[TAction]:
             expected_score = 0
             for probability, branch in branches:
 
+                new_branch_depth = depth_remaining - 1
                 state_key = branch.get_hashable_key()
-                cache_key = _TranspositionCacheKey(
-                    state_snapshot=state_key,
-                    current_depth=depth - 1,
-                )
-                score = transposition_table.get(cache_key, None)
-                if score == None:  # Reuse the cached reward if possible
+                cached_entry = transposition_table.get(state_key)
+
+                # Reuse the cached score value if exist, but also only if the
+                # cached entry is shallower than the current ply.
+                if (
+                    cached_entry is not None
+                    and cached_entry.depth_remaining >= new_branch_depth
+                ):
+                    score = cached_entry.score
+                else:
                     score, _ = ExpectimaxPolicy[TAction]._search(
                         state=branch,
-                        depth=depth - 1,
+                        depth_remaining=new_branch_depth,
                         counter=counter,
                         transposition_table=transposition_table,
                     )
-                    transposition_table[cache_key] = score
+                    # Have scores be closer to zero the further down the tree.
+                    # This numbs the impact of future gains or future losses.
+                    # Ex: future wins is less preferable than closer wins.
+                    score = score * 0.9
+
+                    transposition_table[state_key] = _TranspositionEntry(
+                        score=score,
+                        depth_remaining=new_branch_depth,
+                    )
+
                 expected_score += score * probability
-            if state.get_initiative() == _MAXIMIZING_FACTION:
+
+            # Update score
+            if is_maximizing:
                 if expected_score > best_score:
                     best_score = expected_score
                     best_action = action
