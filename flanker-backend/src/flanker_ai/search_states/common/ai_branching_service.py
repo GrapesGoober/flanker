@@ -107,16 +107,41 @@ class AiBranchingService:
         )
         if len(permutations) == 0:
             raise Exception("Permutations are empty, something went wrong!")
+        return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
-        # Permutation configured; create branches
-        branching_states: list[tuple[float, GameState]] = []
-        for probability, unit_fire_outcomes in permutations:
-            new_state = AiBranchingService.copy(gs)
-            for firer_id, firer_outcome in unit_fire_outcomes.items():
-                fire_controls = new_state.get_component(firer_id, FireControls)
-                fire_controls.override = firer_outcome
-            branching_states.append((probability, new_state))
-        return branching_states
+    @staticmethod
+    def get_one_reactive_fire_branch(
+        gs: GameState,
+        unit_id: UUID,
+        move_to: Vec2,
+    ) -> GameState:
+        """
+        Get a single representative state branch configured with reactive fire overrides.
+        """
+
+        reactive_fire_candidates = MoveSystem.get_interrupt_candidates(
+            gs, unit_id, move_to
+        )
+        firer_ids = {
+            firer_id
+            for _, candidate_firers in reactive_fire_candidates
+            for firer_id in candidate_firers
+        }
+
+        # If there's more than 1 firer, they are all firing SUPPRESS.
+        # If there's only 1 firer, config as PIN. This is bias the tree
+        # to severely avoid moves with many reactive firers, while making it
+        # heavily prefer 1 reactive firer more.
+        outcome = FireOutcomes.PIN if len(firer_ids) == 1 else FireOutcomes.SUPPRESS
+        permutation = {firer_id: outcome for firer_id in firer_ids}
+
+        states = AiBranchingService._get_fire_overriden_states(
+            gs=gs, permutations=[(1, permutation)]
+        )
+        if len(states) != 1:
+            raise Exception("There must only be 1 states configured!")
+        _, state = states[0]
+        return state
 
     @staticmethod
     def get_fire_branches(
@@ -134,7 +159,36 @@ class AiBranchingService:
                 FireOutcomes.PIN: 0.4,
             },
         )
+        if len(permutations) == 0:
+            raise Exception("Permutations are empty, something went wrong!")
+        return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
+    @staticmethod
+    def get_one_fire_branch(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> GameState:
+        """
+        Get a single representative state branch configured with fire overrides.
+        """
+
+        permutation = {unit_id: FireOutcomes.SUPPRESS}
+        states = AiBranchingService._get_fire_overriden_states(
+            gs=gs, permutations=[(1, permutation)]
+        )
+        if len(states) != 1:
+            raise Exception("There must only be 1 states configured!")
+        _, state = states[0]
+        return state
+
+    @staticmethod
+    def _get_fire_overriden_states(
+        gs: GameState,
+        permutations: list[tuple[float, dict[UUID, FireOutcomes]]],
+    ) -> list[tuple[float, GameState]]:
+        """
+        Returns states with overriden fire outcomes and their probabilities.
+        """
         branching_states: list[tuple[float, GameState]] = []
         for probability, outcomes in permutations:
             new_state = AiBranchingService.copy(gs)
@@ -166,14 +220,41 @@ class AiBranchingService:
         return branches
 
     @staticmethod
+    def get_one_assault_branch(
+        gs: GameState,
+        unit_id: UUID,
+        target_id: UUID,
+    ) -> GameState:
+        """
+        Get a single representative state branch configured with
+        reactive fire and assault overrides.
+        """
+        target_transform = gs.get_component(target_id, Transform)
+        new_state = AiBranchingService.get_one_reactive_fire_branch(
+            gs=gs,
+            unit_id=unit_id,
+            move_to=target_transform.position,
+        )
+
+        assault_controls = new_state.get_component(unit_id, AssaultControls)
+        target_unit = new_state.get_component(target_id, CombatUnit)
+        if target_unit.status == CombatUnit.Status.SUPPRESSED:
+            assault_controls.override = AssaultOutcomes.SUCCESS
+        else:
+            assault_controls.override = AssaultOutcomes.FAIL
+        return new_state
+
+    @staticmethod
     def get_action_branches(
-        gs: GameState, action: Action
+        gs: GameState,
+        action: Action,
     ) -> list[tuple[float, GameState]]:
         """
         Returns a list of branching states and their probabilities
         from a given action.
         """
         # Prepare a list of configured branches
+        AiBranchingService.remove_overrides(gs)
         branches: list[tuple[float, GameState]]
         match action:
             case MoveAction():
@@ -201,12 +282,69 @@ class AiBranchingService:
                     unit_id=action.unit_id,
                 )
 
-        # Perform the actions
+        # Perform the action
         for _, new_state in branches:
             result: Any | InvalidAction
             result = ActionSystem.perform(new_state, action)
             # Invalid action won't be performable.
             if isinstance(result, InvalidAction):
                 return []
+            AiBranchingService.remove_overrides(new_state)
 
         return branches
+
+    @staticmethod
+    def get_one_action_branch(
+        gs: GameState,
+        action: Action,
+    ) -> GameState | None:
+        """
+        Returns the most-representative branch from a given action.
+        """
+        AiBranchingService.remove_overrides(gs)
+        # Get configured state depending on action type
+        match action:
+            case MoveAction():
+                branch = AiBranchingService.get_one_reactive_fire_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=action.to,
+                )
+            case PivotAction():
+                transform = gs.get_component(action.unit_id, Transform)
+                branch = AiBranchingService.get_one_reactive_fire_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=transform.position,
+                )
+            case AssaultAction():
+                branch = AiBranchingService.get_one_assault_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    target_id=action.target_id,
+                )
+            case FireAction():
+                branch = AiBranchingService.get_one_fire_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                )
+
+        # Perform the action
+        result = ActionSystem.perform(branch, action)
+        if isinstance(result, InvalidAction):
+            return None
+        AiBranchingService.remove_overrides(gs)
+        return branch
+
+    @staticmethod
+    def remove_overrides(
+        gs: GameState,
+    ) -> None:
+        """
+        Removes all fire and assault overrides in the state.
+        """
+        for _, fire_controls in gs.query(FireControls):
+            fire_controls.override = None
+
+        for _, assault_controls in gs.query(AssaultControls):
+            assault_controls.override = None

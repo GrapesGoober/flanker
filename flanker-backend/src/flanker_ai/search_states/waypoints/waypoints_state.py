@@ -7,9 +7,6 @@ from flanker_ai.config_models import (
     TranspositionScheme,
 )
 from flanker_ai.search_states.common.ai_action_service import AiActionService
-from flanker_ai.search_states.common.ai_branch_abstraction_service import (
-    AiBranchAbstractionService,
-)
 from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
 from flanker_ai.search_states.common.ai_points_filter_service import (
     AiPointsFilterService,
@@ -140,12 +137,12 @@ class WaypointsState(ISearchState[Action]):
         return state_branches
 
     @override
-    def get_one_branch(self, action: Action) -> "WaypointsState | None":
-        branches = AiBranchingService.get_action_branches(self.gs, action)
-        if branches == []:
-            return None
-        branch = AiBranchAbstractionService.pick_branch(branches, action)
-        new_waypoints_state = self.copy(new_state=branch)
+    def get_one_branch(
+        self,
+        action: Action,
+    ) -> ISearchState[Action] | None:
+        new_gs = AiBranchingService.get_one_action_branch(self.gs, action)
+        new_waypoints_state = self.copy(new_state=new_gs)
         return new_waypoints_state
 
     @override
