@@ -57,7 +57,6 @@ class ExpectimaxPolicy[TAction]:
         # Have early return for terminal states and leaf nodes.
         winner = state.get_winner()
         if winner is not None:
-            # Have it prefer earlier win by offsetting score with depth
             if winner == _MAXIMIZING_FACTION:
                 return state.get_score(_MAXIMIZING_FACTION), None
             else:
@@ -86,7 +85,7 @@ class ExpectimaxPolicy[TAction]:
                 cached_entry = transposition_table.get(state_key)
 
                 # Reuse the cached score value if exist, but also only if the
-                # cached entry is shallower than the current ply.
+                # cached entry is more near-root than the current ply.
                 if (
                     cached_entry is not None
                     and cached_entry.depth_remaining >= new_branch_depth

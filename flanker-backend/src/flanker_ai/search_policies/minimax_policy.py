@@ -30,7 +30,7 @@ class MinimaxPolicy[TAction]:
         depth: int,
     ) -> tuple[TAction | None, MinimaxSearchLog]:
         """
-        Returns the best actions sequence given a current game state.
+        Returns the best action and its search log given a current game state.
         """
 
         counter = count()
@@ -87,7 +87,7 @@ class MinimaxPolicy[TAction]:
             cached_entry = transposition_table.get(state_key)
 
             # Reuse the cached score value if exist, but also only if the
-            # cached entry is shallower than the current ply.
+            # cached entry is more near-root than the current ply.
             if (
                 cached_entry is not None
                 and cached_entry.depth_remaining >= new_branch_depth
