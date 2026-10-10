@@ -76,7 +76,7 @@ class ExpectimaxPolicy[TAction]:
         for action in actions:
             branches = state.get_branches(action)
             if branches == []:
-                continue  # Escapes; prevents expected_score=0 being used
+                continue
             expected_score = 0
             for probability, branch in branches:
 
