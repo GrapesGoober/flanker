@@ -30,7 +30,7 @@ class ExpectimaxPolicy[TAction]:
         depth: int,
     ) -> tuple[TAction | None, ExpectimaxSearchLog]:
         """
-        Returns the best actions sequence given a current game state.
+        Returns the best action and its search log given a current game state.
         """
 
         counter = count(0)
