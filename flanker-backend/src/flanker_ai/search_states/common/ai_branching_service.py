@@ -220,8 +220,34 @@ class AiBranchingService:
         return branches
 
     @staticmethod
+    def get_one_assault_branch(
+        gs: GameState,
+        unit_id: UUID,
+        target_id: UUID,
+    ) -> GameState:
+        """
+        Get a single representative state branch configured with
+        reactive fire and assault overrides.
+        """
+        target_transform = gs.get_component(target_id, Transform)
+        new_state = AiBranchingService.get_one_reactive_fire_branch(
+            gs=gs,
+            unit_id=unit_id,
+            move_to=target_transform.position,
+        )
+
+        assault_controls = new_state.get_component(unit_id, AssaultControls)
+        target_unit = new_state.get_component(target_id, CombatUnit)
+        if target_unit.status == CombatUnit.Status.SUPPRESSED:
+            assault_controls.override = AssaultOutcomes.SUCCESS
+        else:
+            assault_controls.override = AssaultOutcomes.FAIL
+        return new_state
+
+    @staticmethod
     def get_action_branches(
-        gs: GameState, action: Action
+        gs: GameState,
+        action: Action,
     ) -> list[tuple[float, GameState]]:
         """
         Returns a list of branching states and their probabilities
@@ -255,7 +281,7 @@ class AiBranchingService:
                     unit_id=action.unit_id,
                 )
 
-        # Perform the actions
+        # Perform the action
         for _, new_state in branches:
             result: Any | InvalidAction
             result = ActionSystem.perform(new_state, action)
@@ -264,3 +290,44 @@ class AiBranchingService:
                 return []
 
         return branches
+
+    @staticmethod
+    def get_one_action_branch(
+        gs: GameState,
+        action: Action,
+    ) -> GameState | None:
+        """
+        Returns the most-representative branch from a given action.
+        """
+        # Get configured state depending on action type
+        match action:
+            case MoveAction():
+                branch = AiBranchingService.get_one_reactive_fire_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=action.to,
+                )
+            case PivotAction():
+                transform = gs.get_component(action.unit_id, Transform)
+                branch = AiBranchingService.get_one_reactive_fire_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    move_to=transform.position,
+                )
+            case AssaultAction():
+                branch = AiBranchingService.get_one_assault_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                    target_id=action.target_id,
+                )
+            case FireAction():
+                branch = AiBranchingService.get_one_fire_branch(
+                    gs=gs,
+                    unit_id=action.unit_id,
+                )
+
+        # Perform the action
+        result = ActionSystem.perform(branch, action)
+        if isinstance(result, InvalidAction):
+            return None
+        return branch
