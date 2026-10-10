@@ -254,6 +254,7 @@ class AiBranchingService:
         from a given action.
         """
         # Prepare a list of configured branches
+        AiBranchingService.remove_overrides(gs)
         branches: list[tuple[float, GameState]]
         match action:
             case MoveAction():
@@ -299,6 +300,7 @@ class AiBranchingService:
         """
         Returns the most-representative branch from a given action.
         """
+        AiBranchingService.remove_overrides(gs)
         # Get configured state depending on action type
         match action:
             case MoveAction():
@@ -331,3 +333,16 @@ class AiBranchingService:
         if isinstance(result, InvalidAction):
             return None
         return branch
+
+    @staticmethod
+    def remove_overrides(
+        gs: GameState,
+    ) -> None:
+        """
+        Removes all fire and assault overrides in the state.
+        """
+        for _, fire_controls in gs.query(FireControls):
+            fire_controls.override = None
+
+        for _, assault_controls in gs.query(AssaultControls):
+            assault_controls.override = None
