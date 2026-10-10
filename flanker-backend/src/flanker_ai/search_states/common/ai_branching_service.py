@@ -107,16 +107,7 @@ class AiBranchingService:
         )
         if len(permutations) == 0:
             raise Exception("Permutations are empty, something went wrong!")
-
-        # Permutation configured; create branches
-        branching_states: list[tuple[float, GameState]] = []
-        for probability, unit_fire_outcomes in permutations:
-            new_state = AiBranchingService.copy(gs)
-            for firer_id, firer_outcome in unit_fire_outcomes.items():
-                fire_controls = new_state.get_component(firer_id, FireControls)
-                fire_controls.override = firer_outcome
-            branching_states.append((probability, new_state))
-        return branching_states
+        return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
     @staticmethod
     def get_fire_branches(
@@ -134,7 +125,18 @@ class AiBranchingService:
                 FireOutcomes.PIN: 0.4,
             },
         )
+        if len(permutations) == 0:
+            raise Exception("Permutations are empty, something went wrong!")
+        return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
+    @staticmethod
+    def _get_fire_overriden_states(
+        gs: GameState,
+        permutations: list[tuple[float, dict[UUID, FireOutcomes]]],
+    ) -> list[tuple[float, GameState]]:
+        """
+        Returns states with each specified units configured for the overrides.
+        """
         branching_states: list[tuple[float, GameState]] = []
         for probability, outcomes in permutations:
             new_state = AiBranchingService.copy(gs)
