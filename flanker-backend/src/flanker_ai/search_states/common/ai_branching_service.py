@@ -110,6 +110,40 @@ class AiBranchingService:
         return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
     @staticmethod
+    def get_one_reactive_fire_branch(
+        gs: GameState,
+        unit_id: UUID,
+        move_to: Vec2,
+    ) -> GameState:
+        """
+        Get a single representative state branch configured with reactive fire overrides.
+        """
+
+        reactive_fire_candidates = MoveSystem.get_interrupt_candidates(
+            gs, unit_id, move_to
+        )
+        firer_ids = {
+            firer_id
+            for _, candidate_firers in reactive_fire_candidates
+            for firer_id in candidate_firers
+        }
+
+        # If there's more than 1 firer, they are all firing SUPPRESS.
+        # If there's only 1 firer, config as PIN. This is bias the tree
+        # to severely avoid moves with many reactive firers, while making it
+        # heavily prefer 1 reactive firer more.
+        outcome = FireOutcomes.PIN if len(firer_ids) == 1 else FireOutcomes.SUPPRESS
+        permutation = {firer_id: outcome for firer_id in firer_ids}
+
+        states = AiBranchingService._get_fire_overriden_states(
+            gs=gs, permutations=[(1, permutation)]
+        )
+        if len(states) != 1:
+            raise Exception("There must only be 1 states configured!")
+        _, state = states[0]
+        return state
+
+    @staticmethod
     def get_fire_branches(
         gs: GameState,
         unit_id: UUID,
@@ -130,12 +164,30 @@ class AiBranchingService:
         return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
     @staticmethod
+    def get_one_fire_branch(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> GameState:
+        """
+        Get a single representative state branch configured with fire overrides.
+        """
+
+        permutation = {unit_id: FireOutcomes.SUPPRESS}
+        states = AiBranchingService._get_fire_overriden_states(
+            gs=gs, permutations=[(1, permutation)]
+        )
+        if len(states) != 1:
+            raise Exception("There must only be 1 states configured!")
+        _, state = states[0]
+        return state
+
+    @staticmethod
     def _get_fire_overriden_states(
         gs: GameState,
         permutations: list[tuple[float, dict[UUID, FireOutcomes]]],
     ) -> list[tuple[float, GameState]]:
         """
-        Returns states with each specified units configured for the overrides.
+        Returns states with overriden fire outcomes and their probabilities.
         """
         branching_states: list[tuple[float, GameState]] = []
         for probability, outcomes in permutations:
