@@ -289,6 +289,7 @@ class AiBranchingService:
             # Invalid action won't be performable.
             if isinstance(result, InvalidAction):
                 return []
+            AiBranchingService.remove_overrides(new_state)
 
         return branches
 
@@ -332,6 +333,7 @@ class AiBranchingService:
         result = ActionSystem.perform(branch, action)
         if isinstance(result, InvalidAction):
             return None
+        AiBranchingService.remove_overrides(gs)
         return branch
 
     @staticmethod
