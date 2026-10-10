@@ -58,7 +58,7 @@ def test_optimal_action(
     match policy_type:
         case "Minimax":
             action, _ = MinimaxPolicy[TicTacToeAction].get_action(
-                rs=fixture.state,
+                state=fixture.state,
                 depth=1,
             )
         case "MCTS":

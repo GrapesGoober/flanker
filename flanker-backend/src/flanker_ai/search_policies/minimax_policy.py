@@ -1,18 +1,17 @@
 from dataclasses import dataclass
 from itertools import count
 from math import inf
-from typing import Any
 
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_core.models.components import InitiativeState
 
-MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
+_MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
-@dataclass(frozen=True)
-class _TranspositionCacheKey:
-    state_snapshot: Any
-    current_depth: int
+@dataclass
+class _TranspositionEntry:
+    score: float
+    depth_remaining: int
 
 
 @dataclass
@@ -21,16 +20,23 @@ class MinimaxSearchLog:
 
 
 class MinimaxPolicy[TAction]:
+    """
+    Implements Minimax game-tree search with alpha-beta pruning.
+    """
 
     @staticmethod
     def get_action(
-        rs: ISearchState[TAction],
+        state: ISearchState[TAction],
         depth: int,
     ) -> tuple[TAction | None, MinimaxSearchLog]:
+        """
+        Returns the best action and its search log given a current game state.
+        """
+
         counter = count()
         _, action = MinimaxPolicy[TAction]._search(
-            rs=rs,
-            depth=depth,
+            state=state,
+            depth_remaining=depth,
             alpha=-inf,
             beta=inf,
             counter=counter,
@@ -42,58 +48,64 @@ class MinimaxPolicy[TAction]:
 
     @staticmethod
     def _search(
-        rs: ISearchState[TAction],
-        depth: int,
+        state: ISearchState[TAction],
+        depth_remaining: int,
         alpha: float,
         beta: float,
         counter: "count[int]",
-        transposition_table: dict[object, float],
+        transposition_table: dict[object, _TranspositionEntry],
     ) -> tuple[float, TAction | None]:
 
         next(counter)
 
-        winner = rs.get_winner()
-        if winner is not None:
-            if winner == MAXIMIZING_FACTION:
-                return rs.get_score(MAXIMIZING_FACTION) + depth, None
-            else:
-                return rs.get_score(MAXIMIZING_FACTION) - depth, None
+        # Have early return for terminal states and leaf nodes.
+        if state.get_winner() is not None or depth_remaining == 0:
+            return state.get_score(_MAXIMIZING_FACTION), None
+        actions = state.get_actions()
+        if len(actions) == 0:  # No legal actions => lost
+            return state.get_score(_MAXIMIZING_FACTION), None
 
-        if depth == 0:
-            return rs.get_score(MAXIMIZING_FACTION), None
-
-        actions = rs.get_actions()
-        if not actions:
-            return rs.get_score(MAXIMIZING_FACTION), None
-
-        maximizing = rs.get_initiative() == MAXIMIZING_FACTION
-        best_score = -inf if maximizing else inf
+        # Loop through each action and recursively expand tree
+        is_maximizing = state.get_initiative() == _MAXIMIZING_FACTION
+        best_score = -inf if is_maximizing else inf
         best_action: TAction | None = None
-
         for action in actions:
-            branch = rs.get_one_branch(action)
+            branch = state.get_one_branch(action)
             if branch == None:
                 continue
 
+            new_branch_depth = depth_remaining - 1
             state_key = branch.get_hashable_key()
-            cache_key = _TranspositionCacheKey(
-                state_snapshot=state_key,
-                current_depth=depth - 1,
-            )
+            cached_entry = transposition_table.get(state_key)
 
-            score = transposition_table.get(cache_key, None)
-            if score == None:  # Reuse the cached reward if possible
+            # Reuse the cached score value if exist, but also only if the
+            # cached entry is more near-root than the current ply.
+            if (
+                cached_entry is not None
+                and cached_entry.depth_remaining >= new_branch_depth
+            ):
+                score = cached_entry.score
+            else:
                 score, _ = MinimaxPolicy[TAction]._search(
-                    rs=branch,
-                    depth=depth - 1,
+                    state=branch,
+                    depth_remaining=new_branch_depth,
                     alpha=alpha,
                     beta=beta,
                     counter=counter,
                     transposition_table=transposition_table,
                 )
-                transposition_table[cache_key] = score
+                transposition_table[state_key] = _TranspositionEntry(
+                    score=score,
+                    depth_remaining=new_branch_depth,
+                )
 
-            if maximizing:
+            # Have scores be closer to zero the further down the tree.
+            # This numbs the impact of future gains or future losses.
+            # Ex: future wins is less preferable than closer wins.
+            score = score * 0.9
+
+            # Update score and handle alpha-beta pruning
+            if is_maximizing:
                 if score > best_score:
                     best_score = score
                     best_action = action
@@ -103,8 +115,7 @@ class MinimaxPolicy[TAction]:
                     best_score = score
                     best_action = action
                 beta = min(beta, best_score)
-
             if beta <= alpha:
-                break  # Alpha-beta cutoff
+                break  # Skip subtree if cutoff
 
         return best_score, best_action
