@@ -55,18 +55,10 @@ class ExpectimaxPolicy[TAction]:
         next(counter)
 
         # Have early return for terminal states and leaf nodes.
-        winner = state.get_winner()
-        if winner is not None:
-            if winner == _MAXIMIZING_FACTION:
-                return state.get_score(_MAXIMIZING_FACTION), None
-            else:
-                return state.get_score(_MAXIMIZING_FACTION), None
-        if depth_remaining == 0:
+        if state.get_winner() is not None or depth_remaining == 0:
             return state.get_score(_MAXIMIZING_FACTION), None
-
-        # If no legal actions are possible, then consider it as lost
         actions = state.get_actions()
-        if not actions:
+        if len(actions) == 0:  # No legal actions => lost
             return state.get_score(_MAXIMIZING_FACTION), None
 
         # Loop through each action and recursively expand tree
@@ -98,17 +90,17 @@ class ExpectimaxPolicy[TAction]:
                         counter=counter,
                         transposition_table=transposition_table,
                     )
-                    # Have scores be closer to zero the further down the tree.
-                    # This numbs the impact of future gains or future losses.
-                    # Ex: future wins is less preferable than closer wins.
-                    score = score * 0.9
-
                     transposition_table[state_key] = _TranspositionEntry(
                         score=score,
                         depth_remaining=new_branch_depth,
                     )
 
                 expected_score += score * probability
+
+            # Have scores be closer to zero the further down the tree.
+            # This numbs the impact of future gains or future losses.
+            # Ex: future wins is less preferable than closer wins.
+            expected_score = expected_score * 0.9
 
             # Update score
             if is_maximizing:
