@@ -11,6 +11,7 @@ from flanker_ai.config_models import (
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.components import InitiativeState
+from flanker_core.systems.action_system import ActionSystem
 
 
 @dataclass
@@ -34,6 +35,14 @@ class AiSystem:
         gs: GameState,
         faction: InitiativeState.Faction,
     ) -> ActionResult | None:
+        """
+        Performs an action and mutates the state for the given faction.
+        This uses the AI config of that faction. Returns `None` if no
+        actions are performed.
+        """
+
+        if ActionSystem.get_initiative(gs) != faction:
+            return None
 
         start_time = perf_counter()
         config_component: AiConfigComponent | None = None
