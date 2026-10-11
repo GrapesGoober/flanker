@@ -167,12 +167,17 @@ class AiBranchingService:
     def get_one_fire_branch(
         gs: GameState,
         unit_id: UUID,
+        target_id: UUID,
     ) -> GameState:
         """
         Get a single representative state branch configured with fire overrides.
         """
 
-        permutation = {unit_id: FireOutcomes.SUPPRESS}
+        target_unit = gs.get_component(target_id, CombatUnit)
+        if target_unit.status == CombatUnit.Status.SUPPRESSED:
+            permutation = {unit_id: FireOutcomes.PIN}
+        else:
+            permutation = {unit_id: FireOutcomes.SUPPRESS}
         states = AiBranchingService._get_fire_overriden_states(
             gs=gs, permutations=[(1, permutation)]
         )
@@ -327,6 +332,7 @@ class AiBranchingService:
                 branch = AiBranchingService.get_one_fire_branch(
                     gs=gs,
                     unit_id=action.unit_id,
+                    target_id=action.target_id,
                 )
 
         # Perform the action
