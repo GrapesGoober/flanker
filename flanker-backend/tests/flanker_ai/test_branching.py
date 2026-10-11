@@ -170,3 +170,44 @@ def test_branches(fixture: Fixture) -> None:
     assert len(merged_branches) < len(
         branches
     ), "The merged branches must be smaller than original branches"
+
+
+def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:
+
+    # Prevent 1 unit from firing, so the state has only 1 other reactive fire
+    firing_unit_1 = fixture.gs.get_component(fixture.enemy_1, CombatUnit)
+    firing_unit_1.status = CombatUnit.Status.SUPPRESSED
+
+    move_action = MoveAction(
+        unit_id=fixture.unit_move,
+        to=Vec2(20, -10),
+    )
+    branch = AiBranchingService.get_one_action_branch(
+        gs=fixture.gs,
+        action=move_action,
+    )
+    assert branch != None, "The action must be legal and performable"
+
+    # Make sure that the branching makes for a PINNED moving unit
+    moving_unit = branch.get_component(fixture.unit_move, CombatUnit)
+    assert (
+        moving_unit.status == CombatUnit.Status.PINNED
+    ), "Expects the moving unit to be pinned from 1 reactive fire."
+
+
+def test_double_reactive_fire_avoidance(fixture: Fixture) -> None:
+    move_action = MoveAction(
+        unit_id=fixture.unit_move,
+        to=Vec2(20, -10),
+    )
+    branch = AiBranchingService.get_one_action_branch(
+        gs=fixture.gs,
+        action=move_action,
+    )
+    assert branch != None, "The action must be legal and performable"
+
+    # Make sure that the branching makes double reactive fire severe
+    moving_unit = branch.try_component(fixture.unit_move, CombatUnit)
+    assert (
+        moving_unit == None
+    ), "Expects the moving unit to get double SUPPRESS, resulting in a kill."

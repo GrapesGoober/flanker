@@ -138,10 +138,7 @@ class UnabstractedState(ISearchState[Action]):
         self,
         action: Action,
     ) -> ISearchState[Action] | None:
-        branches = AiBranchingService.get_action_branches(self._gs, action)
-        if branches == []:
-            return None
-        branch = AiBranchAbstractionService.pick_branch(branches, action)
+        branch = AiBranchingService.get_one_action_branch(self._gs, action)
         new_state = self.copy(new_gs=branch)
         return new_state
 

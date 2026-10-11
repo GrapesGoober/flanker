@@ -3,13 +3,8 @@ from uuid import UUID
 
 import pytest
 from flanker_ai.config_models import PointsConfig
-from flanker_ai.search_states.common.ai_branch_abstraction_service import (
-    AiBranchAbstractionService,
-)
-from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
 from flanker_ai.search_states.waypoints.waypoints_state import WaypointsState
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
     CombatUnit,
     FireControls,
@@ -19,7 +14,6 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
-from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
 
@@ -181,57 +175,3 @@ def test_two_interrupts(fixture: Fixture) -> None:
         (fixture.waypoint_positions[2], [fixture.enemy_1, fixture.enemy_2]),
         (fixture.waypoint_positions[3], [fixture.enemy_3]),
     ], "Expects two interrupts with three enemies"
-
-
-def test_reactive_fire_branches(fixture: Fixture) -> None:
-    # Based on test_one_interrupt, there are two enemies reactive fire
-    permutations = AiBranchingService.get_permutations(
-        unit_ids={fixture.enemy_1, fixture.enemy_2},
-        outcome_probabilities={
-            FireOutcomes.PIN: 0.6,
-            FireOutcomes.SUPPRESS: 0.4,
-        },
-    )
-
-    # Check that the configured branch matches the permutations
-    move_position = fixture.waypoint_positions[2]
-    branches = AiBranchingService.get_reactive_fire_branches(
-        gs=fixture.state.gs,
-        unit_id=fixture.unit_move,
-        move_to=move_position,
-    )
-    for probability, branch in branches:
-        enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
-        enemy_2_fire = branch.get_component(fixture.enemy_2, FireControls)
-        assert (
-            probability,
-            {
-                fixture.enemy_1: enemy_1_fire.override,
-                fixture.enemy_2: enemy_2_fire.override,
-            },
-        ) in permutations
-
-
-def test_deterministic_double_pin(fixture: Fixture) -> None:
-    # Based on test_one_interrupt, there are two enemies reactive fire.
-    # Thus the most likely outcome is being suppressed.
-
-    move_position = fixture.waypoint_positions[2]
-    move_action = MoveAction(unit_id=fixture.unit_move, to=move_position)
-
-    branches = AiBranchingService.get_action_branches(
-        gs=fixture.state.gs,
-        action=move_action,
-    )
-    branch = AiBranchAbstractionService.pick_branch(
-        branches=branches,
-        action=move_action,
-    )
-
-    enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
-    enemy_2_fire = branch.get_component(fixture.enemy_2, FireControls)
-
-    assert set([enemy_1_fire.override, enemy_2_fire.override]) == {
-        FireOutcomes.PIN,
-        FireOutcomes.SUPPRESS,
-    }, "At least one reactive fire must SUPPRESS, the other PIN."
