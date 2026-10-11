@@ -79,7 +79,7 @@ class SceneService:
         paths = [manifest.scene_paths[name] for name in scene_names]
 
         for path in paths:
-            with open(path, "r") as f:
+            with Path(path).open("r") as f:
                 entities.update(
                     Serializer.deserialize(
                         json_data=f.read(),
