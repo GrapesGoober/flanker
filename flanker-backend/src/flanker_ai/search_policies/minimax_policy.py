@@ -15,7 +15,7 @@ class _TranspositionEntry:
 
 
 @dataclass
-class MinimaxSearchLog:
+class _MinimaxSearchLog:
     tree_size: int
 
 
@@ -28,7 +28,7 @@ class MinimaxPolicy[TAction]:
     def get_action(
         state: ISearchState[TAction],
         depth: int,
-    ) -> tuple[TAction | None, MinimaxSearchLog]:
+    ) -> tuple[TAction | None, _MinimaxSearchLog]:
         """
         Returns the best action and its search log given a current game state.
         """
@@ -42,7 +42,7 @@ class MinimaxPolicy[TAction]:
             counter=counter,
             transposition_table={},
         )
-        return action, MinimaxSearchLog(
+        return action, _MinimaxSearchLog(
             tree_size=next(counter) - 1,
         )
 

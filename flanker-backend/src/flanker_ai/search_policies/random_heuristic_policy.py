@@ -12,7 +12,7 @@ from flanker_core.models.actions import (
 
 
 @dataclass
-class RandomHeuristicLog:
+class _RandomHeuristicLog:
     actions_length: int
 
 
@@ -26,17 +26,17 @@ class RandomHeuristicPolicy:
     @staticmethod
     def get_action(
         rs: ISearchState[Action],
-    ) -> tuple[Action | None, RandomHeuristicLog]:
+    ) -> tuple[Action | None, _RandomHeuristicLog]:
 
         winner = rs.get_winner()
         if winner is not None:
-            return None, RandomHeuristicLog(
+            return None, _RandomHeuristicLog(
                 actions_length=0,
             )
 
         actions = list(rs.get_actions(is_legal_only=False))
         if not actions:
-            return None, RandomHeuristicLog(
+            return None, _RandomHeuristicLog(
                 actions_length=0,
             )
 
@@ -54,7 +54,7 @@ class RandomHeuristicPolicy:
         random.shuffle(fire_actions)
         for action in fire_actions:
             if rs.is_legal(action):
-                return action, RandomHeuristicLog(
+                return action, _RandomHeuristicLog(
                     actions_length=len(fire_actions),
                 )
 
@@ -62,10 +62,10 @@ class RandomHeuristicPolicy:
         random.shuffle(move_actions)
         for action in move_actions:
             if rs.is_legal(action):
-                return action, RandomHeuristicLog(
+                return action, _RandomHeuristicLog(
                     actions_length=len(move_actions),
                 )
 
-        return None, RandomHeuristicLog(
+        return None, _RandomHeuristicLog(
             actions_length=0,
         )

@@ -15,7 +15,7 @@ class _TranspositionEntry:
 
 
 @dataclass
-class ExpectimaxSearchLog:
+class _ExpectimaxSearchLog:
     tree_size: int
 
 
@@ -28,7 +28,7 @@ class ExpectimaxPolicy[TAction]:
     def get_action(
         rs: ISearchState[TAction],
         depth: int,
-    ) -> tuple[TAction | None, ExpectimaxSearchLog]:
+    ) -> tuple[TAction | None, _ExpectimaxSearchLog]:
         """
         Returns the best action and its search log given a current game state.
         """
@@ -40,7 +40,7 @@ class ExpectimaxPolicy[TAction]:
             counter=counter,
             transposition_table={},
         )
-        return action, ExpectimaxSearchLog(
+        return action, _ExpectimaxSearchLog(
             tree_size=next(counter) - 1,
         )
 
