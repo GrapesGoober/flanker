@@ -7,26 +7,11 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.search_policies.expectimax_policy import (
-    ExpectimaxPolicy,
-    ExpectimaxSearchLog,
-)
-from flanker_ai.search_policies.mcts_policy import (
-    MctsPolicy,
-    MctsSearchLog,
-)
-from flanker_ai.search_policies.minimax_policy import (
-    MinimaxPolicy,
-    MinimaxSearchLog,
-)
-from flanker_ai.search_policies.random_heuristic_policy import (
-    RandomHeuristicLog,
-    RandomHeuristicPolicy,
-)
-from flanker_ai.search_policies.random_policy import (
-    RandomPolicy,
-    RandomSearchLog,
-)
+from flanker_ai.search_policies.expectimax_policy import ExpectimaxPolicy
+from flanker_ai.search_policies.mcts_policy import MctsPolicy
+from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
+from flanker_ai.search_policies.random_heuristic_policy import RandomHeuristicPolicy
+from flanker_ai.search_policies.random_policy import RandomPolicy
 from flanker_ai.search_states.i_search_state import ISearchState
 from flanker_ai.search_states.unabstracted.unabstracted_state import UnabstractedState
 from flanker_ai.search_states.waypoints.waypoints_state import WaypointsState
@@ -35,22 +20,19 @@ from flanker_core.models.actions import Action, ActionResult
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 
-type AiSearchLog = (
-    MinimaxSearchLog
-    | MctsSearchLog
-    | ExpectimaxSearchLog
-    | RandomHeuristicLog
-    | RandomSearchLog
-)
-
 
 class AiSearchAgent:
+
+    @dataclass
+    class AiSearchLog:
+        tree_size: int
+        tree_depth: int
 
     @dataclass
     class ActionResult:
         action: Action
         result: ActionResult
-        search_log: AiSearchLog
+        search_log: "AiSearchAgent.AiSearchLog"
 
     @staticmethod
     def get_state(
@@ -90,15 +72,23 @@ class AiSearchAgent:
         # Prepare the representation and run the policy on it
         state = AiSearchAgent.get_state(gs, config)
         action: Action | None
-        log: AiSearchLog
+        search_log: AiSearchAgent.AiSearchLog
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
-                action, log = ExpectimaxPolicy[Action].get_action(
+                action, expectimax_log = ExpectimaxPolicy[Action].get_action(
                     rs=state, depth=config.policy.depth
                 )
+                search_log = AiSearchAgent.AiSearchLog(
+                    tree_size=expectimax_log.tree_size,
+                    tree_depth=config.policy.depth,
+                )
             case PolicyConfig.MinimaxPolicy():
-                action, log = MinimaxPolicy[Action].get_action(
+                action, minimax_log = MinimaxPolicy[Action].get_action(
                     state=state, depth=config.policy.depth
+                )
+                search_log = AiSearchAgent.AiSearchLog(
+                    tree_size=minimax_log.tree_size,
+                    tree_depth=config.policy.depth,
                 )
             case PolicyConfig.MctsPolicy():
                 match config.policy.simulation_policy:
@@ -114,11 +104,16 @@ class AiSearchAgent:
                             action, _ = RandomHeuristicPolicy().get_action(rs)
                             return action
 
-                action, log = MctsPolicy[Action].get_action(
+                action, mcts_log = MctsPolicy[Action].get_action(
                     rs=state,
                     max_iterations=config.policy.max_iterations,
                     max_simulate_length=config.policy.max_simulate_length,
                     simulate_policy=simulate_policy,
+                )
+
+                search_log = AiSearchAgent.AiSearchLog(
+                    tree_size=config.policy.max_iterations,
+                    tree_depth=mcts_log.tree_depth,
                 )
 
         if action == None:
@@ -133,6 +128,6 @@ class AiSearchAgent:
             AiSearchAgent.ActionResult(
                 action=action,
                 result=result,
-                search_log=log,
+                search_log=search_log,
             )
         )

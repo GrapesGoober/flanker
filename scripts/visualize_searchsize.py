@@ -5,7 +5,7 @@ from typing import Iterable
 import matplotlib
 import pandas as pd
 from experiment_models import ExperimentSetConfig, MatchResult
-from flanker_ai.search_policies.minimax_policy import MinimaxSearchLog
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
@@ -52,7 +52,7 @@ def main() -> None:
                 )
             ]
             for action_result in match_result.action_results
-            if isinstance(action_result.policy_log, MinimaxSearchLog)
+            if isinstance(action_result.policy_log, AiSearchAgent.AiSearchLog)
             if action_result.faction == InitiativeState.Faction.BLUE
         ]
     )

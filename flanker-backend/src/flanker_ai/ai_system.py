@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from time import perf_counter
 
 from flanker_ai.agents.ai_random_heuristic_agent import AiRandomHeuristicAgent
-from flanker_ai.agents.ai_search_agent import AiSearchAgent, AiSearchLog
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
     AiConfigComponent,
     HeuristicPolicyConfig,
@@ -28,7 +28,7 @@ class AiSystem:
         actionRuntimeSeconds: float
         action: Action
         result: ActionResult
-        policy_log: AiSearchLog | None
+        policy_log: AiSearchAgent.AiSearchLog | None
 
     @staticmethod
     def perform_action(

@@ -13,8 +13,8 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 _FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
     FireOutcomes.PIN: 0.4,
-    FireOutcomes.SUPPRESS: 0.25,
-    FireOutcomes.KILL: 0.05,
+    FireOutcomes.SUPPRESS: 0.3,
+    FireOutcomes.KILL: 0.0,
 }
 
 
@@ -85,9 +85,12 @@ class FireSystem:
         fire_controls = gs.get_component(attacker_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
 
+        if gs.try_component(target_id, CombatUnit) == None:
+            raise ValueError(f"{target_id=} is not a combat unit!")
+
         match fire_outcome:
             case FireOutcomes.MISS:
-                pass
+                fire_effect = None
             case FireOutcomes.PIN:
                 fire_effect = FireEffect.PINNING
                 fire_controls.firing_at = (target_id, fire_effect)

@@ -180,6 +180,7 @@ class PolygonUtils:
         )
         forward_direction: Vec2 = Vec2(1, 0).rotated(heading_degree)
         forward_ray = forward_direction * (ray_length + 1)
+        fov_degrees += 1e-6  # Prevent floating point boundary sensitivity at ray casts.
         left_ray: Vec2 = center_point + forward_ray.rotated(fov_degrees / 2)
         right_ray: Vec2 = center_point + forward_ray.rotated(-fov_degrees / 2)
 

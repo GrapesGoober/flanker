@@ -170,10 +170,10 @@ def fixture() -> Fixture:
         enemy_2=enemy_2,
         waypoint_coordinates=[
             Vec2(0, 0),  # 0
-            Vec2(10, 1),  # 1
-            Vec2(-10, 1),  # 2
-            Vec2(-10, 10),  # 3
-            Vec2(10, 10),  # 4
+            Vec2(10, 1),  # 1 peeking zone, right bad
+            Vec2(-10, 1),  # 2 peeking zone, left (good)
+            Vec2(-10, 10),  # 3 ingress (safe) zone, left (good)
+            Vec2(10, 10),  # 4 ingress (safe) zone, right bad
         ],
     )
 
