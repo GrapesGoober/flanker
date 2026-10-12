@@ -31,7 +31,7 @@ class IntersectUtils:
         return [Vec2(float(x), float(y)) for x, y in intersections]
 
     @staticmethod
-    @njit  # type: ignore
+    @njit
     def _njit_get_intersect(
         line_start: NDArray[np.float64],
         line_end: NDArray[np.float64],
