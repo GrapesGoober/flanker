@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
@@ -10,6 +11,7 @@ from flanker_ai.config_models import (
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
+    Action,
     AssaultAction,
     AssaultActionResult,
     FireAction,
@@ -22,12 +24,15 @@ from flanker_core.models.actions import (
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
 from webapi.models import (
+    ActionRequest,
     AiMatchResponse,
     AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
     FireActionLog,
     FireActionRequest,
+    MctsGameTreeInspection,
+    MctsGameTreeInspectionNode,
     MoveActionLog,
     MoveActionRequest,
     PivotActionLog,
@@ -72,6 +77,60 @@ class AiService:
                 results=action_results,
                 gs_snapshots=gs_snapshots,
             )
+
+    @staticmethod
+    def get_tree_inspection(
+        gs: GameState,
+    ) -> MctsGameTreeInspection | None:
+        tree_result = AiSystem.get_game_tree(gs)
+        if tree_result == None:
+            return None
+
+        def _map_action_model(
+            action: Action,
+        ) -> ActionRequest:
+            match action:
+                case MoveAction():
+                    return MoveActionRequest(
+                        action_type="MoveActionRequest",
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                case PivotAction():
+                    return PivotActionRequest(
+                        action_type="PivotActionRequest",
+                        unit_id=action.unit_id,
+                        to=action.to,
+                    )
+                case FireAction():
+                    return FireActionRequest(
+                        action_type="FireActionRequest",
+                        unit_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
+                case AssaultAction():
+                    return AssaultActionRequest(
+                        action_type="AssaultActionRequest",
+                        unit_id=action.unit_id,
+                        target_id=action.target_id,
+                    )
+
+        def _map_tree_model(
+            tree: AiSearchAgent.GameTreeNode,
+        ) -> MctsGameTreeInspectionNode:
+            return MctsGameTreeInspectionNode(
+                view_state=GameViewService.get_view_state(tree.state),
+                children=[
+                    (_map_action_model(child_action), _map_tree_model(child_node))
+                    for child_action, child_node in tree.children
+                ],
+            )
+
+        return MctsGameTreeInspection(
+            type="MctsGameTreeInspection",
+            best_action=_map_action_model(tree_result.best_action),
+            tree_root=_map_tree_model(tree_result.game_tree),
+        )
 
     @staticmethod
     def run_match(gs: GameState) -> AiMatchResponse:

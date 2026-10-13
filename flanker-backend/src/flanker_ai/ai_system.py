@@ -83,7 +83,6 @@ class AiSystem:
     @staticmethod
     def get_game_tree(
         gs: GameState,
-        faction: InitiativeState.Faction,
     ) -> AiSearchAgent.GameTreeResult | None:
         """
         Returns a game tree starting from this game node. This uses
@@ -91,8 +90,7 @@ class AiSystem:
         mutate the state. Returns `None` if no actions are possible.
         """
 
-        if ActionSystem.get_initiative(gs) != faction:
-            return None
+        faction = ActionSystem.get_initiative(gs)
 
         config_component: AiConfigComponent | None = None
         for _, component in gs.query(AiConfigComponent):
