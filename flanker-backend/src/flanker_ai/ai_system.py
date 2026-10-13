@@ -25,7 +25,7 @@ class AiSystem:
     @dataclass
     class ActionResult:
         faction: InitiativeState.Faction
-        actionRuntimeSeconds: float
+        action_runtime_seconds: float
         action: Action
         result: ActionResult
         policy_log: AiSearchAgent.AiSearchLog | None
@@ -60,7 +60,7 @@ class AiSystem:
                     return None
                 return AiSystem.ActionResult(
                     faction=faction,
-                    actionRuntimeSeconds=perf_counter() - start_time,
+                    action_runtime_seconds=perf_counter() - start_time,
                     action=result.action,
                     result=result.result,
                     policy_log=None,
@@ -74,8 +74,37 @@ class AiSystem:
                     return None
                 return AiSystem.ActionResult(
                     faction=faction,
-                    actionRuntimeSeconds=perf_counter() - start_time,
+                    action_runtime_seconds=perf_counter() - start_time,
                     action=result.action,
                     result=result.result,
                     policy_log=result.search_log,
                 )
+
+    @staticmethod
+    def get_game_tree(
+        gs: GameState,
+    ) -> AiSearchAgent.GameTreeResult | None:
+        """
+        Returns a game tree starting from this game node. This uses
+        the faction's AI config of this game state. This does not
+        mutate the state. Returns `None` if no actions are possible.
+        """
+
+        faction = ActionSystem.get_initiative(gs)
+
+        config_component: AiConfigComponent | None = None
+        for _, component in gs.query(AiConfigComponent):
+            if component.faction == faction:
+                config_component = component
+                break
+        if config_component == None:
+            raise ValueError(f"{AiConfigComponent} not found")
+
+        match config_component.config:
+            case SearchPolicyConfig():
+                return AiSearchAgent.get_game_tree(
+                    gs=gs,
+                    config=config_component.config,
+                )
+            case _:
+                raise ValueError("Supprts only search trees.")

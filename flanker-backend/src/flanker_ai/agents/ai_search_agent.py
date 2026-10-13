@@ -8,7 +8,7 @@ from flanker_ai.config_models import (
     WaypointsStateConfig,
 )
 from flanker_ai.search_policies.expectimax_policy import ExpectimaxPolicy
-from flanker_ai.search_policies.mcts_policy import MctsPolicy
+from flanker_ai.search_policies.mcts_policy import MctsPolicy, MctsTreeNode
 from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
 from flanker_ai.search_policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.search_policies.random_policy import RandomPolicy
@@ -33,6 +33,18 @@ class AiSearchAgent:
         action: Action
         result: ActionResult
         search_log: "AiSearchAgent.AiSearchLog"
+
+    @dataclass
+    class MctsTreeNode:
+        state: GameState
+        children: list[tuple[Action, "AiSearchAgent.MctsTreeNode"]]
+        total_visits: int
+        total_value: float
+
+    @dataclass
+    class GameTreeResult:
+        game_tree: "AiSearchAgent.MctsTreeNode"
+        best_action: Action
 
     @staticmethod
     def get_state(
@@ -131,3 +143,74 @@ class AiSearchAgent:
                 search_log=search_log,
             )
         )
+
+    @staticmethod
+    def get_game_tree(
+        gs: GameState,
+        config: SearchPolicyConfig,
+    ) -> GameTreeResult | None:
+        """
+        Returns the expanded game tree given the state. This uses the
+        AI config of the state. This does not perform the action.
+        """
+
+        # Prepare the representation and run the policy on it
+        state = AiSearchAgent.get_state(gs, config)
+        action: Action | None
+        match config.policy:
+            case PolicyConfig.ExpectimaxPolicy():
+                raise NotImplementedError()
+            case PolicyConfig.MinimaxPolicy():
+                raise NotImplementedError()
+            case PolicyConfig.MctsPolicy():
+                match config.policy.simulation_policy:
+                    case "random":
+
+                        def simulate_policy(rs: ISearchState[Action]) -> Action | None:
+                            action, _ = RandomPolicy[Action]().get_action(rs)
+                            return action
+
+                    case "rh":
+
+                        def simulate_policy(rs: ISearchState[Action]) -> Action | None:
+                            action, _ = RandomHeuristicPolicy().get_action(rs)
+                            return action
+
+                action, mcts_log = MctsPolicy[Action].get_action(
+                    rs=state,
+                    max_iterations=config.policy.max_iterations,
+                    max_simulate_length=config.policy.max_simulate_length,
+                    simulate_policy=simulate_policy,
+                )
+
+                if action == None:
+                    return None
+
+                def map_mcts_tree_to_game_tree(
+                    node: MctsTreeNode[Action],
+                ) -> AiSearchAgent.MctsTreeNode:
+
+                    gs: GameState
+                    match node.state:
+                        case UnabstractedState() | WaypointsState():
+                            gs = node.state.gs
+                        case _:
+                            raise NotImplementedError()
+
+                    return AiSearchAgent.MctsTreeNode(
+                        state=gs,
+                        children=[
+                            (child.action, map_mcts_tree_to_game_tree(child))
+                            for child in node.children
+                            if child.action != None
+                        ],
+                        total_visits=node.total_visits,
+                        total_value=node.total_value,
+                    )
+
+                return AiSearchAgent.GameTreeResult(
+                    game_tree=map_mcts_tree_to_game_tree(mcts_log.tree_root),
+                    best_action=action,
+                )
+
+        return None

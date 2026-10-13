@@ -65,6 +65,21 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
     units_aspects: list[tuple[Vec2, list[float]]]
 
 
+class MctsGameTreeInspectionNode(BaseModel, CamelCaseConfig):
+    """An MCTS tree node."""
+
+    view_state: GameViewState
+    children: list[tuple["ActionRequest", "MctsGameTreeInspectionNode"]]
+
+
+class MctsGameTreeInspection(BaseModel, CamelCaseConfig):
+    """Detailed inspection debugging data of the MCTS game tree."""
+
+    type: Literal["MctsGameTreeInspection"]
+    best_action: "ActionRequest"
+    tree_root: MctsGameTreeInspectionNode
+
+
 class GameViewStateResponse(BaseModel, CamelCaseConfig):
     """Response model for actions contains view state and mutated game state."""
 
@@ -77,6 +92,9 @@ class AiMatchResponse(BaseModel, CamelCaseConfig):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
+    # FIXME: this should use dedicated view model for AiSystem.ActionResult.
+    # The experiments can then define its own mapping method, so that the
+    # models are nicely decoupled.
     action_results: list[AiSystem.ActionResult]
     json_state: str
 
