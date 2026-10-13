@@ -70,6 +70,8 @@ class MctsGameTreeInspectionNode(BaseModel, CamelCaseConfig):
 
     view_state: GameViewState
     children: list[tuple["ActionRequest", "MctsGameTreeInspectionNode"]]
+    total_visits: int
+    total_value: float
 
 
 class MctsGameTreeInspection(BaseModel, CamelCaseConfig):

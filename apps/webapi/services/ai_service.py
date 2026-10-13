@@ -116,14 +116,16 @@ class AiService:
                     )
 
         def _map_tree_model(
-            tree: AiSearchAgent.MctsTreeNode,
+            node: AiSearchAgent.MctsTreeNode,
         ) -> MctsGameTreeInspectionNode:
             return MctsGameTreeInspectionNode(
-                view_state=GameViewService.get_view_state(tree.state),
+                view_state=GameViewService.get_view_state(node.state),
                 children=[
                     (_map_action_model(child_action), _map_tree_model(child_node))
-                    for child_action, child_node in tree.children
+                    for child_action, child_node in node.children
                 ],
+                total_visits=node.total_visits,
+                total_value=node.total_value,
             )
 
         return MctsGameTreeInspection(
