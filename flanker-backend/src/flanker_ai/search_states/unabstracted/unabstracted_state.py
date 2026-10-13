@@ -40,7 +40,7 @@ class UnabstractedState(ISearchState[Action]):
         move_filter_config: list[FilterConfig.ALL],
         transposition_schemes: list[TranspositionScheme.ALL],
     ) -> None:
-        self._gs = GameState()
+        self.gs = GameState()
         self._move_pool_config = move_pool_config
         self._move_filter_config = move_filter_config
         self._move_candidates: list[Vec2] = []
@@ -56,7 +56,7 @@ class UnabstractedState(ISearchState[Action]):
                 return -10000
 
         score = 0.0
-        for _, combat_unit in self._gs.query(CombatUnit):
+        for _, combat_unit in self.gs.query(CombatUnit):
             value = 0
             match combat_unit.status:
                 case CombatUnit.Status.ACTIVE:
@@ -78,7 +78,7 @@ class UnabstractedState(ISearchState[Action]):
         is_legal_only: bool = True,
     ) -> Sequence[Action]:
         return AiActionService.get_actions(
-            gs=self._gs,
+            gs=self.gs,
             initiative=self.get_initiative(),
             move_candidates=self._move_candidates,
             is_legal_only=is_legal_only,
@@ -86,14 +86,14 @@ class UnabstractedState(ISearchState[Action]):
 
     @override
     def is_legal(self, action: Action) -> bool:
-        return ActionSystem.is_legal(self._gs, action)
+        return ActionSystem.is_legal(self.gs, action)
 
     @override
     def get_branches(
         self,
         action: Action,
     ) -> list[tuple[float, "UnabstractedState"]]:
-        branches = AiBranchingService.get_action_branches(self._gs, action)
+        branches = AiBranchingService.get_action_branches(self.gs, action)
         if branches == []:
             return []
         branches = AiBranchAbstractionService.merge_branches(branches, action)
@@ -114,7 +114,7 @@ class UnabstractedState(ISearchState[Action]):
 
     @override
     def perform_action(self, action: Action) -> bool:
-        result = ActionSystem.perform(self._gs, action)
+        result = ActionSystem.perform(self.gs, action)
         return not isinstance(result, InvalidAction)
 
     @override
@@ -123,14 +123,14 @@ class UnabstractedState(ISearchState[Action]):
         new_gs: GameState | None = None,
     ) -> "UnabstractedState":
         if new_gs == None:
-            new_gs = AiBranchingService.copy(self._gs)
+            new_gs = AiBranchingService.copy(self.gs)
         new_state = UnabstractedState(
             move_pool_config=self._move_pool_config,
             move_filter_config=self._move_filter_config,
             transposition_schemes=self._transposition_schemes,
         )
         new_state._move_candidates = self._move_candidates
-        new_state._gs = new_gs
+        new_state.gs = new_gs
         return new_state
 
     @override
@@ -138,35 +138,35 @@ class UnabstractedState(ISearchState[Action]):
         self,
         action: Action,
     ) -> ISearchState[Action] | None:
-        branch = AiBranchingService.get_one_action_branch(self._gs, action)
+        branch = AiBranchingService.get_one_action_branch(self.gs, action)
         new_state = self.copy(new_gs=branch)
         return new_state
 
     @override
     def get_winner(self) -> InitiativeState.Faction | None:
-        return ObjectiveSystem.get_winning_faction(self._gs)
+        return ObjectiveSystem.get_winning_faction(self.gs)
 
     @override
     def get_initiative(self) -> InitiativeState.Faction:
-        return ActionSystem.get_initiative(self._gs)
+        return ActionSystem.get_initiative(self.gs)
 
     @override
     def flip_initiative(self) -> None:
-        ActionSystem.flip_initiative(self._gs)
+        ActionSystem.flip_initiative(self.gs)
 
     @override
     def update_state(self, gs: GameState) -> None:
-        self._gs = deepcopy(gs)
+        self.gs = deepcopy(gs)
         # Regenerate the move candidates for each update
         initial_move_candidates = AiPointsInitializeService.get_initial_points(
             gs, self._move_pool_config
         )
         self._move_candidates = AiPointsFilterService.filter_points(
-            gs=self._gs,
+            gs=self.gs,
             filter_configs=self._move_filter_config,
             points=initial_move_candidates,
         )
 
     @override
     def get_hashable_key(self) -> object:
-        return AiTranspositionKeyService.get_key(self._gs, self._transposition_schemes)
+        return AiTranspositionKeyService.get_key(self.gs, self._transposition_schemes)

@@ -11,11 +11,11 @@ MAXIMIZING_FACTION = InitiativeState.Faction.BLUE
 
 
 @dataclass
-class _MctsTreeNode[TAction]:
+class MctsTreeNode[TAction]:
     state: ISearchState[TAction]
-    parent: "_MctsTreeNode[TAction] | None"
+    parent: "MctsTreeNode[TAction] | None"
 
-    children: list["_MctsTreeNode[TAction]"]
+    children: list["MctsTreeNode[TAction]"]
     unexpanded_actions: list[TAction]  # All actions, some are illegal.
 
     total_visits: int  # N(v) total number of visits
@@ -27,7 +27,7 @@ class _MctsTreeNode[TAction]:
 @dataclass
 class _MctsSearchLog[TAction]:
     tree_depth: int
-    tree_root: _MctsTreeNode[TAction]
+    tree_root: MctsTreeNode[TAction]
 
 
 class MctsPolicy[TAction]:
@@ -39,7 +39,7 @@ class MctsPolicy[TAction]:
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
     ) -> tuple[TAction | None, _MctsSearchLog[TAction]]:
-        root = _MctsTreeNode(
+        root = MctsTreeNode(
             state=rs,
             parent=None,
             children=[],
@@ -65,7 +65,7 @@ class MctsPolicy[TAction]:
 
             # Back propagate each node (while tracking depth)
             depth = 0
-            node: _MctsTreeNode[TAction] | None = child
+            node: MctsTreeNode[TAction] | None = child
             while node is not None:
                 node.total_visits += 1
                 node.total_value += value
@@ -89,11 +89,11 @@ class MctsPolicy[TAction]:
 
     @staticmethod
     def _select_leaf_best_uct(
-        node: _MctsTreeNode[TAction],
-    ) -> _MctsTreeNode[TAction]:
+        node: MctsTreeNode[TAction],
+    ) -> MctsTreeNode[TAction]:
         """Search node's subtree for leaf node with max UCT."""
 
-        current_node: _MctsTreeNode[TAction] = node
+        current_node: MctsTreeNode[TAction] = node
         # Keep traversing down the node's subtree and choose a non-terminal leaf
         while (
             current_node.state.get_winner() == None  # Non-terminal
@@ -102,7 +102,7 @@ class MctsPolicy[TAction]:
         ):
             log_parent = math.log(current_node.total_visits)
 
-            def uct(child: _MctsTreeNode[TAction]) -> float:
+            def uct(child: MctsTreeNode[TAction]) -> float:
                 if child.total_visits == 0:  # unvisited nodes chosen first
                     return float("inf")
 
@@ -116,8 +116,8 @@ class MctsPolicy[TAction]:
 
     @staticmethod
     def _expand(
-        node: _MctsTreeNode[TAction],
-    ) -> _MctsTreeNode[TAction]:
+        node: MctsTreeNode[TAction],
+    ) -> MctsTreeNode[TAction]:
         """
         Find a legal unexpanded action and expand it into a new child.
         """
@@ -134,7 +134,7 @@ class MctsPolicy[TAction]:
         if child_state is None:
             raise Exception("Action invalid!")
 
-        child = _MctsTreeNode(
+        child = MctsTreeNode(
             state=child_state,
             parent=node,
             children=[],
@@ -148,7 +148,7 @@ class MctsPolicy[TAction]:
 
     @staticmethod
     def _simulate(
-        node: _MctsTreeNode[TAction],
+        node: MctsTreeNode[TAction],
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
     ) -> float:
