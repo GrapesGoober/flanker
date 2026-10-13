@@ -35,13 +35,15 @@ class AiSearchAgent:
         search_log: "AiSearchAgent.AiSearchLog"
 
     @dataclass
-    class GameTreeNode:
+    class MctsTreeNode:
         state: GameState
-        children: list[tuple[Action, "AiSearchAgent.GameTreeNode"]]
+        children: list[tuple[Action, "AiSearchAgent.MctsTreeNode"]]
+        total_visits: int
+        total_value: float
 
     @dataclass
     class GameTreeResult:
-        game_tree: "AiSearchAgent.GameTreeNode"
+        game_tree: "AiSearchAgent.MctsTreeNode"
         best_action: Action
 
     @staticmethod
@@ -185,23 +187,25 @@ class AiSearchAgent:
                     return None
 
                 def map_mcts_tree_to_game_tree(
-                    root: MctsTreeNode[Action],
-                ) -> AiSearchAgent.GameTreeNode:
+                    node: MctsTreeNode[Action],
+                ) -> AiSearchAgent.MctsTreeNode:
 
                     gs: GameState
-                    match root.state:
+                    match node.state:
                         case UnabstractedState() | WaypointsState():
-                            gs = root.state.gs
+                            gs = node.state.gs
                         case _:
                             raise NotImplementedError()
 
-                    return AiSearchAgent.GameTreeNode(
+                    return AiSearchAgent.MctsTreeNode(
                         state=gs,
                         children=[
                             (child.action, map_mcts_tree_to_game_tree(child))
-                            for child in root.children
+                            for child in node.children
                             if child.action != None
                         ],
+                        total_visits=node.total_visits,
+                        total_value=node.total_value,
                     )
 
                 return AiSearchAgent.GameTreeResult(
