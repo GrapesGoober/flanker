@@ -17,9 +17,10 @@ export type GameViewStateResponse =
 	components['schemas']['GameViewStateResponse'];
 export type GameStateInspection = components['schemas']['GameStateInspection'];
 export type MctsGameTreeInspection =
-	components['schemas']['MctsGameTreeInspection'];
+	components['schemas']['MctsTreeInspection'];
 export type MctsGameTreeInspectionNode =
-	components['schemas']['MctsGameTreeInspectionNode'];
+	components['schemas']['MctsTreeInspectionNode'];
+export type GameTreeInspection = components['schemas']['GameTreeInspection'];
 export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 export type FireEffect = components['schemas']['FireEffect'];
@@ -77,7 +78,7 @@ export async function GetStatesInspectionData(
 /** Get the game tree inspection for the current game. */
 export async function GetGameTreeInspection(
 	jsonState: string
-): Promise<MctsGameTreeInspection | null> {
+): Promise<GameTreeInspection | null> {
 	const { data, error } = await client.POST('/api/game/inspect/game-tree', {
 		body: jsonState
 	});

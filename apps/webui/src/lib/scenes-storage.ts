@@ -1,3 +1,5 @@
+import type { GameTreeInspection } from './api';
+
 const prefix = 'game:';
 const treePrefix = 'tree:';
 
@@ -52,8 +54,16 @@ export function getTreeNames(gameKey: string): string[] {
 	return names;
 }
 
-export function loadTreeLocal(gameKey: string, treeName: string): string {
-	return localStorage.getItem(`${treePrefix}${gameKey}:${treeName}`) ?? '';
+export function loadTreeLocal(
+	gameKey: string,
+	treeName: string
+): GameTreeInspection {
+	const tree_json =
+		localStorage.getItem(`${treePrefix}${gameKey}:${treeName}`) ?? '';
+	if (tree_json === '') {
+		throw Error('Tree ' + treeName + ' does not exist!');
+	}
+	return JSON.parse(tree_json) as GameTreeInspection;
 }
 
 export function saveTreeLocal(

@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { GetGameTreeInspection } from '$lib/api';
-	import { getTreeNames, loadGameLocal, saveTreeLocal } from '$lib/scenes-storage';
+	import {
+		getTreeNames,
+		loadGameLocal,
+		saveTreeLocal
+	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 
 	let treeNames: string[] = $state([]);
@@ -53,7 +57,11 @@
 	<ul>
 		{#each treeNames as treeName}
 			<li>
-				<a href="/{encodeURIComponent(gameKey)}/inspect-tree/{encodeURIComponent(treeName)}">
+				<a
+					href="/{encodeURIComponent(gameKey)}/inspect-tree/{encodeURIComponent(
+						treeName
+					)}"
+				>
 					{treeName}
 				</a>
 			</li>

@@ -1,20 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { GetMapData, type MapViewState, type MctsGameTreeInspection } from '$lib/api';
+	import {
+		GetMapData,
+		type GameTreeInspection,
+		type MapViewState
+	} from '$lib/api';
 	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import TreeNode from './tree-node.svelte';
 
-	let inspection: MctsGameTreeInspection | null = $state(null);
+	let gameTree: GameTreeInspection | null = $state(null);
 	let mapData: MapViewState = $state({ terrains: [], boundary: [] });
 
 	onMount(async () => {
 		const gameKey = page.params['gameKey'] as string;
 		const treeKey = page.params['treeKey'] as string;
 		mapData = await GetMapData(loadGameLocal(gameKey));
-		inspection = JSON.parse(
-			loadTreeLocal(gameKey, treeKey)
-		) as MctsGameTreeInspection;
+		gameTree = loadTreeLocal(gameKey, treeKey);
 	});
 </script>
 
@@ -24,8 +26,12 @@
 
 <h1>Game tree</h1>
 
-{#if inspection}
-	<p>Best action</p>
-	<pre><code>{JSON.stringify(inspection.bestAction, null, 2)}</code></pre>
-	<TreeNode node={inspection.treeRoot} action={null} {mapData} />
+{#if gameTree}
+	{#if gameTree.type === 'MctsTreeInspection'}
+		<p>Best action</p>
+		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
+		<TreeNode node={gameTree.treeRoot} action={null} {mapData} />
+	{:else}
+		<p>Whoops, only MCTS tree supported.</p>
+	{/if}
 {/if}
