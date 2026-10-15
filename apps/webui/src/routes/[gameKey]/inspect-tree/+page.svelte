@@ -1,22 +1,31 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import {
-		GetGameTreeInspection,
-		type MctsGameTreeInspectionNode
-	} from '$lib/api';
-	import { loadGameLocal } from '$lib/scenes-storage';
+	import { GetGameTreeInspection } from '$lib/api';
+	import { getTreeNames, loadGameLocal, saveTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 
-	let treeRoot: MctsGameTreeInspectionNode | null = $state(null);
-	let bestAction = $state('');
-	let loading = $state(true);
+	let treeNames: string[] = $state([]);
+	let newTreeName = $state('');
+	let generating = $state(false);
+
+	const gameKey = $derived(page.params['gameKey'] as string);
 
 	onMount(() => {
-		void loadTree();
+		treeNames = getTreeNames(gameKey);
 	});
 
-	async function loadTree() {
-		const gameKey = page.params['gameKey'] as string;
+	async function generateTree() {
+		const treeName = newTreeName.trim();
+		if (treeName.length === 0) {
+			alert('Tree name is required');
+			return;
+		}
+		if (treeNames.includes(treeName)) {
+			alert('A tree with this name already exists');
+			return;
+		}
+
+		generating = true;
 		const gameStateJson = loadGameLocal(gameKey);
 		if (!gameStateJson) {
 			throw new Error(`No locally saved game state found for "${gameKey}".`);
@@ -24,49 +33,48 @@
 
 		const inspection = await GetGameTreeInspection(gameStateJson);
 		if (inspection !== null) {
-			bestAction = JSON.stringify(inspection.bestAction);
-			treeRoot = inspection.treeRoot;
+			saveTreeLocal(gameKey, treeName, JSON.stringify(inspection));
+			treeNames = getTreeNames(gameKey);
+			newTreeName = '';
 		}
-		loading = false;
+		generating = false;
 	}
 </script>
 
-{#snippet treeNode(node: MctsGameTreeInspectionNode, actionLabel: string)}
-	<details>
-		<summary
-			>{actionLabel} — visits: {node.totalVisits}, value: {node.totalValue}</summary
-		>
-		<p>
-			Objective: {node.viewState.objectiveState}; initiative: {node.viewState
-				.hasInitiative}; squads: {node.viewState.squads.length}
-		</p>
-		<details>
-			<summary>View state</summary>
-			<pre>{JSON.stringify(node.viewState, null, 2)}</pre>
-		</details>
-		{#if node.children.length > 0}
-			<ul>
-				{#each node.children as [action, child]}
-					<li>{@render treeNode(child, JSON.stringify(action))}</li>
-				{/each}
-			</ul>
-		{:else}
-			<p>Leaf node</p>
-		{/if}
-	</details>
-{/snippet}
-
 <svelte:head>
-	<title>Inspect game tree</title>
+	<title>Game trees</title>
 </svelte:head>
 
-<h1>MCTS game tree</h1>
+<h1>Game trees</h1>
 
-{#if loading}
-	<p>Loading game tree…</p>
-{:else if treeRoot}
-	<p>Best action: {bestAction}</p>
-	{@render treeNode(treeRoot, 'Root')}
+{#if treeNames.length === 0}
+	<p>No saved trees for this game.</p>
 {:else}
-	<p>No MCTS tree is available for this game state.</p>
+	<ul>
+		{#each treeNames as treeName}
+			<li>
+				<a href="/{encodeURIComponent(gameKey)}/inspect-tree/{encodeURIComponent(treeName)}">
+					{treeName}
+				</a>
+			</li>
+		{/each}
+	</ul>
 {/if}
+
+<details>
+	<summary>Generate a new tree</summary>
+	<div>
+		<input
+			type="text"
+			placeholder="Tree name"
+			bind:value={newTreeName}
+			disabled={generating}
+		/>
+		<input
+			type="button"
+			value={generating ? 'Generating…' : 'Generate tree'}
+			onclick={generateTree}
+			disabled={generating}
+		/>
+	</div>
+</details>

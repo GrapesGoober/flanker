@@ -1,4 +1,5 @@
 const prefix = 'game:';
+const treePrefix = 'tree:';
 
 export type QuickAccess = {
 	quickAccessName: string;
@@ -38,4 +39,27 @@ export function deleteGameLocal(gameKey: string): string {
 
 export function saveGameLocal(gameKey: string, jsonState: string) {
 	localStorage.setItem(prefix + gameKey, jsonState);
+}
+
+export function getTreeNames(gameKey: string): string[] {
+	const keyPrefix = `${treePrefix}${gameKey}:`;
+	const names: string[] = [];
+	for (let i = 0; i < localStorage.length; i++) {
+		const key = localStorage.key(i);
+		if (key === null || !key.startsWith(keyPrefix)) continue;
+		names.push(key.slice(keyPrefix.length));
+	}
+	return names;
+}
+
+export function loadTreeLocal(gameKey: string, treeName: string): string {
+	return localStorage.getItem(`${treePrefix}${gameKey}:${treeName}`) ?? '';
+}
+
+export function saveTreeLocal(
+	gameKey: string,
+	treeName: string,
+	jsonTree: string
+) {
+	localStorage.setItem(`${treePrefix}${gameKey}:${treeName}`, jsonTree);
 }
