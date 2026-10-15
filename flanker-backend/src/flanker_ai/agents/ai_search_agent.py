@@ -91,7 +91,6 @@ class AiSearchAgent:
         Returns `None` if no legal actions possible.
         """
 
-        # Prepare the representation and run the policy on it
         state = AiSearchAgent.get_state(gs, config)
         action, log = AiSearchAgent._get_action(state, config)
 
@@ -132,6 +131,58 @@ class AiSearchAgent:
         )
 
     @staticmethod
+    def get_game_tree(
+        gs: GameState,
+        config: SearchPolicyConfig,
+    ) -> GameTreeResult | None:
+        """
+        Returns the expanded game tree given the state. This uses the
+        AI config of the state. This does not perform the action.
+        """
+
+        state = AiSearchAgent.get_state(gs, config)
+        action, log = AiSearchAgent._get_action(state, config)
+
+        if action == None:
+            return None
+
+        match (config.policy, log):
+            case PolicyConfig.ExpectimaxPolicy(), ExpectimaxSearchLog():
+                raise NotImplementedError()
+            case PolicyConfig.MinimaxPolicy(), MinimaxSearchLog():
+                raise NotImplementedError()
+            case PolicyConfig.MctsPolicy(), MctsSearchLog():
+
+                def map_mcts_tree_to_game_tree(
+                    node: MctsTreeNode[Action],
+                ) -> AiSearchAgent.MctsTreeNode:
+
+                    gs: GameState
+                    match node.state:
+                        case UnabstractedState() | WaypointsState():
+                            gs = node.state.gs
+                        case _:
+                            raise NotImplementedError()
+
+                    return AiSearchAgent.MctsTreeNode(
+                        state=gs,
+                        children=[
+                            (child.action, map_mcts_tree_to_game_tree(child))
+                            for child in node.children
+                            if child.action != None
+                        ],
+                        total_visits=node.total_visits,
+                        total_value=node.total_value,
+                    )
+
+                return AiSearchAgent.GameTreeResult(
+                    game_tree=map_mcts_tree_to_game_tree(log.tree_root),
+                    best_action=action,
+                )
+            case _:
+                raise RuntimeError("Policy log is mismatched from config!")
+
+    @staticmethod
     def _get_action(
         state: ISearchState[Action],
         config: SearchPolicyConfig,
@@ -167,74 +218,3 @@ class AiSearchAgent:
                     max_simulate_length=config.policy.max_simulate_length,
                     simulate_policy=simulate_policy,
                 )
-
-    @staticmethod
-    def get_game_tree(
-        gs: GameState,
-        config: SearchPolicyConfig,
-    ) -> GameTreeResult | None:
-        """
-        Returns the expanded game tree given the state. This uses the
-        AI config of the state. This does not perform the action.
-        """
-
-        # Prepare the representation and run the policy on it
-        state = AiSearchAgent.get_state(gs, config)
-        action: Action | None
-        match config.policy:
-            case PolicyConfig.ExpectimaxPolicy():
-                raise NotImplementedError()
-            case PolicyConfig.MinimaxPolicy():
-                raise NotImplementedError()
-            case PolicyConfig.MctsPolicy():
-                match config.policy.simulation_policy:
-                    case "random":
-
-                        def simulate_policy(rs: ISearchState[Action]) -> Action | None:
-                            action, _ = RandomPolicy[Action]().get_action(rs)
-                            return action
-
-                    case "rh":
-
-                        def simulate_policy(rs: ISearchState[Action]) -> Action | None:
-                            action, _ = RandomHeuristicPolicy().get_action(rs)
-                            return action
-
-                action, mcts_log = MctsPolicy[Action].get_action(
-                    rs=state,
-                    max_iterations=config.policy.max_iterations,
-                    max_simulate_length=config.policy.max_simulate_length,
-                    simulate_policy=simulate_policy,
-                )
-
-                if action == None:
-                    return None
-
-                def map_mcts_tree_to_game_tree(
-                    node: MctsTreeNode[Action],
-                ) -> AiSearchAgent.MctsTreeNode:
-
-                    gs: GameState
-                    match node.state:
-                        case UnabstractedState() | WaypointsState():
-                            gs = node.state.gs
-                        case _:
-                            raise NotImplementedError()
-
-                    return AiSearchAgent.MctsTreeNode(
-                        state=gs,
-                        children=[
-                            (child.action, map_mcts_tree_to_game_tree(child))
-                            for child in node.children
-                            if child.action != None
-                        ],
-                        total_visits=node.total_visits,
-                        total_value=node.total_value,
-                    )
-
-                return AiSearchAgent.GameTreeResult(
-                    game_tree=map_mcts_tree_to_game_tree(mcts_log.tree_root),
-                    best_action=action,
-                )
-
-        return None
