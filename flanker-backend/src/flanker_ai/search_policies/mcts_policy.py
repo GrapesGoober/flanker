@@ -25,7 +25,7 @@ class MctsTreeNode[TAction]:
 
 
 @dataclass
-class _MctsSearchLog[TAction]:
+class MctsSearchLog[TAction]:
     tree_depth: int
     tree_root: MctsTreeNode[TAction]
 
@@ -38,7 +38,7 @@ class MctsPolicy[TAction]:
         max_iterations: int,
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
-    ) -> tuple[TAction | None, _MctsSearchLog[TAction]]:
+    ) -> tuple[TAction | None, MctsSearchLog[TAction]]:
         root = MctsTreeNode(
             state=rs,
             parent=None,
@@ -75,14 +75,14 @@ class MctsPolicy[TAction]:
 
         # No valid actions at this root
         if not root.children:
-            return None, _MctsSearchLog(
+            return None, MctsSearchLog(
                 tree_depth=max_depth,
                 tree_root=root,
             )
 
         # Choose the root's best action to perform
         best = max(root.children, key=lambda c: c.total_visits)
-        return best.action, _MctsSearchLog(
+        return best.action, MctsSearchLog(
             tree_depth=max_depth,
             tree_root=root,
         )

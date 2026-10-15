@@ -7,9 +7,19 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
     WaypointsStateConfig,
 )
-from flanker_ai.search_policies.expectimax_policy import ExpectimaxPolicy
-from flanker_ai.search_policies.mcts_policy import MctsPolicy, MctsTreeNode
-from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
+from flanker_ai.search_policies.expectimax_policy import (
+    ExpectimaxPolicy,
+    ExpectimaxSearchLog,
+)
+from flanker_ai.search_policies.mcts_policy import (
+    MctsPolicy,
+    MctsSearchLog,
+    MctsTreeNode,
+)
+from flanker_ai.search_policies.minimax_policy import (
+    MinimaxPolicy,
+    MinimaxSearchLog,
+)
 from flanker_ai.search_policies.random_heuristic_policy import RandomHeuristicPolicy
 from flanker_ai.search_policies.random_policy import RandomPolicy
 from flanker_ai.search_states.i_search_state import ISearchState
@@ -83,24 +93,59 @@ class AiSearchAgent:
 
         # Prepare the representation and run the policy on it
         state = AiSearchAgent.get_state(gs, config)
-        action: Action | None
+        action, log = AiSearchAgent._get_action(state, config)
+
+        if action == None:
+            return None
+
         search_log: AiSearchAgent.AiSearchLog
+        match (config.policy, log):
+            case PolicyConfig.ExpectimaxPolicy(), ExpectimaxSearchLog():
+                search_log = AiSearchAgent.AiSearchLog(
+                    tree_size=log.tree_size,
+                    tree_depth=config.policy.depth,
+                )
+            case PolicyConfig.MinimaxPolicy(), MinimaxSearchLog():
+                search_log = AiSearchAgent.AiSearchLog(
+                    tree_size=log.tree_size,
+                    tree_depth=config.policy.depth,
+                )
+            case PolicyConfig.MctsPolicy(), MctsSearchLog():
+                search_log = AiSearchAgent.AiSearchLog(
+                    tree_size=config.policy.max_iterations,
+                    tree_depth=log.tree_depth,
+                )
+            case _:
+                raise RuntimeError("Policy log is mismatched from config!")
+
+        result = ActionSystem.perform(gs, action)
+        if isinstance(result, InvalidAction):
+            return None
+
+        # Prevent mutation shenanigans by returning a copy
+        return deepcopy(
+            AiSearchAgent.ActionResult(
+                action=action,
+                result=result,
+                search_log=search_log,
+            )
+        )
+
+    @staticmethod
+    def _get_action(
+        state: ISearchState[Action],
+        config: SearchPolicyConfig,
+    ) -> tuple[
+        Action | None, ExpectimaxSearchLog | MinimaxSearchLog | MctsSearchLog[Action]
+    ]:
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
-                action, expectimax_log = ExpectimaxPolicy[Action].get_action(
+                return ExpectimaxPolicy[Action].get_action(
                     rs=state, depth=config.policy.depth
                 )
-                search_log = AiSearchAgent.AiSearchLog(
-                    tree_size=expectimax_log.tree_size,
-                    tree_depth=config.policy.depth,
-                )
             case PolicyConfig.MinimaxPolicy():
-                action, minimax_log = MinimaxPolicy[Action].get_action(
+                return MinimaxPolicy[Action].get_action(
                     state=state, depth=config.policy.depth
-                )
-                search_log = AiSearchAgent.AiSearchLog(
-                    tree_size=minimax_log.tree_size,
-                    tree_depth=config.policy.depth,
                 )
             case PolicyConfig.MctsPolicy():
                 match config.policy.simulation_policy:
@@ -116,33 +161,12 @@ class AiSearchAgent:
                             action, _ = RandomHeuristicPolicy().get_action(rs)
                             return action
 
-                action, mcts_log = MctsPolicy[Action].get_action(
+                return MctsPolicy[Action].get_action(
                     rs=state,
                     max_iterations=config.policy.max_iterations,
                     max_simulate_length=config.policy.max_simulate_length,
                     simulate_policy=simulate_policy,
                 )
-
-                search_log = AiSearchAgent.AiSearchLog(
-                    tree_size=config.policy.max_iterations,
-                    tree_depth=mcts_log.tree_depth,
-                )
-
-        if action == None:
-            return None
-
-        result = ActionSystem.perform(gs, action)
-        if isinstance(result, InvalidAction):
-            return None
-
-        # Prevent mutation shenanigans by returning a copy
-        return deepcopy(
-            AiSearchAgent.ActionResult(
-                action=action,
-                result=result,
-                search_log=search_log,
-            )
-        )
 
     @staticmethod
     def get_game_tree(
