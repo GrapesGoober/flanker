@@ -65,21 +65,49 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
     units_aspects: list[tuple[Vec2, list[float]]]
 
 
-class MctsGameTreeInspectionNode(BaseModel, CamelCaseConfig):
+class MctsTreeInspectionNode(BaseModel, CamelCaseConfig):
     """An MCTS tree node."""
 
     view_state: GameViewState
-    children: list[tuple["ActionRequest", "MctsGameTreeInspectionNode"]]
+    children: list[tuple["ActionRequest", "MctsTreeInspectionNode"]]
     total_visits: int
     total_value: float
 
 
-class MctsGameTreeInspection(BaseModel, CamelCaseConfig):
+class MctsTreeInspection(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the MCTS game tree."""
 
-    type: Literal["MctsGameTreeInspection"]
+    type: Literal["MctsTreeInspection"]
     best_action: "ActionRequest"
-    tree_root: MctsGameTreeInspectionNode
+    tree_root: MctsTreeInspectionNode
+
+
+class MinimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+    view_state: GameViewState
+    children: list["MinimaxTreeInspectionEdge"]
+
+
+class MinimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    action: "ActionRequest"
+    node: "MinimaxTreeInspectionNode"
+    best_score: float
+
+
+class MinimaxTreeInspection(BaseModel, CamelCaseConfig):
+    """Detailed inspection debugging data of the Minimax game tree."""
+
+    type: Literal["MinimaxTreeInspection"]
+    best_action: "ActionRequest"
+    tree_root: MinimaxTreeInspectionNode
+
+
+type GameTreeInspection = Annotated[
+    Union[
+        MinimaxTreeInspection,
+        MctsTreeInspection,
+    ],
+    Field(discriminator="type"),
+]
 
 
 class GameViewStateResponse(BaseModel, CamelCaseConfig):

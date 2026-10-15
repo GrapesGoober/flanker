@@ -479,6 +479,7 @@ export interface components {
                 number[]
             ][];
         };
+        GameTreeInspection: components["schemas"]["MinimaxTreeInspection"] | components["schemas"]["MctsTreeInspection"];
         /**
          * GameViewState
          * @description Simplified view model of the game state.
@@ -525,33 +526,59 @@ export interface components {
             boundary: components["schemas"]["Vec2"][];
         };
         /**
-         * MctsGameTreeInspection
+         * MctsTreeInspection
          * @description Detailed inspection debugging data of the MCTS game tree.
          */
-        MctsGameTreeInspection: {
+        MctsTreeInspection: {
             /**
-             * Type
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
-            type: "MctsGameTreeInspection";
+            type: "MctsTreeInspection";
             bestAction: components["schemas"]["ActionRequest"];
-            treeRoot: components["schemas"]["MctsGameTreeInspectionNode"];
+            treeRoot: components["schemas"]["MctsTreeInspectionNode"];
         };
         /**
-         * MctsGameTreeInspectionNode
+         * MctsTreeInspectionNode
          * @description An MCTS tree node.
          */
-        MctsGameTreeInspectionNode: {
+        MctsTreeInspectionNode: {
             viewState: components["schemas"]["GameViewState"];
             /** Children */
             children: [
                 components["schemas"]["ActionRequest"],
-                components["schemas"]["MctsGameTreeInspectionNode"]
+                components["schemas"]["MctsTreeInspectionNode"]
             ][];
             /** Totalvisits */
             totalVisits: number;
             /** Totalvalue */
             totalValue: number;
+        };
+        /**
+         * MinimaxTreeInspection
+         * @description Detailed inspection debugging data of the Minimax game tree.
+         */
+        MinimaxTreeInspection: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "MinimaxTreeInspection";
+            bestAction: components["schemas"]["ActionRequest"];
+            treeRoot: components["schemas"]["MinimaxTreeInspectionNode"];
+        };
+        /** MinimaxTreeInspectionEdge */
+        MinimaxTreeInspectionEdge: {
+            action: components["schemas"]["ActionRequest"];
+            node: components["schemas"]["MinimaxTreeInspectionNode"];
+            /** Bestscore */
+            bestScore: number;
+        };
+        /** MinimaxTreeInspectionNode */
+        MinimaxTreeInspectionNode: {
+            viewState: components["schemas"]["GameViewState"];
+            /** Children */
+            children: components["schemas"]["MinimaxTreeInspectionEdge"][];
         };
         /**
          * MoveAction
@@ -890,7 +917,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MctsGameTreeInspection"] | null;
+                    "application/json": components["schemas"]["GameTreeInspection"] | null;
                 };
             };
             /** @description Validation Error */

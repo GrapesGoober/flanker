@@ -32,8 +32,12 @@ from webapi.models import (
     AssaultActionRequest,
     FireActionLog,
     FireActionRequest,
-    MctsGameTreeInspection,
-    MctsGameTreeInspectionNode,
+    GameTreeInspection,
+    MctsTreeInspection,
+    MctsTreeInspectionNode,
+    MinimaxTreeInspection,
+    MinimaxTreeInspectionEdge,
+    MinimaxTreeInspectionNode,
     MoveActionLog,
     MoveActionRequest,
     PivotActionLog,
@@ -82,16 +86,32 @@ class AiService:
     @staticmethod
     def get_tree_inspection(
         gs: GameState,
-    ) -> MctsGameTreeInspection | None:
+    ) -> GameTreeInspection | None:
         tree_result = AiSystem.get_game_tree(gs)
         if tree_result == None:
             return None
 
-        return MctsGameTreeInspection(
-            type="MctsGameTreeInspection",
-            best_action=AiService._map_action_to_requests(tree_result.best_action),
-            tree_root=AiService._map_tree_to_inspection(tree_result.game_tree),
-        )
+        match tree_result.game_tree:
+            case AiSearchAgent.MctsTreeNode():
+                return MctsTreeInspection(
+                    type="MctsTreeInspection",
+                    best_action=AiService._map_action_to_requests(
+                        tree_result.best_action,
+                    ),
+                    tree_root=AiService._map_mcts_to_inspection(
+                        tree_result.game_tree,
+                    ),
+                )
+            case AiSearchAgent.MinimaxTreeNode():
+                return MinimaxTreeInspection(
+                    type="MinimaxTreeInspection",
+                    best_action=AiService._map_action_to_requests(
+                        tree_result.best_action,
+                    ),
+                    tree_root=AiService._map_minimax_to_inspection(
+                        tree_result.game_tree,
+                    ),
+                )
 
     @staticmethod
     def run_match(gs: GameState) -> AiMatchResponse:
@@ -215,18 +235,34 @@ class AiService:
                 raise ValueError(f"Unknown type {result=}")
 
     @staticmethod
-    def _map_tree_to_inspection(
+    def _map_mcts_to_inspection(
         node: AiSearchAgent.MctsTreeNode,
-    ) -> MctsGameTreeInspectionNode:
-        return MctsGameTreeInspectionNode(
+    ) -> MctsTreeInspectionNode:
+        return MctsTreeInspectionNode(
             view_state=GameViewService.get_view_state(node.state),
             children=[
                 (
                     AiService._map_action_to_requests(child_action),
-                    AiService._map_tree_to_inspection(child_node),
+                    AiService._map_mcts_to_inspection(child_node),
                 )
                 for child_action, child_node in node.children
             ],
             total_visits=node.total_visits,
             total_value=node.total_value,
+        )
+
+    @staticmethod
+    def _map_minimax_to_inspection(
+        node: AiSearchAgent.MinimaxTreeNode,
+    ) -> MinimaxTreeInspectionNode:
+        return MinimaxTreeInspectionNode(
+            view_state=GameViewService.get_view_state(node.state),
+            children=[
+                MinimaxTreeInspectionEdge(
+                    action=AiService._map_action_to_requests(edge.action),
+                    node=AiService._map_minimax_to_inspection(edge.node),
+                    best_score=edge.best_score,
+                )
+                for edge in node.children
+            ],
         )

@@ -15,8 +15,22 @@ class _TranspositionEntry:
 
 
 @dataclass
-class MinimaxSearchLog:
+class MinimaxTreeNode[TAction]:
+    state: ISearchState[TAction]
+    children: list["MinimaxTreeEdge[TAction]"]
+
+
+@dataclass
+class MinimaxTreeEdge[TAction]:
+    action: TAction
+    node: MinimaxTreeNode[TAction]
+    best_score: float
+
+
+@dataclass
+class MinimaxSearchLog[TAction]:
     tree_size: int
+    tree_root: MinimaxTreeNode[TAction] | None = None
 
 
 class MinimaxPolicy[TAction]:
@@ -28,12 +42,18 @@ class MinimaxPolicy[TAction]:
     def get_action(
         state: ISearchState[TAction],
         depth: int,
-    ) -> tuple[TAction | None, MinimaxSearchLog]:
+        log_with_tree: bool = False,
+    ) -> tuple[TAction | None, MinimaxSearchLog[TAction]]:
         """
         Returns the best action and its search log given a current game state.
         """
 
         counter = count()
+
+        root: MinimaxTreeNode[TAction] | None = None
+        if log_with_tree:
+            root = MinimaxTreeNode(state=state, children=[])
+
         _, action = MinimaxPolicy[TAction]._search(
             state=state,
             depth_remaining=depth,
@@ -41,9 +61,11 @@ class MinimaxPolicy[TAction]:
             beta=inf,
             counter=counter,
             transposition_table={},
+            log_tree_to_append=root,
         )
         return action, MinimaxSearchLog(
             tree_size=next(counter) - 1,
+            tree_root=root,
         )
 
     @staticmethod
@@ -54,6 +76,7 @@ class MinimaxPolicy[TAction]:
         beta: float,
         counter: "count[int]",
         transposition_table: dict[object, _TranspositionEntry],
+        log_tree_to_append: MinimaxTreeNode[TAction] | None,
     ) -> tuple[float, TAction | None]:
 
         next(counter)
@@ -74,6 +97,13 @@ class MinimaxPolicy[TAction]:
             if branch == None:
                 continue
 
+            child_node: MinimaxTreeNode[TAction] | None = None
+            if log_tree_to_append:
+                child_node = MinimaxTreeNode[TAction](
+                    state=branch,
+                    children=[],
+                )
+
             new_branch_depth = depth_remaining - 1
             state_key = branch.get_hashable_key()
             cached_entry = transposition_table.get(state_key)
@@ -93,6 +123,7 @@ class MinimaxPolicy[TAction]:
                     beta=beta,
                     counter=counter,
                     transposition_table=transposition_table,
+                    log_tree_to_append=child_node,
                 )
                 transposition_table[state_key] = _TranspositionEntry(
                     score=score,
@@ -103,6 +134,15 @@ class MinimaxPolicy[TAction]:
             # This numbs the impact of future gains or future losses.
             # Ex: future wins is less preferable than closer wins.
             score = score * 0.9
+
+            if log_tree_to_append is not None and child_node is not None:
+                log_tree_to_append.children.append(
+                    MinimaxTreeEdge[TAction](
+                        action=action,
+                        node=child_node,
+                        best_score=score,
+                    )
+                )
 
             # Update score and handle alpha-beta pruning
             if is_maximizing:
