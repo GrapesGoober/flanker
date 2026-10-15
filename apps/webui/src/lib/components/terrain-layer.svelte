@@ -13,6 +13,7 @@
 		mapData: MapViewState;
 	};
 	let props: Props = $props();
+	const idPrefix = $props.id();
 	// Road's boarders need to be drawn separately
 	function FilterRoads(): TerrainModel[] {
 		return props.mapData.terrains.filter((feature) => feature.terrainType === 'ROAD');
@@ -21,12 +22,12 @@
 
 <svg overflow="visible">
 	<defs>
-		<pattern id="diagonalStripes" patternUnits="userSpaceOnUse" width="6" height="6">
+		<pattern id="{idPrefix}-diagonalStripes" patternUnits="userSpaceOnUse" width="6" height="6">
 			<path d="M1,5 L5,1" class="field-stroke" />
 		</pattern>
 	</defs>
 	<defs>
-		<pattern id="boundaryDiagonalStripes" patternUnits="userSpaceOnUse" width="12" height="12">
+		<pattern id="{idPrefix}-boundaryDiagonalStripes" patternUnits="userSpaceOnUse" width="12" height="12">
 			<path d="M2,10 L10,2" class="boundary-stroke" />
 		</pattern>
 	</defs>
@@ -51,7 +52,7 @@
 			{/each}
 		{:else if terrain.terrainType == 'FIELD'}
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="field" />
-			<path d={GetSmoothedClosedPath(vertices, 0.7)} fill="url(#diagonalStripes)" />
+			<path d={GetSmoothedClosedPath(vertices, 0.7)} fill="url(#{idPrefix}-diagonalStripes)" />
 		{:else if terrain.terrainType == 'WATER'}
 			<path d={GetSmoothedClosedPath(vertices, 0.7)} class="water" />
 		{:else if terrain.terrainType == 'ROAD'}
@@ -67,7 +68,7 @@
 		{/if}
 	{/each}
 
-	<mask id="outsideBoundary">
+	<mask id="{idPrefix}-outsideBoundary">
 		<!-- Mask coloring: white is visible, black is hidden -->
 		<rect x="-500%" y="-500%" width="1000%" height="1000%" fill="white" />
 		<path d={GetClosedPath(props.mapData.boundary)} fill="black" />
@@ -78,8 +79,8 @@
 		y="-500%"
 		width="1000%"
 		height="1000%"
-		fill="url(#boundaryDiagonalStripes)"
-		mask="url(#outsideBoundary)"
+		fill="url(#{idPrefix}-boundaryDiagonalStripes)"
+		mask="url(#{idPrefix}-outsideBoundary)"
 	/>
 </svg>
 

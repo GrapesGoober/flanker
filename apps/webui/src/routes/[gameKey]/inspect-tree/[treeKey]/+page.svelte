@@ -3,23 +3,31 @@
 	import type {
 		ActionRequest,
 		MctsGameTreeInspection,
-		MctsGameTreeInspectionNode
+		MctsGameTreeInspectionNode,
+		MapViewState
 	} from '$lib/api';
-	import { loadTreeLocal } from '$lib/scenes-storage';
+	import { GetMapData } from '$lib/api';
+	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
+	import TreeViewMap from './tree-view-map.svelte';
 
 	let inspection: MctsGameTreeInspection | null = $state(null);
+	let mapData: MapViewState = $state({ terrains: [], boundary: [] });
 
-	onMount(() => {
+	onMount(async () => {
 		const gameKey = page.params['gameKey'] as string;
 		const treeKey = page.params['treeKey'] as string;
+		mapData = await GetMapData(loadGameLocal(gameKey));
 		inspection = JSON.parse(
 			loadTreeLocal(gameKey, treeKey)
 		) as MctsGameTreeInspection;
 	});
 </script>
 
-{#snippet treeNode(node: MctsGameTreeInspectionNode, action: ActionRequest | null)}
+{#snippet treeNode(
+	node: MctsGameTreeInspectionNode,
+	action: ActionRequest | null
+)}
 	<div>
 		<ul>
 			{#if action}
@@ -35,6 +43,12 @@
 				<details>
 					<summary>View state</summary>
 					<pre>{JSON.stringify(node.viewState, null, 2)}</pre>
+				</details>
+			</li>
+			<li>
+				<details>
+					<summary>Map</summary>
+					<TreeViewMap {mapData} viewState={node.viewState} />
 				</details>
 			</li>
 

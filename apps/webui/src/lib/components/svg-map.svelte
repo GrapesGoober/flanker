@@ -8,7 +8,8 @@
 	};
 	let props: Props = $props();
 
-	const gridPatternId = `grid-pattern`;
+	const componentId = $props.id();
+	const gridPatternId = `${componentId}-grid-pattern`;
 
 	let mapLayer: SVGSVGElement | null = null; // Handles events
 	let zoomLayer: SVGGElement | null = null; // Applies zoom-pan
