@@ -5,8 +5,16 @@
 
 	type Props = {
 		svgSnippet: Snippet;
+		height?: string;
+		width?: string;
+		initialZoom?: number;
 	};
-	let props: Props = $props();
+	let {
+		svgSnippet,
+		height = '90vh',
+		width = '100%',
+		initialZoom = 2
+	}: Props = $props();
 
 	const componentId = $props.id();
 	const gridPatternId = `${componentId}-grid-pattern`;
@@ -37,12 +45,17 @@
 			});
 
 		// Set default starting zoom and pan
-		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(2));
+		mapDiv.call(zoom.transform, d3.zoomIdentity.scale(initialZoom));
 		mapDiv.call(zoom as any);
 	});
 </script>
 
-<svg bind:this={mapLayer} class="map-box">
+<svg
+	bind:this={mapLayer}
+	class="map-box"
+	style:height
+	style:width
+>
 	<defs>
 		<pattern
 			bind:this={gridLayer}
@@ -59,7 +72,7 @@
 		</pattern>
 	</defs>
 	<g bind:this={zoomLayer}>
-		{@render props.svgSnippet()}
+		{@render svgSnippet()}
 	</g>
 	<rect
 		class="grid-layer"
@@ -72,8 +85,6 @@
 <style lang="less">
 	.map-box {
 		border: 1px solid #ccc;
-		width: 100%;
-		height: 90vh;
 		touch-action: none; /* required for pointer-based zooming */
 		background-color: #f4f2f2;
 	}

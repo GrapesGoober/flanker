@@ -19,4 +19,4 @@
 	</svg>
 {/snippet}
 
-<SvgMap svgSnippet={mapContent} />
+<SvgMap svgSnippet={mapContent} width="35vw" height="35vh" initialZoom={1} />
