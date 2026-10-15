@@ -24,6 +24,7 @@ from flanker_core.models.actions import (
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
 from webapi.models import (
+    ActionLog,
     ActionRequest,
     AiMatchResponse,
     AiWaypointConfigRequest,
@@ -86,52 +87,10 @@ class AiService:
         if tree_result == None:
             return None
 
-        def _map_action_model(
-            action: Action,
-        ) -> ActionRequest:
-            match action:
-                case MoveAction():
-                    return MoveActionRequest(
-                        action_type="MoveActionRequest",
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    )
-                case PivotAction():
-                    return PivotActionRequest(
-                        action_type="PivotActionRequest",
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    )
-                case FireAction():
-                    return FireActionRequest(
-                        action_type="FireActionRequest",
-                        unit_id=action.unit_id,
-                        target_id=action.target_id,
-                    )
-                case AssaultAction():
-                    return AssaultActionRequest(
-                        action_type="AssaultActionRequest",
-                        unit_id=action.unit_id,
-                        target_id=action.target_id,
-                    )
-
-        def _map_tree_model(
-            node: AiSearchAgent.MctsTreeNode,
-        ) -> MctsGameTreeInspectionNode:
-            return MctsGameTreeInspectionNode(
-                view_state=GameViewService.get_view_state(node.state),
-                children=[
-                    (_map_action_model(child_action), _map_tree_model(child_node))
-                    for child_action, child_node in node.children
-                ],
-                total_visits=node.total_visits,
-                total_value=node.total_value,
-            )
-
         return MctsGameTreeInspection(
             type="MctsGameTreeInspection",
-            best_action=_map_action_model(tree_result.best_action),
-            tree_root=_map_tree_model(tree_result.game_tree),
+            best_action=AiService._map_action_to_requests(tree_result.best_action),
+            tree_root=AiService._map_tree_to_inspection(tree_result.game_tree),
         )
 
     @staticmethod
@@ -174,47 +133,100 @@ class AiService:
         gs_snapshots: list[GameState],
     ) -> None:
         for result, gs_snapshot in zip(results, gs_snapshots):
-            match result.action, result.result:
-                case MoveAction(), MoveActionResult():
-                    log = MoveActionLog(
-                        body=MoveActionRequest(
-                            unit_id=result.action.unit_id,
-                            to=result.action.to,
-                        ),
-                        reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=GameViewService.get_view_state(gs_snapshot),
-                    )
-
-                case PivotAction(), PivotActionResult():
-                    log = PivotActionLog(
-                        body=PivotActionRequest(
-                            unit_id=result.action.unit_id,
-                            to=result.action.to,
-                        ),
-                        reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=GameViewService.get_view_state(gs_snapshot),
-                    )
-                case FireAction(), FireActionResult():
-                    log = FireActionLog(
-                        body=FireActionRequest(
-                            unit_id=result.action.unit_id,
-                            target_id=result.action.target_id,
-                        ),
-                        outcome=result.result.outcome,
-                        view_state=GameViewService.get_view_state(gs_snapshot),
-                    )
-                case AssaultAction(), AssaultActionResult():
-                    log = AssaultActionLog(
-                        body=AssaultActionRequest(
-                            unit_id=result.action.unit_id,
-                            target_id=result.action.target_id,
-                        ),
-                        outcome=result.result.outcome,
-                        reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                        view_state=GameViewService.get_view_state(gs_snapshot),
-                    )
-
-                case _:
-                    raise ValueError(f"Unknown type {result=}")
-
+            log = AiService._map_action_result_to_logs(result, gs_snapshot)
             LoggingService.log(gs, log)
+
+    @staticmethod
+    def _map_action_to_requests(
+        action: Action,
+    ) -> ActionRequest:
+        match action:
+            case MoveAction():
+                return MoveActionRequest(
+                    action_type="MoveActionRequest",
+                    unit_id=action.unit_id,
+                    to=action.to,
+                )
+            case PivotAction():
+                return PivotActionRequest(
+                    action_type="PivotActionRequest",
+                    unit_id=action.unit_id,
+                    to=action.to,
+                )
+            case FireAction():
+                return FireActionRequest(
+                    action_type="FireActionRequest",
+                    unit_id=action.unit_id,
+                    target_id=action.target_id,
+                )
+            case AssaultAction():
+                return AssaultActionRequest(
+                    action_type="AssaultActionRequest",
+                    unit_id=action.unit_id,
+                    target_id=action.target_id,
+                )
+
+    @staticmethod
+    def _map_action_result_to_logs(
+        result: AiSystem.ActionResult,
+        gs_snapshot: GameState,
+    ) -> ActionLog:
+        match result.action, result.result:
+            case MoveAction(), MoveActionResult():
+                return MoveActionLog(
+                    body=MoveActionRequest(
+                        unit_id=result.action.unit_id,
+                        to=result.action.to,
+                    ),
+                    reactive_fire_outcomes=result.result.reactive_fire_outcomes,
+                    view_state=GameViewService.get_view_state(gs_snapshot),
+                )
+
+            case PivotAction(), PivotActionResult():
+                return PivotActionLog(
+                    body=PivotActionRequest(
+                        unit_id=result.action.unit_id,
+                        to=result.action.to,
+                    ),
+                    reactive_fire_outcomes=result.result.reactive_fire_outcomes,
+                    view_state=GameViewService.get_view_state(gs_snapshot),
+                )
+            case FireAction(), FireActionResult():
+                return FireActionLog(
+                    body=FireActionRequest(
+                        unit_id=result.action.unit_id,
+                        target_id=result.action.target_id,
+                    ),
+                    outcome=result.result.outcome,
+                    view_state=GameViewService.get_view_state(gs_snapshot),
+                )
+            case AssaultAction(), AssaultActionResult():
+                return AssaultActionLog(
+                    body=AssaultActionRequest(
+                        unit_id=result.action.unit_id,
+                        target_id=result.action.target_id,
+                    ),
+                    outcome=result.result.outcome,
+                    reactive_fire_outcomes=result.result.reactive_fire_outcomes,
+                    view_state=GameViewService.get_view_state(gs_snapshot),
+                )
+
+            case _:
+                raise ValueError(f"Unknown type {result=}")
+
+    @staticmethod
+    def _map_tree_to_inspection(
+        node: AiSearchAgent.MctsTreeNode,
+    ) -> MctsGameTreeInspectionNode:
+        return MctsGameTreeInspectionNode(
+            view_state=GameViewService.get_view_state(node.state),
+            children=[
+                (
+                    AiService._map_action_to_requests(child_action),
+                    AiService._map_tree_to_inspection(child_node),
+                )
+                for child_action, child_node in node.children
+            ],
+            total_visits=node.total_visits,
+            total_value=node.total_value,
+        )
