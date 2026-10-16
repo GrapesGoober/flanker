@@ -64,11 +64,11 @@
 					<summary>Children ({node.children.length})</summary>
 					{#if areChildrenOpened}
 						<ul>
-							{#each node.children as [childAction, childNode], childIndex}
+							{#each node.children as edge, childIndex}
 								<li>
 									<TreeNode
-										node={childNode}
-										action={childAction}
+										node={edge.node}
+										action={edge.action}
 										{mapData}
 										index={childIndex}
 									/>
