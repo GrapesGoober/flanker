@@ -64,6 +64,10 @@ class ISearchState[TAction](Protocol):
         """Update the state to match the original game state."""
         ...
 
+    def get_game_state_copy(self) -> GameState:
+        """Returns a copy of the game state."""
+        ...
+
     def get_hashable_key(self) -> object:
         """Returns a hashable key object usable for building a table."""
         ...

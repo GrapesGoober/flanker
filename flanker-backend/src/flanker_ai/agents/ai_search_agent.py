@@ -49,56 +49,11 @@ class AiSearchAgent:
         search_log: AiSearchAgent.AiSearchLog
 
     @dataclass
-    class MctsTreeEdge:
-        action: Action
-        node: AiSearchAgent.MctsTreeNode
-
-    @dataclass
-    class MctsTreeNode:
-        state: GameState
-        children: list[AiSearchAgent.MctsTreeEdge]
-        total_visits: int
-        total_value: float
-
-    @dataclass
-    class MinimaxTreeNode:
-        state: GameState
-        children: list[AiSearchAgent.MinimaxTreeEdge]
-
-    @dataclass
-    class MinimaxTreeEdge:
-        action: Action
-        node: AiSearchAgent.MinimaxTreeNode
-        best_score: float
-
-    @dataclass
-    class ExpectimaxTreeOutcome:
-        probability: float
-        node: AiSearchAgent.ExpectimaxTreeNode
-
-    @dataclass
-    class ExpectimaxTreeNode:
-        state: GameState
-        children: list[AiSearchAgent.ExpectimaxTreeEdge]
-
-    @dataclass
-    class ExpectimaxTreeEdge:
-        action: Action
-        outcomes: list[AiSearchAgent.ExpectimaxTreeOutcome]
-        best_score: float
-
-    @dataclass
     class GameTreeResult:
-        game_tree: (
-            AiSearchAgent.MctsTreeNode
-            | AiSearchAgent.MinimaxTreeNode
-            | AiSearchAgent.ExpectimaxTreeNode
-        )
         best_action: Action
-
-    type _PolicySearchLogs = (
-        ExpectimaxSearchLog[Action] | MinimaxSearchLog[Action] | MctsSearchLog[Action]
-    )
+        game_tree: (
+            ExpectimaxTreeNode[Action] | MinimaxTreeNode[Action] | MctsTreeNode[Action]
+        )
 
     @staticmethod
     def get_state(
@@ -185,121 +140,36 @@ class AiSearchAgent:
         """
 
         state = AiSearchAgent.get_state(gs, config)
-        action, log = AiSearchAgent._get_action(state, config, log_with_tree=True)
+        action, log = AiSearchAgent._get_action(
+            state,
+            config,
+            log_with_tree=True,
+        )
 
         if action == None:
             return None
 
-        match (config.policy, log):
-            case PolicyConfig.ExpectimaxPolicy(), ExpectimaxSearchLog():
+        if log.tree_root == None:
+            raise RuntimeError("The policy didn't return tree when requested!")
 
-                def map_expectimax_model(
-                    node: ExpectimaxTreeNode[Action],
-                ) -> AiSearchAgent.ExpectimaxTreeNode:
-                    gs: GameState
-                    match node.state:
-                        case UnabstractedState() | WaypointsState():
-                            gs = node.state.gs
-                        case _:
-                            raise NotImplementedError()
-
-                    return AiSearchAgent.ExpectimaxTreeNode(
-                        state=gs,
-                        children=[
-                            AiSearchAgent.ExpectimaxTreeEdge(
-                                action=edge.action,
-                                outcomes=[
-                                    AiSearchAgent.ExpectimaxTreeOutcome(
-                                        probability=probability,
-                                        node=map_expectimax_model(outcome_node),
-                                    )
-                                    for probability, outcome_node in edge.outcomes
-                                ],
-                                best_score=edge.expected_score,
-                            )
-                            for edge in node.children
-                        ],
-                    )
-
-                if log.tree_root is None:
-                    raise RuntimeError("Expectimax tree logging was not enabled!")
-
-                return AiSearchAgent.GameTreeResult(
-                    game_tree=map_expectimax_model(log.tree_root),
-                    best_action=action,
-                )
-            case PolicyConfig.MinimaxPolicy(), MinimaxSearchLog():
-
-                def map_minimax_model(
-                    node: MinimaxTreeNode[Action],
-                ) -> AiSearchAgent.MinimaxTreeNode:
-                    gs: GameState
-                    match node.state:
-                        case UnabstractedState() | WaypointsState():
-                            gs = node.state.gs
-                        case _:
-                            raise NotImplementedError()
-
-                    return AiSearchAgent.MinimaxTreeNode(
-                        state=gs,
-                        children=[
-                            AiSearchAgent.MinimaxTreeEdge(
-                                action=edge.action,
-                                node=map_minimax_model(edge.node),
-                                best_score=edge.best_score,
-                            )
-                            for edge in node.children
-                        ],
-                    )
-
-                if log.tree_root is None:
-                    raise RuntimeError("Minimax tree logging was not enabled!")
-
-                return AiSearchAgent.GameTreeResult(
-                    game_tree=map_minimax_model(log.tree_root),
-                    best_action=action,
-                )
-
-            case PolicyConfig.MctsPolicy(), MctsSearchLog():
-
-                def map_mcts_tree_to_game_tree(
-                    node: MctsTreeNode[Action],
-                ) -> AiSearchAgent.MctsTreeNode:
-
-                    gs: GameState
-                    match node.state:
-                        case UnabstractedState() | WaypointsState():
-                            gs = node.state.gs
-                        case _:
-                            raise NotImplementedError()
-
-                    return AiSearchAgent.MctsTreeNode(
-                        state=gs,
-                        children=[
-                            AiSearchAgent.MctsTreeEdge(
-                                action=child.action,
-                                node=map_mcts_tree_to_game_tree(child),
-                            )
-                            for child in node.children
-                            if child.action != None
-                        ],
-                        total_visits=node.total_visits,
-                        total_value=node.total_value,
-                    )
-
-                return AiSearchAgent.GameTreeResult(
-                    game_tree=map_mcts_tree_to_game_tree(log.tree_root),
-                    best_action=action,
-                )
-            case _:
-                raise RuntimeError("Policy log is mismatched from config!")
+        return AiSearchAgent.GameTreeResult(
+            best_action=action,
+            game_tree=log.tree_root,
+        )
 
     @staticmethod
     def _get_action(
         state: ISearchState[Action],
         config: SearchPolicyConfig,
         log_with_tree: bool = False,
-    ) -> tuple[Action | None, _PolicySearchLogs]:
+    ) -> tuple[
+        Action | None,
+        (
+            ExpectimaxSearchLog[Action]
+            | MinimaxSearchLog[Action]
+            | MctsSearchLog[Action]
+        ),
+    ]:
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
                 return ExpectimaxPolicy[Action].get_action(

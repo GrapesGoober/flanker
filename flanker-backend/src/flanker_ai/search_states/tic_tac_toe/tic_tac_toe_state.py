@@ -140,6 +140,10 @@ class TicTacToeState(ISearchState[TicTacToeAction]):
     def update_state(self, gs: GameState) -> None:
         raise NotImplementedError()
 
+    @override
+    def get_game_state_copy(self) -> GameState:
+        raise NotImplementedError()
+
     # ---------- Utility ----------
 
     def is_full(self) -> bool:

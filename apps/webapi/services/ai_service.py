@@ -1,6 +1,5 @@
 from copy import deepcopy
 
-from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
@@ -9,6 +8,11 @@ from flanker_ai.config_models import (
     SearchPolicyConfig,
     WaypointsStateConfig,
 )
+from flanker_ai.search_policies.expectimax_policy import (
+    ExpectimaxTreeNode,
+)
+from flanker_ai.search_policies.mcts_policy import MctsTreeNode
+from flanker_ai.search_policies.minimax_policy import MinimaxTreeNode
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import (
     Action,
@@ -97,7 +101,7 @@ class AiService:
             return None
 
         match tree_result.game_tree:
-            case AiSearchAgent.MctsTreeNode():
+            case MctsTreeNode():
                 return MctsTreeInspection(
                     type="MctsTreeInspection",
                     best_action=AiService._map_action_to_requests(
@@ -107,7 +111,7 @@ class AiService:
                         tree_result.game_tree,
                     ),
                 )
-            case AiSearchAgent.ExpectimaxTreeNode():
+            case ExpectimaxTreeNode():
                 return ExpectimaxTreeInspection(
                     type="ExpectimaxTreeInspection",
                     best_action=AiService._map_action_to_requests(
@@ -117,7 +121,7 @@ class AiService:
                         tree_result.game_tree,
                     ),
                 )
-            case AiSearchAgent.MinimaxTreeNode():
+            case MinimaxTreeNode():
                 return MinimaxTreeInspection(
                     type="MinimaxTreeInspection",
                     best_action=AiService._map_action_to_requests(
@@ -251,16 +255,19 @@ class AiService:
 
     @staticmethod
     def _map_mcts_to_inspection(
-        node: AiSearchAgent.MctsTreeNode,
+        node: MctsTreeNode[Action],
     ) -> MctsTreeInspectionNode:
         return MctsTreeInspectionNode(
-            view_state=GameViewService.get_view_state(node.state),
+            view_state=GameViewService.get_view_state(
+                node.state.get_game_state_copy(),
+            ),
             children=[
                 MctsTreeInspectionEdge(
-                    action=AiService._map_action_to_requests(tree_edge.action),
-                    node=AiService._map_mcts_to_inspection(tree_edge.node),
+                    action=AiService._map_action_to_requests(child.action),
+                    node=AiService._map_mcts_to_inspection(child),
                 )
-                for tree_edge in node.children
+                for child in node.children
+                if child.action is not None
             ],
             total_visits=node.total_visits,
             total_value=node.total_value,
@@ -268,10 +275,12 @@ class AiService:
 
     @staticmethod
     def _map_minimax_to_inspection(
-        node: AiSearchAgent.MinimaxTreeNode,
+        node: MinimaxTreeNode[Action],
     ) -> MinimaxTreeInspectionNode:
         return MinimaxTreeInspectionNode(
-            view_state=GameViewService.get_view_state(node.state),
+            view_state=GameViewService.get_view_state(
+                node.state.get_game_state_copy(),
+            ),
             children=[
                 MinimaxTreeInspectionEdge(
                     action=AiService._map_action_to_requests(edge.action),
@@ -284,23 +293,25 @@ class AiService:
 
     @staticmethod
     def _map_expectimax_to_inspection(
-        node: AiSearchAgent.ExpectimaxTreeNode,
+        node: ExpectimaxTreeNode[Action],
     ) -> ExpectimaxTreeInspectionNode:
         return ExpectimaxTreeInspectionNode(
-            view_state=GameViewService.get_view_state(node.state),
+            view_state=GameViewService.get_view_state(
+                node.state.get_game_state_copy(),
+            ),
             children=[
                 ExpectimaxTreeInspectionEdge(
                     action=AiService._map_action_to_requests(edge.action),
                     outcomes=[
                         ExpectimaxTreeInspectionOutcome(
-                            probability=outcome.probability,
+                            probability=probability,
                             node=AiService._map_expectimax_to_inspection(
-                                outcome.node,
+                                outcome_node,
                             ),
                         )
-                        for outcome in edge.outcomes
+                        for probability, outcome_node in edge.outcomes
                     ],
-                    expected_score=edge.best_score,
+                    expected_score=edge.expected_score,
                 )
                 for edge in node.children
             ],

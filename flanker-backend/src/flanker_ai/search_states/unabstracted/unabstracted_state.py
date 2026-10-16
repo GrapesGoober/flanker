@@ -168,5 +168,9 @@ class UnabstractedState(ISearchState[Action]):
         )
 
     @override
+    def get_game_state_copy(self) -> GameState:
+        return deepcopy(self.gs)
+
+    @override
     def get_hashable_key(self) -> object:
         return AiTranspositionKeyService.get_key(self.gs, self._transposition_schemes)
