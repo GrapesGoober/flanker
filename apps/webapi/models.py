@@ -65,11 +65,18 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
     units_aspects: list[tuple[Vec2, list[float]]]
 
 
+class MctsTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    """An MCTS tree edge."""
+
+    action: "ActionRequest"
+    node: "MctsTreeInspectionNode"
+
+
 class MctsTreeInspectionNode(BaseModel, CamelCaseConfig):
     """An MCTS tree node."""
 
     view_state: GameViewState
-    children: list[tuple["ActionRequest", "MctsTreeInspectionNode"]]
+    children: list[MctsTreeInspectionEdge]
     total_visits: int
     total_value: float
 
@@ -83,11 +90,15 @@ class MctsTreeInspection(BaseModel, CamelCaseConfig):
 
 
 class MinimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+    "A Minimax tree node."
+
     view_state: GameViewState
     children: list["MinimaxTreeInspectionEdge"]
 
 
 class MinimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    "A Minimax tree edge."
+
     action: "ActionRequest"
     node: "MinimaxTreeInspectionNode"
     best_score: float

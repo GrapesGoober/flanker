@@ -34,6 +34,7 @@ from webapi.models import (
     FireActionRequest,
     GameTreeInspection,
     MctsTreeInspection,
+    MctsTreeInspectionEdge,
     MctsTreeInspectionNode,
     MinimaxTreeInspection,
     MinimaxTreeInspectionEdge,
@@ -241,11 +242,11 @@ class AiService:
         return MctsTreeInspectionNode(
             view_state=GameViewService.get_view_state(node.state),
             children=[
-                (
-                    AiService._map_action_to_requests(child_action),
-                    AiService._map_mcts_to_inspection(child_node),
+                MctsTreeInspectionEdge(
+                    action=AiService._map_action_to_requests(tree_edge.action),
+                    node=AiService._map_mcts_to_inspection(tree_edge.node),
                 )
-                for child_action, child_node in node.children
+                for tree_edge in node.children
             ],
             total_visits=node.total_visits,
             total_value=node.total_value,

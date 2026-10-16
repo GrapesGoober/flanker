@@ -539,16 +539,21 @@ export interface components {
             treeRoot: components["schemas"]["MctsTreeInspectionNode"];
         };
         /**
+         * MctsTreeInspectionEdge
+         * @description An MCTS tree edge.
+         */
+        MctsTreeInspectionEdge: {
+            action: components["schemas"]["ActionRequest"];
+            node: components["schemas"]["MctsTreeInspectionNode"];
+        };
+        /**
          * MctsTreeInspectionNode
          * @description An MCTS tree node.
          */
         MctsTreeInspectionNode: {
             viewState: components["schemas"]["GameViewState"];
             /** Children */
-            children: [
-                components["schemas"]["ActionRequest"],
-                components["schemas"]["MctsTreeInspectionNode"]
-            ][];
+            children: components["schemas"]["MctsTreeInspectionEdge"][];
             /** Totalvisits */
             totalVisits: number;
             /** Totalvalue */
@@ -567,14 +572,20 @@ export interface components {
             bestAction: components["schemas"]["ActionRequest"];
             treeRoot: components["schemas"]["MinimaxTreeInspectionNode"];
         };
-        /** MinimaxTreeInspectionEdge */
+        /**
+         * MinimaxTreeInspectionEdge
+         * @description A Minimax tree edge.
+         */
         MinimaxTreeInspectionEdge: {
             action: components["schemas"]["ActionRequest"];
             node: components["schemas"]["MinimaxTreeInspectionNode"];
             /** Bestscore */
             bestScore: number;
         };
-        /** MinimaxTreeInspectionNode */
+        /**
+         * MinimaxTreeInspectionNode
+         * @description A Minimax tree node.
+         */
         MinimaxTreeInspectionNode: {
             viewState: components["schemas"]["GameViewState"];
             /** Children */

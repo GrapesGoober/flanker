@@ -46,9 +46,14 @@ class AiSearchAgent:
         search_log: "AiSearchAgent.AiSearchLog"
 
     @dataclass
+    class MctsTreeEdge:
+        action: Action
+        node: "AiSearchAgent.MctsTreeNode"
+
+    @dataclass
     class MctsTreeNode:
         state: GameState
-        children: list[tuple[Action, "AiSearchAgent.MctsTreeNode"]]
+        children: list["AiSearchAgent.MctsTreeEdge"]
         total_visits: int
         total_value: float
 
@@ -209,7 +214,10 @@ class AiSearchAgent:
                     return AiSearchAgent.MctsTreeNode(
                         state=gs,
                         children=[
-                            (child.action, map_mcts_tree_to_game_tree(child))
+                            AiSearchAgent.MctsTreeEdge(
+                                action=child.action,
+                                node=map_mcts_tree_to_game_tree(child),
+                            )
                             for child in node.children
                             if child.action != None
                         ],
@@ -230,8 +238,7 @@ class AiSearchAgent:
         config: SearchPolicyConfig,
         log_with_tree: bool = False,
     ) -> tuple[
-        Action
-        | None,
+        Action | None,
         ExpectimaxSearchLog | MinimaxSearchLog[Action] | MctsSearchLog[Action],
     ]:
         match config.policy:
