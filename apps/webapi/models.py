@@ -112,10 +112,41 @@ class MinimaxTreeInspection(BaseModel, CamelCaseConfig):
     tree_root: MinimaxTreeInspectionNode
 
 
+class ExpectimaxTreeInspectionOutcome(BaseModel, CamelCaseConfig):
+    """A probabilistic outcome of an expectimax action."""
+
+    probability: float
+    node: "ExpectimaxTreeInspectionNode"
+
+
+class ExpectimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    """An expectimax action and its probabilistic outcomes."""
+
+    action: "ActionRequest"
+    outcomes: list[ExpectimaxTreeInspectionOutcome]
+    expected_score: float
+
+
+class ExpectimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+    """An expectimax tree node."""
+
+    view_state: GameViewState
+    children: list[ExpectimaxTreeInspectionEdge]
+
+
+class ExpectimaxTreeInspection(BaseModel, CamelCaseConfig):
+    """Detailed inspection debugging data of the Expectimax game tree."""
+
+    type: Literal["ExpectimaxTreeInspection"]
+    best_action: "ActionRequest"
+    tree_root: ExpectimaxTreeInspectionNode
+
+
 type GameTreeInspection = Annotated[
     Union[
         MinimaxTreeInspection,
         MctsTreeInspection,
+        ExpectimaxTreeInspection,
     ],
     Field(discriminator="type"),
 ]

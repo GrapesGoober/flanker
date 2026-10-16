@@ -15,8 +15,22 @@ class _TranspositionEntry:
 
 
 @dataclass
-class ExpectimaxSearchLog:
+class ExpectimaxTreeNode[TAction]:
+    state: ISearchState[TAction]
+    children: list["ExpectimaxTreeEdge[TAction]"]
+
+
+@dataclass
+class ExpectimaxTreeEdge[TAction]:
+    action: TAction
+    outcomes: list[tuple[float, ExpectimaxTreeNode[TAction]]]
+    expected_score: float
+
+
+@dataclass
+class ExpectimaxSearchLog[TAction]:
     tree_size: int
+    tree_root: ExpectimaxTreeNode[TAction] | None = None
 
 
 class ExpectimaxPolicy[TAction]:
@@ -28,20 +42,27 @@ class ExpectimaxPolicy[TAction]:
     def get_action(
         rs: ISearchState[TAction],
         depth: int,
-    ) -> tuple[TAction | None, ExpectimaxSearchLog]:
+        log_with_tree: bool = False,
+    ) -> tuple[TAction | None, ExpectimaxSearchLog[TAction]]:
         """
         Returns the best action and its search log given a current game state.
         """
 
         counter = count(0)
+        root: ExpectimaxTreeNode[TAction] | None = None
+        if log_with_tree:
+            root = ExpectimaxTreeNode(state=rs, children=[])
+
         _, action = ExpectimaxPolicy[TAction]._search(
             state=rs,
             depth_remaining=depth,
             counter=counter,
             transposition_table={},
+            log_tree_to_append=root,
         )
         return action, ExpectimaxSearchLog(
             tree_size=next(counter) - 1,
+            tree_root=root,
         )
 
     @staticmethod
@@ -50,6 +71,7 @@ class ExpectimaxPolicy[TAction]:
         depth_remaining: int,
         counter: "count[int]",
         transposition_table: dict[object, _TranspositionEntry],
+        log_tree_to_append: ExpectimaxTreeNode[TAction] | None,
     ) -> tuple[float, TAction | None]:
 
         next(counter)
@@ -70,7 +92,12 @@ class ExpectimaxPolicy[TAction]:
             if branches == []:
                 continue
             expected_score = 0
+            outcomes: list[tuple[float, ExpectimaxTreeNode[TAction]]] = []
             for probability, branch in branches:
+
+                outcome_node: ExpectimaxTreeNode[TAction] | None = None
+                if log_tree_to_append is not None:
+                    outcome_node = ExpectimaxTreeNode(state=branch, children=[])
 
                 new_branch_depth = depth_remaining - 1
                 state_key = branch.get_hashable_key()
@@ -89,6 +116,7 @@ class ExpectimaxPolicy[TAction]:
                         depth_remaining=new_branch_depth,
                         counter=counter,
                         transposition_table=transposition_table,
+                        log_tree_to_append=outcome_node,
                     )
                     transposition_table[state_key] = _TranspositionEntry(
                         score=score,
@@ -96,11 +124,22 @@ class ExpectimaxPolicy[TAction]:
                     )
 
                 expected_score += score * probability
+                if outcome_node is not None:
+                    outcomes.append((probability, outcome_node))
 
             # Have scores be closer to zero the further down the tree.
             # This numbs the impact of future gains or future losses.
             # Ex: future wins is less preferable than closer wins.
             expected_score = expected_score * 0.9
+
+            if log_tree_to_append is not None:
+                log_tree_to_append.children.append(
+                    ExpectimaxTreeEdge(
+                        action=action,
+                        outcomes=outcomes,
+                        expected_score=expected_score,
+                    )
+                )
 
             # Update score
             if is_maximizing:

@@ -30,6 +30,10 @@ from webapi.models import (
     AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
+    ExpectimaxTreeInspection,
+    ExpectimaxTreeInspectionEdge,
+    ExpectimaxTreeInspectionNode,
+    ExpectimaxTreeInspectionOutcome,
     FireActionLog,
     FireActionRequest,
     GameTreeInspection,
@@ -100,6 +104,16 @@ class AiService:
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_mcts_to_inspection(
+                        tree_result.game_tree,
+                    ),
+                )
+            case AiSearchAgent.ExpectimaxTreeNode():
+                return ExpectimaxTreeInspection(
+                    type="ExpectimaxTreeInspection",
+                    best_action=AiService._map_action_to_requests(
+                        tree_result.best_action,
+                    ),
+                    tree_root=AiService._map_expectimax_to_inspection(
                         tree_result.game_tree,
                     ),
                 )
@@ -263,6 +277,30 @@ class AiService:
                     action=AiService._map_action_to_requests(edge.action),
                     node=AiService._map_minimax_to_inspection(edge.node),
                     best_score=edge.best_score,
+                )
+                for edge in node.children
+            ],
+        )
+
+    @staticmethod
+    def _map_expectimax_to_inspection(
+        node: AiSearchAgent.ExpectimaxTreeNode,
+    ) -> ExpectimaxTreeInspectionNode:
+        return ExpectimaxTreeInspectionNode(
+            view_state=GameViewService.get_view_state(node.state),
+            children=[
+                ExpectimaxTreeInspectionEdge(
+                    action=AiService._map_action_to_requests(edge.action),
+                    outcomes=[
+                        ExpectimaxTreeInspectionOutcome(
+                            probability=outcome.probability,
+                            node=AiService._map_expectimax_to_inspection(
+                                outcome.node,
+                            ),
+                        )
+                        for outcome in edge.outcomes
+                    ],
+                    expected_score=edge.best_score,
                 )
                 for edge in node.children
             ],

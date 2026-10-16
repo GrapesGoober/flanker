@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from copy import deepcopy
 from dataclasses import dataclass
 
@@ -10,6 +12,7 @@ from flanker_ai.config_models import (
 from flanker_ai.search_policies.expectimax_policy import (
     ExpectimaxPolicy,
     ExpectimaxSearchLog,
+    ExpectimaxTreeNode,
 )
 from flanker_ai.search_policies.mcts_policy import (
     MctsPolicy,
@@ -43,35 +46,59 @@ class AiSearchAgent:
     class ActionResult:
         action: Action
         result: ActionResult
-        search_log: "AiSearchAgent.AiSearchLog"
+        search_log: AiSearchAgent.AiSearchLog
 
     @dataclass
     class MctsTreeEdge:
         action: Action
-        node: "AiSearchAgent.MctsTreeNode"
+        node: AiSearchAgent.MctsTreeNode
 
     @dataclass
     class MctsTreeNode:
         state: GameState
-        children: list["AiSearchAgent.MctsTreeEdge"]
+        children: list[AiSearchAgent.MctsTreeEdge]
         total_visits: int
         total_value: float
 
     @dataclass
     class MinimaxTreeNode:
         state: GameState
-        children: list["AiSearchAgent.MinimaxTreeEdge"]
+        children: list[AiSearchAgent.MinimaxTreeEdge]
 
     @dataclass
     class MinimaxTreeEdge:
         action: Action
-        node: "AiSearchAgent.MinimaxTreeNode"
+        node: AiSearchAgent.MinimaxTreeNode
+        best_score: float
+
+    @dataclass
+    class ExpectimaxTreeOutcome:
+        probability: float
+        node: AiSearchAgent.ExpectimaxTreeNode
+
+    @dataclass
+    class ExpectimaxTreeNode:
+        state: GameState
+        children: list[AiSearchAgent.ExpectimaxTreeEdge]
+
+    @dataclass
+    class ExpectimaxTreeEdge:
+        action: Action
+        outcomes: list[AiSearchAgent.ExpectimaxTreeOutcome]
         best_score: float
 
     @dataclass
     class GameTreeResult:
-        game_tree: "AiSearchAgent.MctsTreeNode | AiSearchAgent.MinimaxTreeNode"
+        game_tree: (
+            AiSearchAgent.MctsTreeNode
+            | AiSearchAgent.MinimaxTreeNode
+            | AiSearchAgent.ExpectimaxTreeNode
+        )
         best_action: Action
+
+    type _PolicySearchLogs = (
+        ExpectimaxSearchLog[Action] | MinimaxSearchLog[Action] | MctsSearchLog[Action]
+    )
 
     @staticmethod
     def get_state(
@@ -102,7 +129,7 @@ class AiSearchAgent:
     def perform_action(
         gs: GameState,
         config: SearchPolicyConfig,
-    ) -> ActionResult | None:
+    ) -> AiSearchAgent.ActionResult | None:
         """
         Performs an action and return its result.
         Returns `None` if no legal actions possible.
@@ -165,7 +192,42 @@ class AiSearchAgent:
 
         match (config.policy, log):
             case PolicyConfig.ExpectimaxPolicy(), ExpectimaxSearchLog():
-                raise NotImplementedError()
+
+                def map_expectimax_model(
+                    node: ExpectimaxTreeNode[Action],
+                ) -> AiSearchAgent.ExpectimaxTreeNode:
+                    gs: GameState
+                    match node.state:
+                        case UnabstractedState() | WaypointsState():
+                            gs = node.state.gs
+                        case _:
+                            raise NotImplementedError()
+
+                    return AiSearchAgent.ExpectimaxTreeNode(
+                        state=gs,
+                        children=[
+                            AiSearchAgent.ExpectimaxTreeEdge(
+                                action=edge.action,
+                                outcomes=[
+                                    AiSearchAgent.ExpectimaxTreeOutcome(
+                                        probability=probability,
+                                        node=map_expectimax_model(outcome_node),
+                                    )
+                                    for probability, outcome_node in edge.outcomes
+                                ],
+                                best_score=edge.expected_score,
+                            )
+                            for edge in node.children
+                        ],
+                    )
+
+                if log.tree_root is None:
+                    raise RuntimeError("Expectimax tree logging was not enabled!")
+
+                return AiSearchAgent.GameTreeResult(
+                    game_tree=map_expectimax_model(log.tree_root),
+                    best_action=action,
+                )
             case PolicyConfig.MinimaxPolicy(), MinimaxSearchLog():
 
                 def map_minimax_model(
@@ -237,14 +299,13 @@ class AiSearchAgent:
         state: ISearchState[Action],
         config: SearchPolicyConfig,
         log_with_tree: bool = False,
-    ) -> tuple[
-        Action | None,
-        ExpectimaxSearchLog | MinimaxSearchLog[Action] | MctsSearchLog[Action],
-    ]:
+    ) -> tuple[Action | None, _PolicySearchLogs]:
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
                 return ExpectimaxPolicy[Action].get_action(
-                    rs=state, depth=config.policy.depth
+                    rs=state,
+                    depth=config.policy.depth,
+                    log_with_tree=log_with_tree,
                 )
             case PolicyConfig.MinimaxPolicy():
                 return MinimaxPolicy[Action].get_action(
