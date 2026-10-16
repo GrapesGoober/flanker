@@ -69,7 +69,10 @@ export function loadTreeLocal(
 export function saveTreeLocal(
 	gameKey: string,
 	treeName: string,
-	jsonTree: string
+	gameTree: GameTreeInspection
 ) {
-	localStorage.setItem(`${treePrefix}${gameKey}:${treeName}`, jsonTree);
+	localStorage.setItem(
+		`${treePrefix}${gameKey}:${treeName}`,
+		JSON.stringify(gameTree)
+	);
 }
