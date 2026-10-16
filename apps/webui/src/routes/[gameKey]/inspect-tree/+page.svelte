@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { GetGameTreeInspection } from '$lib/api';
 	import {
+		deleteTreeLocal,
 		getTreeNames,
 		loadGameLocal,
 		saveTreeLocal
@@ -43,6 +44,13 @@
 		}
 		generating = false;
 	}
+
+	function deleteTree(treeName: string) {
+		if (confirm(`Confirm delete tree ${treeName}?`)) {
+			deleteTreeLocal(gameKey, treeName);
+			treeNames = getTreeNames(gameKey);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -64,6 +72,7 @@
 				>
 					{treeName}
 				</a>
+				<input type="button" value="❌" onclick={() => deleteTree(treeName)} />
 			</li>
 		{/each}
 	</ul>
