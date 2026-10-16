@@ -65,11 +65,18 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
     units_aspects: list[tuple[Vec2, list[float]]]
 
 
+class MctsTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    """An MCTS tree edge."""
+
+    action: "ActionRequest"
+    node: "MctsTreeInspectionNode"
+
+
 class MctsTreeInspectionNode(BaseModel, CamelCaseConfig):
     """An MCTS tree node."""
 
     view_state: GameViewState
-    children: list[tuple["ActionRequest", "MctsTreeInspectionNode"]]
+    children: list[MctsTreeInspectionEdge]
     total_visits: int
     total_value: float
 
@@ -83,11 +90,15 @@ class MctsTreeInspection(BaseModel, CamelCaseConfig):
 
 
 class MinimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+    "A Minimax tree node."
+
     view_state: GameViewState
     children: list["MinimaxTreeInspectionEdge"]
 
 
 class MinimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    "A Minimax tree edge."
+
     action: "ActionRequest"
     node: "MinimaxTreeInspectionNode"
     best_score: float
@@ -101,10 +112,42 @@ class MinimaxTreeInspection(BaseModel, CamelCaseConfig):
     tree_root: MinimaxTreeInspectionNode
 
 
+class ExpectimaxTreeInspectionOutcome(BaseModel, CamelCaseConfig):
+    """A probabilistic outcome of an expectimax action."""
+
+    probability: float
+    node: "ExpectimaxTreeInspectionNode"
+    score: float
+
+
+class ExpectimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+    """An expectimax action and its probabilistic outcomes."""
+
+    action: "ActionRequest"
+    outcomes: list[ExpectimaxTreeInspectionOutcome]
+    expected_score: float
+
+
+class ExpectimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+    """An expectimax tree node."""
+
+    view_state: GameViewState
+    children: list[ExpectimaxTreeInspectionEdge]
+
+
+class ExpectimaxTreeInspection(BaseModel, CamelCaseConfig):
+    """Detailed inspection debugging data of the Expectimax game tree."""
+
+    type: Literal["ExpectimaxTreeInspection"]
+    best_action: "ActionRequest"
+    tree_root: ExpectimaxTreeInspectionNode
+
+
 type GameTreeInspection = Annotated[
     Union[
         MinimaxTreeInspection,
         MctsTreeInspection,
+        ExpectimaxTreeInspection,
     ],
     Field(discriminator="type"),
 ]
