@@ -304,12 +304,13 @@ class AiService:
                     action=AiService._map_action_to_requests(edge.action),
                     outcomes=[
                         ExpectimaxTreeInspectionOutcome(
-                            probability=probability,
+                            probability=outcome.probability,
                             node=AiService._map_expectimax_to_inspection(
-                                outcome_node,
+                                outcome.node,
                             ),
+                            score=outcome.score,
                         )
-                        for probability, outcome_node in edge.outcomes
+                        for outcome in edge.outcomes
                     ],
                     expected_score=edge.expected_score,
                 )

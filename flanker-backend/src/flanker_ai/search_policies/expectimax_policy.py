@@ -21,9 +21,16 @@ class ExpectimaxTreeNode[TAction]:
 
 
 @dataclass
+class ExpectimaxTreeOutcome[TAction]:
+    probability: float
+    node: ExpectimaxTreeNode[TAction]
+    score: float
+
+
+@dataclass
 class ExpectimaxTreeEdge[TAction]:
     action: TAction
-    outcomes: list[tuple[float, ExpectimaxTreeNode[TAction]]]
+    outcomes: list[ExpectimaxTreeOutcome[TAction]]
     expected_score: float
 
 
@@ -92,7 +99,7 @@ class ExpectimaxPolicy[TAction]:
             if branches == []:
                 continue
             expected_score = 0
-            outcomes: list[tuple[float, ExpectimaxTreeNode[TAction]]] = []
+            outcomes: list[ExpectimaxTreeOutcome[TAction]] = []
             for probability, branch in branches:
 
                 outcome_node: ExpectimaxTreeNode[TAction] | None = None
@@ -125,7 +132,13 @@ class ExpectimaxPolicy[TAction]:
 
                 expected_score += score * probability
                 if outcome_node is not None:
-                    outcomes.append((probability, outcome_node))
+                    outcomes.append(
+                        ExpectimaxTreeOutcome(
+                            probability=probability,
+                            node=outcome_node,
+                            score=score,
+                        )
+                    )
 
             # Have scores be closer to zero the further down the tree.
             # This numbs the impact of future gains or future losses.

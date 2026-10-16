@@ -117,6 +117,7 @@ class ExpectimaxTreeInspectionOutcome(BaseModel, CamelCaseConfig):
 
     probability: float
     node: "ExpectimaxTreeInspectionNode"
+    score: float
 
 
 class ExpectimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
