@@ -4,10 +4,10 @@ from webapi.models import (
     ActionRequest,
     AiMatchResponse,
     GameStateInspection,
+    GameTreeInspection,
     GameViewState,
     GameViewStateResponse,
     MapViewState,
-    MctsGameTreeInspection,
 )
 from webapi.services.action_service import ActionService
 from webapi.services.ai_service import AiService
@@ -40,7 +40,7 @@ async def get_state_inspection(
 @router.post("/inspect/game-tree")
 async def get_tree_inspection(
     state: str = Body(...),
-) -> MctsGameTreeInspection | None:
+) -> GameTreeInspection | None:
     """Get the detailed game tree given the state."""
     gs = SceneService.deserialize(state)
     return AiService.get_tree_inspection(gs)

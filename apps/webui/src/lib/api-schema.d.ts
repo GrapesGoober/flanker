@@ -84,6 +84,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/game/inspect/game-tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get Tree Inspection
+         * @description Get the detailed game tree given the state.
+         */
+        post: operations["get_tree_inspection_api_game_inspect_game_tree_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/game/map": {
         parameters: {
             query?: never;
@@ -237,6 +257,7 @@ export interface components {
     schemas: {
         Action: components["schemas"]["MoveAction"] | components["schemas"]["PivotAction"] | components["schemas"]["FireAction"] | components["schemas"]["AssaultAction"];
         ActionLog: components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"];
+        ActionRequest: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
         /**
          * AiMatchResponse
          * @description Response model for AI match contains match result and final game state.
@@ -250,7 +271,13 @@ export interface components {
             /** Jsonstate */
             jsonState: string;
         };
-        AiSearchLog: components["schemas"]["MinimaxSearchLog"] | components["schemas"]["MctsSearchLog"] | components["schemas"]["ExpectimaxSearchLog"] | components["schemas"]["RandomHeuristicLog"] | components["schemas"]["RandomSearchLog"];
+        /** AiSearchLog */
+        AiSearchLog: {
+            /** Treesize */
+            treeSize: number;
+            /** Treedepth */
+            treeDepth: number;
+        };
         /** AiWaypointConfigRequest */
         AiWaypointConfigRequest: {
             faction: components["schemas"]["Faction"];
@@ -294,9 +321,8 @@ export interface components {
          */
         AssaultActionRequest: {
             /**
-             * Actiontype
-             * @default AssaultActionRequest
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
             actionType: "AssaultActionRequest";
             /**
@@ -359,11 +385,6 @@ export interface components {
             state: string;
             unit: components["schemas"]["SquadModel"];
         };
-        /** ExpectimaxSearchLog */
-        ExpectimaxSearchLog: {
-            /** Treesize */
-            treeSize: number;
-        };
         /**
          * Faction
          * @enum {string}
@@ -404,9 +425,8 @@ export interface components {
          */
         FireActionRequest: {
             /**
-             * Actiontype
-             * @default FireActionRequest
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
             actionType: "FireActionRequest";
             /**
@@ -459,6 +479,7 @@ export interface components {
                 number[]
             ][];
         };
+        GameTreeInspection: components["schemas"]["MinimaxTreeInspection"] | components["schemas"]["MctsTreeInspection"];
         /**
          * GameViewState
          * @description Simplified view model of the game state.
@@ -504,15 +525,60 @@ export interface components {
             /** Boundary */
             boundary: components["schemas"]["Vec2"][];
         };
-        /** MctsSearchLog */
-        MctsSearchLog: {
-            /** Treedepth */
-            treeDepth: number;
+        /**
+         * MctsTreeInspection
+         * @description Detailed inspection debugging data of the MCTS game tree.
+         */
+        MctsTreeInspection: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "MctsTreeInspection";
+            bestAction: components["schemas"]["ActionRequest"];
+            treeRoot: components["schemas"]["MctsTreeInspectionNode"];
         };
-        /** MinimaxSearchLog */
-        MinimaxSearchLog: {
-            /** Treesize */
-            treeSize: number;
+        /**
+         * MctsTreeInspectionNode
+         * @description An MCTS tree node.
+         */
+        MctsTreeInspectionNode: {
+            viewState: components["schemas"]["GameViewState"];
+            /** Children */
+            children: [
+                components["schemas"]["ActionRequest"],
+                components["schemas"]["MctsTreeInspectionNode"]
+            ][];
+            /** Totalvisits */
+            totalVisits: number;
+            /** Totalvalue */
+            totalValue: number;
+        };
+        /**
+         * MinimaxTreeInspection
+         * @description Detailed inspection debugging data of the Minimax game tree.
+         */
+        MinimaxTreeInspection: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "MinimaxTreeInspection";
+            bestAction: components["schemas"]["ActionRequest"];
+            treeRoot: components["schemas"]["MinimaxTreeInspectionNode"];
+        };
+        /** MinimaxTreeInspectionEdge */
+        MinimaxTreeInspectionEdge: {
+            action: components["schemas"]["ActionRequest"];
+            node: components["schemas"]["MinimaxTreeInspectionNode"];
+            /** Bestscore */
+            bestScore: number;
+        };
+        /** MinimaxTreeInspectionNode */
+        MinimaxTreeInspectionNode: {
+            viewState: components["schemas"]["GameViewState"];
+            /** Children */
+            children: components["schemas"]["MinimaxTreeInspectionEdge"][];
         };
         /**
          * MoveAction
@@ -546,9 +612,8 @@ export interface components {
          */
         MoveActionRequest: {
             /**
-             * Actiontype
-             * @default MoveActionRequest
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
             actionType: "MoveActionRequest";
             /**
@@ -601,9 +666,8 @@ export interface components {
          */
         PivotActionRequest: {
             /**
-             * Actiontype
-             * @default PivotActionRequest
-             * @constant
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
              */
             actionType: "PivotActionRequest";
             /**
@@ -617,16 +681,6 @@ export interface components {
         PivotActionResult: {
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-        };
-        /** RandomHeuristicLog */
-        RandomHeuristicLog: {
-            /** Actionslength */
-            actionsLength: number;
-        };
-        /** RandomSearchLog */
-        RandomSearchLog: {
-            /** Actionslength */
-            actionsLength: number;
         };
         /** SceneManifestResponse */
         SceneManifestResponse: {
@@ -831,6 +885,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameStateInspection"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tree_inspection_api_game_inspect_game_tree_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameTreeInspection"] | null;
                 };
             };
             /** @description Validation Error */
