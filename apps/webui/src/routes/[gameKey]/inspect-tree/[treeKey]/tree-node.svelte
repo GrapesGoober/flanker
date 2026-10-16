@@ -15,7 +15,6 @@
 	};
 
 	let { node, action, mapData, index }: Props = $props();
-	let isOpened = $state(false);
 	let isMapOpened = $state(false);
 	let areChildrenOpened = $state(false);
 </script>
@@ -31,9 +30,6 @@
 
 {#snippet nodeContent()}
 	<ul>
-		{#if action}
-			<li><pre><code>{JSON.stringify(action, null, 2)}</code></pre></li>
-		{/if}
 		<li>visits: {node.totalVisits}, value: {node.totalValue}</li>
 		<li>
 			Objective: {node.viewState.objectiveState}; initiative: {node.viewState
@@ -85,12 +81,22 @@
 {/snippet}
 
 {#if index === undefined}
-	{@render nodeContent()}
+	<details>
+		<summary>Node</summary>
+		{@render nodeContent()}
+	</details>
 {:else}
-	<details bind:open={isOpened}>
+	<details>
 		<summary>{index}</summary>
-		{#if isOpened}
-			{@render nodeContent()}
+		{#if action}
+			<details>
+				<summary>Action</summary>
+				<pre><code>{JSON.stringify(action, null, 2)}</code></pre>
+			</details>
 		{/if}
+		<details>
+			<summary>Node</summary>
+			{@render nodeContent()}
+		</details>
 	</details>
 {/if}
