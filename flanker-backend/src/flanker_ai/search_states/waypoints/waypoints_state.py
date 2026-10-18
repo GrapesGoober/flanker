@@ -184,6 +184,10 @@ class WaypointsState(ISearchState[Action]):
         )
 
     @override
+    def get_game_state_copy(self) -> GameState:
+        return deepcopy(self.gs)
+
+    @override
     def get_hashable_key(self) -> object:
         return AiTranspositionKeyService.get_key(
             gs=self.gs,

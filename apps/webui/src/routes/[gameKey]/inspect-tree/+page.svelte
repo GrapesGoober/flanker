@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { GetGameTreeInspection } from '$lib/api';
 	import {
+		deleteTreeLocal,
 		getTreeNames,
 		loadGameLocal,
 		saveTreeLocal
@@ -35,13 +36,20 @@
 			throw new Error(`No locally saved game state found for "${gameKey}".`);
 		}
 
-		const inspection = await GetGameTreeInspection(gameStateJson);
-		if (inspection !== null) {
-			saveTreeLocal(gameKey, treeName, JSON.stringify(inspection));
+		const gameTree = await GetGameTreeInspection(gameStateJson);
+		if (gameTree !== null) {
+			saveTreeLocal(gameKey, treeName, gameTree);
 			treeNames = getTreeNames(gameKey);
 			newTreeName = '';
 		}
 		generating = false;
+	}
+
+	function deleteTree(treeName: string) {
+		if (confirm(`Confirm delete tree ${treeName}?`)) {
+			deleteTreeLocal(gameKey, treeName);
+			treeNames = getTreeNames(gameKey);
+		}
 	}
 </script>
 
@@ -64,6 +72,7 @@
 				>
 					{treeName}
 				</a>
+				<input type="button" value="❌" onclick={() => deleteTree(treeName)} />
 			</li>
 		{/each}
 	</ul>
