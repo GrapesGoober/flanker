@@ -1,8 +1,5 @@
 <script lang="ts">
-	import type {
-		MapViewState,
-		MinimaxGameTreeInspectionNode
-	} from '$lib/api';
+	import type { MapViewState, MinimaxGameTreeInspectionNode } from '$lib/api';
 	import {
 		FireEffectArrows,
 		RifleSquad,
@@ -87,7 +84,7 @@
 				{/if}
 			</details>
 		{:else}
-			<p>Leaf node</p>
+			<p>No Children (Leaf node)</p>
 		{/if}
 	</li>
 </ul>
