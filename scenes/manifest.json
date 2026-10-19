@@ -5,6 +5,7 @@
     "demo": "scenes/demo.json",
     "blue-analysis": "scenes/experiments/blue-agents/analysis.json",
     "blue-grid": "scenes/experiments/blue-agents/grid.json",
+    "blue-handdrawn-s1-expectimax": "scenes/experiments/blue-agents/handdrawn-s1-expectimax.json",
     "blue-handdrawn-s1": "scenes/experiments/blue-agents/handdrawn-s1.json",
     "blue-handdrawn-s2": "scenes/experiments/blue-agents/handdrawn-s2.json",
     "blue-mcts": "scenes/experiments/blue-agents/mcts.json",
