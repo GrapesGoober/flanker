@@ -4,8 +4,11 @@ from typing import Iterable
 
 import matplotlib
 import pandas as pd
-from experiment_models import ExperimentSetConfig, MatchResult
-from flanker_ai.agents.ai_search_agent import AiSearchAgentLog
+from experiment_models import (
+    AiSearchLogRecordModel,
+    ExperimentSetConfig,
+    MatchResultRecordModel,
+)
 from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
@@ -21,7 +24,7 @@ def main() -> None:
     experiment_set = get_config(
         config_path="./scripts/configs/experiment-config.json",
     )
-    experiment_results_by_name: dict[str, list[MatchResult]] = {
+    experiment_results_by_name: dict[str, list[MatchResultRecordModel]] = {
         name: list(
             get_experiment_result(
                 experiment_name=name,
@@ -52,7 +55,7 @@ def main() -> None:
                 )
             ]
             for action_result in match_result.action_results
-            if isinstance(action_result.policy_log, AiSearchAgentLog)
+            if isinstance(action_result.policy_log, AiSearchLogRecordModel)
             if action_result.faction == InitiativeState.Faction.BLUE
         ]
     )
@@ -88,7 +91,7 @@ def get_experiment_names(
 def get_experiment_result(
     experiment_name: str,
     results_root_path: str,
-) -> Iterable[MatchResult]:
+) -> Iterable[MatchResultRecordModel]:
     file_path = Path(results_root_path) / f"{experiment_name}.jsonl"
     if not Path(file_path).is_file():
         raise Exception(f"Results file for {experiment_name} does not exist")
@@ -96,7 +99,7 @@ def get_experiment_result(
     with open(file_path, "r") as f:
         # This file reading is unreliable... need better file IO?
         for line in f:
-            yield MatchResult.model_validate_json(line)
+            yield MatchResultRecordModel.model_validate_json(line)
 
 
 if __name__ == "__main__":

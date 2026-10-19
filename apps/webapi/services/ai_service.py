@@ -53,7 +53,9 @@ from webapi.models.inspection_models import (
     MinimaxTreeInspectionNode,
 )
 from webapi.models.state_models import (
-    AiMatchResponse,
+    AiActionResultModel,
+    AiMatchResponseModel,
+    AiSearchLogModel,
     AiWaypointConfigRequest,
 )
 from webapi.services.game_view_service import GameViewService
@@ -137,7 +139,7 @@ class AiService:
                 )
 
     @staticmethod
-    def run_match(gs: GameState) -> AiMatchResponse:
+    def run_match(gs: GameState) -> AiMatchResponseModel:
         """Runs a match where 2 AI agents plays against each other."""
         result = AiMatch.run_match(gs)
         AiService._log_ai_action_results(
@@ -145,10 +147,24 @@ class AiService:
             results=result.action_results,
             gs_snapshots=result.gs_snapshots,
         )
-        return AiMatchResponse(
+        return AiMatchResponseModel(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
-            action_results=result.action_results,
+            action_results=[
+                AiActionResultModel(
+                    faction=result.faction,
+                    action_runtime_seconds=result.action_runtime_seconds,
+                    policy_log=(
+                        AiSearchLogModel(
+                            tree_size=result.policy_log.tree_size,
+                            tree_depth=result.policy_log.tree_depth,
+                        )
+                        if result.policy_log
+                        else None
+                    ),
+                )
+                for result in result.action_results
+            ],
             json_state=SceneService.serialize(gs),
         )
 

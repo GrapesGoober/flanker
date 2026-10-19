@@ -1,7 +1,6 @@
 from enum import Enum
 from uuid import UUID
 
-from flanker_ai.ai_system import AiActionResult
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import FireEffect
 from flanker_core.models.vec2 import Vec2
@@ -92,15 +91,23 @@ class MapViewState(BaseModel, CamelCaseConfig):
     boundary: list[Vec2]
 
 
-class AiMatchResponse(BaseModel, CamelCaseConfig):
+class AiSearchLogModel(BaseModel, CamelCaseConfig):
+    tree_size: int
+    tree_depth: int
+
+
+class AiActionResultModel(BaseModel, CamelCaseConfig):
+    faction: InitiativeState.Faction
+    action_runtime_seconds: float
+    policy_log: AiSearchLogModel | None
+
+
+class AiMatchResponseModel(BaseModel, CamelCaseConfig):
     """Response model for AI match contains match result and final game state."""
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    # FIXME: this should use dedicated view model for AiSystem.ActionResult.
-    # The experiments can then define its own mapping method, so that the
-    # models are nicely decoupled.
-    action_results: list[AiActionResult]
+    action_results: list[AiActionResultModel]
     json_state: str
 
 

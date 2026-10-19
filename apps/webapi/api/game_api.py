@@ -5,7 +5,7 @@ from webapi.models.inspection_models import (
     GameTreeInspection,
 )
 from webapi.models.state_models import (
-    AiMatchResponse,
+    AiMatchResponseModel,
     GameViewState,
     GameViewStateResponse,
     MapViewState,
@@ -79,6 +79,6 @@ async def get_logs(
 @router.post("/ai-play")
 async def run_match(
     state: str = Body(...),
-) -> AiMatchResponse:
+) -> AiMatchResponseModel:
     gs = SceneService.deserialize(state)
     return AiService.run_match(gs)

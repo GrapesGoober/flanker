@@ -1,18 +1,28 @@
 from typing import Literal
 
-from flanker_ai.ai_system import AiActionResult
 from flanker_ai.config_models import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 
-class MatchResult(BaseModel):
+class AiSearchLogRecordModel(BaseModel):
+    tree_size: int
+    tree_depth: int
+
+
+class AiActionResultRecordModel(BaseModel):
+    faction: InitiativeState.Faction
+    action_runtime_seconds: float
+    policy_log: AiSearchLogRecordModel | None
+
+
+class MatchResultRecordModel(BaseModel):
     """Match result model for each recorded match run."""
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    action_results: list[AiActionResult]
+    action_results: list[AiActionResultRecordModel]
 
 
 class ExperimentMetadata(BaseModel):

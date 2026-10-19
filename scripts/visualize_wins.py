@@ -4,7 +4,7 @@ from typing import Iterable
 
 import matplotlib
 import pandas as pd
-from experiment_models import ExperimentSetConfig, MatchResult
+from experiment_models import ExperimentSetConfig, MatchResultRecordModel
 from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
@@ -24,7 +24,7 @@ def main() -> None:
     experiment_set = get_config(
         config_path="./scripts/configs/experiment-config.json",
     )
-    experiment_results_by_name: dict[str, list[MatchResult]] = {
+    experiment_results_by_name: dict[str, list[MatchResultRecordModel]] = {
         name: list(
             get_experiment_results(
                 experiment_name=name,
@@ -96,7 +96,7 @@ def get_experiment_names(
 def get_experiment_results(
     experiment_name: str,
     results_root_path: str,
-) -> Iterable[MatchResult]:
+) -> Iterable[MatchResultRecordModel]:
     file_path = Path(results_root_path) / f"{experiment_name}.jsonl"
     if not Path(file_path).is_file():
         raise Exception(f"Results file for {experiment_name} does not exist")
@@ -104,12 +104,12 @@ def get_experiment_results(
     with open(file_path, "r") as f:
         # This file reading is unreliable... need better file IO?
         for line in f:
-            yield MatchResult.model_validate_json(line)
+            yield MatchResultRecordModel.model_validate_json(line)
 
 
 def get_win_rate(
     experiment_name: str,
-    experiment_results_by_name: dict[str, list[MatchResult]],
+    experiment_results_by_name: dict[str, list[MatchResultRecordModel]],
 ) -> float:
     match_results = experiment_results_by_name[experiment_name]
     return round(
