@@ -468,10 +468,10 @@ export interface components {
          */
         FireOutcomes: "MISS" | "PIN" | "SUPPRESS" | "KILL";
         /**
-         * GameStateInspection
+         * GameStateInspectionModel
          * @description Detailed inspection debugging data of the game state.
          */
-        GameStateInspection: {
+        GameStateInspectionModel: {
             viewState: components["schemas"]["GameViewState"];
             /** Lospolygons */
             losPolygons: components["schemas"]["LosPolygon"][];
@@ -850,7 +850,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameStateInspection"];
+                    "application/json": components["schemas"]["GameStateInspectionModel"];
                 };
             };
             /** @description Validation Error */

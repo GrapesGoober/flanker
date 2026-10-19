@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Body
 from webapi.models.action_models import ActionLogModel, ActionModel
 from webapi.models.inspection_models import (
-    GameStateInspection,
-    GameTreeInspection,
+    GameStateInspectionModel,
+    GameTreeInspectionModel,
 )
 from webapi.models.state_models import (
     AiMatchResponseModel,
@@ -32,7 +32,7 @@ async def get_view_state(
 @router.post("/inspect")
 async def get_state_inspection(
     state: str = Body(...),
-) -> GameStateInspection:
+) -> GameStateInspectionModel:
     """Get the detailed inspection data of the scene."""
     gs = SceneService.deserialize(state)
     return GameViewService.get_inspection(gs)
@@ -41,7 +41,7 @@ async def get_state_inspection(
 @router.post("/inspect/game-tree")
 async def get_tree_inspection(
     state: str = Body(...),
-) -> GameTreeInspection | None:
+) -> GameTreeInspectionModel | None:
     """Get the detailed game tree given the state."""
     gs = SceneService.deserialize(state)
     return AiService.get_tree_inspection(gs)

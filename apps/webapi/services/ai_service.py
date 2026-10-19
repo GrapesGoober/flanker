@@ -40,17 +40,17 @@ from webapi.models.action_models import (
     PivotActionModel,
 )
 from webapi.models.inspection_models import (
-    ExpectimaxTreeInspection,
-    ExpectimaxTreeInspectionEdge,
-    ExpectimaxTreeInspectionNode,
-    ExpectimaxTreeInspectionOutcome,
-    GameTreeInspection,
-    MctsTreeInspection,
-    MctsTreeInspectionEdge,
-    MctsTreeInspectionNode,
-    MinimaxTreeInspection,
-    MinimaxTreeInspectionEdge,
-    MinimaxTreeInspectionNode,
+    ExpectimaxTreeEdgeModel,
+    ExpectimaxTreeInspectionModel,
+    ExpectimaxTreeNodeModel,
+    ExpectimaxTreeOutcomeModel,
+    GameTreeInspectionModel,
+    MctsTreeEdgeModel,
+    MctsTreeInspectionModel,
+    MctsTreeNodeModel,
+    MinimaxTreeEdgeModel,
+    MinimaxTreeInspectionModel,
+    MinimaxTreeNodeModel,
 )
 from webapi.models.state_models import (
     AiActionResultModel,
@@ -101,15 +101,15 @@ class AiService:
     @staticmethod
     def get_tree_inspection(
         gs: GameState,
-    ) -> GameTreeInspection | None:
+    ) -> GameTreeInspectionModel | None:
         tree_result = AiSystem.get_game_tree(gs)
         if tree_result == None:
             return None
 
         match tree_result.game_tree:
             case MctsTreeNode():
-                return MctsTreeInspection(
-                    type="MctsTreeInspection",
+                return MctsTreeInspectionModel(
+                    type="MctsTreeInspectionModel",
                     best_action=AiService._map_action_to_requests(
                         tree_result.best_action,
                     ),
@@ -118,8 +118,8 @@ class AiService:
                     ),
                 )
             case ExpectimaxTreeNode():
-                return ExpectimaxTreeInspection(
-                    type="ExpectimaxTreeInspection",
+                return ExpectimaxTreeInspectionModel(
+                    type="ExpectimaxTreeInspectionModel",
                     best_action=AiService._map_action_to_requests(
                         tree_result.best_action,
                     ),
@@ -128,8 +128,8 @@ class AiService:
                     ),
                 )
             case MinimaxTreeNode():
-                return MinimaxTreeInspection(
-                    type="MinimaxTreeInspection",
+                return MinimaxTreeInspectionModel(
+                    type="MinimaxTreeInspectionModel",
                     best_action=AiService._map_action_to_requests(
                         tree_result.best_action,
                     ),
@@ -276,13 +276,13 @@ class AiService:
     @staticmethod
     def _map_mcts_to_inspection(
         node: MctsTreeNode[Action],
-    ) -> MctsTreeInspectionNode:
-        return MctsTreeInspectionNode(
+    ) -> MctsTreeNodeModel:
+        return MctsTreeNodeModel(
             view_state=GameViewService.get_view_state(
                 node.state.get_game_state_copy(),
             ),
             children=[
-                MctsTreeInspectionEdge(
+                MctsTreeEdgeModel(
                     action=AiService._map_action_to_requests(child.action),
                     node=AiService._map_mcts_to_inspection(child),
                 )
@@ -296,13 +296,13 @@ class AiService:
     @staticmethod
     def _map_minimax_to_inspection(
         node: MinimaxTreeNode[Action],
-    ) -> MinimaxTreeInspectionNode:
-        return MinimaxTreeInspectionNode(
+    ) -> MinimaxTreeNodeModel:
+        return MinimaxTreeNodeModel(
             view_state=GameViewService.get_view_state(
                 node.state.get_game_state_copy(),
             ),
             children=[
-                MinimaxTreeInspectionEdge(
+                MinimaxTreeEdgeModel(
                     action=AiService._map_action_to_requests(edge.action),
                     node=AiService._map_minimax_to_inspection(edge.node),
                     best_score=edge.best_score,
@@ -314,16 +314,16 @@ class AiService:
     @staticmethod
     def _map_expectimax_to_inspection(
         node: ExpectimaxTreeNode[Action],
-    ) -> ExpectimaxTreeInspectionNode:
-        return ExpectimaxTreeInspectionNode(
+    ) -> ExpectimaxTreeNodeModel:
+        return ExpectimaxTreeNodeModel(
             view_state=GameViewService.get_view_state(
                 node.state.get_game_state_copy(),
             ),
             children=[
-                ExpectimaxTreeInspectionEdge(
+                ExpectimaxTreeEdgeModel(
                     action=AiService._map_action_to_requests(edge.action),
                     outcomes=[
-                        ExpectimaxTreeInspectionOutcome(
+                        ExpectimaxTreeOutcomeModel(
                             probability=outcome.probability,
                             node=AiService._map_expectimax_to_inspection(
                                 outcome.node,

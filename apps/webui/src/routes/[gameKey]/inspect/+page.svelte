@@ -3,7 +3,7 @@
 	import {
 		GetMapData,
 		GetStatesInspectionData,
-		type GameStateInspection,
+		type GameStateInspectionModel,
 		type MapViewState,
 		type Vec2
 	} from '$lib/api';
@@ -20,7 +20,7 @@
 		boundary: []
 	});
 
-	let inspectionData: GameStateInspection = $state({
+	let inspectionData: GameStateInspectionModel = $state({
 		viewState: {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,

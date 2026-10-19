@@ -19,7 +19,7 @@ from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
-from webapi.models.inspection_models import GameStateInspection
+from webapi.models.inspection_models import GameStateInspectionModel
 from webapi.models.state_models import (
     FireEffectPair,
     GameViewState,
@@ -98,8 +98,8 @@ class GameViewService:
     @staticmethod
     def get_inspection(
         gs: GameState,
-    ) -> GameStateInspection:
-        los_polygons: list[GameStateInspection.LosPolygon] = []
+    ) -> GameStateInspectionModel:
+        los_polygons: list[GameStateInspectionModel.LosPolygon] = []
         unit_aspects: list[tuple[Vec2, list[float]]] = []
         for _, unit, transform, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
@@ -120,7 +120,7 @@ class GameViewService:
                 fov_polygon = los_polygon
 
             los_polygons.append(
-                GameStateInspection.LosPolygon(
+                GameStateInspectionModel.LosPolygon(
                     faction=unit.faction,
                     los_polygon=los_polygon,
                     fov_polygon=fov_polygon,
@@ -148,7 +148,7 @@ class GameViewService:
             unit_id = actions[0].unit_id if actions else None
             move_candidates = [a.to for a in actions if a.unit_id == unit_id]
 
-        return GameStateInspection(
+        return GameStateInspectionModel(
             view_state=GameViewService.get_view_state(gs),
             los_polygons=los_polygons,
             move_candidates=move_candidates,

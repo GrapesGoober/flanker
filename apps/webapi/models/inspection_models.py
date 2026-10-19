@@ -16,7 +16,7 @@ class CamelCaseConfig:
     )
 
 
-class GameStateInspection(BaseModel, CamelCaseConfig):
+class GameStateInspectionModel(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the game state."""
 
     class LosPolygon(BaseModel, CamelCaseConfig):
@@ -30,89 +30,89 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
     units_aspects: list[tuple[Vec2, list[float]]]
 
 
-class MctsTreeInspectionEdge(BaseModel, CamelCaseConfig):
+class MctsTreeEdgeModel(BaseModel, CamelCaseConfig):
     """An MCTS tree edge."""
 
     action: ActionModel
-    node: "MctsTreeInspectionNode"
+    node: "MctsTreeNodeModel"
 
 
-class MctsTreeInspectionNode(BaseModel, CamelCaseConfig):
+class MctsTreeNodeModel(BaseModel, CamelCaseConfig):
     """An MCTS tree node."""
 
     view_state: GameViewState
-    children: list[MctsTreeInspectionEdge]
+    children: list[MctsTreeEdgeModel]
     total_visits: int
     total_value: float
 
 
-class MctsTreeInspection(BaseModel, CamelCaseConfig):
+class MctsTreeInspectionModel(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the MCTS game tree."""
 
-    type: Literal["MctsTreeInspection"]
+    type: Literal["MctsTreeInspectionModel"]
     best_action: ActionModel
-    tree_root: MctsTreeInspectionNode
+    tree_root: MctsTreeNodeModel
 
 
-class MinimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+class MinimaxTreeNodeModel(BaseModel, CamelCaseConfig):
     "A Minimax tree node."
 
     view_state: GameViewState
-    children: list["MinimaxTreeInspectionEdge"]
+    children: list["MinimaxTreeEdgeModel"]
 
 
-class MinimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+class MinimaxTreeEdgeModel(BaseModel, CamelCaseConfig):
     "A Minimax tree edge."
 
     action: ActionModel
-    node: "MinimaxTreeInspectionNode"
+    node: "MinimaxTreeNodeModel"
     best_score: float
 
 
-class MinimaxTreeInspection(BaseModel, CamelCaseConfig):
+class MinimaxTreeInspectionModel(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the Minimax game tree."""
 
-    type: Literal["MinimaxTreeInspection"]
+    type: Literal["MinimaxTreeInspectionModel"]
     best_action: ActionModel
-    tree_root: MinimaxTreeInspectionNode
+    tree_root: MinimaxTreeNodeModel
 
 
-class ExpectimaxTreeInspectionOutcome(BaseModel, CamelCaseConfig):
+class ExpectimaxTreeOutcomeModel(BaseModel, CamelCaseConfig):
     """A probabilistic outcome of an expectimax action."""
 
     probability: float
-    node: "ExpectimaxTreeInspectionNode"
+    node: "ExpectimaxTreeNodeModel"
     score: float
 
 
-class ExpectimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
+class ExpectimaxTreeEdgeModel(BaseModel, CamelCaseConfig):
     """An expectimax action and its probabilistic outcomes."""
 
     action: ActionModel
-    outcomes: list[ExpectimaxTreeInspectionOutcome]
+    outcomes: list[ExpectimaxTreeOutcomeModel]
     expected_score: float
 
 
-class ExpectimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
+class ExpectimaxTreeNodeModel(BaseModel, CamelCaseConfig):
     """An expectimax tree node."""
 
     view_state: GameViewState
-    children: list[ExpectimaxTreeInspectionEdge]
+    children: list[ExpectimaxTreeEdgeModel]
 
 
-class ExpectimaxTreeInspection(BaseModel, CamelCaseConfig):
+class ExpectimaxTreeInspectionModel(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the Expectimax game tree."""
 
-    type: Literal["ExpectimaxTreeInspection"]
+    type: Literal["ExpectimaxTreeInspectionModel"]
     best_action: ActionModel
-    tree_root: ExpectimaxTreeInspectionNode
+    tree_root: ExpectimaxTreeNodeModel
 
 
-type GameTreeInspection = Annotated[
+type GameTreeInspectionModel = Annotated[
     Union[
-        MinimaxTreeInspection,
-        MctsTreeInspection,
-        ExpectimaxTreeInspection,
+        MinimaxTreeInspectionModel,
+        MctsTreeInspectionModel,
+        ExpectimaxTreeInspectionModel,
     ],
     Field(discriminator="type"),
 ]

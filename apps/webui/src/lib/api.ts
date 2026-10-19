@@ -16,7 +16,8 @@ export type AiWaypointsModel =
 export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse =
 	components['schemas']['GameViewStateResponse'];
-export type GameStateInspection = components['schemas']['GameStateInspection'];
+export type GameStateInspectionModel =
+	components['schemas']['GameStateInspectionModel'];
 export type MctsGameTreeInspectionNode =
 	components['schemas']['MctsTreeInspectionNode'];
 export type MinimaxGameTreeInspectionNode =
@@ -70,7 +71,7 @@ export async function GetViewStatesData(
 /** Get current combat unit states for the game. */
 export async function GetStatesInspectionData(
 	jsonState: string
-): Promise<GameStateInspection> {
+): Promise<GameStateInspectionModel> {
 	const { data, error } = await client.POST('/api/game/inspect', {
 		body: jsonState
 	});
