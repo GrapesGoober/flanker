@@ -22,6 +22,8 @@ export type MctsGameTreeInspectionNode =
 	components['schemas']['MctsTreeInspectionNode'];
 export type MinimaxGameTreeInspectionNode =
 	components['schemas']['MinimaxTreeInspectionNode'];
+export type ExpectimaxGameTreeInspectionNode =
+	components['schemas']['ExpectimaxTreeInspectionNode'];
 export type GameTreeInspection = components['schemas']['GameTreeInspection'];
 export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];

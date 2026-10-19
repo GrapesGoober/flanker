@@ -7,6 +7,7 @@
 	} from '$lib/api';
 	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
+	import ExpectimaxTreeNode from './expectimax-tree-node.svelte';
 	import MctsTreeNode from './mcts-tree-node.svelte';
 	import MinimaxTreeNode from './minimax-tree-node.svelte';
 
@@ -36,6 +37,6 @@
 	{:else if gameTree.type === 'MinimaxTreeInspection'}
 		<MinimaxTreeNode node={gameTree.treeRoot} {mapData} />
 	{:else}
-		<p>Whoops, Expectimax tree inspection is not supported yet.</p>
+		<ExpectimaxTreeNode node={gameTree.treeRoot} {mapData} />
 	{/if}
 {/if}

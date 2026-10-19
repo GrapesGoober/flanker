@@ -386,6 +386,50 @@ export interface components {
             unit: components["schemas"]["SquadModel"];
         };
         /**
+         * ExpectimaxTreeInspection
+         * @description Detailed inspection debugging data of the Expectimax game tree.
+         */
+        ExpectimaxTreeInspection: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ExpectimaxTreeInspection";
+            bestAction: components["schemas"]["ActionRequest"];
+            treeRoot: components["schemas"]["ExpectimaxTreeInspectionNode"];
+        };
+        /**
+         * ExpectimaxTreeInspectionEdge
+         * @description An expectimax action and its probabilistic outcomes.
+         */
+        ExpectimaxTreeInspectionEdge: {
+            action: components["schemas"]["ActionRequest"];
+            /** Outcomes */
+            outcomes: components["schemas"]["ExpectimaxTreeInspectionOutcome"][];
+            /** Expectedscore */
+            expectedScore: number;
+        };
+        /**
+         * ExpectimaxTreeInspectionNode
+         * @description An expectimax tree node.
+         */
+        ExpectimaxTreeInspectionNode: {
+            viewState: components["schemas"]["GameViewState"];
+            /** Children */
+            children: components["schemas"]["ExpectimaxTreeInspectionEdge"][];
+        };
+        /**
+         * ExpectimaxTreeInspectionOutcome
+         * @description A probabilistic outcome of an expectimax action.
+         */
+        ExpectimaxTreeInspectionOutcome: {
+            /** Probability */
+            probability: number;
+            node: components["schemas"]["ExpectimaxTreeInspectionNode"];
+            /** Score */
+            score: number;
+        };
+        /**
          * Faction
          * @enum {string}
          */
@@ -479,7 +523,7 @@ export interface components {
                 number[]
             ][];
         };
-        GameTreeInspection: components["schemas"]["MinimaxTreeInspection"] | components["schemas"]["MctsTreeInspection"];
+        GameTreeInspection: components["schemas"]["MinimaxTreeInspection"] | components["schemas"]["MctsTreeInspection"] | components["schemas"]["ExpectimaxTreeInspection"];
         /**
          * GameViewState
          * @description Simplified view model of the game state.
