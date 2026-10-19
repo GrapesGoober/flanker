@@ -34,7 +34,7 @@
 	{#if gameTree.type === 'MctsTreeInspection'}
 		<MctsTreeNode node={gameTree.treeRoot} {mapData} />
 	{:else if gameTree.type === 'MinimaxTreeInspection'}
-		<MinimaxTreeNode node={gameTree.treeRoot} action={null} {mapData} />
+		<MinimaxTreeNode node={gameTree.treeRoot} {mapData} />
 	{:else}
 		<p>Whoops, Expectimax tree inspection is not supported yet.</p>
 	{/if}
