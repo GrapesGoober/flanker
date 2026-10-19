@@ -5,7 +5,7 @@ from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
-from webapi.models.state_models import GameViewState
+from webapi.models.state_models import GameViewStateModel
 
 
 class CamelCaseConfig:
@@ -52,21 +52,21 @@ class MoveActionLogModel(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLogModel"] = "MoveActionLogModel"
     body: MoveActionModel
     reactive_fire_outcomes: list[FireOutcomes]
-    view_state: GameViewState
+    view_state: GameViewStateModel
 
 
 class PivotActionLogModel(BaseModel, CamelCaseConfig):
     log_type: Literal["PivotActionLogModel"] = "PivotActionLogModel"
     body: PivotActionModel
     reactive_fire_outcomes: list[FireOutcomes]
-    view_state: GameViewState
+    view_state: GameViewStateModel
 
 
 class FireActionLogModel(BaseModel, CamelCaseConfig):
     log_type: Literal["FireActionLogModel"] = "FireActionLogModel"
     body: FireActionModel
     outcome: FireOutcomes | None
-    view_state: GameViewState
+    view_state: GameViewStateModel
 
 
 class AssaultActionLogModel(BaseModel, CamelCaseConfig):
@@ -74,7 +74,7 @@ class AssaultActionLogModel(BaseModel, CamelCaseConfig):
     body: AssaultActionModel
     outcome: AssaultOutcomes | None
     reactive_fire_outcomes: list[FireOutcomes]
-    view_state: GameViewState
+    view_state: GameViewStateModel
 
 
 type ActionModel = Annotated[

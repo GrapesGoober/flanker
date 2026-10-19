@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MapViewState, MctsGameTreeInspectionNode } from '$lib/api';
+	import type { MapViewStateModel, MctsTreeNodeModel } from '$lib/api';
 	import {
 		FireEffectArrows,
 		RifleSquad,
@@ -9,8 +9,8 @@
 	import MctsTreeNode from './mcts-tree-node.svelte';
 
 	type Props = {
-		node: MctsGameTreeInspectionNode;
-		mapData: MapViewState;
+		node: MctsTreeNodeModel;
+		mapData: MapViewStateModel;
 	};
 
 	let { node, mapData }: Props = $props();

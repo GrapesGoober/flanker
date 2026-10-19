@@ -43,7 +43,7 @@ class FireEffectPair(BaseModel, CamelCaseConfig):
     fire_effect_b: FireEffect | None
 
 
-class GameViewState(BaseModel, CamelCaseConfig):
+class GameViewStateModel(BaseModel, CamelCaseConfig):
     """Simplified view model of the game state."""
 
     class ObjectiveState(Enum):
@@ -57,10 +57,10 @@ class GameViewState(BaseModel, CamelCaseConfig):
     fire_effect_pairs: list[FireEffectPair]
 
 
-class GameViewStateResponse(BaseModel, CamelCaseConfig):
+class GameViewStateResponseModel(BaseModel, CamelCaseConfig):
     """Response model for actions contains view state and mutated game state."""
 
-    view_state: GameViewState
+    view_state: GameViewStateModel
     json_state: str
 
 
@@ -84,7 +84,7 @@ class TerrainModel(BaseModel, CamelCaseConfig):
     terrain_type: TerrainType
 
 
-class MapViewState(BaseModel, CamelCaseConfig):
+class MapViewStateModel(BaseModel, CamelCaseConfig):
     """Simplified view model of the game map."""
 
     terrains: list[TerrainModel]

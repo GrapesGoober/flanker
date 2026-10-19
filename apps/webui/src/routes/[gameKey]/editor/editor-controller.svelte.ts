@@ -9,8 +9,8 @@ import {
 	UpdateUnit,
 	UpdateWaypointsData,
 	type AiWaypointsModel,
-	type GameViewState,
-	type MapViewState,
+	type GameViewStateModel,
+	type MapViewStateModel,
 	type RifleSquadData,
 	type TerrainModel,
 	type TerrainType,
@@ -29,11 +29,11 @@ type EditorControllerState =
 	| { type: 'draw-waypoints'; waypoints: AiWaypointsModel };
 
 export class EditorController {
-	mapData: MapViewState = $state({
+	mapData: MapViewStateModel = $state({
 		terrains: [],
 		boundary: []
 	});
-	viewState: GameViewState = $state({
+	viewState: GameViewStateModel = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: [],

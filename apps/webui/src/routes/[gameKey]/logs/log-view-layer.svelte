@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type ActionLogModel, type GameViewState } from '$lib/api';
+	import { type ActionLogModel, type GameViewStateModel } from '$lib/api';
 	import {
 		BorderFriendlyUnit,
 		BorderHostileUnit,
@@ -13,7 +13,7 @@
 	};
 
 	let props: Props = $props();
-	let currentView: GameViewState = $derived(
+	let currentView: GameViewStateModel = $derived(
 		props.logData[props.index]?.viewState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,

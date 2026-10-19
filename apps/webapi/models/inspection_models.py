@@ -5,7 +5,7 @@ from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 from webapi.models.action_models import ActionModel
-from webapi.models.state_models import GameViewState
+from webapi.models.state_models import GameViewStateModel
 
 
 class CamelCaseConfig:
@@ -24,7 +24,7 @@ class GameStateInspectionModel(BaseModel, CamelCaseConfig):
         los_polygon: list[Vec2]
         fov_polygon: list[Vec2]
 
-    view_state: GameViewState
+    view_state: GameViewStateModel
     los_polygons: list[LosPolygon]
     move_candidates: list[Vec2]
     units_aspects: list[tuple[Vec2, list[float]]]
@@ -40,7 +40,7 @@ class MctsTreeEdgeModel(BaseModel, CamelCaseConfig):
 class MctsTreeNodeModel(BaseModel, CamelCaseConfig):
     """An MCTS tree node."""
 
-    view_state: GameViewState
+    view_state: GameViewStateModel
     children: list[MctsTreeEdgeModel]
     total_visits: int
     total_value: float
@@ -57,7 +57,7 @@ class MctsTreeInspectionModel(BaseModel, CamelCaseConfig):
 class MinimaxTreeNodeModel(BaseModel, CamelCaseConfig):
     "A Minimax tree node."
 
-    view_state: GameViewState
+    view_state: GameViewStateModel
     children: list["MinimaxTreeEdgeModel"]
 
 
@@ -96,7 +96,7 @@ class ExpectimaxTreeEdgeModel(BaseModel, CamelCaseConfig):
 class ExpectimaxTreeNodeModel(BaseModel, CamelCaseConfig):
     """An expectimax tree node."""
 
-    view_state: GameViewState
+    view_state: GameViewStateModel
     children: list[ExpectimaxTreeEdgeModel]
 
 

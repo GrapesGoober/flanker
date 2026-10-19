@@ -4,7 +4,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from webapi.models.components import TerrainTypeTag
-from webapi.models.state_models import MapViewState, TerrainModel, TerrainType
+from webapi.models.state_models import MapViewStateModel, TerrainModel, TerrainType
 
 
 class TerrainService:
@@ -52,8 +52,8 @@ class TerrainService:
     @staticmethod
     def get_map(
         gs: GameState,
-    ) -> MapViewState:
-        return MapViewState(
+    ) -> MapViewStateModel:
+        return MapViewStateModel(
             terrains=TerrainService.get_terrains(gs),
             boundary=[
                 vertex

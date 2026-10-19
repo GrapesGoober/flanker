@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MapViewState, MinimaxGameTreeInspectionNode } from '$lib/api';
+	import type { MapViewStateModel, MinimaxTreeNodeModel } from '$lib/api';
 	import {
 		FireEffectArrows,
 		RifleSquad,
@@ -9,8 +9,8 @@
 	import MinimaxTreeNode from './minimax-tree-node.svelte';
 
 	type Props = {
-		node: MinimaxGameTreeInspectionNode;
-		mapData: MapViewState;
+		node: MinimaxTreeNodeModel;
+		mapData: MapViewStateModel;
 	};
 
 	let { node, mapData }: Props = $props();

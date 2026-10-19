@@ -1,8 +1,5 @@
 <script lang="ts">
-	import type {
-		ExpectimaxGameTreeInspectionNode,
-		MapViewState
-	} from '$lib/api';
+	import type { ExpectimaxTreeNodeModel, MapViewStateModel } from '$lib/api';
 	import {
 		FireEffectArrows,
 		RifleSquad,
@@ -12,8 +9,8 @@
 	import ExpectimaxTreeNode from './expectimax-tree-node.svelte';
 
 	type Props = {
-		node: ExpectimaxGameTreeInspectionNode;
-		mapData: MapViewState;
+		node: ExpectimaxTreeNodeModel;
+		mapData: MapViewStateModel;
 	};
 
 	let { node, mapData }: Props = $props();

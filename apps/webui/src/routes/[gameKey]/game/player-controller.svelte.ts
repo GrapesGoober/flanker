@@ -2,8 +2,8 @@ import {
 	GetMapData,
 	GetViewStatesData,
 	performActionAsync,
-	type GameViewState,
-	type MapViewState,
+	type GameViewStateModel,
+	type MapViewStateModel,
 	type RifleSquadData,
 	type Vec2
 } from '$lib/api';
@@ -29,11 +29,11 @@ type PlayerControllerState =
 	  };
 
 export class PlayerController {
-	mapData: MapViewState = $state({
+	mapData: MapViewStateModel = $state({
 		terrains: [],
 		boundary: []
 	});
-	viewState: GameViewState = $state({
+	viewState: GameViewStateModel = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
 		squads: [],

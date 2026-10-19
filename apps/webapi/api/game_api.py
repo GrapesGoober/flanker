@@ -6,9 +6,9 @@ from webapi.models.inspection_models import (
 )
 from webapi.models.state_models import (
     AiMatchResponseModel,
-    GameViewState,
-    GameViewStateResponse,
-    MapViewState,
+    GameViewStateModel,
+    GameViewStateResponseModel,
+    MapViewStateModel,
 )
 from webapi.services.action_service import ActionService
 from webapi.services.ai_service import AiService
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/api/game")
 @router.post("/view")
 async def get_view_state(
     state: str = Body(...),
-) -> GameViewState:
+) -> GameViewStateModel:
     """Get all the scene's view state for the player faction."""
     gs = SceneService.deserialize(state)
     return GameViewService.get_view_state(gs)
@@ -50,7 +50,7 @@ async def get_tree_inspection(
 @router.post("/map")
 async def get_map(
     state: str = Body(...),
-) -> MapViewState:
+) -> MapViewStateModel:
     """Get map data from a scene."""
     gs = SceneService.deserialize(state)
     return TerrainService.get_map(gs)
@@ -60,7 +60,7 @@ async def get_map(
 async def perform_action(
     action: ActionModel = Body(...),
     state: str = Body(...),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.perform(gs, action)

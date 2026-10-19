@@ -2,8 +2,8 @@
 	import { page } from '$app/state';
 	import {
 		GetMapData,
-		type GameTreeInspection,
-		type MapViewState
+		type GameTreeInspectionModel,
+		type MapViewStateModel
 	} from '$lib/api';
 	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
@@ -11,8 +11,8 @@
 	import MctsTreeNode from './mcts-tree-node.svelte';
 	import MinimaxTreeNode from './minimax-tree-node.svelte';
 
-	let gameTree: GameTreeInspection | null = $state(null);
-	let mapData: MapViewState = $state({ terrains: [], boundary: [] });
+	let gameTree: GameTreeInspectionModel | null = $state(null);
+	let mapData: MapViewStateModel = $state({ terrains: [], boundary: [] });
 
 	onMount(async () => {
 		const gameKey = page.params['gameKey'] as string;
@@ -32,11 +32,11 @@
 	<span>Best action</span>
 	<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
 	<span>Root Node</span>
-	{#if gameTree.type === 'MctsTreeInspection'}
+	{#if gameTree.type === 'MctsTreeInspectionModel'}
 		<MctsTreeNode node={gameTree.treeRoot} {mapData} />
-	{:else if gameTree.type === 'MinimaxTreeInspection'}
+	{:else if gameTree.type === 'MinimaxTreeInspectionModel'}
 		<MinimaxTreeNode node={gameTree.treeRoot} {mapData} />
-	{:else}
+	{:else if gameTree.type === 'ExpectimaxTreeInspectionModel'}
 		<ExpectimaxTreeNode node={gameTree.treeRoot} {mapData} />
 	{/if}
 {/if}

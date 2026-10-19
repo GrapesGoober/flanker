@@ -4,7 +4,7 @@
 		GetMapData,
 		GetStatesInspectionData,
 		type GameStateInspectionModel,
-		type MapViewState,
+		type MapViewStateModel,
 		type Vec2
 	} from '$lib/api';
 	import { SvgMap, TerrainLayer } from '$lib/components';
@@ -15,7 +15,7 @@
 	let map: SvgMap | null = $state(null);
 	let clickTarget: HTMLElement | null = $state(null);
 
-	let mapData: MapViewState = $state({
+	let mapData: MapViewStateModel = $state({
 		terrains: [],
 		boundary: []
 	});

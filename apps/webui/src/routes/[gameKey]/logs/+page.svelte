@@ -4,7 +4,7 @@
 		GetLogs,
 		GetMapData,
 		type ActionLogModel,
-		type MapViewState
+		type MapViewStateModel
 	} from '$lib/api';
 	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { loadGameLocal } from '$lib/scenes-storage';
@@ -13,7 +13,7 @@
 
 	let logData: ActionLogModel[] = $state([]);
 	let index: number = $state(0);
-	let mapData: MapViewState = $state({
+	let mapData: MapViewStateModel = $state({
 		terrains: [],
 		boundary: []
 	});

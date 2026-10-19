@@ -301,7 +301,7 @@ export interface components {
             outcome: components["schemas"]["AssaultOutcomes"] | null;
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-            viewState: components["schemas"]["GameViewState"];
+            viewState: components["schemas"]["GameViewStateModel"];
         };
         /**
          * AssaultActionModel
@@ -368,46 +368,46 @@ export interface components {
             unit: components["schemas"]["SquadModel"];
         };
         /**
-         * ExpectimaxTreeInspection
-         * @description Detailed inspection debugging data of the Expectimax game tree.
-         */
-        ExpectimaxTreeInspection: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: "ExpectimaxTreeInspection";
-            bestAction: components["schemas"]["ActionModel"];
-            treeRoot: components["schemas"]["ExpectimaxTreeInspectionNode"];
-        };
-        /**
-         * ExpectimaxTreeInspectionEdge
+         * ExpectimaxTreeEdgeModel
          * @description An expectimax action and its probabilistic outcomes.
          */
-        ExpectimaxTreeInspectionEdge: {
+        ExpectimaxTreeEdgeModel: {
             action: components["schemas"]["ActionModel"];
             /** Outcomes */
-            outcomes: components["schemas"]["ExpectimaxTreeInspectionOutcome"][];
+            outcomes: components["schemas"]["ExpectimaxTreeOutcomeModel"][];
             /** Expectedscore */
             expectedScore: number;
         };
         /**
-         * ExpectimaxTreeInspectionNode
-         * @description An expectimax tree node.
+         * ExpectimaxTreeInspectionModel
+         * @description Detailed inspection debugging data of the Expectimax game tree.
          */
-        ExpectimaxTreeInspectionNode: {
-            viewState: components["schemas"]["GameViewState"];
-            /** Children */
-            children: components["schemas"]["ExpectimaxTreeInspectionEdge"][];
+        ExpectimaxTreeInspectionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ExpectimaxTreeInspectionModel";
+            bestAction: components["schemas"]["ActionModel"];
+            treeRoot: components["schemas"]["ExpectimaxTreeNodeModel"];
         };
         /**
-         * ExpectimaxTreeInspectionOutcome
+         * ExpectimaxTreeNodeModel
+         * @description An expectimax tree node.
+         */
+        ExpectimaxTreeNodeModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
+            /** Children */
+            children: components["schemas"]["ExpectimaxTreeEdgeModel"][];
+        };
+        /**
+         * ExpectimaxTreeOutcomeModel
          * @description A probabilistic outcome of an expectimax action.
          */
-        ExpectimaxTreeInspectionOutcome: {
+        ExpectimaxTreeOutcomeModel: {
             /** Probability */
             probability: number;
-            node: components["schemas"]["ExpectimaxTreeInspectionNode"];
+            node: components["schemas"]["ExpectimaxTreeNodeModel"];
             /** Score */
             score: number;
         };
@@ -425,7 +425,7 @@ export interface components {
             logType: "FireActionLogModel";
             body: components["schemas"]["FireActionModel"];
             outcome: components["schemas"]["FireOutcomes"] | null;
-            viewState: components["schemas"]["GameViewState"];
+            viewState: components["schemas"]["GameViewStateModel"];
         };
         /**
          * FireActionModel
@@ -472,7 +472,7 @@ export interface components {
          * @description Detailed inspection debugging data of the game state.
          */
         GameStateInspectionModel: {
-            viewState: components["schemas"]["GameViewState"];
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Lospolygons */
             losPolygons: components["schemas"]["LosPolygon"][];
             /** Movecandidates */
@@ -483,12 +483,12 @@ export interface components {
                 number[]
             ][];
         };
-        GameTreeInspection: components["schemas"]["MinimaxTreeInspection"] | components["schemas"]["MctsTreeInspection"] | components["schemas"]["ExpectimaxTreeInspection"];
+        GameTreeInspectionModel: components["schemas"]["MinimaxTreeInspectionModel"] | components["schemas"]["MctsTreeInspectionModel"] | components["schemas"]["ExpectimaxTreeInspectionModel"];
         /**
-         * GameViewState
+         * GameViewStateModel
          * @description Simplified view model of the game state.
          */
-        GameViewState: {
+        GameViewStateModel: {
             objectiveState: components["schemas"]["ObjectiveState"];
             /** Hasinitiative */
             hasInitiative: boolean;
@@ -498,11 +498,11 @@ export interface components {
             fireEffectPairs: components["schemas"]["FireEffectPair"][];
         };
         /**
-         * GameViewStateResponse
+         * GameViewStateResponseModel
          * @description Response model for actions contains view state and mutated game state.
          */
-        GameViewStateResponse: {
-            viewState: components["schemas"]["GameViewState"];
+        GameViewStateResponseModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Jsonstate */
             jsonState: string;
         };
@@ -520,80 +520,80 @@ export interface components {
             fovPolygon: components["schemas"]["Vec2"][];
         };
         /**
-         * MapViewState
+         * MapViewStateModel
          * @description Simplified view model of the game map.
          */
-        MapViewState: {
+        MapViewStateModel: {
             /** Terrains */
             terrains: components["schemas"]["TerrainModel"][];
             /** Boundary */
             boundary: components["schemas"]["Vec2"][];
         };
         /**
-         * MctsTreeInspection
+         * MctsTreeEdgeModel
+         * @description An MCTS tree edge.
+         */
+        MctsTreeEdgeModel: {
+            action: components["schemas"]["ActionModel"];
+            node: components["schemas"]["MctsTreeNodeModel"];
+        };
+        /**
+         * MctsTreeInspectionModel
          * @description Detailed inspection debugging data of the MCTS game tree.
          */
-        MctsTreeInspection: {
+        MctsTreeInspectionModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: "MctsTreeInspection";
+            type: "MctsTreeInspectionModel";
             bestAction: components["schemas"]["ActionModel"];
-            treeRoot: components["schemas"]["MctsTreeInspectionNode"];
+            treeRoot: components["schemas"]["MctsTreeNodeModel"];
         };
         /**
-         * MctsTreeInspectionEdge
-         * @description An MCTS tree edge.
-         */
-        MctsTreeInspectionEdge: {
-            action: components["schemas"]["ActionModel"];
-            node: components["schemas"]["MctsTreeInspectionNode"];
-        };
-        /**
-         * MctsTreeInspectionNode
+         * MctsTreeNodeModel
          * @description An MCTS tree node.
          */
-        MctsTreeInspectionNode: {
-            viewState: components["schemas"]["GameViewState"];
+        MctsTreeNodeModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Children */
-            children: components["schemas"]["MctsTreeInspectionEdge"][];
+            children: components["schemas"]["MctsTreeEdgeModel"][];
             /** Totalvisits */
             totalVisits: number;
             /** Totalvalue */
             totalValue: number;
         };
         /**
-         * MinimaxTreeInspection
-         * @description Detailed inspection debugging data of the Minimax game tree.
-         */
-        MinimaxTreeInspection: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: "MinimaxTreeInspection";
-            bestAction: components["schemas"]["ActionModel"];
-            treeRoot: components["schemas"]["MinimaxTreeInspectionNode"];
-        };
-        /**
-         * MinimaxTreeInspectionEdge
+         * MinimaxTreeEdgeModel
          * @description A Minimax tree edge.
          */
-        MinimaxTreeInspectionEdge: {
+        MinimaxTreeEdgeModel: {
             action: components["schemas"]["ActionModel"];
-            node: components["schemas"]["MinimaxTreeInspectionNode"];
+            node: components["schemas"]["MinimaxTreeNodeModel"];
             /** Bestscore */
             bestScore: number;
         };
         /**
-         * MinimaxTreeInspectionNode
+         * MinimaxTreeInspectionModel
+         * @description Detailed inspection debugging data of the Minimax game tree.
+         */
+        MinimaxTreeInspectionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "MinimaxTreeInspectionModel";
+            bestAction: components["schemas"]["ActionModel"];
+            treeRoot: components["schemas"]["MinimaxTreeNodeModel"];
+        };
+        /**
+         * MinimaxTreeNodeModel
          * @description A Minimax tree node.
          */
-        MinimaxTreeInspectionNode: {
-            viewState: components["schemas"]["GameViewState"];
+        MinimaxTreeNodeModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Children */
-            children: components["schemas"]["MinimaxTreeInspectionEdge"][];
+            children: components["schemas"]["MinimaxTreeEdgeModel"][];
         };
         /** MoveActionLogModel */
         MoveActionLogModel: {
@@ -605,7 +605,7 @@ export interface components {
             body: components["schemas"]["MoveActionModel"];
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-            viewState: components["schemas"]["GameViewState"];
+            viewState: components["schemas"]["GameViewStateModel"];
         };
         /**
          * MoveActionModel
@@ -639,7 +639,7 @@ export interface components {
             body: components["schemas"]["PivotActionModel"];
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-            viewState: components["schemas"]["GameViewState"];
+            viewState: components["schemas"]["GameViewStateModel"];
         };
         /**
          * PivotActionModel
@@ -817,7 +817,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewState"];
+                    "application/json": components["schemas"]["GameViewStateModel"];
                 };
             };
             /** @description Validation Error */
@@ -883,7 +883,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameTreeInspection"] | null;
+                    "application/json": components["schemas"]["GameTreeInspectionModel"] | null;
                 };
             };
             /** @description Validation Error */
@@ -916,7 +916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MapViewState"];
+                    "application/json": components["schemas"]["MapViewStateModel"];
                 };
             };
             /** @description Validation Error */
@@ -949,7 +949,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1048,7 +1048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1081,7 +1081,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1114,7 +1114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1149,7 +1149,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1182,7 +1182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1215,7 +1215,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1250,7 +1250,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
