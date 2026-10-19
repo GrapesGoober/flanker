@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from webapi.models.action_models import ActionLog
+from webapi.models.action_models import ActionLogModel
 from webapi.models.state_models import TerrainType
 
 
@@ -15,4 +15,4 @@ class TerrainTypeTag:
 class LogRecords:
     """Singleton component contains past action log snapshots."""
 
-    logs: list[ActionLog]
+    logs: list[ActionLogModel]

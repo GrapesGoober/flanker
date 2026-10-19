@@ -48,29 +48,29 @@ class PivotActionModel(BaseModel, CamelCaseConfig):
     to: Vec2
 
 
-class MoveActionLog(BaseModel, CamelCaseConfig):
-    log_type: Literal["MoveActionLog"] = "MoveActionLog"
+class MoveActionLogModel(BaseModel, CamelCaseConfig):
+    log_type: Literal["MoveActionLogModel"] = "MoveActionLogModel"
     body: MoveActionModel
     reactive_fire_outcomes: list[FireOutcomes]
     view_state: GameViewState
 
 
-class PivotActionLog(BaseModel, CamelCaseConfig):
-    log_type: Literal["PivotActionLog"] = "PivotActionLog"
+class PivotActionLogModel(BaseModel, CamelCaseConfig):
+    log_type: Literal["PivotActionLogModel"] = "PivotActionLogModel"
     body: PivotActionModel
     reactive_fire_outcomes: list[FireOutcomes]
     view_state: GameViewState
 
 
-class FireActionLog(BaseModel, CamelCaseConfig):
-    log_type: Literal["FireActionLog"] = "FireActionLog"
+class FireActionLogModel(BaseModel, CamelCaseConfig):
+    log_type: Literal["FireActionLogModel"] = "FireActionLogModel"
     body: FireActionModel
     outcome: FireOutcomes | None
     view_state: GameViewState
 
 
-class AssaultActionLog(BaseModel, CamelCaseConfig):
-    log_type: Literal["AssaultActionLog"] = "AssaultActionLog"
+class AssaultActionLogModel(BaseModel, CamelCaseConfig):
+    log_type: Literal["AssaultActionLogModel"] = "AssaultActionLogModel"
     body: AssaultActionModel
     outcome: AssaultOutcomes | None
     reactive_fire_outcomes: list[FireOutcomes]
@@ -88,12 +88,12 @@ type ActionModel = Annotated[
 ]
 
 
-type ActionLog = Annotated[
+type ActionLogModel = Annotated[
     Union[
-        MoveActionLog,
-        PivotActionLog,
-        FireActionLog,
-        AssaultActionLog,
+        MoveActionLogModel,
+        PivotActionLogModel,
+        FireActionLogModel,
+        AssaultActionLogModel,
     ],
     Field(discriminator="log_type"),
 ]

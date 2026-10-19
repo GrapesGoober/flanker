@@ -255,34 +255,30 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Action: components["schemas"]["MoveAction"] | components["schemas"]["PivotAction"] | components["schemas"]["FireAction"] | components["schemas"]["AssaultAction"];
-        ActionLog: components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"];
+        ActionLogModel: components["schemas"]["MoveActionLogModel"] | components["schemas"]["PivotActionLogModel"] | components["schemas"]["FireActionLogModel"] | components["schemas"]["AssaultActionLogModel"];
         ActionModel: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
-        ActionResult: components["schemas"]["MoveActionResult"] | components["schemas"]["PivotActionResult"] | components["schemas"]["FireActionResult"] | components["schemas"]["AssaultActionResult"];
-        /** AiActionResult */
-        AiActionResult: {
+        /** AiActionResultModel */
+        AiActionResultModel: {
             faction: components["schemas"]["Faction"];
             /** Actionruntimeseconds */
             actionRuntimeSeconds: number;
-            action: components["schemas"]["Action"];
-            result: components["schemas"]["ActionResult"];
-            policyLog: components["schemas"]["AiSearchAgentLog"] | null;
+            policyLog: components["schemas"]["AiSearchLogModel"] | null;
         };
         /**
-         * AiMatchResponse
+         * AiMatchResponseModel
          * @description Response model for AI match contains match result and final game state.
          */
-        AiMatchResponse: {
+        AiMatchResponseModel: {
             winner: components["schemas"]["Faction"] | null;
             /** Totalruntimeseconds */
             totalRuntimeSeconds: number;
             /** Actionresults */
-            actionResults: components["schemas"]["AiActionResult"][];
+            actionResults: components["schemas"]["AiActionResultModel"][];
             /** Jsonstate */
             jsonState: string;
         };
-        /** AiSearchAgentLog */
-        AiSearchAgentLog: {
+        /** AiSearchLogModel */
+        AiSearchLogModel: {
             /** Treesize */
             treeSize: number;
             /** Treedepth */
@@ -294,31 +290,13 @@ export interface components {
             /** Points */
             points: components["schemas"]["Vec2"][];
         };
-        /**
-         * AssaultAction
-         * @description Moves a unit toward a target and performs an assault on arrival.
-         *     Movement draws reactive fires, which may interrupt the move.
-         *     The loser of the assault is killed.
-         */
-        AssaultAction: {
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            /**
-             * Targetid
-             * Format: uuid
-             */
-            targetId: string;
-        };
-        /** AssaultActionLog */
-        AssaultActionLog: {
+        /** AssaultActionLogModel */
+        AssaultActionLogModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            logType: "AssaultActionLog";
+            logType: "AssaultActionLogModel";
             body: components["schemas"]["AssaultActionModel"];
             outcome: components["schemas"]["AssaultOutcomes"] | null;
             /** Reactivefireoutcomes */
@@ -345,12 +323,6 @@ export interface components {
              * Format: uuid
              */
             targetId: string;
-        };
-        /** AssaultActionResult */
-        AssaultActionResult: {
-            outcome: components["schemas"]["AssaultOutcomes"] | null;
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
         };
         /**
          * AssaultOutcomes
@@ -444,31 +416,13 @@ export interface components {
          * @enum {string}
          */
         Faction: "BLUE" | "RED";
-        /**
-         * FireAction
-         * @description Fires at an enemy unit. The target must be within line of sight.
-         *     Fire modifies the target's status and creates a persistent fire effect.
-         *     A failed fire can lose initiative.
-         */
-        FireAction: {
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            /**
-             * Targetid
-             * Format: uuid
-             */
-            targetId: string;
-        };
-        /** FireActionLog */
-        FireActionLog: {
+        /** FireActionLogModel */
+        FireActionLogModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            logType: "FireActionLog";
+            logType: "FireActionLogModel";
             body: components["schemas"]["FireActionModel"];
             outcome: components["schemas"]["FireOutcomes"] | null;
             viewState: components["schemas"]["GameViewState"];
@@ -493,10 +447,6 @@ export interface components {
              * Format: uuid
              */
             targetId: string;
-        };
-        /** FireActionResult */
-        FireActionResult: {
-            outcome: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * FireEffect
@@ -645,27 +595,13 @@ export interface components {
             /** Children */
             children: components["schemas"]["MinimaxTreeInspectionEdge"][];
         };
-        /**
-         * MoveAction
-         * @description Moves a unit to a destination. This pivots toward the movement path
-         *     first. Movement draws reactive fires, which may interrupt the move
-         *     and can lose initiative.
-         */
-        MoveAction: {
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            to: components["schemas"]["Vec2"];
-        };
-        /** MoveActionLog */
-        MoveActionLog: {
+        /** MoveActionLogModel */
+        MoveActionLogModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            logType: "MoveActionLog";
+            logType: "MoveActionLogModel";
             body: components["schemas"]["MoveActionModel"];
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
@@ -688,38 +624,18 @@ export interface components {
             unitId: string;
             to: components["schemas"]["Vec2"];
         };
-        /** MoveActionResult */
-        MoveActionResult: {
-            /** Moveinterrupted */
-            moveInterrupted: boolean;
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-        };
         /**
          * ObjectiveState
          * @enum {string}
          */
         ObjectiveState: "INCOMPLETE" | "COMPLETED" | "FAILED";
-        /**
-         * PivotAction
-         * @description Pivots a unit toward a destination. Pivoting draws reactive fires
-         *     and can lose initiative. Pivoting always complete regardless
-         */
-        PivotAction: {
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            to: components["schemas"]["Vec2"];
-        };
-        /** PivotActionLog */
-        PivotActionLog: {
+        /** PivotActionLogModel */
+        PivotActionLogModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            logType: "PivotActionLog";
+            logType: "PivotActionLogModel";
             body: components["schemas"]["PivotActionModel"];
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
@@ -741,11 +657,6 @@ export interface components {
              */
             unitId: string;
             to: components["schemas"]["Vec2"];
-        };
-        /** PivotActionResult */
-        PivotActionResult: {
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
         };
         /** SceneManifestResponse */
         SceneManifestResponse: {
@@ -1071,7 +982,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActionLog"][];
+                    "application/json": components["schemas"]["ActionLogModel"][];
                 };
             };
             /** @description Validation Error */
@@ -1104,7 +1015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AiMatchResponse"];
+                    "application/json": components["schemas"]["AiMatchResponseModel"];
                 };
             };
             /** @description Validation Error */

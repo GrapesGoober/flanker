@@ -37,15 +37,16 @@ export type ActionModel =
 	| AssaultActionModel
 	| PivotActionModel;
 
-export type MoveActionLog = components['schemas']['MoveActionLog'];
-export type FireActionLog = components['schemas']['FireActionLog'];
-export type AssaultActionLog = components['schemas']['AssaultActionLog'];
-export type PivotActionLog = components['schemas']['PivotActionLog'];
-export type ActionLog =
-	| MoveActionLog
-	| FireActionLog
-	| AssaultActionLog
-	| PivotActionLog;
+export type MoveActionLogModel = components['schemas']['MoveActionLogModel'];
+export type FireActionLogModel = components['schemas']['FireActionLogModel'];
+export type AssaultActionLogModel =
+	components['schemas']['AssaultActionLogModel'];
+export type PivotActionLogModel = components['schemas']['PivotActionLogModel'];
+export type ActionLogModel =
+	| MoveActionLogModel
+	| FireActionLogModel
+	| AssaultActionLogModel
+	| PivotActionLogModel;
 
 /** Get all available scene names. */
 export async function GetSceneNames(): Promise<SceneManifest> {
@@ -126,7 +127,7 @@ export async function performActionAsync(
 }
 
 /** Get action logs for the current game. */
-export async function GetLogs(jsonState: string): Promise<ActionLog[]> {
+export async function GetLogs(jsonState: string): Promise<ActionLogModel[]> {
 	const { data, error } = await client.POST('/api/game/logs', {
 		body: jsonState
 	});

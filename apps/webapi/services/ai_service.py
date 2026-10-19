@@ -28,15 +28,15 @@ from flanker_core.models.actions import (
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
 from webapi.models.action_models import (
-    ActionLog,
+    ActionLogModel,
     ActionModel,
-    AssaultActionLog,
+    AssaultActionLogModel,
     AssaultActionModel,
-    FireActionLog,
+    FireActionLogModel,
     FireActionModel,
-    MoveActionLog,
+    MoveActionLogModel,
     MoveActionModel,
-    PivotActionLog,
+    PivotActionLogModel,
     PivotActionModel,
 )
 from webapi.models.inspection_models import (
@@ -229,10 +229,10 @@ class AiService:
     def _map_action_result_to_logs(
         result: AiActionResult,
         gs_snapshot: GameState,
-    ) -> ActionLog:
+    ) -> ActionLogModel:
         match result.action, result.result:
             case MoveAction(), MoveActionResult():
-                return MoveActionLog(
+                return MoveActionLogModel(
                     body=MoveActionModel(
                         unit_id=result.action.unit_id,
                         to=result.action.to,
@@ -242,7 +242,7 @@ class AiService:
                 )
 
             case PivotAction(), PivotActionResult():
-                return PivotActionLog(
+                return PivotActionLogModel(
                     body=PivotActionModel(
                         unit_id=result.action.unit_id,
                         to=result.action.to,
@@ -251,7 +251,7 @@ class AiService:
                     view_state=GameViewService.get_view_state(gs_snapshot),
                 )
             case FireAction(), FireActionResult():
-                return FireActionLog(
+                return FireActionLogModel(
                     body=FireActionModel(
                         unit_id=result.action.unit_id,
                         target_id=result.action.target_id,
@@ -260,7 +260,7 @@ class AiService:
                     view_state=GameViewService.get_view_state(gs_snapshot),
                 )
             case AssaultAction(), AssaultActionResult():
-                return AssaultActionLog(
+                return AssaultActionLogModel(
                     body=AssaultActionModel(
                         unit_id=result.action.unit_id,
                         target_id=result.action.target_id,

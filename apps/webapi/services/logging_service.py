@@ -1,12 +1,12 @@
 from flanker_core.gamestate import GameState
-from webapi.models.action_models import ActionLog
+from webapi.models.action_models import ActionLogModel
 from webapi.models.components import LogRecords
 
 
 class LoggingService:
 
     @staticmethod
-    def log(gs: GameState, log: ActionLog) -> None:
+    def log(gs: GameState, log: ActionLogModel) -> None:
         if results := gs.query(LogRecords):
             _, log_records = results[0]
         else:
@@ -15,7 +15,7 @@ class LoggingService:
         log_records.logs.append(log)
 
     @staticmethod
-    def get_logs(gs: GameState) -> list[ActionLog]:
+    def get_logs(gs: GameState) -> list[ActionLogModel]:
         if results := gs.query(LogRecords):
             _, log_records = results[0]
             return log_records.logs

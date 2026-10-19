@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body
-from webapi.models.action_models import ActionLog, ActionModel
+from webapi.models.action_models import ActionLogModel, ActionModel
 from webapi.models.inspection_models import (
     GameStateInspection,
     GameTreeInspection,
@@ -71,7 +71,7 @@ async def perform_action(
 @router.post("/logs")
 async def get_logs(
     state: str = Body(...),
-) -> list[ActionLog]:
+) -> list[ActionLogModel]:
     gs = SceneService.deserialize(state)
     return LoggingService.get_logs(gs)
 
