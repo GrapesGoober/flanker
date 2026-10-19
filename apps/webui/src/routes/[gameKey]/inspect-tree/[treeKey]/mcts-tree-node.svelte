@@ -79,7 +79,11 @@
 						{#each node.children as edge, childIndex}
 							<li>
 								<details>
-									<summary>{childIndex}</summary>
+									<summary>
+										{childIndex}
+										(visits: {edge.node.totalVisits}
+										,value: {edge.node.totalValue})
+									</summary>
 									<span>Action</span>
 									<pre>{JSON.stringify(edge.action, null, 2)}</pre>
 									<span>Node</span>
