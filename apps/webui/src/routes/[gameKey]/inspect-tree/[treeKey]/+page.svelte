@@ -7,7 +7,7 @@
 	} from '$lib/api';
 	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
-	import TreeNode from './tree-node.svelte';
+	import MctsTreeNode from './mcts-tree-node.svelte';
 
 	let gameTree: GameTreeInspection | null = $state(null);
 	let mapData: MapViewState = $state({ terrains: [], boundary: [] });
@@ -30,7 +30,7 @@
 	{#if gameTree.type === 'MctsTreeInspection'}
 		<p>Best action</p>
 		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
-		<TreeNode node={gameTree.treeRoot} action={null} {mapData} />
+		<MctsTreeNode node={gameTree.treeRoot} action={null} {mapData} />
 	{:else}
 		<p>Whoops, only MCTS tree supported.</p>
 	{/if}

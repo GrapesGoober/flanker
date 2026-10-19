@@ -10,7 +10,7 @@
 		SvgMap,
 		TerrainLayer
 	} from '$lib/components';
-	import TreeNode from './tree-node.svelte';
+	import TreeNode from './mcts-tree-node.svelte';
 
 	type Props = {
 		node: MctsGameTreeInspectionNode;
