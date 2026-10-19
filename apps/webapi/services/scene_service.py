@@ -8,7 +8,7 @@ from flanker_ai.config_models import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
-from webapi.components import LogRecords, TerrainTypeTag
+from webapi.models.components import LogRecords, TerrainTypeTag
 from webapi.models.state_models import SceneManifest, SceneManifestResponse
 
 
