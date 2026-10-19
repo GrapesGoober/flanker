@@ -31,7 +31,7 @@
 	{#if gameTree.type === 'MctsTreeInspection'}
 		<p>Best action</p>
 		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
-		<MctsTreeNode node={gameTree.treeRoot} action={null} {mapData} />
+		<MctsTreeNode node={gameTree.treeRoot} {mapData} />
 	{:else if gameTree.type === 'MinimaxTreeInspection'}
 		<p>Best action</p>
 		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>

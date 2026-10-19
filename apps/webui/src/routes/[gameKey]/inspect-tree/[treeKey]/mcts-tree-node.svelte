@@ -1,9 +1,5 @@
 <script lang="ts">
-	import type {
-		ActionRequest,
-		MapViewState,
-		MctsGameTreeInspectionNode
-	} from '$lib/api';
+	import type { MapViewState, MctsGameTreeInspectionNode } from '$lib/api';
 	import {
 		FireEffectArrows,
 		RifleSquad,
@@ -14,11 +10,10 @@
 
 	type Props = {
 		node: MctsGameTreeInspectionNode;
-		action: ActionRequest | null;
 		mapData: MapViewState;
 	};
 
-	let { node, action, mapData }: Props = $props();
+	let { node, mapData }: Props = $props();
 	let isMapOpened = $state(false);
 	let areChildrenOpened = $state(false);
 </script>
@@ -45,14 +40,6 @@
 {/snippet}
 
 <ul>
-	{#if action}
-		<li>
-			<details>
-				<summary>Action</summary>
-				<pre><code>{JSON.stringify(action, null, 2)}</code></pre>
-			</details>
-		</li>
-	{/if}
 	<li>visits: {node.totalVisits}, value: {node.totalValue}</li>
 	<li>
 		Objective: {node.viewState.objectiveState}; initiative: {node.viewState
@@ -87,11 +74,20 @@
 							<li>
 								<details>
 									<summary>{childIndex}</summary>
-									<MctsTreeNode
-										node={edge.node}
-										action={edge.action}
-										{mapData}
-									/>
+									<ul>
+										<li>
+											<details>
+												<summary>Action</summary>
+												<pre>{JSON.stringify(edge.action, null, 2)}</pre>
+											</details>
+										</li>
+										<li>
+											<details>
+												<summary>Node</summary>
+												<MctsTreeNode node={edge.node} {mapData} />
+											</details>
+										</li>
+									</ul>
 								</details>
 							</li>
 						{/each}
