@@ -796,14 +796,14 @@ export interface components {
             degrees: number;
             /** Vertices */
             vertices: components["schemas"]["Vec2"][];
-            terrainType: components["schemas"]["Types"];
+            terrainType: components["schemas"]["TerrainType"];
         };
         /**
-         * Types
+         * TerrainType
          * @description Supported terrain types.
          * @enum {string}
          */
-        Types: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
+        TerrainType: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
         /** ValidationError */
         ValidationError: {
             /** Location */

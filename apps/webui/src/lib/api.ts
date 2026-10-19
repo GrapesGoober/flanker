@@ -10,7 +10,7 @@ export type SceneManifest = components['schemas']['SceneManifestResponse'];
 export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
-export type TerrainType = components['schemas']['Types'];
+export type TerrainType = components['schemas']['TerrainType'];
 export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
 export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse =

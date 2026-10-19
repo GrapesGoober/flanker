@@ -65,6 +65,16 @@ class GameViewStateResponse(BaseModel, CamelCaseConfig):
     json_state: str
 
 
+class TerrainType(Enum):
+    """Supported terrain types."""
+
+    FOREST = "FOREST"
+    ROAD = "ROAD"
+    FIELD = "FIELD"
+    WATER = "WATER"
+    BUILDING = "BUILDING"
+
+
 class TerrainModel(BaseModel, CamelCaseConfig):
     """Represents a view of terrain feature in the game."""
 
@@ -72,16 +82,7 @@ class TerrainModel(BaseModel, CamelCaseConfig):
     position: Vec2
     degrees: float
     vertices: list[Vec2]
-    terrain_type: "Types"
-
-    class Types(Enum):
-        """Supported terrain types."""
-
-        FOREST = "FOREST"
-        ROAD = "ROAD"
-        FIELD = "FIELD"
-        WATER = "WATER"
-        BUILDING = "BUILDING"
+    terrain_type: TerrainType
 
 
 class MapViewState(BaseModel, CamelCaseConfig):

@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 
 from webapi.models.action_models import ActionLog
-from webapi.models.state_models import TerrainModel
+from webapi.models.state_models import TerrainType
 
 
 @dataclass
 class TerrainTypeTag:
     """Tag to store the terrain type."""
 
-    type: TerrainModel.Types
+    type: TerrainType
 
 
 @dataclass
