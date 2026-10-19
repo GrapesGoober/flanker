@@ -14,6 +14,12 @@
 	};
 
 	let { node, mapData }: Props = $props();
+
+	// These guards are to prevent DOM from being rendered.
+	//  The <details> always render its content to DOM, even if they
+	//  are not opened. So I need separate guards to explicitly NOT
+	//  render these elements unless the details are opened. It prevents
+	//  nasty recursive and expensive tree & map rendering.
 	let isMapOpened = $state(false);
 	let areChildrenOpened = $state(false);
 </script>
@@ -74,20 +80,10 @@
 							<li>
 								<details>
 									<summary>{childIndex}</summary>
-									<ul>
-										<li>
-											<details>
-												<summary>Action</summary>
-												<pre>{JSON.stringify(edge.action, null, 2)}</pre>
-											</details>
-										</li>
-										<li>
-											<details>
-												<summary>Node</summary>
-												<MctsTreeNode node={edge.node} {mapData} />
-											</details>
-										</li>
-									</ul>
+									<span>Action</span>
+									<pre>{JSON.stringify(edge.action, null, 2)}</pre>
+									<span>Node</span>
+									<MctsTreeNode node={edge.node} {mapData} />
 								</details>
 							</li>
 						{/each}

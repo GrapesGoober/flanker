@@ -28,13 +28,12 @@
 <h1>Game tree</h1>
 
 {#if gameTree}
+	<span>Best action</span>
+	<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
+	<span>Root Node</span>
 	{#if gameTree.type === 'MctsTreeInspection'}
-		<p>Best action</p>
-		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
 		<MctsTreeNode node={gameTree.treeRoot} {mapData} />
 	{:else if gameTree.type === 'MinimaxTreeInspection'}
-		<p>Best action</p>
-		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
 		<MinimaxTreeNode node={gameTree.treeRoot} action={null} {mapData} />
 	{:else}
 		<p>Whoops, Expectimax tree inspection is not supported yet.</p>
