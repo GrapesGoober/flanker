@@ -50,14 +50,7 @@ class AiSystem:
             return None
 
         start_time = perf_counter()
-        config_component: AiConfigComponent | None = None
-        for _, component in gs.query(AiConfigComponent):
-            if component.faction == faction:
-                config_component = component
-                break
-        if config_component == None:
-            raise ValueError(f"{AiConfigComponent} not found")
-
+        config_component = AiSystem._get_config(gs)
         match config_component.config:
             case HeuristicPolicyConfig():
                 result = AiRandomHeuristicAgent.perform_action(gs)
@@ -95,16 +88,7 @@ class AiSystem:
         mutate the state. Returns `None` if no actions are possible.
         """
 
-        faction = ActionSystem.get_initiative(gs)
-
-        config_component: AiConfigComponent | None = None
-        for _, component in gs.query(AiConfigComponent):
-            if component.faction == faction:
-                config_component = component
-                break
-        if config_component == None:
-            raise ValueError(f"{AiConfigComponent} not found")
-
+        config_component = AiSystem._get_config(gs)
         match config_component.config:
             case SearchPolicyConfig():
                 return AiSearchAgent.get_game_tree(
@@ -113,3 +97,11 @@ class AiSystem:
                 )
             case _:
                 raise ValueError("Supprts only search trees.")
+
+    @staticmethod
+    def _get_config(gs: GameState) -> AiConfigComponent:
+        faction = ActionSystem.get_initiative(gs)
+        for _, component in gs.query(AiConfigComponent):
+            if component.faction == faction:
+                return component
+        raise ValueError(f"{AiConfigComponent} not found")
