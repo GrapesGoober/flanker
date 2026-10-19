@@ -8,6 +8,7 @@
 	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import MctsTreeNode from './mcts-tree-node.svelte';
+	import MinimaxTreeNode from './minimax-tree-node.svelte';
 
 	let gameTree: GameTreeInspection | null = $state(null);
 	let mapData: MapViewState = $state({ terrains: [], boundary: [] });
@@ -31,7 +32,11 @@
 		<p>Best action</p>
 		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
 		<MctsTreeNode node={gameTree.treeRoot} action={null} {mapData} />
+	{:else if gameTree.type === 'MinimaxTreeInspection'}
+		<p>Best action</p>
+		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
+		<MinimaxTreeNode node={gameTree.treeRoot} action={null} {mapData} />
 	{:else}
-		<p>Whoops, only MCTS tree supported.</p>
+		<p>Whoops, Expectimax tree inspection is not supported yet.</p>
 	{/if}
 {/if}
