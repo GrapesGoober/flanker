@@ -5,7 +5,7 @@
         "config": {
           "policy": {
             "type": "ExpectimaxPolicy",
-            "depth": 4
+            "depth": 3
           },
           "state": {
             "type": "UnabstractedStateConfig",
