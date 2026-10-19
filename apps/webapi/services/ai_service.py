@@ -29,15 +29,15 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
 from webapi.models.action_models import (
     ActionLog,
-    ActionRequest,
+    ActionModel,
     AssaultActionLog,
-    AssaultActionRequest,
+    AssaultActionModel,
     FireActionLog,
-    FireActionRequest,
+    FireActionModel,
     MoveActionLog,
-    MoveActionRequest,
+    MoveActionModel,
     PivotActionLog,
-    PivotActionRequest,
+    PivotActionModel,
 )
 from webapi.models.inspection_models import (
     ExpectimaxTreeInspection,
@@ -182,29 +182,29 @@ class AiService:
     @staticmethod
     def _map_action_to_requests(
         action: Action,
-    ) -> ActionRequest:
+    ) -> ActionModel:
         match action:
             case MoveAction():
-                return MoveActionRequest(
-                    action_type="MoveActionRequest",
+                return MoveActionModel(
+                    action_type="MoveActionModel",
                     unit_id=action.unit_id,
                     to=action.to,
                 )
             case PivotAction():
-                return PivotActionRequest(
-                    action_type="PivotActionRequest",
+                return PivotActionModel(
+                    action_type="PivotActionModel",
                     unit_id=action.unit_id,
                     to=action.to,
                 )
             case FireAction():
-                return FireActionRequest(
-                    action_type="FireActionRequest",
+                return FireActionModel(
+                    action_type="FireActionModel",
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
             case AssaultAction():
-                return AssaultActionRequest(
-                    action_type="AssaultActionRequest",
+                return AssaultActionModel(
+                    action_type="AssaultActionModel",
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
@@ -217,7 +217,7 @@ class AiService:
         match result.action, result.result:
             case MoveAction(), MoveActionResult():
                 return MoveActionLog(
-                    body=MoveActionRequest(
+                    body=MoveActionModel(
                         unit_id=result.action.unit_id,
                         to=result.action.to,
                     ),
@@ -227,7 +227,7 @@ class AiService:
 
             case PivotAction(), PivotActionResult():
                 return PivotActionLog(
-                    body=PivotActionRequest(
+                    body=PivotActionModel(
                         unit_id=result.action.unit_id,
                         to=result.action.to,
                     ),
@@ -236,7 +236,7 @@ class AiService:
                 )
             case FireAction(), FireActionResult():
                 return FireActionLog(
-                    body=FireActionRequest(
+                    body=FireActionModel(
                         unit_id=result.action.unit_id,
                         target_id=result.action.target_id,
                     ),
@@ -245,7 +245,7 @@ class AiService:
                 )
             case AssaultAction(), AssaultActionResult():
                 return AssaultActionLog(
-                    body=AssaultActionRequest(
+                    body=AssaultActionModel(
                         unit_id=result.action.unit_id,
                         target_id=result.action.target_id,
                     ),

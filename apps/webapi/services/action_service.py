@@ -8,15 +8,15 @@ from flanker_core.models.actions import (
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 from webapi.models.action_models import (
-    ActionRequest,
+    ActionModel,
     AssaultActionLog,
-    AssaultActionRequest,
+    AssaultActionModel,
     FireActionLog,
-    FireActionRequest,
+    FireActionModel,
     MoveActionLog,
-    MoveActionRequest,
+    MoveActionModel,
     PivotActionLog,
-    PivotActionRequest,
+    PivotActionModel,
 )
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
@@ -28,22 +28,25 @@ class ActionService:
     @staticmethod
     def perform(
         gs: GameState,
-        action_request: ActionRequest,
+        action_request: ActionModel,
     ) -> None:
         """Perform an action."""
 
         match action_request:
-            case MoveActionRequest():
+            case MoveActionModel():
                 ActionService._move(gs, action_request)
-            case PivotActionRequest():
+            case PivotActionModel():
                 ActionService._pivot(gs, action_request)
-            case FireActionRequest():
+            case FireActionModel():
                 ActionService._fire(gs, action_request)
-            case AssaultActionRequest():
+            case AssaultActionModel():
                 ActionService._assault(gs, action_request)
 
     @staticmethod
-    def _move(gs: GameState, body: MoveActionRequest) -> None:
+    def _move(
+        gs: GameState,
+        body: MoveActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=MoveAction(
@@ -63,7 +66,10 @@ class ActionService:
         )
 
     @staticmethod
-    def _pivot(gs: GameState, body: PivotActionRequest) -> None:
+    def _pivot(
+        gs: GameState,
+        body: PivotActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=PivotAction(
@@ -83,7 +89,10 @@ class ActionService:
         )
 
     @staticmethod
-    def _fire(gs: GameState, body: FireActionRequest) -> None:
+    def _fire(
+        gs: GameState,
+        body: FireActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=FireAction(
@@ -103,7 +112,10 @@ class ActionService:
         )
 
     @staticmethod
-    def _assault(gs: GameState, body: AssaultActionRequest) -> None:
+    def _assault(
+        gs: GameState,
+        body: AssaultActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=AssaultAction(

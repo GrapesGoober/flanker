@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body
-from webapi.models.action_models import ActionLog, ActionRequest
+from webapi.models.action_models import ActionLog, ActionModel
 from webapi.models.inspection_models import (
     GameStateInspection,
     GameTreeInspection,
@@ -58,7 +58,7 @@ async def get_map(
 
 @router.post("/perform")
 async def perform_action(
-    action: ActionRequest = Body(...),
+    action: ActionModel = Body(...),
     state: str = Body(...),
 ) -> GameViewStateResponse:
     """Move a unit and return updated rifle squads."""

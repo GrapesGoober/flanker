@@ -166,7 +166,7 @@ export class PlayerController {
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
 		const result = await performActionAsync(gameStateJson, {
-			actionType: 'MoveActionRequest',
+			actionType: 'MoveActionModel',
 			unitId: unitId,
 			to: this.state.moveMarker
 		});
@@ -184,7 +184,7 @@ export class PlayerController {
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
 		const result = await performActionAsync(gameStateJson, {
-			actionType: 'PivotActionRequest',
+			actionType: 'PivotActionModel',
 			unitId: unitId,
 			to: this.state.moveMarker
 		});
@@ -202,7 +202,7 @@ export class PlayerController {
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
 		const result = await performActionAsync(gameStateJson, {
-			actionType: 'FireActionRequest',
+			actionType: 'FireActionModel',
 			unitId: unitId,
 			targetId: this.state.target.unitId
 		});
@@ -220,7 +220,7 @@ export class PlayerController {
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
 		const result = await performActionAsync(gameStateJson, {
-			actionType: 'AssaultActionRequest',
+			actionType: 'AssaultActionModel',
 			unitId: unitId,
 			targetId: this.state.target.unitId
 		});

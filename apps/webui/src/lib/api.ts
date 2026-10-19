@@ -27,16 +27,15 @@ export type MapViewState = components['schemas']['MapViewState'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 export type FireEffect = components['schemas']['FireEffect'];
 
-export type MoveActionRequest = components['schemas']['MoveActionRequest'];
-export type FireActionRequest = components['schemas']['FireActionRequest'];
-export type AssaultActionRequest =
-	components['schemas']['AssaultActionRequest'];
-export type PivotActionRequest = components['schemas']['PivotActionRequest'];
-export type ActionRequest =
-	| MoveActionRequest
-	| FireActionRequest
-	| AssaultActionRequest
-	| PivotActionRequest;
+export type MoveActionModel = components['schemas']['MoveActionModel'];
+export type FireActionModel = components['schemas']['FireActionModel'];
+export type AssaultActionModel = components['schemas']['AssaultActionModel'];
+export type PivotActionModel = components['schemas']['PivotActionModel'];
+export type ActionModel =
+	| MoveActionModel
+	| FireActionModel
+	| AssaultActionModel
+	| PivotActionModel;
 
 export type MoveActionLog = components['schemas']['MoveActionLog'];
 export type FireActionLog = components['schemas']['FireActionLog'];
@@ -114,7 +113,7 @@ export async function GetMapData(jsonState: string): Promise<MapViewState> {
 
 export async function performActionAsync(
 	jsonState: string,
-	action: ActionRequest
+	action: ActionModel
 ): Promise<GameViewStateResponse> {
 	const { data, error } = await client.POST('/api/game/perform', {
 		body: {

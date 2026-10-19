@@ -257,7 +257,7 @@ export interface components {
     schemas: {
         Action: components["schemas"]["MoveAction"] | components["schemas"]["PivotAction"] | components["schemas"]["FireAction"] | components["schemas"]["AssaultAction"];
         ActionLog: components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"];
-        ActionRequest: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
+        ActionModel: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
         ActionResult: components["schemas"]["MoveActionResult"] | components["schemas"]["PivotActionResult"] | components["schemas"]["FireActionResult"] | components["schemas"]["AssaultActionResult"];
         /** AiActionResult */
         AiActionResult: {
@@ -319,22 +319,22 @@ export interface components {
              * @enum {string}
              */
             logType: "AssaultActionLog";
-            body: components["schemas"]["AssaultActionRequest"];
+            body: components["schemas"]["AssaultActionModel"];
             outcome: components["schemas"]["AssaultOutcomes"] | null;
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
             viewState: components["schemas"]["GameViewState"];
         };
         /**
-         * AssaultActionRequest
-         * @description Request model for a unit's assault action.
+         * AssaultActionModel
+         * @description API model for a unit's assault action.
          */
-        AssaultActionRequest: {
+        AssaultActionModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            actionType: "AssaultActionRequest";
+            actionType: "AssaultActionModel";
             /**
              * Unitid
              * Format: uuid
@@ -379,7 +379,7 @@ export interface components {
         /** Body_perform_action_api_game_perform_post */
         Body_perform_action_api_game_perform_post: {
             /** Action */
-            action: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
+            action: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
             /** State */
             state: string;
         };
@@ -405,7 +405,7 @@ export interface components {
              * @enum {string}
              */
             type: "ExpectimaxTreeInspection";
-            bestAction: components["schemas"]["ActionRequest"];
+            bestAction: components["schemas"]["ActionModel"];
             treeRoot: components["schemas"]["ExpectimaxTreeInspectionNode"];
         };
         /**
@@ -413,7 +413,7 @@ export interface components {
          * @description An expectimax action and its probabilistic outcomes.
          */
         ExpectimaxTreeInspectionEdge: {
-            action: components["schemas"]["ActionRequest"];
+            action: components["schemas"]["ActionModel"];
             /** Outcomes */
             outcomes: components["schemas"]["ExpectimaxTreeInspectionOutcome"][];
             /** Expectedscore */
@@ -469,20 +469,20 @@ export interface components {
              * @enum {string}
              */
             logType: "FireActionLog";
-            body: components["schemas"]["FireActionRequest"];
+            body: components["schemas"]["FireActionModel"];
             outcome: components["schemas"]["FireOutcomes"] | null;
             viewState: components["schemas"]["GameViewState"];
         };
         /**
-         * FireActionRequest
-         * @description Request model for a unit's fire action.
+         * FireActionModel
+         * @description API model for a unit's fire action.
          */
-        FireActionRequest: {
+        FireActionModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            actionType: "FireActionRequest";
+            actionType: "FireActionModel";
             /**
              * Unitid
              * Format: uuid
@@ -589,7 +589,7 @@ export interface components {
              * @enum {string}
              */
             type: "MctsTreeInspection";
-            bestAction: components["schemas"]["ActionRequest"];
+            bestAction: components["schemas"]["ActionModel"];
             treeRoot: components["schemas"]["MctsTreeInspectionNode"];
         };
         /**
@@ -597,7 +597,7 @@ export interface components {
          * @description An MCTS tree edge.
          */
         MctsTreeInspectionEdge: {
-            action: components["schemas"]["ActionRequest"];
+            action: components["schemas"]["ActionModel"];
             node: components["schemas"]["MctsTreeInspectionNode"];
         };
         /**
@@ -623,7 +623,7 @@ export interface components {
              * @enum {string}
              */
             type: "MinimaxTreeInspection";
-            bestAction: components["schemas"]["ActionRequest"];
+            bestAction: components["schemas"]["ActionModel"];
             treeRoot: components["schemas"]["MinimaxTreeInspectionNode"];
         };
         /**
@@ -631,7 +631,7 @@ export interface components {
          * @description A Minimax tree edge.
          */
         MinimaxTreeInspectionEdge: {
-            action: components["schemas"]["ActionRequest"];
+            action: components["schemas"]["ActionModel"];
             node: components["schemas"]["MinimaxTreeInspectionNode"];
             /** Bestscore */
             bestScore: number;
@@ -666,21 +666,21 @@ export interface components {
              * @enum {string}
              */
             logType: "MoveActionLog";
-            body: components["schemas"]["MoveActionRequest"];
+            body: components["schemas"]["MoveActionModel"];
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
             viewState: components["schemas"]["GameViewState"];
         };
         /**
-         * MoveActionRequest
-         * @description Request model for a unit's move action.
+         * MoveActionModel
+         * @description API model for a unit's move action.
          */
-        MoveActionRequest: {
+        MoveActionModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            actionType: "MoveActionRequest";
+            actionType: "MoveActionModel";
             /**
              * Unitid
              * Format: uuid
@@ -720,21 +720,21 @@ export interface components {
              * @enum {string}
              */
             logType: "PivotActionLog";
-            body: components["schemas"]["PivotActionRequest"];
+            body: components["schemas"]["PivotActionModel"];
             /** Reactivefireoutcomes */
             reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
             viewState: components["schemas"]["GameViewState"];
         };
         /**
-         * PivotActionRequest
-         * @description Request model for a unit's pivot action.
+         * PivotActionModel
+         * @description API model for a unit's pivot action.
          */
-        PivotActionRequest: {
+        PivotActionModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            actionType: "PivotActionRequest";
+            actionType: "PivotActionModel";
             /**
              * Unitid
              * Format: uuid

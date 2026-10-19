@@ -4,7 +4,7 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
-from webapi.models.action_models import ActionRequest
+from webapi.models.action_models import ActionModel
 from webapi.models.state_models import GameViewState
 
 
@@ -33,7 +33,7 @@ class GameStateInspection(BaseModel, CamelCaseConfig):
 class MctsTreeInspectionEdge(BaseModel, CamelCaseConfig):
     """An MCTS tree edge."""
 
-    action: ActionRequest
+    action: ActionModel
     node: "MctsTreeInspectionNode"
 
 
@@ -50,7 +50,7 @@ class MctsTreeInspection(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the MCTS game tree."""
 
     type: Literal["MctsTreeInspection"]
-    best_action: ActionRequest
+    best_action: ActionModel
     tree_root: MctsTreeInspectionNode
 
 
@@ -64,7 +64,7 @@ class MinimaxTreeInspectionNode(BaseModel, CamelCaseConfig):
 class MinimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
     "A Minimax tree edge."
 
-    action: ActionRequest
+    action: ActionModel
     node: "MinimaxTreeInspectionNode"
     best_score: float
 
@@ -73,7 +73,7 @@ class MinimaxTreeInspection(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the Minimax game tree."""
 
     type: Literal["MinimaxTreeInspection"]
-    best_action: ActionRequest
+    best_action: ActionModel
     tree_root: MinimaxTreeInspectionNode
 
 
@@ -88,7 +88,7 @@ class ExpectimaxTreeInspectionOutcome(BaseModel, CamelCaseConfig):
 class ExpectimaxTreeInspectionEdge(BaseModel, CamelCaseConfig):
     """An expectimax action and its probabilistic outcomes."""
 
-    action: ActionRequest
+    action: ActionModel
     outcomes: list[ExpectimaxTreeInspectionOutcome]
     expected_score: float
 
@@ -104,7 +104,7 @@ class ExpectimaxTreeInspection(BaseModel, CamelCaseConfig):
     """Detailed inspection debugging data of the Expectimax game tree."""
 
     type: Literal["ExpectimaxTreeInspection"]
-    best_action: ActionRequest
+    best_action: ActionModel
     tree_root: ExpectimaxTreeInspectionNode
 
 
