@@ -60,6 +60,9 @@ class AiSearchAgent:
         gs: GameState,
         config: SearchPolicyConfig,
     ) -> ISearchState[Action]:
+        """
+        Returns an `ISearchState` object initialized to this state and config.
+        """
 
         match config.state:
             case UnabstractedStateConfig():
@@ -150,7 +153,7 @@ class AiSearchAgent:
             return None
 
         if log.tree_root == None:
-            raise RuntimeError("The policy didn't return tree when requested!")
+            raise RuntimeError("The policy didn't return tree!")
 
         return AiSearchAgent.GameTreeResult(
             best_action=action,
@@ -170,6 +173,11 @@ class AiSearchAgent:
             | MctsSearchLog[Action]
         ),
     ]:
+        """
+        Helper method to dispatch to policy given the config to
+        get its policy's best action and search log.
+        """
+
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
                 return ExpectimaxPolicy[Action].get_action(
