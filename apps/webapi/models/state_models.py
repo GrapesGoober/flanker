@@ -1,0 +1,108 @@
+from enum import Enum
+from uuid import UUID
+
+from flanker_ai.ai_system import AiActionResult
+from flanker_core.models.components import CombatUnit, InitiativeState
+from flanker_core.models.outcomes import FireEffect
+from flanker_core.models.vec2 import Vec2
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
+
+
+class CamelCaseConfig:
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class SceneManifest(BaseModel, CamelCaseConfig):
+    scene_paths: dict[str, str]
+
+
+class SceneManifestResponse(BaseModel, CamelCaseConfig):
+    scene_names: list[str]
+
+
+class SquadModel(BaseModel, CamelCaseConfig):
+    """Represents a view of a single squad in the game."""
+
+    unit_id: UUID
+    position: Vec2
+    degrees: float
+    status: CombatUnit.Status
+    is_friendly: bool
+    fov_degrees: float | None
+    firing_at: tuple[UUID, FireEffect] | None
+
+
+class FireEffectPair(BaseModel, CamelCaseConfig):
+    position_a: Vec2
+    position_b: Vec2
+    fire_effect_a: FireEffect | None
+    fire_effect_b: FireEffect | None
+
+
+class GameViewState(BaseModel, CamelCaseConfig):
+    """Simplified view model of the game state."""
+
+    class ObjectiveState(Enum):
+        INCOMPLETE = "INCOMPLETE"
+        COMPLETED = "COMPLETED"
+        FAILED = "FAILED"
+
+    objective_state: ObjectiveState
+    has_initiative: bool
+    squads: list[SquadModel]
+    fire_effect_pairs: list[FireEffectPair]
+
+
+class GameViewStateResponse(BaseModel, CamelCaseConfig):
+    """Response model for actions contains view state and mutated game state."""
+
+    view_state: GameViewState
+    json_state: str
+
+
+class TerrainModel(BaseModel, CamelCaseConfig):
+    """Represents a view of terrain feature in the game."""
+
+    terrain_id: UUID
+    position: Vec2
+    degrees: float
+    vertices: list[Vec2]
+    terrain_type: "Types"
+
+    class Types(Enum):
+        """Supported terrain types."""
+
+        FOREST = "FOREST"
+        ROAD = "ROAD"
+        FIELD = "FIELD"
+        WATER = "WATER"
+        BUILDING = "BUILDING"
+
+
+class MapViewState(BaseModel, CamelCaseConfig):
+    """Simplified view model of the game map."""
+
+    terrains: list[TerrainModel]
+    boundary: list[Vec2]
+
+
+class AiMatchResponse(BaseModel, CamelCaseConfig):
+    """Response model for AI match contains match result and final game state."""
+
+    winner: InitiativeState.Faction | None
+    total_runtime_seconds: float
+    # FIXME: this should use dedicated view model for AiSystem.ActionResult.
+    # The experiments can then define its own mapping method, so that the
+    # models are nicely decoupled.
+    action_results: list[AiActionResult]
+    json_state: str
+
+
+class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
+    faction: InitiativeState.Faction
+    points: list[Vec2]

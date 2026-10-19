@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from webapi.models import ActionLog, TerrainModel
+from webapi.models.action_models import ActionLog
+from webapi.models.state_models import TerrainModel
 
 
 @dataclass

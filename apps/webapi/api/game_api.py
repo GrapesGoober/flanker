@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Body
-from webapi.models import (
-    ActionLog,
-    ActionRequest,
-    AiMatchResponse,
+from webapi.models.action_models import ActionLog, ActionRequest
+from webapi.models.inspection_models import (
     GameStateInspection,
     GameTreeInspection,
+)
+from webapi.models.state_models import (
+    AiMatchResponse,
     GameViewState,
     GameViewStateResponse,
     MapViewState,

@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Query
-from webapi.models import (
+from webapi.models.state_models import (
     AiWaypointConfigRequest,
     GameViewStateResponse,
     SquadModel,

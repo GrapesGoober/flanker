@@ -19,9 +19,9 @@ from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
-from webapi.models import (
+from webapi.models.inspection_models import GameStateInspection
+from webapi.models.state_models import (
     FireEffectPair,
-    GameStateInspection,
     GameViewState,
     GameViewStateResponse,
     SquadModel,

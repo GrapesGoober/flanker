@@ -27,19 +27,23 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
-from webapi.models import (
+from webapi.models.action_models import (
     ActionLog,
     ActionRequest,
-    AiMatchResponse,
-    AiWaypointConfigRequest,
     AssaultActionLog,
     AssaultActionRequest,
+    FireActionLog,
+    FireActionRequest,
+    MoveActionLog,
+    MoveActionRequest,
+    PivotActionLog,
+    PivotActionRequest,
+)
+from webapi.models.inspection_models import (
     ExpectimaxTreeInspection,
     ExpectimaxTreeInspectionEdge,
     ExpectimaxTreeInspectionNode,
     ExpectimaxTreeInspectionOutcome,
-    FireActionLog,
-    FireActionRequest,
     GameTreeInspection,
     MctsTreeInspection,
     MctsTreeInspectionEdge,
@@ -47,10 +51,10 @@ from webapi.models import (
     MinimaxTreeInspection,
     MinimaxTreeInspectionEdge,
     MinimaxTreeInspectionNode,
-    MoveActionLog,
-    MoveActionRequest,
-    PivotActionLog,
-    PivotActionRequest,
+)
+from webapi.models.state_models import (
+    AiMatchResponse,
+    AiWaypointConfigRequest,
 )
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService

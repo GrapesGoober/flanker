@@ -7,7 +7,7 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-from webapi.models import (
+from webapi.models.action_models import (
     ActionRequest,
     AssaultActionLog,
     AssaultActionRequest,
@@ -26,7 +26,10 @@ class ActionService:
     """Provides static methods to process player actions."""
 
     @staticmethod
-    def perform(gs: GameState, action_request: ActionRequest) -> None:
+    def perform(
+        gs: GameState,
+        action_request: ActionRequest,
+    ) -> None:
         """Perform an action."""
 
         match action_request:

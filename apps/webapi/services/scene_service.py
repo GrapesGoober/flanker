@@ -9,7 +9,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
 from webapi.components import LogRecords, TerrainTypeTag
-from webapi.models import SceneManifest, SceneManifestResponse
+from webapi.models.state_models import SceneManifest, SceneManifestResponse
 
 
 class SceneService:

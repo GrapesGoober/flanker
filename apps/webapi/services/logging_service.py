@@ -1,7 +1,6 @@
 from flanker_core.gamestate import GameState
-
 from webapi.components import LogRecords
-from webapi.models import ActionLog
+from webapi.models.action_models import ActionLog
 
 
 class LoggingService:

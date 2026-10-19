@@ -4,7 +4,7 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
 from webapi.components import TerrainTypeTag
-from webapi.models import MapViewState, TerrainModel
+from webapi.models.state_models import MapViewState, TerrainModel
 
 
 class TerrainService:
