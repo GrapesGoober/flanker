@@ -56,7 +56,7 @@ from webapi.models.state_models import (
     AiActionResultModel,
     AiMatchResponseModel,
     AiSearchLogModel,
-    AiWaypointConfigRequest,
+    AiWaypointConfigRequestModel,
 )
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
@@ -171,7 +171,7 @@ class AiService:
     @staticmethod
     def set_ai_waypoints_coordinates(
         gs: GameState,
-        request: AiWaypointConfigRequest,
+        request: AiWaypointConfigRequestModel,
     ) -> None:
         for _, config_component in gs.query(AiConfigComponent):
             if config_component.faction != request.faction:

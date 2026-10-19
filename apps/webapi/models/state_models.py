@@ -111,6 +111,6 @@ class AiMatchResponseModel(BaseModel, CamelCaseConfig):
     json_state: str
 
 
-class AiWaypointConfigRequest(BaseModel, CamelCaseConfig):
+class AiWaypointConfigRequestModel(BaseModel, CamelCaseConfig):
     faction: InitiativeState.Faction
     points: list[Vec2]

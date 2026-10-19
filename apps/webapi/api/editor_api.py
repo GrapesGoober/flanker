@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Query
 from webapi.models.state_models import (
-    AiWaypointConfigRequest,
+    AiWaypointConfigRequestModel,
     GameViewStateResponse,
     SquadModel,
     TerrainModel,
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/editor")
 @router.put("/ai-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
-    config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
+    config_request: AiWaypointConfigRequestModel = Body(..., alias="configRequest"),
 ) -> GameViewStateResponse:
     gs = SceneService.deserialize(state)
     AiService.set_ai_waypoints_coordinates(gs, config_request)

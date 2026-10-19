@@ -284,8 +284,8 @@ export interface components {
             /** Treedepth */
             treeDepth: number;
         };
-        /** AiWaypointConfigRequest */
-        AiWaypointConfigRequest: {
+        /** AiWaypointConfigRequestModel */
+        AiWaypointConfigRequestModel: {
             faction: components["schemas"]["Faction"];
             /** Points */
             points: components["schemas"]["Vec2"][];
@@ -346,7 +346,7 @@ export interface components {
         Body_ai_config_waypoints_api_editor_ai_waypoints_put: {
             /** State */
             state: string;
-            configRequest: components["schemas"]["AiWaypointConfigRequest"];
+            configRequest: components["schemas"]["AiWaypointConfigRequestModel"];
         };
         /** Body_perform_action_api_game_perform_post */
         Body_perform_action_api_game_perform_post: {

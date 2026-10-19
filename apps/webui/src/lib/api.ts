@@ -11,7 +11,8 @@ export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
 export type TerrainType = components['schemas']['TerrainType'];
-export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
+export type AiWaypointsModel =
+	components['schemas']['AiWaypointConfigRequestModel'];
 export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse =
 	components['schemas']['GameViewStateResponse'];
