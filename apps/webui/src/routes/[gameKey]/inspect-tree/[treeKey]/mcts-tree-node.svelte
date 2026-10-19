@@ -95,7 +95,7 @@
 				{/if}
 			</details>
 		{:else}
-			<p>Leaf node</p>
+			<span>No Children (Leaf node)</span>
 		{/if}
 	</li>
 </ul>
