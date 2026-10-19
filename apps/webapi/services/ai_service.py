@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_system import AiSystem
+from flanker_ai.ai_system import AiActionResult, AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -67,7 +67,7 @@ class AiService:
     ) -> None:
         """Runs the default RED AI for entire RED initiative."""
 
-        action_results: list[AiSystem.ActionResult] = []
+        action_results: list[AiActionResult] = []
         gs_snapshots: list[GameState] = []
         for _ in range(max_actions):
             if ActionSystem.get_initiative(gs) != InitiativeState.Faction.RED:
@@ -168,7 +168,7 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[AiSystem.ActionResult],
+        results: list[AiActionResult],
         gs_snapshots: list[GameState],
     ) -> None:
         for result, gs_snapshot in zip(results, gs_snapshots):
@@ -207,7 +207,7 @@ class AiService:
 
     @staticmethod
     def _map_action_result_to_logs(
-        result: AiSystem.ActionResult,
+        result: AiActionResult,
         gs_snapshot: GameState,
     ) -> ActionLog:
         match result.action, result.result:

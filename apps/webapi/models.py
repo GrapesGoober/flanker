@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from flanker_ai.ai_system import AiSystem
+from flanker_ai.ai_system import AiActionResult
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
 from flanker_core.models.vec2 import Vec2
@@ -168,7 +168,7 @@ class AiMatchResponse(BaseModel, CamelCaseConfig):
     # FIXME: this should use dedicated view model for AiSystem.ActionResult.
     # The experiments can then define its own mapping method, so that the
     # models are nicely decoupled.
-    action_results: list[AiSystem.ActionResult]
+    action_results: list[AiActionResult]
     json_state: str
 
 

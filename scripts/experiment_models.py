@@ -1,6 +1,6 @@
 from typing import Literal
 
-from flanker_ai.ai_system import AiSystem
+from flanker_ai.ai_system import AiActionResult
 from flanker_ai.config_models import AiConfigComponent
 from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel, ConfigDict
@@ -12,7 +12,7 @@ class MatchResult(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    action_results: list[AiSystem.ActionResult]
+    action_results: list[AiActionResult]
 
 
 class ExperimentMetadata(BaseModel):

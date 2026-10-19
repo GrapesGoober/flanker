@@ -17,7 +17,7 @@ from experiment_models import (
     SceneManifest,
 )
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_system import AiSystem
+from flanker_ai.ai_system import AiActionResult
 from flanker_ai.config_models import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -57,7 +57,7 @@ class _MatchResultApiResponse(BaseModel):
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    action_results: list[AiSystem.ActionResult]
+    action_results: list[AiActionResult]
 
 
 def main() -> None:

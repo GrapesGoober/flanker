@@ -16,8 +16,6 @@ export type GameViewState = components['schemas']['GameViewState'];
 export type GameViewStateResponse =
 	components['schemas']['GameViewStateResponse'];
 export type GameStateInspection = components['schemas']['GameStateInspection'];
-export type MctsGameTreeInspection =
-	components['schemas']['MctsTreeInspection'];
 export type MctsGameTreeInspectionNode =
 	components['schemas']['MctsTreeInspectionNode'];
 export type MinimaxGameTreeInspectionNode =

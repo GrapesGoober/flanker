@@ -258,6 +258,16 @@ export interface components {
         Action: components["schemas"]["MoveAction"] | components["schemas"]["PivotAction"] | components["schemas"]["FireAction"] | components["schemas"]["AssaultAction"];
         ActionLog: components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"];
         ActionRequest: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
+        ActionResult: components["schemas"]["MoveActionResult"] | components["schemas"]["PivotActionResult"] | components["schemas"]["FireActionResult"] | components["schemas"]["AssaultActionResult"];
+        /** AiActionResult */
+        AiActionResult: {
+            faction: components["schemas"]["Faction"];
+            /** Actionruntimeseconds */
+            actionRuntimeSeconds: number;
+            action: components["schemas"]["Action"];
+            result: components["schemas"]["ActionResult"];
+            policyLog: components["schemas"]["AiSearchAgentLog"] | null;
+        };
         /**
          * AiMatchResponse
          * @description Response model for AI match contains match result and final game state.
@@ -267,12 +277,12 @@ export interface components {
             /** Totalruntimeseconds */
             totalRuntimeSeconds: number;
             /** Actionresults */
-            actionResults: components["schemas"]["flanker_ai__ai_system__AiSystem__ActionResult"][];
+            actionResults: components["schemas"]["AiActionResult"][];
             /** Jsonstate */
             jsonState: string;
         };
-        /** AiSearchLog */
-        AiSearchLog: {
+        /** AiSearchAgentLog */
+        AiSearchAgentLog: {
             /** Treesize */
             treeSize: number;
             /** Treedepth */
@@ -817,16 +827,6 @@ export interface components {
             /** Y */
             y: number;
         };
-        /** ActionResult */
-        flanker_ai__ai_system__AiSystem__ActionResult: {
-            faction: components["schemas"]["Faction"];
-            /** Actionruntimeseconds */
-            actionRuntimeSeconds: number;
-            action: components["schemas"]["Action"];
-            result: components["schemas"]["flanker_core__models__actions__ActionResult"];
-            policyLog: components["schemas"]["AiSearchLog"] | null;
-        };
-        flanker_core__models__actions__ActionResult: components["schemas"]["MoveActionResult"] | components["schemas"]["PivotActionResult"] | components["schemas"]["FireActionResult"] | components["schemas"]["AssaultActionResult"];
     };
     responses: never;
     parameters: never;
