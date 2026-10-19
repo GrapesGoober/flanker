@@ -10,7 +10,7 @@
 		SvgMap,
 		TerrainLayer
 	} from '$lib/components';
-	import TreeNode from './mcts-tree-node.svelte';
+	import MctsTreeNode from './mcts-tree-node.svelte';
 
 	type Props = {
 		node: MctsGameTreeInspectionNode;
@@ -79,7 +79,7 @@
 						<ul>
 							{#each node.children as edge, childIndex}
 								<li>
-									<TreeNode
+									<MctsTreeNode
 										node={edge.node}
 										action={edge.action}
 										{mapData}
