@@ -136,6 +136,30 @@
 		saveGameLocal(newGameKey, loadGameLocal(gameKey));
 		reloadList();
 	}
+
+	async function copyGameSaveJson(gameKey: string) {
+		try {
+			await navigator.clipboard.writeText(loadGameLocal(gameKey));
+			alert(`Copied save ${gameKey} JSON to clipboard`);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Clipboard access was denied';
+			alert(`Failed to copy save ${gameKey} JSON: ${message}`);
+		}
+	}
+
+	async function copyGameSaveJsonEscaped(gameKey: string) {
+		try {
+			await navigator.clipboard.writeText(
+				JSON.stringify(loadGameLocal(gameKey))
+			);
+			alert(`Copied escaped save ${gameKey} JSON to clipboard`);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : 'Clipboard access was denied';
+			alert(`Failed to copy escaped save ${gameKey} JSON: ${message}`);
+		}
+	}
 </script>
 
 <h1>Project Flanker</h1>
@@ -159,6 +183,16 @@
 					type="button"
 					value="Duplicate"
 					onclick={() => duplicateGameSave(gameKey)}
+				/>
+				<input
+					type="button"
+					value="Copy JSON"
+					onclick={() => copyGameSaveJson(gameKey)}
+				/>
+				<input
+					type="button"
+					value="Copy Escaped JSON"
+					onclick={() => copyGameSaveJsonEscaped(gameKey)}
 				/>
 				<input
 					type="button"
