@@ -140,7 +140,6 @@
 	async function copyGameSaveJson(gameKey: string) {
 		try {
 			await navigator.clipboard.writeText(loadGameLocal(gameKey));
-			alert(`Copied save ${gameKey} JSON to clipboard`);
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : 'Clipboard access was denied';
@@ -153,7 +152,6 @@
 			await navigator.clipboard.writeText(
 				JSON.stringify(loadGameLocal(gameKey))
 			);
-			alert(`Copied escaped save ${gameKey} JSON to clipboard`);
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : 'Clipboard access was denied';
@@ -177,9 +175,21 @@
 					</summary>
 					<ul>
 						<li>
-							<a href="/{gameKey}/game" class="key-link">
-								<span class="key-text">{gameKey}</span>
-							</a>
+							<input
+								type="button"
+								value="Game Page"
+								onclick={() => window.open(`/${gameKey}/game`)}
+							/>
+							<input
+								type="button"
+								value="Inspect"
+								onclick={() => window.open(`/${gameKey}/inspect`)}
+							/>
+							<input
+								type="button"
+								value="Inspect Tree"
+								onclick={() => window.open(`/${gameKey}/inspect-tree`)}
+							/>
 						</li>
 						<li>
 							<input
@@ -202,7 +212,7 @@
 							/>
 							<input
 								type="button"
-								value="Copy Escaped JSON"
+								value="Copy JSON (string escaped)"
 								onclick={() => copyGameSaveJsonEscaped(gameKey)}
 							/>
 						</li>
