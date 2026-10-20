@@ -20,15 +20,6 @@
 	});
 
 	function addQuickAccess() {
-		if (newQuickAccessName.trim().length === 0) {
-			alert('Quick access name is required');
-			return;
-		}
-		if (newQuickAccessSceneNames.length === 0) {
-			alert('Select at least one scene');
-			return;
-		}
-
 		controller.addQuickAccess(newQuickAccessName, newQuickAccessSceneNames);
 		newQuickAccessName = '';
 		newQuickAccessSceneNames = [];
@@ -60,166 +51,178 @@
 
 <h1>Project Flanker</h1>
 
-<h3>Game Saves</h3>
-{#if controller.saveGameKeys.length === 0}
-	<p>No game saves found.</p>
-{:else}
-	<ul>
-		{#each controller.saveGameKeys as gameKey}
-			<li>
-				<details>
-					<summary>
-						{gameKey}
-					</summary>
-					<ul>
+<fieldset
+	disabled={controller.state.type === 'fetching'}
+	inert={controller.state.type === 'fetching'}
+>
+	<h3>Game Saves</h3>
+	{#if controller.saveGameKeys.length === 0}
+		<p>No game saves found.</p>
+	{:else}
+		<ul>
+			{#each controller.saveGameKeys as gameKey}
+				<li>
+					<details>
+						<summary>
+							{gameKey}
+						</summary>
+						<ul>
+							<li>
+								<a href={`/${gameKey}/game`}>Game Page</a>
+								&nbsp;
+								<a href={`/${gameKey}/logs`}>Logs Page</a>
+								&nbsp;
+								<a href={`/${gameKey}/inspect`}>Inspect</a>
+								&nbsp;
+								<a href={`/${gameKey}/inspect-tree`}>Inspect Tree</a>
+							</li>
+							<li>
+								<input
+									type="button"
+									value="Get AI Match Result"
+									onclick={() => controller.createAiMatchSave(gameKey)}
+								/>
+							</li>
+							<li>
+								<input
+									type="button"
+									value="Rename"
+									onclick={() => renameGameSave(gameKey)}
+								/>
+
+								<input
+									type="button"
+									value="Duplicate"
+									onclick={() => controller.duplicateGameSave(gameKey)}
+								/>
+							</li>
+							<li>
+								<input
+									type="button"
+									value="Copy JSON"
+									onclick={() => controller.copyGameSaveJson(gameKey)}
+								/>
+								<input
+									type="button"
+									value="Copy JSON (string escaped)"
+									onclick={() => controller.copyGameSaveJsonEscaped(gameKey)}
+								/>
+							</li>
+							<li>
+								<input
+									type="button"
+									value="❌"
+									onclick={() => {
+										deleteGameSave(gameKey);
+									}}
+								/>
+							</li>
+						</ul>
+					</details>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
+	<h3>Load From Quick Access</h3>
+
+	{#if controller.quickAccesses.length === 0}
+		<p>No quick access.</p>
+	{:else}
+		<ul>
+			{#each controller.quickAccesses as quickAccess}
+				<li>
+					<input
+						type="button"
+						value={quickAccess.quickAccessName}
+						onclick={() => {
+							controller.createNewFromQuickAccess(quickAccess);
+						}}
+					/>
+					<input
+						type="button"
+						value="❌"
+						onclick={() => deleteQuickAccess(quickAccess.quickAccessName)}
+					/>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
+	<details class="collapsible-section">
+		<summary>
+			<span>Add Quick Access</span>
+		</summary>
+
+		<div class="collapsible-content">
+			<input
+				type="text"
+				placeholder="Quick access name"
+				bind:value={newQuickAccessName}
+			/>
+
+			{#if controller.sceneManifest.sceneNames.length === 0}
+				<p>No scenes available to add.</p>
+			{:else}
+				<ul>
+					{#each controller.sceneManifest.sceneNames as sceneName}
 						<li>
-							<a href={`/${gameKey}/game`}>Game Page</a>
-							&nbsp;
-							<a href={`/${gameKey}/logs`}>Logs Page</a>
-							&nbsp;
-							<a href={`/${gameKey}/inspect`}>Inspect</a>
-							&nbsp;
-							<a href={`/${gameKey}/inspect-tree`}>Inspect Tree</a>
+							<input
+								type="checkbox"
+								value={sceneName}
+								bind:group={newQuickAccessSceneNames}
+							/>
+							{sceneName}
 						</li>
+					{/each}
+				</ul>
+			{/if}
+
+			<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
+		</div>
+	</details>
+
+	<details class="collapsible-section">
+		<summary>
+			<span>Load From Each Scenes</span>
+		</summary>
+
+		<div class="collapsible-content">
+			{#if controller.sceneManifest.sceneNames.length === 0}
+				<p>No scenes.</p>
+			{:else}
+				<ul>
+					{#each controller.sceneManifest.sceneNames as sceneName}
 						<li>
 							<input
-								type="button"
-								value="Get AI Match Result"
-								onclick={() => controller.createAiMatchSave(gameKey)}
+								type="checkbox"
+								value={sceneName}
+								bind:group={selectedScenes}
 							/>
+							{sceneName}
 						</li>
-						<li>
-							<input
-								type="button"
-								value="Rename"
-								onclick={() => renameGameSave(gameKey)}
-							/>
+					{/each}
+				</ul>
+			{/if}
 
-							<input
-								type="button"
-								value="Duplicate"
-								onclick={() => controller.duplicateGameSave(gameKey)}
-							/>
-						</li>
-						<li>
-							<input
-								type="button"
-								value="Copy JSON"
-								onclick={() => controller.copyGameSaveJson(gameKey)}
-							/>
-							<input
-								type="button"
-								value="Copy JSON (string escaped)"
-								onclick={() => controller.copyGameSaveJsonEscaped(gameKey)}
-							/>
-						</li>
-						<li>
-							<input
-								type="button"
-								value="❌"
-								onclick={() => {
-									deleteGameSave(gameKey);
-								}}
-							/>
-						</li>
-					</ul>
-				</details>
-			</li>
-		{/each}
-	</ul>
-{/if}
-
-<h3>Load From Quick Access</h3>
-
-{#if controller.quickAccesses.length === 0}
-	<p>No quick access.</p>
-{:else}
-	<ul>
-		{#each controller.quickAccesses as quickAccess}
-			<li>
-				<input
-					type="button"
-					value={quickAccess.quickAccessName}
-					onclick={() => {
-						controller.createNewFromQuickAccess(quickAccess);
-					}}
-				/>
-				<input
-					type="button"
-					value="❌"
-					onclick={() => deleteQuickAccess(quickAccess.quickAccessName)}
-				/>
-			</li>
-		{/each}
-	</ul>
-{/if}
-
-<details class="collapsible-section">
-	<summary>
-		<span>Add Quick Access</span>
-	</summary>
-
-	<div class="collapsible-content">
-		<input
-			type="text"
-			placeholder="Quick access name"
-			bind:value={newQuickAccessName}
-		/>
-
-		{#if controller.sceneManifest.sceneNames.length === 0}
-			<p>No scenes available to add.</p>
-		{:else}
-			<ul>
-				{#each controller.sceneManifest.sceneNames as sceneName}
-					<li>
-						<input
-							type="checkbox"
-							value={sceneName}
-							bind:group={newQuickAccessSceneNames}
-						/>
-						{sceneName}
-					</li>
-				{/each}
-			</ul>
-		{/if}
-
-		<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
-	</div>
-</details>
-
-<details class="collapsible-section">
-	<summary>
-		<span>Load From Each Scenes</span>
-	</summary>
-
-	<div class="collapsible-content">
-		{#if controller.sceneManifest.sceneNames.length === 0}
-			<p>No scenes.</p>
-		{:else}
-			<ul>
-				{#each controller.sceneManifest.sceneNames as sceneName}
-					<li>
-						<input
-							type="checkbox"
-							value={sceneName}
-							bind:group={selectedScenes}
-						/>
-						{sceneName}
-					</li>
-				{/each}
-			</ul>
-		{/if}
-
-		<input type="text" bind:value={newGameName} />
-		<input
-			type="button"
-			value="New Game"
-			onclick={createNewGameFromSelection}
-		/>
-	</div>
-</details>
+			<input type="text" bind:value={newGameName} />
+			<input
+				type="button"
+				value="New Game"
+				onclick={createNewGameFromSelection}
+			/>
+		</div>
+	</details>
+</fieldset>
 
 <style>
+	fieldset {
+		border: 0;
+		margin: 0;
+		min-width: 0;
+		padding: 0;
+	}
+
 	.collapsible-section {
 		margin-bottom: 1rem;
 	}

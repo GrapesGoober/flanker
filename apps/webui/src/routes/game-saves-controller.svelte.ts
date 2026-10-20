@@ -26,45 +26,63 @@ export class GameSavesController {
 	quickAccesses: QuickAccess[] = $state([]);
 
 	async reloadList() {
+		if (this.state.type === 'fetching') return;
+		this.state = { type: 'fetching' };
 		this.saveGameKeys = getGameKeys();
 		this.sceneManifest = await GetSceneManifest();
 		this.quickAccesses = getQuickAccesses();
+		this.state = { type: 'default' };
 	}
 
 	async createNewGame(selectedScenes: string[], newGameName: string) {
-		if (selectedScenes.length == 0) return;
+		if (this.state.type === 'fetching' || selectedScenes.length === 0) return;
+		this.state = { type: 'fetching' };
 		const stateJson = await GetGameStateJSON(selectedScenes);
 		saveGameLocal(newGameName, stateJson);
-		this.reloadList();
+		this.state = { type: 'default' };
+		await this.reloadList();
 	}
 
-	deleteGameSave(gameKey: string) {
+	async deleteGameSave(gameKey: string) {
+		if (this.state.type === 'fetching') return;
+
 		deleteGameLocal(gameKey);
-		this.reloadList();
+		await this.reloadList();
 	}
 
 	async createNewFromQuickAccess(quickAccess: QuickAccess) {
+		if (this.state.type === 'fetching') return;
+		this.state = { type: 'fetching' };
 		const stateJson = await GetGameStateJSON(quickAccess.sceneNames);
 		saveGameLocal(quickAccess.quickAccessName, stateJson);
-		this.reloadList();
+		this.state = { type: 'default' };
+		await this.reloadList();
 	}
 
 	addQuickAccess(
 		newQuickAccessName: string,
 		newQuickAccessSceneNames: string[]
 	) {
+		if (this.state.type === 'fetching') return;
+
 		const quickAccessName = newQuickAccessName.trim();
 
 		// Create a copy to not mess with binding mutations
 		const sceneNamesForQuickAccess = newQuickAccessSceneNames.slice();
+
+		if (quickAccessName.length === 0) {
+			throw Error('Quick access name is required');
+		}
+		if (newQuickAccessSceneNames.length === 0) {
+			throw Error('Select at least one scene');
+		}
 
 		if (
 			this.quickAccesses.some(
 				(access) => access.quickAccessName === quickAccessName
 			)
 		) {
-			alert('A quick access with this name already exists');
-			return;
+			throw Error('A quick access with this name already exists');
 		}
 
 		const newQuickAccess: QuickAccess = {
@@ -76,13 +94,17 @@ export class GameSavesController {
 	}
 
 	deleteQuickAccess(quickAccessName: string) {
+		if (this.state.type === 'fetching') return;
+
 		this.quickAccesses = this.quickAccesses.filter(
 			(access) => access.quickAccessName !== quickAccessName
 		);
 		setQuickAccesses(this.quickAccesses);
 	}
 
-	renameGameSave(gameKey: string, newGameKey: string) {
+	async renameGameSave(gameKey: string, newGameKey: string) {
+		if (this.state.type === 'fetching') return;
+
 		if (getGameKeys().includes(newGameKey)) {
 			throw Error('A save with this name already exists');
 		}
@@ -90,7 +112,7 @@ export class GameSavesController {
 		const gameStateJson = loadGameLocal(gameKey);
 		deleteGameLocal(gameKey);
 		saveGameLocal(newGameKey, gameStateJson);
-		this.reloadList();
+		await this.reloadList();
 	}
 
 	private generateNewGameKeyCopy(gameKey: string) {
@@ -110,24 +132,35 @@ export class GameSavesController {
 		return newGameKey;
 	}
 
-	duplicateGameSave(gameKey: string) {
+	async duplicateGameSave(gameKey: string) {
+		if (this.state.type === 'fetching') return;
+
 		const newGameKey = this.generateNewGameKeyCopy(gameKey);
 		saveGameLocal(newGameKey, loadGameLocal(gameKey));
-		this.reloadList();
+		await this.reloadList();
 	}
 
 	async createAiMatchSave(gameKey: string) {
+		if (this.state.type === 'fetching') return;
+		this.state = { type: 'fetching' };
 		const result = await GetAiMatchResult(loadGameLocal(gameKey));
 		const newGameKey = this.generateNewGameKeyCopy(gameKey);
 		saveGameLocal(newGameKey, result.jsonState);
-		this.reloadList();
+		this.state = { type: 'default' };
+		await this.reloadList();
 	}
 
 	async copyGameSaveJson(gameKey: string) {
+		if (this.state.type === 'fetching') return;
+		this.state = { type: 'fetching' };
 		await navigator.clipboard.writeText(loadGameLocal(gameKey));
+		this.state = { type: 'default' };
 	}
 
 	async copyGameSaveJsonEscaped(gameKey: string) {
+		if (this.state.type === 'fetching') return;
+		this.state = { type: 'fetching' };
 		await navigator.clipboard.writeText(JSON.stringify(loadGameLocal(gameKey)));
+		this.state = { type: 'default' };
 	}
 }
