@@ -8,6 +8,7 @@
 		deleteGameLocal,
 		getGameKeys,
 		getQuickAccesses,
+		loadGameLocal,
 		saveGameLocal,
 		setQuickAccesses,
 		type QuickAccess
@@ -103,6 +104,38 @@
 			reloadList();
 		}
 	}
+
+	function renameGameSave(gameKey: string) {
+		const newGameKey = prompt(`Rename save ${gameKey} as:`, gameKey)?.trim();
+		if (!newGameKey) return null;
+		if (getGameKeys().includes(newGameKey)) {
+			alert('A save with this name already exists');
+			return;
+		}
+
+		const gameStateJson = loadGameLocal(gameKey);
+		deleteGameLocal(gameKey);
+		saveGameLocal(newGameKey, gameStateJson);
+		reloadList();
+	}
+
+	function duplicateGameSave(gameKey: string) {
+		// It needs to automatically find a new name without deconflicts.
+		// The naming scheme is to replace "xxx-copy-N" with a new number.
+		const baseGameKey = gameKey.replace(/-copy-\d+$/, '');
+
+		// Start search from the current name to find a new copy name.
+		const numberMatch = gameKey.match(/-copy-(\d+)$/);
+		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
+		let newGameKey = gameKey;
+		while (getGameKeys().includes(newGameKey)) {
+			currentNumber++;
+			newGameKey = `${baseGameKey}-copy-${currentNumber}`;
+		}
+
+		saveGameLocal(newGameKey, loadGameLocal(gameKey));
+		reloadList();
+	}
 </script>
 
 <h1>Project Flanker</h1>
@@ -117,6 +150,16 @@
 				<a href="/{gameKey}/game" class="key-link">
 					<span class="key-text">{gameKey}</span>
 				</a>
+				<input
+					type="button"
+					value="Rename"
+					onclick={() => renameGameSave(gameKey)}
+				/>
+				<input
+					type="button"
+					value="Duplicate"
+					onclick={() => duplicateGameSave(gameKey)}
+				/>
 				<input
 					type="button"
 					value="❌"
