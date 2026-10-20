@@ -9,7 +9,7 @@ from flanker_core.models.components import (
     MoveControls,
     Transform,
 )
-from webapi.models import SquadModel
+from webapi.models.state_models import SquadModel
 
 
 class CombatUnitService:

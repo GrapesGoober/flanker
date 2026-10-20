@@ -3,32 +3,36 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import MapBoundary, TerrainFeature, Transform
 from flanker_core.models.vec2 import Vec2
-from webapi.components import TerrainTypeTag
-from webapi.models import MapViewState, TerrainModel
+from webapi.models.components import TerrainTypeTag
+from webapi.models.state_models import MapViewStateModel, TerrainModel, TerrainType
 
 
 class TerrainService:
     """Provides static methods to manipulate and query terrain features."""
 
     @staticmethod
-    def get_terrain_flags(terrain_type: TerrainModel.Types) -> TerrainFeature.Flag:
+    def get_terrain_flags(
+        terrain_type: TerrainType,
+    ) -> TerrainFeature.Flag:
         """Return the flags for a given terrain type."""
         match terrain_type:
-            case TerrainModel.Types.FOREST:
+            case TerrainType.FOREST:
                 return TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE
-            case TerrainModel.Types.ROAD:
+            case TerrainType.ROAD:
                 return TerrainFeature.Flag.WALKABLE | TerrainFeature.Flag.DRIVABLE
-            case TerrainModel.Types.FIELD:
+            case TerrainType.FIELD:
                 return TerrainFeature.Flag.WALKABLE
-            case TerrainModel.Types.WATER:
+            case TerrainType.WATER:
                 return TerrainFeature.Flag.WATER
-            case TerrainModel.Types.BUILDING:
+            case TerrainType.BUILDING:
                 return TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE
             case _:
                 raise ValueError(f"Unknown terrain type: {terrain_type}")
 
     @staticmethod
-    def get_terrains(gs: GameState) -> list[TerrainModel]:
+    def get_terrains(
+        gs: GameState,
+    ) -> list[TerrainModel]:
         """Get all terrain features from the game state."""
         terrains: list[TerrainModel] = []
         for ent, transform, terrain_feature, terrain_tag in gs.query(
@@ -46,8 +50,10 @@ class TerrainService:
         return terrains
 
     @staticmethod
-    def get_map(gs: GameState) -> MapViewState:
-        return MapViewState(
+    def get_map(
+        gs: GameState,
+    ) -> MapViewStateModel:
+        return MapViewStateModel(
             terrains=TerrainService.get_terrains(gs),
             boundary=[
                 vertex
@@ -73,7 +79,10 @@ class TerrainService:
         )
 
     @staticmethod
-    def delete_terrain(gs: GameState, terrain_id: UUID) -> None:
+    def delete_terrain(
+        gs: GameState,
+        terrain_id: UUID,
+    ) -> None:
         # Make sure the terrain exists
         if gs.try_component(terrain_id, TerrainFeature) is None:
             raise ValueError(f"Terrain {terrain_id=} does not exist")
@@ -81,7 +90,11 @@ class TerrainService:
         gs.delete_entity(terrain_id)
 
     @staticmethod
-    def add_building(gs: GameState, position: Vec2, degrees: float) -> None:
+    def add_building(
+        gs: GameState,
+        position: Vec2,
+        degrees: float,
+    ) -> None:
         """Add a building terrain feature to the game state."""
         gs.add_entity(
             Transform(position=position, degrees=degrees),
@@ -92,13 +105,16 @@ class TerrainService:
                     Vec2(10, -5),
                     Vec2(-10, -5),
                 ],
-                flag=TerrainService.get_terrain_flags(TerrainModel.Types.BUILDING),
+                flag=TerrainService.get_terrain_flags(TerrainType.BUILDING),
             ),
-            TerrainTypeTag(TerrainModel.Types.BUILDING),
+            TerrainTypeTag(TerrainType.BUILDING),
         )
 
     @staticmethod
-    def update_terrain(gs: GameState, terrain_model: TerrainModel) -> None:
+    def update_terrain(
+        gs: GameState,
+        terrain_model: TerrainModel,
+    ) -> None:
         transform = gs.get_component(terrain_model.terrain_id, Transform)
         terrain = gs.get_component(terrain_model.terrain_id, TerrainFeature)
         tag = gs.get_component(terrain_model.terrain_id, TerrainTypeTag)

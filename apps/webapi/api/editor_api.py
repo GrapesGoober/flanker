@@ -1,9 +1,9 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Query
-from webapi.models import (
-    AiWaypointConfigRequest,
-    GameViewStateResponse,
+from webapi.models.state_models import (
+    AiWaypointConfigRequestModel,
+    GameViewStateResponseModel,
     SquadModel,
     TerrainModel,
 )
@@ -19,8 +19,8 @@ router = APIRouter(prefix="/api/editor")
 @router.put("/ai-waypoints")
 async def ai_config_waypoints(
     state: str = Body(...),
-    config_request: AiWaypointConfigRequest = Body(..., alias="configRequest"),
-) -> GameViewStateResponse:
+    config_request: AiWaypointConfigRequestModel = Body(..., alias="configRequest"),
+) -> GameViewStateResponseModel:
     gs = SceneService.deserialize(state)
     AiService.set_ai_waypoints_coordinates(gs, config_request)
     return GameViewService.get_view_state_response(gs)
@@ -30,7 +30,7 @@ async def ai_config_waypoints(
 async def update_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
     TerrainService.update_terrain(gs, terrain)
@@ -41,7 +41,7 @@ async def update_terrain(
 async def add_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
     TerrainService.add_terrain(gs, terrain)
@@ -52,7 +52,7 @@ async def add_terrain(
 async def delete_terrain(
     state: str = Body(...),
     terrain_id: UUID = Query(..., alias="terrainId"),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Edit the terrain polygon."""
     gs = SceneService.deserialize(state)
     TerrainService.delete_terrain(gs, terrain_id)
@@ -63,7 +63,7 @@ async def delete_terrain(
 async def add_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Add a new combat unit."""
     gs = SceneService.deserialize(state)
     CombatUnitService.add_unit(gs, unit)
@@ -74,7 +74,7 @@ async def add_unit(
 async def delete_unit(
     state: str = Body(...),
     unit_id: UUID = Query(..., alias="unitId"),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Deletes a combat unit."""
     gs = SceneService.deserialize(state)
     CombatUnitService.delete_unit(gs, unit_id)
@@ -85,7 +85,7 @@ async def delete_unit(
 async def update_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Edit the combat unit."""
     gs = SceneService.deserialize(state)
     CombatUnitService.update_unit(gs, unit)

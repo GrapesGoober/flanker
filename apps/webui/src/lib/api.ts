@@ -10,41 +10,45 @@ export type SceneManifest = components['schemas']['SceneManifestResponse'];
 export type Vec2 = components['schemas']['Vec2'];
 
 export type TerrainModel = components['schemas']['TerrainModel'];
-export type TerrainType = components['schemas']['Types'];
-export type AiWaypointsModel = components['schemas']['AiWaypointConfigRequest'];
-export type GameViewState = components['schemas']['GameViewState'];
-export type GameViewStateResponse =
-	components['schemas']['GameViewStateResponse'];
-export type GameStateInspection = components['schemas']['GameStateInspection'];
-export type MctsGameTreeInspection =
-	components['schemas']['MctsTreeInspection'];
-export type MctsGameTreeInspectionNode =
-	components['schemas']['MctsTreeInspectionNode'];
-export type GameTreeInspection = components['schemas']['GameTreeInspection'];
-export type MapViewState = components['schemas']['MapViewState'];
+export type TerrainType = components['schemas']['TerrainType'];
+export type AiWaypointsModel =
+	components['schemas']['AiWaypointConfigRequestModel'];
+export type GameViewStateModel = components['schemas']['GameViewStateModel'];
+export type GameViewStateResponseModel =
+	components['schemas']['GameViewStateResponseModel'];
+export type GameStateInspectionModel =
+	components['schemas']['GameStateInspectionModel'];
+export type MctsTreeNodeModel = components['schemas']['MctsTreeNodeModel'];
+export type MinimaxTreeNodeModel =
+	components['schemas']['MinimaxTreeNodeModel'];
+export type ExpectimaxTreeNodeModel =
+	components['schemas']['ExpectimaxTreeNodeModel'];
+export type GameTreeInspectionModel =
+	components['schemas']['GameTreeInspectionModel'];
+export type MapViewStateModel = components['schemas']['MapViewStateModel'];
 export type RifleSquadData = components['schemas']['SquadModel'];
 export type FireEffect = components['schemas']['FireEffect'];
 
-export type MoveActionRequest = components['schemas']['MoveActionRequest'];
-export type FireActionRequest = components['schemas']['FireActionRequest'];
-export type AssaultActionRequest =
-	components['schemas']['AssaultActionRequest'];
-export type PivotActionRequest = components['schemas']['PivotActionRequest'];
-export type ActionRequest =
-	| MoveActionRequest
-	| FireActionRequest
-	| AssaultActionRequest
-	| PivotActionRequest;
+export type MoveActionModel = components['schemas']['MoveActionModel'];
+export type FireActionModel = components['schemas']['FireActionModel'];
+export type AssaultActionModel = components['schemas']['AssaultActionModel'];
+export type PivotActionModel = components['schemas']['PivotActionModel'];
+export type ActionModel =
+	| MoveActionModel
+	| FireActionModel
+	| AssaultActionModel
+	| PivotActionModel;
 
-export type MoveActionLog = components['schemas']['MoveActionLog'];
-export type FireActionLog = components['schemas']['FireActionLog'];
-export type AssaultActionLog = components['schemas']['AssaultActionLog'];
-export type PivotActionLog = components['schemas']['PivotActionLog'];
-export type ActionLog =
-	| MoveActionLog
-	| FireActionLog
-	| AssaultActionLog
-	| PivotActionLog;
+export type MoveActionLogModel = components['schemas']['MoveActionLogModel'];
+export type FireActionLogModel = components['schemas']['FireActionLogModel'];
+export type AssaultActionLogModel =
+	components['schemas']['AssaultActionLogModel'];
+export type PivotActionLogModel = components['schemas']['PivotActionLogModel'];
+export type ActionLogModel =
+	| MoveActionLogModel
+	| FireActionLogModel
+	| AssaultActionLogModel
+	| PivotActionLogModel;
 
 /** Get all available scene names. */
 export async function GetSceneNames(): Promise<SceneManifest> {
@@ -56,7 +60,7 @@ export async function GetSceneNames(): Promise<SceneManifest> {
 /** Get current combat unit states for the game. */
 export async function GetViewStatesData(
 	jsonState: string
-): Promise<GameViewState> {
+): Promise<GameViewStateModel> {
 	const { data, error } = await client.POST('/api/game/view', {
 		body: jsonState
 	});
@@ -67,7 +71,7 @@ export async function GetViewStatesData(
 /** Get current combat unit states for the game. */
 export async function GetStatesInspectionData(
 	jsonState: string
-): Promise<GameStateInspection> {
+): Promise<GameStateInspectionModel> {
 	const { data, error } = await client.POST('/api/game/inspect', {
 		body: jsonState
 	});
@@ -78,7 +82,7 @@ export async function GetStatesInspectionData(
 /** Get the game tree inspection for the current game. */
 export async function GetGameTreeInspection(
 	jsonState: string
-): Promise<GameTreeInspection | null> {
+): Promise<GameTreeInspectionModel | null> {
 	const { data, error } = await client.POST('/api/game/inspect/game-tree', {
 		body: jsonState
 	});
@@ -101,7 +105,9 @@ export async function GetGameStateJSON(sceneNames: string[]): Promise<string> {
 }
 
 /** Get terrain data for the current game. */
-export async function GetMapData(jsonState: string): Promise<MapViewState> {
+export async function GetMapData(
+	jsonState: string
+): Promise<MapViewStateModel> {
 	const { data, error } = await client.POST('/api/game/map', {
 		body: jsonState
 	});
@@ -112,8 +118,8 @@ export async function GetMapData(jsonState: string): Promise<MapViewState> {
 
 export async function performActionAsync(
 	jsonState: string,
-	action: ActionRequest
-): Promise<GameViewStateResponse> {
+	action: ActionModel
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.POST('/api/game/perform', {
 		body: {
 			state: jsonState,
@@ -125,7 +131,7 @@ export async function performActionAsync(
 }
 
 /** Get action logs for the current game. */
-export async function GetLogs(jsonState: string): Promise<ActionLog[]> {
+export async function GetLogs(jsonState: string): Promise<ActionLogModel[]> {
 	const { data, error } = await client.POST('/api/game/logs', {
 		body: jsonState
 	});
@@ -137,7 +143,7 @@ export async function GetLogs(jsonState: string): Promise<ActionLog[]> {
 export async function UpdateTerrainData(
 	jsonState: string,
 	terrain: TerrainModel
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.PUT('/api/editor/terrain', {
 		body: {
 			state: jsonState,
@@ -152,7 +158,7 @@ export async function UpdateTerrainData(
 export async function AddTerrainData(
 	jsonState: string,
 	terrain: TerrainModel
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.POST('/api/editor/terrain', {
 		body: {
 			state: jsonState,
@@ -167,7 +173,7 @@ export async function AddTerrainData(
 export async function DeleteTerrainData(
 	jsonState: string,
 	terrainId: string
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.DELETE('/api/editor/terrain', {
 		params: {
 			query: {
@@ -184,7 +190,7 @@ export async function DeleteTerrainData(
 export async function AddUnit(
 	jsonState: string,
 	unit: RifleSquadData
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.POST('/api/editor/unit', {
 		body: {
 			state: jsonState,
@@ -199,7 +205,7 @@ export async function AddUnit(
 export async function UpdateUnit(
 	jsonState: string,
 	unit: RifleSquadData
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.PUT('/api/editor/unit', {
 		body: {
 			state: jsonState,
@@ -214,7 +220,7 @@ export async function UpdateUnit(
 export async function DeleteUnit(
 	jsonState: string,
 	unitId: string
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.DELETE('/api/editor/unit', {
 		params: {
 			query: {
@@ -231,7 +237,7 @@ export async function DeleteUnit(
 export async function UpdateWaypointsData(
 	jsonState: string,
 	waypoints: AiWaypointsModel
-): Promise<GameViewStateResponse> {
+): Promise<GameViewStateResponseModel> {
 	const { data, error } = await client.PUT('/api/editor/ai-waypoints', {
 		body: {
 			state: jsonState,

@@ -19,11 +19,11 @@ from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
-from webapi.models import (
+from webapi.models.inspection_models import GameStateInspectionModel
+from webapi.models.state_models import (
     FireEffectPair,
-    GameStateInspection,
-    GameViewState,
-    GameViewStateResponse,
+    GameViewStateModel,
+    GameViewStateResponseModel,
     SquadModel,
 )
 from webapi.services.scene_service import SceneService
@@ -32,7 +32,7 @@ from webapi.services.scene_service import SceneService
 class GameViewService:
 
     @staticmethod
-    def get_view_state(gs: GameState) -> GameViewState:
+    def get_view_state(gs: GameState) -> GameViewStateModel:
         """Get a view version of game state."""
         # Assume player faction is BLUE
         faction = InitiativeState.Faction.BLUE
@@ -75,13 +75,13 @@ class GameViewService:
         has_initiative = ActionSystem.get_initiative(gs) == faction
         winning_faction = ObjectiveSystem.get_winning_faction(gs)
         if winning_faction == faction:
-            objective_state = GameViewState.ObjectiveState.COMPLETED
+            objective_state = GameViewStateModel.ObjectiveState.COMPLETED
         elif winning_faction == None:
-            objective_state = GameViewState.ObjectiveState.INCOMPLETE
+            objective_state = GameViewStateModel.ObjectiveState.INCOMPLETE
         else:
-            objective_state = GameViewState.ObjectiveState.FAILED
+            objective_state = GameViewStateModel.ObjectiveState.FAILED
 
-        return GameViewState(
+        return GameViewStateModel(
             objective_state=objective_state,
             has_initiative=has_initiative,
             squads=squads,
@@ -89,8 +89,8 @@ class GameViewService:
         )
 
     @staticmethod
-    def get_view_state_response(gs: GameState) -> GameViewStateResponse:
-        return GameViewStateResponse(
+    def get_view_state_response(gs: GameState) -> GameViewStateResponseModel:
+        return GameViewStateResponseModel(
             view_state=GameViewService.get_view_state(gs),
             json_state=SceneService.serialize(gs),
         )
@@ -98,8 +98,8 @@ class GameViewService:
     @staticmethod
     def get_inspection(
         gs: GameState,
-    ) -> GameStateInspection:
-        los_polygons: list[GameStateInspection.LosPolygon] = []
+    ) -> GameStateInspectionModel:
+        los_polygons: list[GameStateInspectionModel.LosPolygon] = []
         unit_aspects: list[tuple[Vec2, list[float]]] = []
         for _, unit, transform, fire_controls in gs.query(
             CombatUnit, Transform, FireControls
@@ -120,7 +120,7 @@ class GameViewService:
                 fov_polygon = los_polygon
 
             los_polygons.append(
-                GameStateInspection.LosPolygon(
+                GameStateInspectionModel.LosPolygon(
                     faction=unit.faction,
                     los_polygon=los_polygon,
                     fov_polygon=fov_polygon,
@@ -148,7 +148,7 @@ class GameViewService:
             unit_id = actions[0].unit_id if actions else None
             move_candidates = [a.to for a in actions if a.unit_id == unit_id]
 
-        return GameStateInspection(
+        return GameStateInspectionModel(
             view_state=GameViewService.get_view_state(gs),
             los_polygons=los_polygons,
             move_candidates=move_candidates,

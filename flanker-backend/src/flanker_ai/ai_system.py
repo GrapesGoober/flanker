@@ -2,7 +2,11 @@ from dataclasses import dataclass
 from time import perf_counter
 
 from flanker_ai.agents.ai_random_heuristic_agent import AiRandomHeuristicAgent
-from flanker_ai.agents.ai_search_agent import AiSearchAgent
+from flanker_ai.agents.ai_search_agent import (
+    AiSearchAgent,
+    AiSearchAgentLog,
+    AiSearchTreeResult,
+)
 from flanker_ai.config_models import (
     AiConfigComponent,
     HeuristicPolicyConfig,
@@ -20,21 +24,22 @@ class _AiAgentInstanceComponent:
     agent: AiSearchAgent | AiRandomHeuristicAgent
 
 
-class AiSystem:
+@dataclass
+class AiActionResult:
+    faction: InitiativeState.Faction
+    action_runtime_seconds: float
+    action: Action
+    result: ActionResult
+    policy_log: AiSearchAgentLog | None
 
-    @dataclass
-    class ActionResult:
-        faction: InitiativeState.Faction
-        action_runtime_seconds: float
-        action: Action
-        result: ActionResult
-        policy_log: AiSearchAgent.AiSearchLog | None
+
+class AiSystem:
 
     @staticmethod
     def perform_action(
         gs: GameState,
         faction: InitiativeState.Faction,
-    ) -> ActionResult | None:
+    ) -> AiActionResult | None:
         """
         Performs an action and mutates the state for the given faction.
         This uses the AI config of that faction. Returns `None` if no
@@ -45,20 +50,13 @@ class AiSystem:
             return None
 
         start_time = perf_counter()
-        config_component: AiConfigComponent | None = None
-        for _, component in gs.query(AiConfigComponent):
-            if component.faction == faction:
-                config_component = component
-                break
-        if config_component == None:
-            raise ValueError(f"{AiConfigComponent} not found")
-
+        config_component = AiSystem._get_config(gs)
         match config_component.config:
             case HeuristicPolicyConfig():
                 result = AiRandomHeuristicAgent.perform_action(gs)
                 if result is None:
                     return None
-                return AiSystem.ActionResult(
+                return AiActionResult(
                     faction=faction,
                     action_runtime_seconds=perf_counter() - start_time,
                     action=result.action,
@@ -72,7 +70,7 @@ class AiSystem:
                 )
                 if result is None:
                     return None
-                return AiSystem.ActionResult(
+                return AiActionResult(
                     faction=faction,
                     action_runtime_seconds=perf_counter() - start_time,
                     action=result.action,
@@ -83,23 +81,14 @@ class AiSystem:
     @staticmethod
     def get_game_tree(
         gs: GameState,
-    ) -> AiSearchAgent.GameTreeResult | None:
+    ) -> AiSearchTreeResult | None:
         """
         Returns a game tree starting from this game node. This uses
         the faction's AI config of this game state. This does not
         mutate the state. Returns `None` if no actions are possible.
         """
 
-        faction = ActionSystem.get_initiative(gs)
-
-        config_component: AiConfigComponent | None = None
-        for _, component in gs.query(AiConfigComponent):
-            if component.faction == faction:
-                config_component = component
-                break
-        if config_component == None:
-            raise ValueError(f"{AiConfigComponent} not found")
-
+        config_component = AiSystem._get_config(gs)
         match config_component.config:
             case SearchPolicyConfig():
                 return AiSearchAgent.get_game_tree(
@@ -108,3 +97,11 @@ class AiSystem:
                 )
             case _:
                 raise ValueError("Supprts only search trees.")
+
+    @staticmethod
+    def _get_config(gs: GameState) -> AiConfigComponent:
+        faction = ActionSystem.get_initiative(gs)
+        for _, component in gs.query(AiConfigComponent):
+            if component.faction == faction:
+                return component
+        raise ValueError(f"{AiConfigComponent} not found")

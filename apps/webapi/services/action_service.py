@@ -7,16 +7,16 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
-from webapi.models import (
-    ActionRequest,
-    AssaultActionLog,
-    AssaultActionRequest,
-    FireActionLog,
-    FireActionRequest,
-    MoveActionLog,
-    MoveActionRequest,
-    PivotActionLog,
-    PivotActionRequest,
+from webapi.models.action_models import (
+    ActionModel,
+    AssaultActionLogModel,
+    AssaultActionModel,
+    FireActionLogModel,
+    FireActionModel,
+    MoveActionLogModel,
+    MoveActionModel,
+    PivotActionLogModel,
+    PivotActionModel,
 )
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
@@ -26,21 +26,27 @@ class ActionService:
     """Provides static methods to process player actions."""
 
     @staticmethod
-    def perform(gs: GameState, action_request: ActionRequest) -> None:
+    def perform(
+        gs: GameState,
+        action_request: ActionModel,
+    ) -> None:
         """Perform an action."""
 
         match action_request:
-            case MoveActionRequest():
+            case MoveActionModel():
                 ActionService._move(gs, action_request)
-            case PivotActionRequest():
+            case PivotActionModel():
                 ActionService._pivot(gs, action_request)
-            case FireActionRequest():
+            case FireActionModel():
                 ActionService._fire(gs, action_request)
-            case AssaultActionRequest():
+            case AssaultActionModel():
                 ActionService._assault(gs, action_request)
 
     @staticmethod
-    def _move(gs: GameState, body: MoveActionRequest) -> None:
+    def _move(
+        gs: GameState,
+        body: MoveActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=MoveAction(
@@ -52,7 +58,7 @@ class ActionService:
             raise ValueError(result)
         LoggingService.log(
             gs,
-            MoveActionLog(
+            MoveActionLogModel(
                 body=body,
                 reactive_fire_outcomes=result.reactive_fire_outcomes,
                 view_state=GameViewService.get_view_state(gs),
@@ -60,7 +66,10 @@ class ActionService:
         )
 
     @staticmethod
-    def _pivot(gs: GameState, body: PivotActionRequest) -> None:
+    def _pivot(
+        gs: GameState,
+        body: PivotActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=PivotAction(
@@ -72,7 +81,7 @@ class ActionService:
             raise ValueError(result)
         LoggingService.log(
             gs,
-            PivotActionLog(
+            PivotActionLogModel(
                 body=body,
                 reactive_fire_outcomes=result.reactive_fire_outcomes,
                 view_state=GameViewService.get_view_state(gs),
@@ -80,7 +89,10 @@ class ActionService:
         )
 
     @staticmethod
-    def _fire(gs: GameState, body: FireActionRequest) -> None:
+    def _fire(
+        gs: GameState,
+        body: FireActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=FireAction(
@@ -92,7 +104,7 @@ class ActionService:
             raise ValueError(result)
         LoggingService.log(
             gs,
-            FireActionLog(
+            FireActionLogModel(
                 body=body,
                 outcome=result.outcome,
                 view_state=GameViewService.get_view_state(gs),
@@ -100,7 +112,10 @@ class ActionService:
         )
 
     @staticmethod
-    def _assault(gs: GameState, body: AssaultActionRequest) -> None:
+    def _assault(
+        gs: GameState,
+        body: AssaultActionModel,
+    ) -> None:
         result = ActionSystem.perform(
             gs=gs,
             action=AssaultAction(
@@ -112,7 +127,7 @@ class ActionService:
             raise ValueError(result)
         LoggingService.log(
             gs,
-            AssaultActionLog(
+            AssaultActionLogModel(
                 body=body,
                 outcome=result.outcome,
                 reactive_fire_outcomes=result.reactive_fire_outcomes,

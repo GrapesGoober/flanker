@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type ActionLog, type GameViewState } from '$lib/api';
+	import { type ActionLogModel, type GameViewStateModel } from '$lib/api';
 	import {
 		BorderFriendlyUnit,
 		BorderHostileUnit,
@@ -8,12 +8,12 @@
 	} from '$lib/components';
 
 	type Props = {
-		logData: ActionLog[];
+		logData: ActionLogModel[];
 		index: number;
 	};
 
 	let props: Props = $props();
-	let currentView: GameViewState = $derived(
+	let currentView: GameViewStateModel = $derived(
 		props.logData[props.index]?.viewState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
@@ -21,7 +21,7 @@
 			fireEffectPairs: []
 		}
 	);
-	let currentAction: ActionLog | null = $derived(
+	let currentAction: ActionLogModel | null = $derived(
 		props.logData[props.index] ?? null
 	);
 </script>
@@ -56,7 +56,7 @@
 					{/if}
 				</g>
 
-				{#if currentAction.logType == 'FireActionLog'}
+				{#if currentAction.logType == 'FireActionLogModel'}
 					{@const targetUnit = currentView.squads.filter(
 						(unit) => unit.unitId == currentAction.body.targetId
 					)[0]}

@@ -255,42 +255,64 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        Action: components["schemas"]["MoveAction"] | components["schemas"]["PivotAction"] | components["schemas"]["FireAction"] | components["schemas"]["AssaultAction"];
-        ActionLog: components["schemas"]["MoveActionLog"] | components["schemas"]["PivotActionLog"] | components["schemas"]["FireActionLog"] | components["schemas"]["AssaultActionLog"];
-        ActionRequest: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
+        ActionLogModel: components["schemas"]["MoveActionLogModel"] | components["schemas"]["PivotActionLogModel"] | components["schemas"]["FireActionLogModel"] | components["schemas"]["AssaultActionLogModel"];
+        ActionModel: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
+        /** AiActionResultModel */
+        AiActionResultModel: {
+            faction: components["schemas"]["Faction"];
+            /** Actionruntimeseconds */
+            actionRuntimeSeconds: number;
+            policyLog: components["schemas"]["AiSearchLogModel"] | null;
+        };
         /**
-         * AiMatchResponse
+         * AiMatchResponseModel
          * @description Response model for AI match contains match result and final game state.
          */
-        AiMatchResponse: {
+        AiMatchResponseModel: {
             winner: components["schemas"]["Faction"] | null;
             /** Totalruntimeseconds */
             totalRuntimeSeconds: number;
             /** Actionresults */
-            actionResults: components["schemas"]["flanker_ai__ai_system__AiSystem__ActionResult"][];
+            actionResults: components["schemas"]["AiActionResultModel"][];
             /** Jsonstate */
             jsonState: string;
         };
-        /** AiSearchLog */
-        AiSearchLog: {
+        /** AiSearchLogModel */
+        AiSearchLogModel: {
             /** Treesize */
             treeSize: number;
             /** Treedepth */
             treeDepth: number;
         };
-        /** AiWaypointConfigRequest */
-        AiWaypointConfigRequest: {
+        /** AiWaypointConfigRequestModel */
+        AiWaypointConfigRequestModel: {
             faction: components["schemas"]["Faction"];
             /** Points */
             points: components["schemas"]["Vec2"][];
         };
+        /** AssaultActionLogModel */
+        AssaultActionLogModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "AssaultActionLogModel";
+            body: components["schemas"]["AssaultActionModel"];
+            outcome: components["schemas"]["AssaultOutcomes"] | null;
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
+            viewState: components["schemas"]["GameViewStateModel"];
+        };
         /**
-         * AssaultAction
-         * @description Moves a unit toward a target and performs an assault on arrival.
-         *     Movement draws reactive fires, which may interrupt the move.
-         *     The loser of the assault is killed.
+         * AssaultActionModel
+         * @description API model for a unit's assault action.
          */
-        AssaultAction: {
+        AssaultActionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            actionType: "AssaultActionModel";
             /**
              * Unitid
              * Format: uuid
@@ -301,46 +323,6 @@ export interface components {
              * Format: uuid
              */
             targetId: string;
-        };
-        /** AssaultActionLog */
-        AssaultActionLog: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            logType: "AssaultActionLog";
-            body: components["schemas"]["AssaultActionRequest"];
-            outcome: components["schemas"]["AssaultOutcomes"] | null;
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-            viewState: components["schemas"]["GameViewState"];
-        };
-        /**
-         * AssaultActionRequest
-         * @description Request model for a unit's assault action.
-         */
-        AssaultActionRequest: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            actionType: "AssaultActionRequest";
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            /**
-             * Targetid
-             * Format: uuid
-             */
-            targetId: string;
-        };
-        /** AssaultActionResult */
-        AssaultActionResult: {
-            outcome: components["schemas"]["AssaultOutcomes"] | null;
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
         };
         /**
          * AssaultOutcomes
@@ -364,12 +346,12 @@ export interface components {
         Body_ai_config_waypoints_api_editor_ai_waypoints_put: {
             /** State */
             state: string;
-            configRequest: components["schemas"]["AiWaypointConfigRequest"];
+            configRequest: components["schemas"]["AiWaypointConfigRequestModel"];
         };
         /** Body_perform_action_api_game_perform_post */
         Body_perform_action_api_game_perform_post: {
             /** Action */
-            action: components["schemas"]["MoveActionRequest"] | components["schemas"]["PivotActionRequest"] | components["schemas"]["FireActionRequest"] | components["schemas"]["AssaultActionRequest"];
+            action: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
             /** State */
             state: string;
         };
@@ -386,17 +368,75 @@ export interface components {
             unit: components["schemas"]["SquadModel"];
         };
         /**
+         * ExpectimaxTreeEdgeModel
+         * @description An expectimax action and its probabilistic outcomes.
+         */
+        ExpectimaxTreeEdgeModel: {
+            action: components["schemas"]["ActionModel"];
+            /** Outcomes */
+            outcomes: components["schemas"]["ExpectimaxTreeOutcomeModel"][];
+            /** Expectedscore */
+            expectedScore: number;
+        };
+        /**
+         * ExpectimaxTreeInspectionModel
+         * @description Detailed inspection debugging data of the Expectimax game tree.
+         */
+        ExpectimaxTreeInspectionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "ExpectimaxTreeInspectionModel";
+            bestAction: components["schemas"]["ActionModel"];
+            treeRoot: components["schemas"]["ExpectimaxTreeNodeModel"];
+        };
+        /**
+         * ExpectimaxTreeNodeModel
+         * @description An expectimax tree node.
+         */
+        ExpectimaxTreeNodeModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
+            /** Children */
+            children: components["schemas"]["ExpectimaxTreeEdgeModel"][];
+        };
+        /**
+         * ExpectimaxTreeOutcomeModel
+         * @description A probabilistic outcome of an expectimax action.
+         */
+        ExpectimaxTreeOutcomeModel: {
+            /** Probability */
+            probability: number;
+            node: components["schemas"]["ExpectimaxTreeNodeModel"];
+            /** Score */
+            score: number;
+        };
+        /**
          * Faction
          * @enum {string}
          */
         Faction: "BLUE" | "RED";
+        /** FireActionLogModel */
+        FireActionLogModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "FireActionLogModel";
+            body: components["schemas"]["FireActionModel"];
+            outcome: components["schemas"]["FireOutcomes"] | null;
+            viewState: components["schemas"]["GameViewStateModel"];
+        };
         /**
-         * FireAction
-         * @description Fires at an enemy unit. The target must be within line of sight.
-         *     Fire modifies the target's status and creates a persistent fire effect.
-         *     A failed fire can lose initiative.
+         * FireActionModel
+         * @description API model for a unit's fire action.
          */
-        FireAction: {
+        FireActionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            actionType: "FireActionModel";
             /**
              * Unitid
              * Format: uuid
@@ -407,42 +447,6 @@ export interface components {
              * Format: uuid
              */
             targetId: string;
-        };
-        /** FireActionLog */
-        FireActionLog: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            logType: "FireActionLog";
-            body: components["schemas"]["FireActionRequest"];
-            outcome: components["schemas"]["FireOutcomes"] | null;
-            viewState: components["schemas"]["GameViewState"];
-        };
-        /**
-         * FireActionRequest
-         * @description Request model for a unit's fire action.
-         */
-        FireActionRequest: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            actionType: "FireActionRequest";
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            /**
-             * Targetid
-             * Format: uuid
-             */
-            targetId: string;
-        };
-        /** FireActionResult */
-        FireActionResult: {
-            outcome: components["schemas"]["FireOutcomes"] | null;
         };
         /**
          * FireEffect
@@ -464,11 +468,11 @@ export interface components {
          */
         FireOutcomes: "MISS" | "PIN" | "SUPPRESS" | "KILL";
         /**
-         * GameStateInspection
+         * GameStateInspectionModel
          * @description Detailed inspection debugging data of the game state.
          */
-        GameStateInspection: {
-            viewState: components["schemas"]["GameViewState"];
+        GameStateInspectionModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Lospolygons */
             losPolygons: components["schemas"]["LosPolygon"][];
             /** Movecandidates */
@@ -479,12 +483,12 @@ export interface components {
                 number[]
             ][];
         };
-        GameTreeInspection: components["schemas"]["MinimaxTreeInspection"] | components["schemas"]["MctsTreeInspection"];
+        GameTreeInspectionModel: components["schemas"]["MinimaxTreeInspectionModel"] | components["schemas"]["MctsTreeInspectionModel"] | components["schemas"]["ExpectimaxTreeInspectionModel"];
         /**
-         * GameViewState
+         * GameViewStateModel
          * @description Simplified view model of the game state.
          */
-        GameViewState: {
+        GameViewStateModel: {
             objectiveState: components["schemas"]["ObjectiveState"];
             /** Hasinitiative */
             hasInitiative: boolean;
@@ -494,11 +498,11 @@ export interface components {
             fireEffectPairs: components["schemas"]["FireEffectPair"][];
         };
         /**
-         * GameViewStateResponse
+         * GameViewStateResponseModel
          * @description Response model for actions contains view state and mutated game state.
          */
-        GameViewStateResponse: {
-            viewState: components["schemas"]["GameViewState"];
+        GameViewStateResponseModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Jsonstate */
             jsonState: string;
         };
@@ -516,182 +520,143 @@ export interface components {
             fovPolygon: components["schemas"]["Vec2"][];
         };
         /**
-         * MapViewState
+         * MapViewStateModel
          * @description Simplified view model of the game map.
          */
-        MapViewState: {
+        MapViewStateModel: {
             /** Terrains */
             terrains: components["schemas"]["TerrainModel"][];
             /** Boundary */
             boundary: components["schemas"]["Vec2"][];
         };
         /**
-         * MctsTreeInspection
+         * MctsTreeEdgeModel
+         * @description An MCTS tree edge.
+         */
+        MctsTreeEdgeModel: {
+            action: components["schemas"]["ActionModel"];
+            node: components["schemas"]["MctsTreeNodeModel"];
+        };
+        /**
+         * MctsTreeInspectionModel
          * @description Detailed inspection debugging data of the MCTS game tree.
          */
-        MctsTreeInspection: {
+        MctsTreeInspectionModel: {
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
              */
-            type: "MctsTreeInspection";
-            bestAction: components["schemas"]["ActionRequest"];
-            treeRoot: components["schemas"]["MctsTreeInspectionNode"];
+            type: "MctsTreeInspectionModel";
+            bestAction: components["schemas"]["ActionModel"];
+            treeRoot: components["schemas"]["MctsTreeNodeModel"];
         };
         /**
-         * MctsTreeInspectionEdge
-         * @description An MCTS tree edge.
-         */
-        MctsTreeInspectionEdge: {
-            action: components["schemas"]["ActionRequest"];
-            node: components["schemas"]["MctsTreeInspectionNode"];
-        };
-        /**
-         * MctsTreeInspectionNode
+         * MctsTreeNodeModel
          * @description An MCTS tree node.
          */
-        MctsTreeInspectionNode: {
-            viewState: components["schemas"]["GameViewState"];
+        MctsTreeNodeModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Children */
-            children: components["schemas"]["MctsTreeInspectionEdge"][];
+            children: components["schemas"]["MctsTreeEdgeModel"][];
             /** Totalvisits */
             totalVisits: number;
             /** Totalvalue */
             totalValue: number;
         };
         /**
-         * MinimaxTreeInspection
-         * @description Detailed inspection debugging data of the Minimax game tree.
-         */
-        MinimaxTreeInspection: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            type: "MinimaxTreeInspection";
-            bestAction: components["schemas"]["ActionRequest"];
-            treeRoot: components["schemas"]["MinimaxTreeInspectionNode"];
-        };
-        /**
-         * MinimaxTreeInspectionEdge
+         * MinimaxTreeEdgeModel
          * @description A Minimax tree edge.
          */
-        MinimaxTreeInspectionEdge: {
-            action: components["schemas"]["ActionRequest"];
-            node: components["schemas"]["MinimaxTreeInspectionNode"];
+        MinimaxTreeEdgeModel: {
+            action: components["schemas"]["ActionModel"];
+            node: components["schemas"]["MinimaxTreeNodeModel"];
             /** Bestscore */
             bestScore: number;
         };
         /**
-         * MinimaxTreeInspectionNode
+         * MinimaxTreeInspectionModel
+         * @description Detailed inspection debugging data of the Minimax game tree.
+         */
+        MinimaxTreeInspectionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "MinimaxTreeInspectionModel";
+            bestAction: components["schemas"]["ActionModel"];
+            treeRoot: components["schemas"]["MinimaxTreeNodeModel"];
+        };
+        /**
+         * MinimaxTreeNodeModel
          * @description A Minimax tree node.
          */
-        MinimaxTreeInspectionNode: {
-            viewState: components["schemas"]["GameViewState"];
+        MinimaxTreeNodeModel: {
+            viewState: components["schemas"]["GameViewStateModel"];
             /** Children */
-            children: components["schemas"]["MinimaxTreeInspectionEdge"][];
+            children: components["schemas"]["MinimaxTreeEdgeModel"][];
+        };
+        /** MoveActionLogModel */
+        MoveActionLogModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "MoveActionLogModel";
+            body: components["schemas"]["MoveActionModel"];
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
+            viewState: components["schemas"]["GameViewStateModel"];
         };
         /**
-         * MoveAction
-         * @description Moves a unit to a destination. This pivots toward the movement path
-         *     first. Movement draws reactive fires, which may interrupt the move
-         *     and can lose initiative.
+         * MoveActionModel
+         * @description API model for a unit's move action.
          */
-        MoveAction: {
+        MoveActionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            actionType: "MoveActionModel";
             /**
              * Unitid
              * Format: uuid
              */
             unitId: string;
             to: components["schemas"]["Vec2"];
-        };
-        /** MoveActionLog */
-        MoveActionLog: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            logType: "MoveActionLog";
-            body: components["schemas"]["MoveActionRequest"];
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-            viewState: components["schemas"]["GameViewState"];
-        };
-        /**
-         * MoveActionRequest
-         * @description Request model for a unit's move action.
-         */
-        MoveActionRequest: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            actionType: "MoveActionRequest";
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            to: components["schemas"]["Vec2"];
-        };
-        /** MoveActionResult */
-        MoveActionResult: {
-            /** Moveinterrupted */
-            moveInterrupted: boolean;
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
         };
         /**
          * ObjectiveState
          * @enum {string}
          */
         ObjectiveState: "INCOMPLETE" | "COMPLETED" | "FAILED";
+        /** PivotActionLogModel */
+        PivotActionLogModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "PivotActionLogModel";
+            body: components["schemas"]["PivotActionModel"];
+            /** Reactivefireoutcomes */
+            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
+            viewState: components["schemas"]["GameViewStateModel"];
+        };
         /**
-         * PivotAction
-         * @description Pivots a unit toward a destination. Pivoting draws reactive fires
-         *     and can lose initiative. Pivoting always complete regardless
+         * PivotActionModel
+         * @description API model for a unit's pivot action.
          */
-        PivotAction: {
+        PivotActionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            actionType: "PivotActionModel";
             /**
              * Unitid
              * Format: uuid
              */
             unitId: string;
             to: components["schemas"]["Vec2"];
-        };
-        /** PivotActionLog */
-        PivotActionLog: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            logType: "PivotActionLog";
-            body: components["schemas"]["PivotActionRequest"];
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
-            viewState: components["schemas"]["GameViewState"];
-        };
-        /**
-         * PivotActionRequest
-         * @description Request model for a unit's pivot action.
-         */
-        PivotActionRequest: {
-            /**
-             * @description discriminator enum property added by openapi-typescript
-             * @enum {string}
-             */
-            actionType: "PivotActionRequest";
-            /**
-             * Unitid
-             * Format: uuid
-             */
-            unitId: string;
-            to: components["schemas"]["Vec2"];
-        };
-        /** PivotActionResult */
-        PivotActionResult: {
-            /** Reactivefireoutcomes */
-            reactiveFireOutcomes: components["schemas"]["FireOutcomes"][];
         };
         /** SceneManifestResponse */
         SceneManifestResponse: {
@@ -742,14 +707,14 @@ export interface components {
             degrees: number;
             /** Vertices */
             vertices: components["schemas"]["Vec2"][];
-            terrainType: components["schemas"]["Types"];
+            terrainType: components["schemas"]["TerrainType"];
         };
         /**
-         * Types
+         * TerrainType
          * @description Supported terrain types.
          * @enum {string}
          */
-        Types: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
+        TerrainType: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -773,16 +738,6 @@ export interface components {
             /** Y */
             y: number;
         };
-        /** ActionResult */
-        flanker_ai__ai_system__AiSystem__ActionResult: {
-            faction: components["schemas"]["Faction"];
-            /** Actionruntimeseconds */
-            actionRuntimeSeconds: number;
-            action: components["schemas"]["Action"];
-            result: components["schemas"]["flanker_core__models__actions__ActionResult"];
-            policyLog: components["schemas"]["AiSearchLog"] | null;
-        };
-        flanker_core__models__actions__ActionResult: components["schemas"]["MoveActionResult"] | components["schemas"]["PivotActionResult"] | components["schemas"]["FireActionResult"] | components["schemas"]["AssaultActionResult"];
     };
     responses: never;
     parameters: never;
@@ -862,7 +817,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewState"];
+                    "application/json": components["schemas"]["GameViewStateModel"];
                 };
             };
             /** @description Validation Error */
@@ -895,7 +850,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameStateInspection"];
+                    "application/json": components["schemas"]["GameStateInspectionModel"];
                 };
             };
             /** @description Validation Error */
@@ -928,7 +883,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameTreeInspection"] | null;
+                    "application/json": components["schemas"]["GameTreeInspectionModel"] | null;
                 };
             };
             /** @description Validation Error */
@@ -961,7 +916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MapViewState"];
+                    "application/json": components["schemas"]["MapViewStateModel"];
                 };
             };
             /** @description Validation Error */
@@ -994,7 +949,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1027,7 +982,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActionLog"][];
+                    "application/json": components["schemas"]["ActionLogModel"][];
                 };
             };
             /** @description Validation Error */
@@ -1060,7 +1015,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AiMatchResponse"];
+                    "application/json": components["schemas"]["AiMatchResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1093,7 +1048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1126,7 +1081,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1159,7 +1114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1194,7 +1149,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1227,7 +1182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1260,7 +1215,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */
@@ -1295,7 +1250,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GameViewStateResponse"];
+                    "application/json": components["schemas"]["GameViewStateResponseModel"];
                 };
             };
             /** @description Validation Error */

@@ -35,31 +35,37 @@ from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
 
 
+@dataclass
+class AiSearchAgentLog:
+    tree_size: int
+    tree_depth: int
+
+
+@dataclass
+class AiSearchActionResult:
+    action: Action
+    result: ActionResult
+    search_log: AiSearchAgentLog
+
+
+@dataclass
+class AiSearchTreeResult:
+    best_action: Action
+    game_tree: (
+        ExpectimaxTreeNode[Action] | MinimaxTreeNode[Action] | MctsTreeNode[Action]
+    )
+
+
 class AiSearchAgent:
-
-    @dataclass
-    class AiSearchLog:
-        tree_size: int
-        tree_depth: int
-
-    @dataclass
-    class ActionResult:
-        action: Action
-        result: ActionResult
-        search_log: AiSearchAgent.AiSearchLog
-
-    @dataclass
-    class GameTreeResult:
-        best_action: Action
-        game_tree: (
-            ExpectimaxTreeNode[Action] | MinimaxTreeNode[Action] | MctsTreeNode[Action]
-        )
 
     @staticmethod
     def get_state(
         gs: GameState,
         config: SearchPolicyConfig,
     ) -> ISearchState[Action]:
+        """
+        Returns an `ISearchState` object initialized to this state and config.
+        """
 
         match config.state:
             case UnabstractedStateConfig():
@@ -84,7 +90,7 @@ class AiSearchAgent:
     def perform_action(
         gs: GameState,
         config: SearchPolicyConfig,
-    ) -> AiSearchAgent.ActionResult | None:
+    ) -> AiSearchActionResult | None:
         """
         Performs an action and return its result.
         Returns `None` if no legal actions possible.
@@ -96,20 +102,20 @@ class AiSearchAgent:
         if action == None:
             return None
 
-        search_log: AiSearchAgent.AiSearchLog
+        search_log: AiSearchAgentLog
         match (config.policy, log):
             case PolicyConfig.ExpectimaxPolicy(), ExpectimaxSearchLog():
-                search_log = AiSearchAgent.AiSearchLog(
+                search_log = AiSearchAgentLog(
                     tree_size=log.tree_size,
                     tree_depth=config.policy.depth,
                 )
             case PolicyConfig.MinimaxPolicy(), MinimaxSearchLog():
-                search_log = AiSearchAgent.AiSearchLog(
+                search_log = AiSearchAgentLog(
                     tree_size=log.tree_size,
                     tree_depth=config.policy.depth,
                 )
             case PolicyConfig.MctsPolicy(), MctsSearchLog():
-                search_log = AiSearchAgent.AiSearchLog(
+                search_log = AiSearchAgentLog(
                     tree_size=config.policy.max_iterations,
                     tree_depth=log.tree_depth,
                 )
@@ -122,7 +128,7 @@ class AiSearchAgent:
 
         # Prevent mutation shenanigans by returning a copy
         return deepcopy(
-            AiSearchAgent.ActionResult(
+            AiSearchActionResult(
                 action=action,
                 result=result,
                 search_log=search_log,
@@ -133,7 +139,7 @@ class AiSearchAgent:
     def get_game_tree(
         gs: GameState,
         config: SearchPolicyConfig,
-    ) -> GameTreeResult | None:
+    ) -> AiSearchTreeResult | None:
         """
         Returns the expanded game tree given the state. This uses the
         AI config of the state. This does not perform the action.
@@ -150,9 +156,9 @@ class AiSearchAgent:
             return None
 
         if log.tree_root == None:
-            raise RuntimeError("The policy didn't return tree when requested!")
+            raise RuntimeError("The policy didn't return tree!")
 
-        return AiSearchAgent.GameTreeResult(
+        return AiSearchTreeResult(
             best_action=action,
             game_tree=log.tree_root,
         )
@@ -170,6 +176,11 @@ class AiSearchAgent:
             | MctsSearchLog[Action]
         ),
     ]:
+        """
+        Helper method to dispatch to policy given the config to
+        get its policy's best action and policy's log.
+        """
+
         match config.policy:
             case PolicyConfig.ExpectimaxPolicy():
                 return ExpectimaxPolicy[Action].get_action(

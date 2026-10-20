@@ -2,15 +2,17 @@
 	import { page } from '$app/state';
 	import {
 		GetMapData,
-		type GameTreeInspection,
-		type MapViewState
+		type GameTreeInspectionModel,
+		type MapViewStateModel
 	} from '$lib/api';
 	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
-	import TreeNode from './tree-node.svelte';
+	import ExpectimaxTreeNode from './expectimax-tree-node.svelte';
+	import MctsTreeNode from './mcts-tree-node.svelte';
+	import MinimaxTreeNode from './minimax-tree-node.svelte';
 
-	let gameTree: GameTreeInspection | null = $state(null);
-	let mapData: MapViewState = $state({ terrains: [], boundary: [] });
+	let gameTree: GameTreeInspectionModel | null = $state(null);
+	let mapData: MapViewStateModel = $state({ terrains: [], boundary: [] });
 
 	onMount(async () => {
 		const gameKey = page.params['gameKey'] as string;
@@ -27,11 +29,14 @@
 <h1>Game tree</h1>
 
 {#if gameTree}
-	{#if gameTree.type === 'MctsTreeInspection'}
-		<p>Best action</p>
-		<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
-		<TreeNode node={gameTree.treeRoot} action={null} {mapData} />
-	{:else}
-		<p>Whoops, only MCTS tree supported.</p>
+	<span>Best action</span>
+	<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
+	<span>Root Node</span>
+	{#if gameTree.type === 'MctsTreeInspectionModel'}
+		<MctsTreeNode node={gameTree.treeRoot} {mapData} />
+	{:else if gameTree.type === 'MinimaxTreeInspectionModel'}
+		<MinimaxTreeNode node={gameTree.treeRoot} {mapData} />
+	{:else if gameTree.type === 'ExpectimaxTreeInspectionModel'}
+		<ExpectimaxTreeNode node={gameTree.treeRoot} {mapData} />
 	{/if}
 {/if}

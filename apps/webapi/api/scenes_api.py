@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from webapi.models import SceneManifestResponse
+from webapi.models.state_models import SceneManifestResponse
 from webapi.services.scene_service import SceneService
 
 router = APIRouter(prefix="/api/scenes")

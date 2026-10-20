@@ -3,21 +3,21 @@
 	import {
 		GetLogs,
 		GetMapData,
-		type ActionLog,
-		type MapViewState
+		type ActionLogModel,
+		type MapViewStateModel
 	} from '$lib/api';
 	import { SvgMap, TerrainLayer } from '$lib/components';
 	import { loadGameLocal } from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import LogViewLayer from './log-view-layer.svelte';
 
-	let logData: ActionLog[] = $state([]);
+	let logData: ActionLogModel[] = $state([]);
 	let index: number = $state(0);
-	let mapData: MapViewState = $state({
+	let mapData: MapViewStateModel = $state({
 		terrains: [],
 		boundary: []
 	});
-	let action: ActionLog | null = $derived(logData[index] ?? null);
+	let action: ActionLogModel | null = $derived(logData[index] ?? null);
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {

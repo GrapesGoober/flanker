@@ -11,13 +11,14 @@ from uuid import UUID
 
 import requests
 from experiment_models import (
+    AiActionResultRecordModel,
+    AiSearchLogRecordModel,
     ExperimentMetadata,
     ExperimentSetConfig,
-    MatchResult,
+    MatchResultRecordModel,
     SceneManifest,
 )
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
@@ -47,17 +48,32 @@ class _MatchConfig:
     target: Literal["local"] | str
 
 
-class _MatchResultApiResponse(BaseModel):
-    """Response model from WebAPI, kept separate from MatchResult."""
-
+class _CamelCaseConfig:
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
+        from_attributes=True,
     )
+
+
+class _AiSearchLogApiResponse(BaseModel, _CamelCaseConfig):
+    tree_size: int
+    tree_depth: int
+
+
+class _AiActionResultApiResponse(BaseModel, _CamelCaseConfig):
+    faction: InitiativeState.Faction
+    action_runtime_seconds: float
+    policy_log: _AiSearchLogApiResponse | None
+
+
+class _MatchResultApiResponse(BaseModel, _CamelCaseConfig):
+    """Response model from WebAPI, kept separate from MatchResult."""
 
     winner: InitiativeState.Faction | None
     total_runtime_seconds: float
-    action_results: list[AiSystem.ActionResult]
+    action_results: list[_AiActionResultApiResponse]
+    json_state: str
 
 
 def main() -> None:
@@ -115,12 +131,31 @@ def get_config(config_path: str) -> ExperimentSetConfig:
 
 def run_match(
     match_config: _MatchConfig,
-) -> tuple[MatchResult, _MatchConfig]:
+) -> tuple[MatchResultRecordModel, _MatchConfig]:
     print(f"Running match {match_config.name}")
 
     # Run locally if config says so
     if match_config.target == "local":
         result = AiMatch.run_match(match_config.gs)
+        match_result = MatchResultRecordModel(
+            winner=result.winner,
+            total_runtime_seconds=result.total_runtime_seconds,
+            action_results=[
+                AiActionResultRecordModel(
+                    faction=result.faction,
+                    action_runtime_seconds=result.action_runtime_seconds,
+                    policy_log=(
+                        AiSearchLogRecordModel(
+                            tree_size=result.policy_log.tree_size,
+                            tree_depth=result.policy_log.tree_depth,
+                        )
+                        if result.policy_log
+                        else None
+                    ),
+                )
+                for result in result.action_results
+            ],
+        )
 
     # Otherwise, assume the match.target is a Flanker WebAPI URL
     else:
@@ -146,15 +181,27 @@ def run_match(
                 sleep(30)
 
         result = _MatchResultApiResponse.model_validate_json(response.text)
-
-    return (
-        MatchResult(
+        match_result = MatchResultRecordModel(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
-            action_results=result.action_results,
-        ),
-        match_config,
-    )
+            action_results=[
+                AiActionResultRecordModel(
+                    faction=result.faction,
+                    action_runtime_seconds=result.action_runtime_seconds,
+                    policy_log=(
+                        AiSearchLogRecordModel(
+                            tree_size=result.policy_log.tree_size,
+                            tree_depth=result.policy_log.tree_depth,
+                        )
+                        if result.policy_log
+                        else None
+                    ),
+                )
+                for result in result.action_results
+            ],
+        )
+
+    return (match_result, match_config)
 
 
 def get_experiments(
@@ -303,7 +350,7 @@ def update_metadata(
 
 def append_results(
     experiment_name: str,
-    result: MatchResult,
+    result: MatchResultRecordModel,
     results_root_path: str,
 ) -> None:
     file_path = Path(results_root_path) / f"{experiment_name}.jsonl"

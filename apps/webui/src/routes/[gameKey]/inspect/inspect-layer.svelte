@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { GameStateInspection, Vec2 } from '$lib/api';
+	import type { GameStateInspectionModel, Vec2 } from '$lib/api';
 	import { RifleSquad } from '$lib/components';
 	import { GetClosedPath } from '$lib/map-utils';
 
 	type Props = {
-		inspectionData: GameStateInspection;
+		inspectionData: GameStateInspectionModel;
 		losPolygonDrawMode: 'No Draw' | 'LOS' | 'FOV';
 		drawMoveCandidates: boolean;
 		drawUnitTexts: boolean;

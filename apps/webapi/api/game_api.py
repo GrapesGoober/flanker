@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Body
-from webapi.models import (
-    ActionLog,
-    ActionRequest,
-    AiMatchResponse,
-    GameStateInspection,
-    GameTreeInspection,
-    GameViewState,
-    GameViewStateResponse,
-    MapViewState,
+from webapi.models.action_models import ActionLogModel, ActionModel
+from webapi.models.inspection_models import (
+    GameStateInspectionModel,
+    GameTreeInspectionModel,
+)
+from webapi.models.state_models import (
+    AiMatchResponseModel,
+    GameViewStateModel,
+    GameViewStateResponseModel,
+    MapViewStateModel,
 )
 from webapi.services.action_service import ActionService
 from webapi.services.ai_service import AiService
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/api/game")
 @router.post("/view")
 async def get_view_state(
     state: str = Body(...),
-) -> GameViewState:
+) -> GameViewStateModel:
     """Get all the scene's view state for the player faction."""
     gs = SceneService.deserialize(state)
     return GameViewService.get_view_state(gs)
@@ -31,7 +32,7 @@ async def get_view_state(
 @router.post("/inspect")
 async def get_state_inspection(
     state: str = Body(...),
-) -> GameStateInspection:
+) -> GameStateInspectionModel:
     """Get the detailed inspection data of the scene."""
     gs = SceneService.deserialize(state)
     return GameViewService.get_inspection(gs)
@@ -40,7 +41,7 @@ async def get_state_inspection(
 @router.post("/inspect/game-tree")
 async def get_tree_inspection(
     state: str = Body(...),
-) -> GameTreeInspection | None:
+) -> GameTreeInspectionModel | None:
     """Get the detailed game tree given the state."""
     gs = SceneService.deserialize(state)
     return AiService.get_tree_inspection(gs)
@@ -49,7 +50,7 @@ async def get_tree_inspection(
 @router.post("/map")
 async def get_map(
     state: str = Body(...),
-) -> MapViewState:
+) -> MapViewStateModel:
     """Get map data from a scene."""
     gs = SceneService.deserialize(state)
     return TerrainService.get_map(gs)
@@ -57,9 +58,9 @@ async def get_map(
 
 @router.post("/perform")
 async def perform_action(
-    action: ActionRequest = Body(...),
+    action: ActionModel = Body(...),
     state: str = Body(...),
-) -> GameViewStateResponse:
+) -> GameViewStateResponseModel:
     """Move a unit and return updated rifle squads."""
     gs = SceneService.deserialize(state)
     ActionService.perform(gs, action)
@@ -70,7 +71,7 @@ async def perform_action(
 @router.post("/logs")
 async def get_logs(
     state: str = Body(...),
-) -> list[ActionLog]:
+) -> list[ActionLogModel]:
     gs = SceneService.deserialize(state)
     return LoggingService.get_logs(gs)
 
@@ -78,6 +79,6 @@ async def get_logs(
 @router.post("/ai-play")
 async def run_match(
     state: str = Body(...),
-) -> AiMatchResponse:
+) -> AiMatchResponseModel:
     gs = SceneService.deserialize(state)
     return AiService.run_match(gs)

@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from flanker_ai.ai_match import AiMatch
-from flanker_ai.ai_system import AiSystem
+from flanker_ai.ai_system import AiActionResult, AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -27,30 +27,36 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
-from webapi.models import (
-    ActionLog,
-    ActionRequest,
-    AiMatchResponse,
-    AiWaypointConfigRequest,
-    AssaultActionLog,
-    AssaultActionRequest,
-    ExpectimaxTreeInspection,
-    ExpectimaxTreeInspectionEdge,
-    ExpectimaxTreeInspectionNode,
-    ExpectimaxTreeInspectionOutcome,
-    FireActionLog,
-    FireActionRequest,
-    GameTreeInspection,
-    MctsTreeInspection,
-    MctsTreeInspectionEdge,
-    MctsTreeInspectionNode,
-    MinimaxTreeInspection,
-    MinimaxTreeInspectionEdge,
-    MinimaxTreeInspectionNode,
-    MoveActionLog,
-    MoveActionRequest,
-    PivotActionLog,
-    PivotActionRequest,
+from webapi.models.action_models import (
+    ActionLogModel,
+    ActionModel,
+    AssaultActionLogModel,
+    AssaultActionModel,
+    FireActionLogModel,
+    FireActionModel,
+    MoveActionLogModel,
+    MoveActionModel,
+    PivotActionLogModel,
+    PivotActionModel,
+)
+from webapi.models.inspection_models import (
+    ExpectimaxTreeEdgeModel,
+    ExpectimaxTreeInspectionModel,
+    ExpectimaxTreeNodeModel,
+    ExpectimaxTreeOutcomeModel,
+    GameTreeInspectionModel,
+    MctsTreeEdgeModel,
+    MctsTreeInspectionModel,
+    MctsTreeNodeModel,
+    MinimaxTreeEdgeModel,
+    MinimaxTreeInspectionModel,
+    MinimaxTreeNodeModel,
+)
+from webapi.models.state_models import (
+    AiActionResultModel,
+    AiMatchResponseModel,
+    AiSearchLogModel,
+    AiWaypointConfigRequestModel,
 )
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
@@ -67,7 +73,7 @@ class AiService:
     ) -> None:
         """Runs the default RED AI for entire RED initiative."""
 
-        action_results: list[AiSystem.ActionResult] = []
+        action_results: list[AiActionResult] = []
         gs_snapshots: list[GameState] = []
         for _ in range(max_actions):
             if ActionSystem.get_initiative(gs) != InitiativeState.Faction.RED:
@@ -95,15 +101,15 @@ class AiService:
     @staticmethod
     def get_tree_inspection(
         gs: GameState,
-    ) -> GameTreeInspection | None:
+    ) -> GameTreeInspectionModel | None:
         tree_result = AiSystem.get_game_tree(gs)
         if tree_result == None:
             return None
 
         match tree_result.game_tree:
             case MctsTreeNode():
-                return MctsTreeInspection(
-                    type="MctsTreeInspection",
+                return MctsTreeInspectionModel(
+                    type="MctsTreeInspectionModel",
                     best_action=AiService._map_action_to_requests(
                         tree_result.best_action,
                     ),
@@ -112,8 +118,8 @@ class AiService:
                     ),
                 )
             case ExpectimaxTreeNode():
-                return ExpectimaxTreeInspection(
-                    type="ExpectimaxTreeInspection",
+                return ExpectimaxTreeInspectionModel(
+                    type="ExpectimaxTreeInspectionModel",
                     best_action=AiService._map_action_to_requests(
                         tree_result.best_action,
                     ),
@@ -122,8 +128,8 @@ class AiService:
                     ),
                 )
             case MinimaxTreeNode():
-                return MinimaxTreeInspection(
-                    type="MinimaxTreeInspection",
+                return MinimaxTreeInspectionModel(
+                    type="MinimaxTreeInspectionModel",
                     best_action=AiService._map_action_to_requests(
                         tree_result.best_action,
                     ),
@@ -133,7 +139,7 @@ class AiService:
                 )
 
     @staticmethod
-    def run_match(gs: GameState) -> AiMatchResponse:
+    def run_match(gs: GameState) -> AiMatchResponseModel:
         """Runs a match where 2 AI agents plays against each other."""
         result = AiMatch.run_match(gs)
         AiService._log_ai_action_results(
@@ -141,17 +147,31 @@ class AiService:
             results=result.action_results,
             gs_snapshots=result.gs_snapshots,
         )
-        return AiMatchResponse(
+        return AiMatchResponseModel(
             winner=result.winner,
             total_runtime_seconds=result.total_runtime_seconds,
-            action_results=result.action_results,
+            action_results=[
+                AiActionResultModel(
+                    faction=result.faction,
+                    action_runtime_seconds=result.action_runtime_seconds,
+                    policy_log=(
+                        AiSearchLogModel(
+                            tree_size=result.policy_log.tree_size,
+                            tree_depth=result.policy_log.tree_depth,
+                        )
+                        if result.policy_log
+                        else None
+                    ),
+                )
+                for result in result.action_results
+            ],
             json_state=SceneService.serialize(gs),
         )
 
     @staticmethod
     def set_ai_waypoints_coordinates(
         gs: GameState,
-        request: AiWaypointConfigRequest,
+        request: AiWaypointConfigRequestModel,
     ) -> None:
         for _, config_component in gs.query(AiConfigComponent):
             if config_component.faction != request.faction:
@@ -168,7 +188,7 @@ class AiService:
     @staticmethod
     def _log_ai_action_results(
         gs: GameState,
-        results: list[AiSystem.ActionResult],
+        results: list[AiActionResult],
         gs_snapshots: list[GameState],
     ) -> None:
         for result, gs_snapshot in zip(results, gs_snapshots):
@@ -178,42 +198,42 @@ class AiService:
     @staticmethod
     def _map_action_to_requests(
         action: Action,
-    ) -> ActionRequest:
+    ) -> ActionModel:
         match action:
             case MoveAction():
-                return MoveActionRequest(
-                    action_type="MoveActionRequest",
+                return MoveActionModel(
+                    action_type="MoveActionModel",
                     unit_id=action.unit_id,
                     to=action.to,
                 )
             case PivotAction():
-                return PivotActionRequest(
-                    action_type="PivotActionRequest",
+                return PivotActionModel(
+                    action_type="PivotActionModel",
                     unit_id=action.unit_id,
                     to=action.to,
                 )
             case FireAction():
-                return FireActionRequest(
-                    action_type="FireActionRequest",
+                return FireActionModel(
+                    action_type="FireActionModel",
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
             case AssaultAction():
-                return AssaultActionRequest(
-                    action_type="AssaultActionRequest",
+                return AssaultActionModel(
+                    action_type="AssaultActionModel",
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
 
     @staticmethod
     def _map_action_result_to_logs(
-        result: AiSystem.ActionResult,
+        result: AiActionResult,
         gs_snapshot: GameState,
-    ) -> ActionLog:
+    ) -> ActionLogModel:
         match result.action, result.result:
             case MoveAction(), MoveActionResult():
-                return MoveActionLog(
-                    body=MoveActionRequest(
+                return MoveActionLogModel(
+                    body=MoveActionModel(
                         unit_id=result.action.unit_id,
                         to=result.action.to,
                     ),
@@ -222,8 +242,8 @@ class AiService:
                 )
 
             case PivotAction(), PivotActionResult():
-                return PivotActionLog(
-                    body=PivotActionRequest(
+                return PivotActionLogModel(
+                    body=PivotActionModel(
                         unit_id=result.action.unit_id,
                         to=result.action.to,
                     ),
@@ -231,8 +251,8 @@ class AiService:
                     view_state=GameViewService.get_view_state(gs_snapshot),
                 )
             case FireAction(), FireActionResult():
-                return FireActionLog(
-                    body=FireActionRequest(
+                return FireActionLogModel(
+                    body=FireActionModel(
                         unit_id=result.action.unit_id,
                         target_id=result.action.target_id,
                     ),
@@ -240,8 +260,8 @@ class AiService:
                     view_state=GameViewService.get_view_state(gs_snapshot),
                 )
             case AssaultAction(), AssaultActionResult():
-                return AssaultActionLog(
-                    body=AssaultActionRequest(
+                return AssaultActionLogModel(
+                    body=AssaultActionModel(
                         unit_id=result.action.unit_id,
                         target_id=result.action.target_id,
                     ),
@@ -256,13 +276,13 @@ class AiService:
     @staticmethod
     def _map_mcts_to_inspection(
         node: MctsTreeNode[Action],
-    ) -> MctsTreeInspectionNode:
-        return MctsTreeInspectionNode(
+    ) -> MctsTreeNodeModel:
+        return MctsTreeNodeModel(
             view_state=GameViewService.get_view_state(
                 node.state.get_game_state_copy(),
             ),
             children=[
-                MctsTreeInspectionEdge(
+                MctsTreeEdgeModel(
                     action=AiService._map_action_to_requests(child.action),
                     node=AiService._map_mcts_to_inspection(child),
                 )
@@ -276,13 +296,13 @@ class AiService:
     @staticmethod
     def _map_minimax_to_inspection(
         node: MinimaxTreeNode[Action],
-    ) -> MinimaxTreeInspectionNode:
-        return MinimaxTreeInspectionNode(
+    ) -> MinimaxTreeNodeModel:
+        return MinimaxTreeNodeModel(
             view_state=GameViewService.get_view_state(
                 node.state.get_game_state_copy(),
             ),
             children=[
-                MinimaxTreeInspectionEdge(
+                MinimaxTreeEdgeModel(
                     action=AiService._map_action_to_requests(edge.action),
                     node=AiService._map_minimax_to_inspection(edge.node),
                     best_score=edge.best_score,
@@ -294,16 +314,16 @@ class AiService:
     @staticmethod
     def _map_expectimax_to_inspection(
         node: ExpectimaxTreeNode[Action],
-    ) -> ExpectimaxTreeInspectionNode:
-        return ExpectimaxTreeInspectionNode(
+    ) -> ExpectimaxTreeNodeModel:
+        return ExpectimaxTreeNodeModel(
             view_state=GameViewService.get_view_state(
                 node.state.get_game_state_copy(),
             ),
             children=[
-                ExpectimaxTreeInspectionEdge(
+                ExpectimaxTreeEdgeModel(
                     action=AiService._map_action_to_requests(edge.action),
                     outcomes=[
-                        ExpectimaxTreeInspectionOutcome(
+                        ExpectimaxTreeOutcomeModel(
                             probability=outcome.probability,
                             node=AiService._map_expectimax_to_inspection(
                                 outcome.node,
