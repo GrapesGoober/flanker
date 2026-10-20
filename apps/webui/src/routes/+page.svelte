@@ -1,42 +1,32 @@
 <script lang="ts">
-	import {
-		GetAiMatchResult,
-		GetGameStateJSON,
-		GetSceneNames,
-		type SceneManifest
-	} from '$lib/api';
+	import { GetAiMatchResult, GetGameStateJSON } from '$lib/api';
+	import { ExceptionProxy } from '$lib/exception-proxy';
 	import {
 		deleteGameLocal,
 		getGameKeys,
-		getQuickAccesses,
 		loadGameLocal,
 		saveGameLocal,
 		setQuickAccesses,
 		type QuickAccess
 	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
+	import { GameSavesController } from './game-saves-controller.svelte';
 
-	let saveGameKeys: string[] = $state([]);
-	let sceneNames: SceneManifest = $state({
-		sceneNames: []
-	});
+	const gameSavesController = ExceptionProxy.wrap(new GameSavesController());
+	let controller: GameSavesController = $state(gameSavesController);
+
 	let selectedScenes: string[] = $state([]);
 	let newGameName: string = $state('');
-	let quickAccesses: QuickAccess[] = $state([]);
 	let newQuickAccessName: string = $state('');
 	let newQuickAccessSceneNames: string[] = $state([]);
 
-	onMount(reloadList);
+	onMount(() => {
+		controller.reloadList();
+	});
 
 	$effect(() => {
 		newGameName = selectedScenes.join('-');
 	});
-
-	async function reloadList() {
-		saveGameKeys = getGameKeys();
-		sceneNames = await GetSceneNames();
-		quickAccesses = getQuickAccesses();
-	}
 
 	function addQuickAccess() {
 		const quickAccessName = newQuickAccessName.trim();
@@ -51,7 +41,9 @@
 			return;
 		}
 		if (
-			quickAccesses.some((access) => access.quickAccessName === quickAccessName)
+			controller.quickAccesses.some(
+				(access) => access.quickAccessName === quickAccessName
+			)
 		) {
 			alert('A quick access with this name already exists');
 			return;
@@ -61,8 +53,8 @@
 			quickAccessName,
 			sceneNames: sceneNamesForQuickAccess
 		};
-		quickAccesses = [...quickAccesses, newQuickAccess];
-		setQuickAccesses(quickAccesses);
+		controller.quickAccesses = [...controller.quickAccesses, newQuickAccess];
+		setQuickAccesses(controller.quickAccesses);
 		newQuickAccessName = '';
 		newQuickAccessSceneNames = [];
 	}
@@ -71,11 +63,11 @@
 		if (selectedScenes.length == 0) return;
 		const stateJson = await GetGameStateJSON(selectedScenes);
 		saveGameLocal(newGameName, stateJson);
-		reloadList();
+		controller.reloadList();
 	}
 
 	async function createNewFromQuickAccess(quickAccessName: string) {
-		const quickAccess = quickAccesses.find(
+		const quickAccess = controller.quickAccesses.find(
 			(access) => access.quickAccessName === quickAccessName
 		);
 		const quickAccessSceneNames = quickAccess?.sceneNames ?? [];
@@ -87,22 +79,22 @@
 
 		const stateJson = await GetGameStateJSON(quickAccessSceneNames);
 		saveGameLocal(quickAccessName, stateJson);
-		reloadList();
+		controller.reloadList();
 	}
 
 	function deleteQuickAccess(quickAccessName: string) {
 		if (confirm(`Confirm delete quick access ${quickAccessName}?`)) {
-			quickAccesses = quickAccesses.filter(
+			controller.quickAccesses = controller.quickAccesses.filter(
 				(access) => access.quickAccessName !== quickAccessName
 			);
-			setQuickAccesses(quickAccesses);
+			setQuickAccesses(controller.quickAccesses);
 		}
 	}
 
 	function deleteGameSave(gameKey: string) {
 		if (confirm(`Confirm delete save ${gameKey}?`)) {
 			deleteGameLocal(gameKey);
-			reloadList();
+			controller.reloadList();
 		}
 	}
 
@@ -117,7 +109,7 @@
 		const gameStateJson = loadGameLocal(gameKey);
 		deleteGameLocal(gameKey);
 		saveGameLocal(newGameKey, gameStateJson);
-		reloadList();
+		controller.reloadList();
 	}
 
 	function generateNewGameKeyCopy(gameKey: string) {
@@ -140,14 +132,14 @@
 	function duplicateGameSave(gameKey: string) {
 		const newGameKey = generateNewGameKeyCopy(gameKey);
 		saveGameLocal(newGameKey, loadGameLocal(gameKey));
-		reloadList();
+		controller.reloadList();
 	}
 
 	async function createAiMatchSave(gameKey: string) {
 		const result = await GetAiMatchResult(loadGameLocal(gameKey));
 		const newGameKey = generateNewGameKeyCopy(gameKey);
 		saveGameLocal(newGameKey, result.jsonState);
-		reloadList();
+		controller.reloadList();
 	}
 
 	async function copyGameSaveJson(gameKey: string) {
@@ -176,11 +168,11 @@
 <h1>Project Flanker</h1>
 
 <h3>Game Saves</h3>
-{#if saveGameKeys.length === 0}
+{#if controller.saveGameKeys.length === 0}
 	<p>No game saves found.</p>
 {:else}
 	<ul>
-		{#each saveGameKeys as gameKey}
+		{#each controller.saveGameKeys as gameKey}
 			<li>
 				<details>
 					<summary>
@@ -259,11 +251,11 @@
 
 <h3>Load From Quick Access</h3>
 
-{#if quickAccesses.length === 0}
+{#if controller.quickAccesses.length === 0}
 	<p>No quick access.</p>
 {:else}
 	<ul>
-		{#each quickAccesses as quickAccess}
+		{#each controller.quickAccesses as quickAccess}
 			<li>
 				<input
 					type="button"
@@ -294,11 +286,11 @@
 			bind:value={newQuickAccessName}
 		/>
 
-		{#if sceneNames.sceneNames.length === 0}
+		{#if controller.sceneManifest.sceneNames.length === 0}
 			<p>No scenes available to add.</p>
 		{:else}
 			<ul>
-				{#each sceneNames.sceneNames as sceneName}
+				{#each controller.sceneManifest.sceneNames as sceneName}
 					<li>
 						<input
 							type="checkbox"
@@ -321,11 +313,11 @@
 	</summary>
 
 	<div class="collapsible-content">
-		{#if sceneNames.sceneNames.length === 0}
+		{#if controller.sceneManifest.sceneNames.length === 0}
 			<p>No scenes.</p>
 		{:else}
 			<ul>
-				{#each sceneNames.sceneNames as sceneName}
+				{#each controller.sceneManifest.sceneNames as sceneName}
 					<li>
 						<input
 							type="checkbox"

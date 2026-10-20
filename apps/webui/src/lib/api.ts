@@ -53,7 +53,7 @@ export type ActionLogModel =
 	| PivotActionLogModel;
 
 /** Get all available scene names. */
-export async function GetSceneNames(): Promise<SceneManifest> {
+export async function GetSceneManifest(): Promise<SceneManifest> {
 	const { data, error } = await client.GET('/api/scenes');
 	if (error) throw new Error(JSON.stringify(error));
 	return data;
