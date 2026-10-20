@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GetAiMatchResult, GetGameStateJSON } from '$lib/api';
+	import { GetAiMatchResult } from '$lib/api';
 	import { ExceptionProxy } from '$lib/exception-proxy';
 	import {
 		deleteGameLocal,
@@ -61,40 +61,22 @@
 
 	async function createNewGameFromSelection() {
 		if (selectedScenes.length == 0) return;
-		const stateJson = await GetGameStateJSON(selectedScenes);
-		saveGameLocal(newGameName, stateJson);
-		controller.reloadList();
+		controller.createNewGame(selectedScenes, newGameName);
 	}
 
-	async function createNewFromQuickAccess(quickAccessName: string) {
-		const quickAccess = controller.quickAccesses.find(
-			(access) => access.quickAccessName === quickAccessName
-		);
-		const quickAccessSceneNames = quickAccess?.sceneNames ?? [];
-
-		if (quickAccessSceneNames.length === 0) {
-			alert('Cannot create a game from this quick access');
-			return;
-		}
-
-		const stateJson = await GetGameStateJSON(quickAccessSceneNames);
-		saveGameLocal(quickAccessName, stateJson);
-		controller.reloadList();
+	async function createNewFromQuickAccess(quickAccess: QuickAccess) {
+		controller.createNewFromQuickAccess(quickAccess);
 	}
 
 	function deleteQuickAccess(quickAccessName: string) {
 		if (confirm(`Confirm delete quick access ${quickAccessName}?`)) {
-			controller.quickAccesses = controller.quickAccesses.filter(
-				(access) => access.quickAccessName !== quickAccessName
-			);
-			setQuickAccesses(controller.quickAccesses);
+			controller.deleteQuickAccess(quickAccessName);
 		}
 	}
 
 	function deleteGameSave(gameKey: string) {
 		if (confirm(`Confirm delete save ${gameKey}?`)) {
-			deleteGameLocal(gameKey);
-			controller.reloadList();
+			controller.deleteGameSave(gameKey);
 		}
 	}
 
@@ -261,7 +243,7 @@
 					type="button"
 					value={quickAccess.quickAccessName}
 					onclick={() => {
-						createNewFromQuickAccess(quickAccess.quickAccessName);
+						createNewFromQuickAccess(quickAccess);
 					}}
 				/>
 				<input
