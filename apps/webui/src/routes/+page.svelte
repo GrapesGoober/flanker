@@ -171,36 +171,52 @@
 	<ul>
 		{#each saveGameKeys as gameKey}
 			<li>
-				<a href="/{gameKey}/game" class="key-link">
-					<span class="key-text">{gameKey}</span>
-				</a>
-				<input
-					type="button"
-					value="Rename"
-					onclick={() => renameGameSave(gameKey)}
-				/>
-				<input
-					type="button"
-					value="Duplicate"
-					onclick={() => duplicateGameSave(gameKey)}
-				/>
-				<input
-					type="button"
-					value="Copy JSON"
-					onclick={() => copyGameSaveJson(gameKey)}
-				/>
-				<input
-					type="button"
-					value="Copy Escaped JSON"
-					onclick={() => copyGameSaveJsonEscaped(gameKey)}
-				/>
-				<input
-					type="button"
-					value="❌"
-					onclick={() => {
-						deleteGameSave(gameKey);
-					}}
-				/>
+				<details>
+					<summary>
+						{gameKey}
+					</summary>
+					<ul>
+						<li>
+							<a href="/{gameKey}/game" class="key-link">
+								<span class="key-text">{gameKey}</span>
+							</a>
+						</li>
+						<li>
+							<input
+								type="button"
+								value="Rename"
+								onclick={() => renameGameSave(gameKey)}
+							/>
+
+							<input
+								type="button"
+								value="Duplicate"
+								onclick={() => duplicateGameSave(gameKey)}
+							/>
+						</li>
+						<li>
+							<input
+								type="button"
+								value="Copy JSON"
+								onclick={() => copyGameSaveJson(gameKey)}
+							/>
+							<input
+								type="button"
+								value="Copy Escaped JSON"
+								onclick={() => copyGameSaveJsonEscaped(gameKey)}
+							/>
+						</li>
+						<li>
+							<input
+								type="button"
+								value="❌"
+								onclick={() => {
+									deleteGameSave(gameKey);
+								}}
+							/>
+						</li>
+					</ul>
+				</details>
 			</li>
 		{/each}
 	</ul>
