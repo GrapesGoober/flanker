@@ -182,6 +182,11 @@
 							/>
 							<input
 								type="button"
+								value="Logs Page"
+								onclick={() => window.open(`/${gameKey}/logs`)}
+							/>
+							<input
+								type="button"
 								value="Inspect"
 								onclick={() => window.open(`/${gameKey}/inspect`)}
 							/>
