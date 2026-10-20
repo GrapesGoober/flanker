@@ -1,14 +1,5 @@
 <script lang="ts">
-	import { GetAiMatchResult } from '$lib/api';
 	import { ExceptionProxy } from '$lib/exception-proxy';
-	import {
-		deleteGameLocal,
-		getGameKeys,
-		loadGameLocal,
-		saveGameLocal,
-		setQuickAccesses,
-		type QuickAccess
-	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import { GameSavesController } from './game-saves-controller.svelte';
 
@@ -29,32 +20,16 @@
 	});
 
 	function addQuickAccess() {
-		const quickAccessName = newQuickAccessName.trim();
-		const sceneNamesForQuickAccess = newQuickAccessSceneNames.slice();
-
-		if (quickAccessName.length === 0) {
+		if (newQuickAccessName.trim().length === 0) {
 			alert('Quick access name is required');
 			return;
 		}
-		if (sceneNamesForQuickAccess.length === 0) {
+		if (newQuickAccessSceneNames.length === 0) {
 			alert('Select at least one scene');
 			return;
 		}
-		if (
-			controller.quickAccesses.some(
-				(access) => access.quickAccessName === quickAccessName
-			)
-		) {
-			alert('A quick access with this name already exists');
-			return;
-		}
 
-		const newQuickAccess: QuickAccess = {
-			quickAccessName,
-			sceneNames: sceneNamesForQuickAccess
-		};
-		controller.quickAccesses = [...controller.quickAccesses, newQuickAccess];
-		setQuickAccesses(controller.quickAccesses);
+		controller.addQuickAccess(newQuickAccessName, newQuickAccessSceneNames);
 		newQuickAccessName = '';
 		newQuickAccessSceneNames = [];
 	}
@@ -62,10 +37,6 @@
 	async function createNewGameFromSelection() {
 		if (selectedScenes.length == 0) return;
 		controller.createNewGame(selectedScenes, newGameName);
-	}
-
-	async function createNewFromQuickAccess(quickAccess: QuickAccess) {
-		controller.createNewFromQuickAccess(quickAccess);
 	}
 
 	function deleteQuickAccess(quickAccessName: string) {
@@ -83,67 +54,7 @@
 	function renameGameSave(gameKey: string) {
 		const newGameKey = prompt(`Rename save ${gameKey} as:`, gameKey)?.trim();
 		if (!newGameKey) return null;
-		if (getGameKeys().includes(newGameKey)) {
-			alert('A save with this name already exists');
-			return;
-		}
-
-		const gameStateJson = loadGameLocal(gameKey);
-		deleteGameLocal(gameKey);
-		saveGameLocal(newGameKey, gameStateJson);
-		controller.reloadList();
-	}
-
-	function generateNewGameKeyCopy(gameKey: string) {
-		// It needs to automatically find a new name without deconflicts.
-		// The naming scheme is to replace "xxx-copy-N" with a new number.
-		const baseGameKey = gameKey.replace(/-copy-\d+$/, '');
-
-		// Start search from the current name to find a new copy name.
-		const numberMatch = gameKey.match(/-copy-(\d+)$/);
-		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
-		let newGameKey = gameKey;
-		while (getGameKeys().includes(newGameKey)) {
-			currentNumber++;
-			newGameKey = `${baseGameKey}-copy-${currentNumber}`;
-		}
-
-		return newGameKey;
-	}
-
-	function duplicateGameSave(gameKey: string) {
-		const newGameKey = generateNewGameKeyCopy(gameKey);
-		saveGameLocal(newGameKey, loadGameLocal(gameKey));
-		controller.reloadList();
-	}
-
-	async function createAiMatchSave(gameKey: string) {
-		const result = await GetAiMatchResult(loadGameLocal(gameKey));
-		const newGameKey = generateNewGameKeyCopy(gameKey);
-		saveGameLocal(newGameKey, result.jsonState);
-		controller.reloadList();
-	}
-
-	async function copyGameSaveJson(gameKey: string) {
-		try {
-			await navigator.clipboard.writeText(loadGameLocal(gameKey));
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : 'Clipboard access was denied';
-			alert(`Failed to copy save ${gameKey} JSON: ${message}`);
-		}
-	}
-
-	async function copyGameSaveJsonEscaped(gameKey: string) {
-		try {
-			await navigator.clipboard.writeText(
-				JSON.stringify(loadGameLocal(gameKey))
-			);
-		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : 'Clipboard access was denied';
-			alert(`Failed to copy escaped save ${gameKey} JSON: ${message}`);
-		}
+		controller.renameGameSave(gameKey, newGameKey);
 	}
 </script>
 
@@ -187,7 +98,7 @@
 							<input
 								type="button"
 								value="Get AI Match Result"
-								onclick={() => createAiMatchSave(gameKey)}
+								onclick={() => controller.createAiMatchSave(gameKey)}
 							/>
 						</li>
 						<li>
@@ -200,19 +111,19 @@
 							<input
 								type="button"
 								value="Duplicate"
-								onclick={() => duplicateGameSave(gameKey)}
+								onclick={() => controller.duplicateGameSave(gameKey)}
 							/>
 						</li>
 						<li>
 							<input
 								type="button"
 								value="Copy JSON"
-								onclick={() => copyGameSaveJson(gameKey)}
+								onclick={() => controller.copyGameSaveJson(gameKey)}
 							/>
 							<input
 								type="button"
 								value="Copy JSON (string escaped)"
-								onclick={() => copyGameSaveJsonEscaped(gameKey)}
+								onclick={() => controller.copyGameSaveJsonEscaped(gameKey)}
 							/>
 						</li>
 						<li>
@@ -243,7 +154,7 @@
 					type="button"
 					value={quickAccess.quickAccessName}
 					onclick={() => {
-						createNewFromQuickAccess(quickAccess);
+						controller.createNewFromQuickAccess(quickAccess);
 					}}
 				/>
 				<input
