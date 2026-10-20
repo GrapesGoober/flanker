@@ -116,7 +116,7 @@ export async function GetMapData(
 	return data;
 }
 
-export async function performActionAsync(
+export async function PerformActionAsync(
 	jsonState: string,
 	action: ActionModel
 ): Promise<GameViewStateResponseModel> {

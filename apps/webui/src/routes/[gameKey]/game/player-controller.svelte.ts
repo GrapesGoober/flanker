@@ -1,7 +1,7 @@
 import {
 	GetMapData,
 	GetViewStatesData,
-	performActionAsync,
+	PerformActionAsync,
 	type GameViewStateModel,
 	type MapViewStateModel,
 	type RifleSquadData,
@@ -165,7 +165,7 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performActionAsync(gameStateJson, {
+		const result = await PerformActionAsync(gameStateJson, {
 			actionType: 'MoveActionModel',
 			unitId: unitId,
 			to: this.state.moveMarker
@@ -183,7 +183,7 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performActionAsync(gameStateJson, {
+		const result = await PerformActionAsync(gameStateJson, {
 			actionType: 'PivotActionModel',
 			unitId: unitId,
 			to: this.state.moveMarker
@@ -201,7 +201,7 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performActionAsync(gameStateJson, {
+		const result = await PerformActionAsync(gameStateJson, {
 			actionType: 'FireActionModel',
 			unitId: unitId,
 			targetId: this.state.target.unitId
@@ -219,7 +219,7 @@ export class PlayerController {
 		let unitId = this.state.selectedUnit.unitId;
 		this.isFetching = true;
 		const gameStateJson = this.getGameStateJson();
-		const result = await performActionAsync(gameStateJson, {
+		const result = await PerformActionAsync(gameStateJson, {
 			actionType: 'AssaultActionModel',
 			unitId: unitId,
 			targetId: this.state.target.unitId
