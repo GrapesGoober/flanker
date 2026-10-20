@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+		GetAiMatchResult,
 		GetGameStateJSON,
 		GetSceneNames,
 		type SceneManifest
@@ -119,7 +120,7 @@
 		reloadList();
 	}
 
-	function duplicateGameSave(gameKey: string) {
+	function generateNewGameKeyCopy(gameKey: string) {
 		// It needs to automatically find a new name without deconflicts.
 		// The naming scheme is to replace "xxx-copy-N" with a new number.
 		const baseGameKey = gameKey.replace(/-copy-\d+$/, '');
@@ -133,7 +134,19 @@
 			newGameKey = `${baseGameKey}-copy-${currentNumber}`;
 		}
 
+		return newGameKey;
+	}
+
+	function duplicateGameSave(gameKey: string) {
+		const newGameKey = generateNewGameKeyCopy(gameKey);
 		saveGameLocal(newGameKey, loadGameLocal(gameKey));
+		reloadList();
+	}
+
+	async function createAiMatchSave(gameKey: string) {
+		const result = await GetAiMatchResult(loadGameLocal(gameKey));
+		const newGameKey = generateNewGameKeyCopy(gameKey);
+		saveGameLocal(newGameKey, result.jsonState);
 		reloadList();
 	}
 
@@ -194,6 +207,13 @@
 								type="button"
 								value="Inspect Tree"
 								onclick={() => window.open(`/${gameKey}/inspect-tree`)}
+							/>
+						</li>
+						<li>
+							<input
+								type="button"
+								value="Get AI Match Result"
+								onclick={() => createAiMatchSave(gameKey)}
 							/>
 						</li>
 						<li>

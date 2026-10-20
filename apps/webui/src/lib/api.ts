@@ -16,6 +16,8 @@ export type AiWaypointsModel =
 export type GameViewStateModel = components['schemas']['GameViewStateModel'];
 export type GameViewStateResponseModel =
 	components['schemas']['GameViewStateResponseModel'];
+export type AiMatchResponseModel =
+	components['schemas']['AiMatchResponseModel'];
 export type GameStateInspectionModel =
 	components['schemas']['GameStateInspectionModel'];
 export type MctsTreeNodeModel = components['schemas']['MctsTreeNodeModel'];
@@ -62,6 +64,17 @@ export async function GetViewStatesData(
 	jsonState: string
 ): Promise<GameViewStateModel> {
 	const { data, error } = await client.POST('/api/game/view', {
+		body: jsonState
+	});
+	if (error) throw new Error(JSON.stringify(error));
+	return data;
+}
+
+/** Get the result of an AI match. */
+export async function GetAiMatchResult(
+	jsonState: string
+): Promise<AiMatchResponseModel> {
+	const { data, error } = await client.POST('/api/game/ai-play', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
