@@ -73,26 +73,13 @@
 					</summary>
 					<ul>
 						<li>
-							<input
-								type="button"
-								value="Game Page"
-								onclick={() => window.open(`/${gameKey}/game`)}
-							/>
-							<input
-								type="button"
-								value="Logs Page"
-								onclick={() => window.open(`/${gameKey}/logs`)}
-							/>
-							<input
-								type="button"
-								value="Inspect"
-								onclick={() => window.open(`/${gameKey}/inspect`)}
-							/>
-							<input
-								type="button"
-								value="Inspect Tree"
-								onclick={() => window.open(`/${gameKey}/inspect-tree`)}
-							/>
+							<a href={`/${gameKey}/game`}>Game Page</a>
+							&nbsp;
+							<a href={`/${gameKey}/logs`}>Logs Page</a>
+							&nbsp;
+							<a href={`/${gameKey}/inspect`}>Inspect</a>
+							&nbsp;
+							<a href={`/${gameKey}/inspect-tree`}>Inspect Tree</a>
 						</li>
 						<li>
 							<input
