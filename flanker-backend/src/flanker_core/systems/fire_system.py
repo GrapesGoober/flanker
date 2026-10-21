@@ -90,7 +90,7 @@ class FireSystem:
 
         match fire_outcome:
             case FireOutcomes.MISS:
-                fire_effect = None
+                fire_controls.firing_at = None
             case FireOutcomes.PIN:
                 fire_effect = FireEffect.PINNING
                 fire_controls.firing_at = (target_id, fire_effect)
@@ -101,10 +101,10 @@ class FireSystem:
                     fire_controls.firing_at = (target_id, fire_effect)
                     FireSystem.apply_fire_effect(gs, target_id, fire_effect)
                 else:  # Kills the unit if it is already suppressed
-                    fire_effect = None
+                    fire_controls.firing_at = None
                     CommandSystem.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
-                fire_effect = None
+                fire_controls.firing_at = None
                 CommandSystem.kill_unit(gs, target_id)
 
     @staticmethod
