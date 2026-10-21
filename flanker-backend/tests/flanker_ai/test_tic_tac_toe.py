@@ -82,11 +82,12 @@ def test_optimal_action(
     assert str(new_state) == expected
 
 
-# TODO: clean this up. The test defines the simulate policy twice.
 def test_mcts_takes_immediate_win_as_red() -> None:
-    # The MCTS used to have a bug where the simulations results are
-    # not backpropagated correctly. This test is to catch that the
-    # early RED (X) wins should be caught.
+    """
+    The MCTS used to have a bug where the simulations results are
+    not backpropagated correctly. This test is to catch that the
+    early RED (X) wins should be caught.
+    """
 
     state = TicTacToeState(
         board=[
@@ -97,6 +98,8 @@ def test_mcts_takes_immediate_win_as_red() -> None:
         current_player=InitiativeState.Faction.RED,
     )
 
+    # Use a greedy simulation policy. The best action for RED is
+    # already obvious, so this is to reflect that sentiment.
     def simulate_policy(
         rs: ISearchState[TicTacToeAction],
     ) -> TicTacToeAction | None:
