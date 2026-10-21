@@ -3,8 +3,8 @@ from typing import Literal
 from uuid import UUID
 
 import pytest
-from flanker_ai.agents.ai_search_agent import AiSearchAgent
-from flanker_ai.ai_system import AiActionResult, AiSystem
+from flanker_ai.agents.ai_search_agent import AiSearchAgent, AiSearchTreeResult
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -30,6 +30,7 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.action_system import ActionSystem
 
 
 @dataclass
@@ -257,39 +258,39 @@ def test_optimal_actions(
     policy_type: Literal["Minimax", "MCTS"],
 ) -> None:
     add_agent_config(fixture, policy_type)
-    action_results: list[AiActionResult] = []
+    trees: list[AiSearchTreeResult] = []
     for _ in range(10):
-        result = AiSystem.perform_action(
-            gs=fixture.gs,
-            faction=InitiativeState.Faction.BLUE,
+        tree_result = AiSystem.get_game_tree(
+            gs=fixture.gs, faction=InitiativeState.Faction.BLUE
         )
-        if result == None:
+        if tree_result == None:
             break
-        action_results.append(result)
+        trees.append(tree_result)
+        ActionSystem.perform(fixture.gs, tree_result.best_action)
 
-    assert action_results != [], "The minimax must find optimal action sequence."
+    assert trees != [], "The minimax must find optimal action sequence."
 
     staging_units: list[UUID] = []
-    for result in action_results:
-        if not isinstance(result.action, MoveAction):
+    for tree in trees:
+        if not isinstance(tree.best_action, MoveAction):
             continue
-        if result.action.to == Vec2(-10, 10):
-            staging_units.append(result.action.unit_id)
+        if tree.best_action.to == Vec2(-10, 10):
+            staging_units.append(tree.best_action.unit_id)
     assert len(staging_units) != 0, "AI must try staging to Vec2(-10, 10)."
 
     peeking_units: list[UUID] = []
-    for result in action_results:
-        if not isinstance(result.action, MoveAction):
+    for tree in trees:
+        if not isinstance(tree.best_action, MoveAction):
             continue
-        if result.action.to == Vec2(-10, 1):
-            peeking_units.append(result.action.unit_id)
+        if tree.best_action.to == Vec2(-10, 1):
+            peeking_units.append(tree.best_action.unit_id)
     assert len(peeking_units) != 0, "AI must try peeking to Vec2(-10, 1)."
 
     assert (
         len(set(peeking_units) & set(staging_units)) != 0
     ), "Peeking units must be staged first."
 
-    last_action_result = action_results[-1]
+    last_action_result = trees[-1]
     assert isinstance(
-        last_action_result.action, FireAction
+        last_action_result.best_action, FireAction
     ), "AI must fire at the enemy once."

@@ -87,7 +87,7 @@ class ExpectimaxPolicy[TAction]:
         if state.get_winner() is not None or depth_remaining == 0:
             return state.get_score(_MAXIMIZING_FACTION), None
         actions = state.get_actions()
-        if len(actions) == 0:  # No legal actions => lost
+        if len(actions) == 0:
             return state.get_score(_MAXIMIZING_FACTION), None
 
         # Loop through each action and recursively expand tree

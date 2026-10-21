@@ -102,7 +102,8 @@ class AiService:
     def get_tree_inspection(
         gs: GameState,
     ) -> GameTreeInspectionModel | None:
-        tree_result = AiSystem.get_game_tree(gs)
+        initiative = ActionSystem.get_initiative(gs)
+        tree_result = AiSystem.get_game_tree(gs, faction=initiative)
         if tree_result == None:
             return None
 
