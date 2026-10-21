@@ -178,6 +178,7 @@ class MctsPolicy[TAction]:
                 stagnate_counter += 1
                 continue
 
+            stagnate_counter = 0
             current_state.perform_action(action)
 
         winner = current_state.get_winner()
