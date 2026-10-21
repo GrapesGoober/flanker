@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from random import choice
 from typing import Literal
 
 import pytest
@@ -108,7 +109,7 @@ def test_mcts_takes_immediate_win_as_red() -> None:
             if branch is not None and branch.get_winner() == rs.get_initiative():
                 return action
         actions = rs.get_actions()
-        return actions[0] if actions else None
+        return choice(actions) if actions else None
 
     action, _ = MctsPolicy[TicTacToeAction].get_action(
         rs=state,
