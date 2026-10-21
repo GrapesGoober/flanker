@@ -80,3 +80,34 @@ def test_optimal_action(
     _, new_state = fixture.state.get_branches(action)[0]
     assert action == TicTacToeAction(row=1, column=2)
     assert str(new_state) == expected
+
+
+# TODO: clean this up. The test defines the simulate policy twice.
+def test_mcts_takes_immediate_win_as_red() -> None:
+    state = TicTacToeState(
+        board=[
+            ["X", "X", None],  # The RED should place X here.
+            ["O", "O", None],
+            [None, None, None],
+        ],
+        current_player=InitiativeState.Faction.RED,
+    )
+
+    def simulate_policy(
+        rs: ISearchState[TicTacToeAction],
+    ) -> TicTacToeAction | None:
+        for action in rs.get_actions():
+            branch = rs.get_one_branch(action)
+            if branch is not None and branch.get_winner() == rs.get_initiative():
+                return action
+        actions = rs.get_actions()
+        return actions[0] if actions else None
+
+    action, _ = MctsPolicy[TicTacToeAction].get_action(
+        rs=state,
+        max_iterations=1_000,
+        max_simulate_length=20,
+        simulate_policy=simulate_policy,
+    )
+
+    assert action == TicTacToeAction(row=0, column=2)
