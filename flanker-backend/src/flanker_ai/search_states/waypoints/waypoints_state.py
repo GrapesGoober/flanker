@@ -24,8 +24,13 @@ from flanker_ai.search_states.waypoints.waypoints_los_system_overrides import (
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
-from flanker_core.models.components import CombatUnit, InitiativeState, Transform
-from flanker_core.models.outcomes import InvalidAction
+from flanker_core.models.components import (
+    CombatUnit,
+    FireControls,
+    InitiativeState,
+    Transform,
+)
+from flanker_core.models.outcomes import FireEffect, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystemOverrides
@@ -63,22 +68,36 @@ class WaypointsState(ISearchState[Action]):
             else:
                 return -10000
 
-        score = 0.0
-        for _, unit in self.gs.query(CombatUnit):
-            value = 0
-            match unit.status:
-                case CombatUnit.Status.ACTIVE:
-                    value = 3
-                case CombatUnit.Status.PINNED:
-                    value = 2
-                case CombatUnit.Status.SUPPRESSED:
-                    value = 1
+        total_material_value = 0.0
+        for _, combat_unit, fire_controls in self.gs.query(CombatUnit, FireControls):
+            material_value = 0
 
-            if unit.faction == maximizing_faction:
-                score += value
+            # Count unit statuses as its material value
+            match combat_unit.status:
+                case CombatUnit.Status.ACTIVE:
+                    material_value += 3
+                case CombatUnit.Status.PINNED:
+                    material_value += 2
+                case CombatUnit.Status.SUPPRESSED:
+                    material_value += 1
+
+            # The unit's fire effect is also counted as material value
+            match fire_controls.firing_at:
+                case None:
+                    pass  # No additional value for no fires
+                case _:
+                    _, fire_effect = fire_controls.firing_at
+                    match fire_effect:
+                        case FireEffect.PINNING:
+                            material_value += 0.5
+                        case FireEffect.SUPPRESSING:
+                            material_value += 1
+
+            if combat_unit.faction == maximizing_faction:
+                total_material_value += material_value
             else:
-                score -= value
-        return score
+                total_material_value -= material_value
+        return total_material_value
 
     @override
     def perform_action(self, action: Action) -> bool:
