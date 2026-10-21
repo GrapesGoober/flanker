@@ -84,6 +84,10 @@ def test_optimal_action(
 
 # TODO: clean this up. The test defines the simulate policy twice.
 def test_mcts_takes_immediate_win_as_red() -> None:
+    # The MCTS used to have a bug where the simulations results are
+    # not backpropagated correctly. This test is to catch that the
+    # early RED (X) wins should be caught.
+
     state = TicTacToeState(
         board=[
             ["X", "X", None],  # The RED should place X here.
