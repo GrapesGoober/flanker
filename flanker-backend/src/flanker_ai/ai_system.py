@@ -81,12 +81,16 @@ class AiSystem:
     @staticmethod
     def get_game_tree(
         gs: GameState,
+        faction: InitiativeState.Faction,
     ) -> AiSearchTreeResult | None:
         """
         Returns a game tree starting from this game node. This uses
         the faction's AI config of this game state. This does not
         mutate the state. Returns `None` if no actions are possible.
         """
+
+        if ActionSystem.get_initiative(gs) != faction:
+            return None
 
         config_component = AiSystem._get_config(gs)
         match config_component.config:
