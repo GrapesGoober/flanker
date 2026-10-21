@@ -14,10 +14,10 @@ class MctsTreeNode[TAction]:
     parent: "MctsTreeNode[TAction] | None"
 
     children: list["MctsTreeNode[TAction]"]
-    unexpanded_actions: list[TAction]  # All actions, some are illegal.
+    unexpanded_actions: list[TAction]
 
     total_visits: int  # N(v) total number of visits
-    total_value: float  # Total simulation reward from the root player's perspective
+    total_value: float  # Q(v) total subtree reward from root's perspective
 
     action: TAction | None
 
