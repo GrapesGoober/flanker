@@ -169,7 +169,7 @@ def run_match(
         while True:
             try:
                 response = requests.post(
-                    f"{match_config.target}/api/game/ai-play",
+                    f"{match_config.target}/api/rpc/game/get-ai-match",
                     data=scene_data,
                 )
                 response.raise_for_status()

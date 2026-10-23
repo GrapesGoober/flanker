@@ -1,15 +1,20 @@
 import {
 	GetAiMatchResult,
 	GetGameStateJSON,
+	GetGameTreeInspection,
+	GetMapData,
 	GetSceneManifest,
 	type SceneManifest
 } from '$lib/api';
 import {
 	deleteGameLocal,
+	deleteTreeLocal,
 	getGameKeys,
 	getQuickAccesses,
+	getTreeKeys,
 	loadGameLocal,
 	saveGameLocal,
+	saveTreeLocal,
 	setQuickAccesses,
 	type QuickAccess
 } from '$lib/scenes-storage';
@@ -24,13 +29,15 @@ export class GameSavesController {
 		sceneNames: []
 	});
 	quickAccesses: QuickAccess[] = $state([]);
+	treeNames: string[] = $state([]);
 
 	async reloadList() {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
-		this.saveGameKeys = getGameKeys();
+		this.saveGameKeys = await getGameKeys();
 		this.sceneManifest = await GetSceneManifest();
-		this.quickAccesses = getQuickAccesses();
+		this.quickAccesses = await getQuickAccesses();
+		this.treeNames = await getTreeKeys();
 		this.state = { type: 'default' };
 	}
 
@@ -46,7 +53,7 @@ export class GameSavesController {
 	async deleteGameSave(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 
-		deleteGameLocal(gameKey);
+		await deleteGameLocal(gameKey);
 		await this.reloadList();
 	}
 
@@ -59,7 +66,7 @@ export class GameSavesController {
 		await this.reloadList();
 	}
 
-	addQuickAccess(
+	async createQuickAccess(
 		newQuickAccessName: string,
 		newQuickAccessSceneNames: string[]
 	) {
@@ -90,62 +97,45 @@ export class GameSavesController {
 			sceneNames: sceneNamesForQuickAccess
 		};
 		this.quickAccesses = [...this.quickAccesses, newQuickAccess];
-		setQuickAccesses(this.quickAccesses);
+		await setQuickAccesses(this.quickAccesses);
 	}
 
-	deleteQuickAccess(quickAccessName: string) {
+	async deleteQuickAccess(quickAccessName: string) {
 		if (this.state.type === 'fetching') return;
 
 		this.quickAccesses = this.quickAccesses.filter(
 			(access) => access.quickAccessName !== quickAccessName
 		);
-		setQuickAccesses(this.quickAccesses);
+		await setQuickAccesses(this.quickAccesses);
 	}
 
 	async renameGameSave(gameKey: string, newGameKey: string) {
 		if (this.state.type === 'fetching') return;
 
-		if (getGameKeys().includes(newGameKey)) {
+		if ((await getGameKeys()).includes(newGameKey)) {
 			throw Error('A save with this name already exists');
 		}
 
-		const gameStateJson = loadGameLocal(gameKey);
-		deleteGameLocal(gameKey);
-		saveGameLocal(newGameKey, gameStateJson);
+		const gameStateJson = await loadGameLocal(gameKey);
+		await deleteGameLocal(gameKey);
+		await saveGameLocal(newGameKey, gameStateJson);
 		await this.reloadList();
-	}
-
-	private generateNewGameKeyCopy(gameKey: string) {
-		// It needs to automatically find a new name without deconflicts.
-		// The naming scheme is to replace "xxx-copy-N" with a new number.
-		const baseGameKey = gameKey.replace(/-copy-\d+$/, '');
-
-		// Start search from the current name to find a new copy name.
-		const numberMatch = gameKey.match(/-copy-(\d+)$/);
-		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
-		let newGameKey = gameKey;
-		while (getGameKeys().includes(newGameKey)) {
-			currentNumber++;
-			newGameKey = `${baseGameKey}-copy-${currentNumber}`;
-		}
-
-		return newGameKey;
 	}
 
 	async duplicateGameSave(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 
-		const newGameKey = this.generateNewGameKeyCopy(gameKey);
-		saveGameLocal(newGameKey, loadGameLocal(gameKey));
+		const newGameKey = this.getDeduplicatedKey(gameKey, await getGameKeys());
+		saveGameLocal(newGameKey, await loadGameLocal(gameKey));
 		await this.reloadList();
 	}
 
 	async createAiMatchSave(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
-		const result = await GetAiMatchResult(loadGameLocal(gameKey));
-		const newGameKey = this.generateNewGameKeyCopy(gameKey);
-		saveGameLocal(newGameKey, result.jsonState);
+		const result = await GetAiMatchResult(await loadGameLocal(gameKey));
+		const newGameKey = this.getDeduplicatedKey(gameKey, await getGameKeys());
+		saveGameLocal(await newGameKey, result.jsonState);
 		this.state = { type: 'default' };
 		await this.reloadList();
 	}
@@ -153,14 +143,54 @@ export class GameSavesController {
 	async copyGameSaveJson(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
-		await navigator.clipboard.writeText(loadGameLocal(gameKey));
+		await navigator.clipboard.writeText(await loadGameLocal(gameKey));
 		this.state = { type: 'default' };
 	}
 
 	async copyGameSaveJsonEscaped(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
-		await navigator.clipboard.writeText(JSON.stringify(loadGameLocal(gameKey)));
+		await navigator.clipboard.writeText(
+			JSON.stringify(await loadGameLocal(gameKey))
+		);
 		this.state = { type: 'default' };
+	}
+	async createTree(gameKey: string) {
+		this.state = { type: 'fetching' };
+
+		const gameStateJson = await loadGameLocal(gameKey);
+		const gameTree = await GetGameTreeInspection(gameStateJson);
+		const mapData = await GetMapData(gameStateJson);
+		const newTreeName = this.getDeduplicatedKey(gameKey, await getTreeKeys());
+		if (gameTree !== null && mapData !== null) {
+			saveTreeLocal(newTreeName, {
+				mapData: mapData,
+				gameTree: gameTree
+			});
+		}
+		this.state = { type: 'default' };
+		this.reloadList();
+	}
+
+	async deleteTree(treeName: string) {
+		await deleteTreeLocal(treeName);
+		this.reloadList();
+	}
+
+	private getDeduplicatedKey(key: string, otherKeys: string[]): string {
+		// It needs to automatically find a new key deconflicts.
+		// The naming scheme is to replace "xxx-copy-N" with a new number.
+		const baseKey = key.replace(/-copy-\d+$/, '');
+
+		// Start search from the current number to find an unused key.
+		const numberMatch = key.match(/-copy-(\d+)$/);
+		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
+		let newGameKey = key;
+		while (otherKeys.includes(newGameKey)) {
+			currentNumber++;
+			newGameKey = `${baseKey}-copy-${currentNumber}`;
+		}
+
+		return newGameKey;
 	}
 }

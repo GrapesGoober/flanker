@@ -40,7 +40,7 @@
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
 		const gameKey: string = page.params['gameKey'] as string;
-		const gameStateJson = loadGameLocal(gameKey);
+		const gameStateJson = await loadGameLocal(gameKey);
 		mapData = await GetMapData(gameStateJson);
 		inspectionData = await GetStatesInspectionData(gameStateJson);
 	});

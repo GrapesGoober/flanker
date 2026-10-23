@@ -42,8 +42,8 @@ export class EditorController {
 	state: EditorControllerState = $state({ type: 'default' });
 	gameKey: string = $state('');
 
-	getGameStateJson(): string {
-		const gameStateJson = loadGameLocal(this.gameKey);
+	async getGameStateJson(): Promise<string> {
+		const gameStateJson = await loadGameLocal(this.gameKey);
 		return gameStateJson;
 	}
 
@@ -57,7 +57,7 @@ export class EditorController {
 
 	/** Refreshes terrain data from the API. */
 	async refreshData() {
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		this.mapData = await GetMapData(gameStateJson);
 		this.viewState = await GetViewStatesData(gameStateJson);
 	}
@@ -99,7 +99,7 @@ export class EditorController {
 			vertices: vertices,
 			terrainType: this.state.terrainType
 		};
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await AddTerrainData(gameStateJson, terrain);
 		this.updateGameStateJson(viewState.jsonState);
 		await this.refreshData();
@@ -128,7 +128,7 @@ export class EditorController {
 	/** Async confirm changes to a combat unit and updates it via API */
 	async addUnit(worldPos: Vec2) {
 		if (this.state.type != 'adding-units') return;
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await AddUnit(gameStateJson, {
 			unitId: uuidv4(),
 			position: worldPos,
@@ -145,7 +145,7 @@ export class EditorController {
 	/** Async confirm changes to a combat unit and updates it via API */
 	async updateUnitAsync() {
 		if (this.state.type != 'selected-unit') return;
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await UpdateUnit(gameStateJson, this.state.unit);
 		this.updateGameStateJson(viewState.jsonState);
 		await this.refreshData();
@@ -154,7 +154,7 @@ export class EditorController {
 	/** Async confirm changes to a combat unit and updates it via API */
 	async deleteUnitAsync() {
 		if (this.state.type != 'selected-unit') return;
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await DeleteUnit(gameStateJson, this.state.unit.unitId);
 		this.updateGameStateJson(viewState.jsonState);
 		await this.refreshData();
@@ -163,7 +163,7 @@ export class EditorController {
 	/** Deletes the selected terrain */
 	async deleteTerrainAsync() {
 		if (this.state.type != 'selected-terrain') return;
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await DeleteTerrainData(
 			gameStateJson,
 			this.state.terrain.terrainId
@@ -174,7 +174,7 @@ export class EditorController {
 	/** Asynchronously updates the selected terrain data via the API. */
 	async updateTerrainAsync() {
 		if (this.state.type != 'selected-terrain') return;
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await UpdateTerrainData(
 			gameStateJson,
 			this.state.terrain
@@ -191,7 +191,7 @@ export class EditorController {
 	/** Async updates the waypoints to server */
 	async updateWaypoint() {
 		if (this.state.type != 'draw-waypoints') return;
-		const gameStateJson = this.getGameStateJson();
+		const gameStateJson = await this.getGameStateJson();
 		const viewState = await UpdateWaypointsData(
 			gameStateJson,
 			this.state.waypoints

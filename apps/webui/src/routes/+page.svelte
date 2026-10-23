@@ -6,39 +6,40 @@
 	const gameSavesController = ExceptionProxy.wrap(new GameSavesController());
 	let controller: GameSavesController = $state(gameSavesController);
 
-	let selectedScenes: string[] = $state([]);
-	let newGameName: string = $state('');
-	let newQuickAccessName: string = $state('');
-	let newQuickAccessSceneNames: string[] = $state([]);
+	let selectedScenesChecklist: string[] = $state([]);
+	let newNameTextbox: string = $state('');
 
-	onMount(() => {
-		controller.reloadList();
+	onMount(async () => {
+		await controller.reloadList();
 	});
 
 	$effect(() => {
-		newGameName = selectedScenes.join('-');
+		newNameTextbox = selectedScenesChecklist.join('-');
 	});
 
-	function addQuickAccess() {
-		controller.addQuickAccess(newQuickAccessName, newQuickAccessSceneNames);
-		newQuickAccessName = '';
-		newQuickAccessSceneNames = [];
+	async function createQuickAccessFromSelection() {
+		if (selectedScenesChecklist.length == 0) return;
+		await controller.createQuickAccess(newNameTextbox, selectedScenesChecklist);
+		newNameTextbox = '';
+		selectedScenesChecklist = [];
 	}
 
 	async function createNewGameFromSelection() {
-		if (selectedScenes.length == 0) return;
-		controller.createNewGame(selectedScenes, newGameName);
+		if (selectedScenesChecklist.length == 0) return;
+		await controller.createNewGame(selectedScenesChecklist, newNameTextbox);
+		newNameTextbox = '';
+		selectedScenesChecklist = [];
 	}
 
-	function deleteQuickAccess(quickAccessName: string) {
+	async function deleteQuickAccess(quickAccessName: string) {
 		if (confirm(`Confirm delete quick access ${quickAccessName}?`)) {
-			controller.deleteQuickAccess(quickAccessName);
+			await controller.deleteQuickAccess(quickAccessName);
 		}
 	}
 
-	function deleteGameSave(gameKey: string) {
+	async function deleteGameSave(gameKey: string) {
 		if (confirm(`Confirm delete save ${gameKey}?`)) {
-			controller.deleteGameSave(gameKey);
+			await controller.deleteGameSave(gameKey);
 		}
 	}
 
@@ -46,6 +47,12 @@
 		const newGameKey = prompt(`Rename save ${gameKey} as:`, gameKey)?.trim();
 		if (!newGameKey) return null;
 		controller.renameGameSave(gameKey, newGameKey);
+	}
+
+	async function deleteTree(treeName: string) {
+		if (confirm(`Confirm delete tree ${treeName}?`)) {
+			controller.deleteTree(treeName);
+		}
 	}
 </script>
 
@@ -68,19 +75,24 @@
 						</summary>
 						<ul>
 							<li>
-								<a href={`/${gameKey}/game`}>Game Page</a>
+								<a href={`/${gameKey}/game`}>Game</a>
 								&nbsp;
-								<a href={`/${gameKey}/logs`}>Logs Page</a>
+								<a href={`/${gameKey}/logs`}>Logs</a>
 								&nbsp;
 								<a href={`/${gameKey}/inspect`}>Inspect</a>
 								&nbsp;
-								<a href={`/${gameKey}/inspect-tree`}>Inspect Tree</a>
+								<a href={`/${gameKey}/editor`}>Editor</a>
 							</li>
 							<li>
 								<input
 									type="button"
 									value="Get AI Match Result"
 									onclick={() => controller.createAiMatchSave(gameKey)}
+								/>
+								<input
+									type="button"
+									value="Get Tree Inspection"
+									onclick={() => controller.createTree(gameKey)}
 								/>
 							</li>
 							<li>
@@ -112,8 +124,8 @@
 								<input
 									type="button"
 									value="❌"
-									onclick={() => {
-										deleteGameSave(gameKey);
+									onclick={async () => {
+										await deleteGameSave(gameKey);
 									}}
 								/>
 							</li>
@@ -149,38 +161,26 @@
 		</ul>
 	{/if}
 
-	<details class="collapsible-section">
-		<summary>
-			<span>Add Quick Access</span>
-		</summary>
+	<h3>Game Trees</h3>
 
-		<div class="collapsible-content">
-			<input
-				type="text"
-				placeholder="Quick access name"
-				bind:value={newQuickAccessName}
-			/>
-
-			{#if controller.sceneManifest.sceneNames.length === 0}
-				<p>No scenes available to add.</p>
-			{:else}
-				<ul>
-					{#each controller.sceneManifest.sceneNames as sceneName}
-						<li>
-							<input
-								type="checkbox"
-								value={sceneName}
-								bind:group={newQuickAccessSceneNames}
-							/>
-							{sceneName}
-						</li>
-					{/each}
-				</ul>
-			{/if}
-
-			<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
-		</div>
-	</details>
+	{#if controller.treeNames.length === 0}
+		<p>No saved trees.</p>
+	{:else}
+		<ul>
+			{#each controller.treeNames as treeName}
+				<li>
+					<a href="/tree/{encodeURIComponent(treeName)}">
+						{treeName}
+					</a>
+					<input
+						type="button"
+						value="❌"
+						onclick={() => deleteTree(treeName)}
+					/>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 
 	<details class="collapsible-section">
 		<summary>
@@ -197,7 +197,7 @@
 							<input
 								type="checkbox"
 								value={sceneName}
-								bind:group={selectedScenes}
+								bind:group={selectedScenesChecklist}
 							/>
 							{sceneName}
 						</li>
@@ -205,11 +205,16 @@
 				</ul>
 			{/if}
 
-			<input type="text" bind:value={newGameName} />
+			<input type="text" bind:value={newNameTextbox} />
 			<input
 				type="button"
 				value="New Game"
 				onclick={createNewGameFromSelection}
+			/>
+			<input
+				type="button"
+				value="New Quick Access"
+				onclick={createQuickAccessFromSelection}
 			/>
 		</div>
 	</details>

@@ -5,9 +5,9 @@ from webapi.services.scene_service import SceneService
 router = APIRouter(prefix="/api/scenes")
 
 
-@router.get("")
-async def get_scenes() -> SceneManifestResponse:
-    """Gets a list of scenes."""
+@router.get("/manifest")
+async def get_scene_manifest() -> SceneManifestResponse:
+    """Gets the scene manifest"""
     return SceneService.get_scenes()
 
 
