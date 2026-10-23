@@ -6,31 +6,26 @@
 	const gameSavesController = ExceptionProxy.wrap(new GameSavesController());
 	let controller: GameSavesController = $state(gameSavesController);
 
-	let selectedScenes: string[] = $state([]);
-	let newGameName: string = $state('');
-	let newQuickAccessName: string = $state('');
-	let newQuickAccessSceneNames: string[] = $state([]);
+	let selectedScenesChecklist: string[] = $state([]);
+	let newNameTextbox: string = $state('');
 
 	onMount(async () => {
 		await controller.reloadList();
 	});
 
 	$effect(() => {
-		newGameName = selectedScenes.join('-');
+		newNameTextbox = selectedScenesChecklist.join('-');
 	});
 
-	async function addQuickAccess() {
-		await controller.addQuickAccess(
-			newQuickAccessName,
-			newQuickAccessSceneNames
-		);
-		newQuickAccessName = '';
-		newQuickAccessSceneNames = [];
+	async function createQuickAccessFromSelection() {
+		await controller.addQuickAccess(newNameTextbox, selectedScenesChecklist);
+		newNameTextbox = '';
+		selectedScenesChecklist = [];
 	}
 
 	async function createNewGameFromSelection() {
-		if (selectedScenes.length == 0) return;
-		controller.createNewGame(selectedScenes, newGameName);
+		if (selectedScenesChecklist.length == 0) return;
+		controller.createNewGame(selectedScenesChecklist, newNameTextbox);
 	}
 
 	async function deleteQuickAccess(quickAccessName: string) {
@@ -185,39 +180,6 @@
 
 	<details class="collapsible-section">
 		<summary>
-			<span>Add Quick Access</span>
-		</summary>
-
-		<div class="collapsible-content">
-			<input
-				type="text"
-				placeholder="Quick access name"
-				bind:value={newQuickAccessName}
-			/>
-
-			{#if controller.sceneManifest.sceneNames.length === 0}
-				<p>No scenes available to add.</p>
-			{:else}
-				<ul>
-					{#each controller.sceneManifest.sceneNames as sceneName}
-						<li>
-							<input
-								type="checkbox"
-								value={sceneName}
-								bind:group={newQuickAccessSceneNames}
-							/>
-							{sceneName}
-						</li>
-					{/each}
-				</ul>
-			{/if}
-
-			<input type="button" value="Add Quick Access" onclick={addQuickAccess} />
-		</div>
-	</details>
-
-	<details class="collapsible-section">
-		<summary>
 			<span>Load From Each Scenes</span>
 		</summary>
 
@@ -231,7 +193,7 @@
 							<input
 								type="checkbox"
 								value={sceneName}
-								bind:group={selectedScenes}
+								bind:group={selectedScenesChecklist}
 							/>
 							{sceneName}
 						</li>
@@ -239,11 +201,16 @@
 				</ul>
 			{/if}
 
-			<input type="text" bind:value={newGameName} />
+			<input type="text" bind:value={newNameTextbox} />
 			<input
 				type="button"
 				value="New Game"
 				onclick={createNewGameFromSelection}
+			/>
+			<input
+				type="button"
+				value="New Quick Access"
+				onclick={createQuickAccessFromSelection}
 			/>
 		</div>
 	</details>
