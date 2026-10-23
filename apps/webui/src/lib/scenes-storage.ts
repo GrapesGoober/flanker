@@ -3,6 +3,7 @@ import type { GameTreeInspectionModel, MapViewStateModel } from './api';
 
 const GAME_KEY_PREFIX = 'game:';
 const GAME_TREE_PREFIX = 'tree:';
+const QUICK_ACCESS_KEY = 'QUICK_ACCESSES';
 
 export type QuickAccess = {
 	quickAccessName: string;
@@ -13,8 +14,6 @@ export type TreeInspectionSave = {
 	mapData: MapViewStateModel;
 	gameTree: GameTreeInspectionModel;
 };
-
-const QUICK_ACCESS_KEY = 'QUICK_ACCESSES';
 
 export async function getQuickAccesses(): Promise<QuickAccess[]> {
 	const quickAccesses = (await get(QUICK_ACCESS_KEY)) as QuickAccess[];
