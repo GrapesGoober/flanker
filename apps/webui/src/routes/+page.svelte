@@ -11,16 +11,19 @@
 	let newQuickAccessName: string = $state('');
 	let newQuickAccessSceneNames: string[] = $state([]);
 
-	onMount(() => {
-		controller.reloadList();
+	onMount(async () => {
+		await controller.reloadList();
 	});
 
 	$effect(() => {
 		newGameName = selectedScenes.join('-');
 	});
 
-	function addQuickAccess() {
-		controller.addQuickAccess(newQuickAccessName, newQuickAccessSceneNames);
+	async function addQuickAccess() {
+		await controller.addQuickAccess(
+			newQuickAccessName,
+			newQuickAccessSceneNames
+		);
 		newQuickAccessName = '';
 		newQuickAccessSceneNames = [];
 	}
@@ -30,9 +33,9 @@
 		controller.createNewGame(selectedScenes, newGameName);
 	}
 
-	function deleteQuickAccess(quickAccessName: string) {
+	async function deleteQuickAccess(quickAccessName: string) {
 		if (confirm(`Confirm delete quick access ${quickAccessName}?`)) {
-			controller.deleteQuickAccess(quickAccessName);
+			await controller.deleteQuickAccess(quickAccessName);
 		}
 	}
 

@@ -1,3 +1,4 @@
+import { get, set } from 'idb-keyval';
 import type { GameTreeInspectionModel } from './api';
 
 const prefix = 'game:';
@@ -10,14 +11,17 @@ export type QuickAccess = {
 
 const QUICK_ACCESS_KEY = 'QUICK_ACCESSES';
 
-export function getQuickAccesses(): QuickAccess[] {
-	const quickAccesses = localStorage.getItem(QUICK_ACCESS_KEY);
-	if (quickAccesses === null) return [];
-	return JSON.parse(quickAccesses) as QuickAccess[];
+export async function getQuickAccesses(): Promise<QuickAccess[]> {
+	const quickAccesses = (await get(QUICK_ACCESS_KEY)) as QuickAccess[];
+	if (quickAccesses === undefined) return [];
+	return quickAccesses;
 }
 
-export function setQuickAccesses(quick_accesses: QuickAccess[]) {
-	localStorage.setItem(QUICK_ACCESS_KEY, JSON.stringify(quick_accesses));
+export async function setQuickAccesses(quickAccesses: QuickAccess[]) {
+	// The given object might not me save-able, such as a proxy object.
+	// This JSON parse-unparse makes sure it's a save-able object.
+	const safeQuickAccesses = JSON.parse(JSON.stringify(quickAccesses));
+	await set(QUICK_ACCESS_KEY, safeQuickAccesses);
 }
 
 export function getGameKeys(): string[] {

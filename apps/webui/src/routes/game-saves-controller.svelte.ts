@@ -30,7 +30,7 @@ export class GameSavesController {
 		this.state = { type: 'fetching' };
 		this.saveGameKeys = getGameKeys();
 		this.sceneManifest = await GetSceneManifest();
-		this.quickAccesses = getQuickAccesses();
+		this.quickAccesses = await getQuickAccesses();
 		this.state = { type: 'default' };
 	}
 
@@ -59,7 +59,7 @@ export class GameSavesController {
 		await this.reloadList();
 	}
 
-	addQuickAccess(
+	async addQuickAccess(
 		newQuickAccessName: string,
 		newQuickAccessSceneNames: string[]
 	) {
@@ -90,16 +90,16 @@ export class GameSavesController {
 			sceneNames: sceneNamesForQuickAccess
 		};
 		this.quickAccesses = [...this.quickAccesses, newQuickAccess];
-		setQuickAccesses(this.quickAccesses);
+		await setQuickAccesses(this.quickAccesses);
 	}
 
-	deleteQuickAccess(quickAccessName: string) {
+	async deleteQuickAccess(quickAccessName: string) {
 		if (this.state.type === 'fetching') return;
 
 		this.quickAccesses = this.quickAccesses.filter(
 			(access) => access.quickAccessName !== quickAccessName
 		);
-		setQuickAccesses(this.quickAccesses);
+		await setQuickAccesses(this.quickAccesses);
 	}
 
 	async renameGameSave(gameKey: string, newGameKey: string) {
