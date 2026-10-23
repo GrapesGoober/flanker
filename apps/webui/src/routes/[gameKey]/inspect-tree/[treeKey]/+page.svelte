@@ -18,7 +18,7 @@
 		const gameKey = page.params['gameKey'] as string;
 		const treeKey = page.params['treeKey'] as string;
 		mapData = await GetMapData(await loadGameLocal(gameKey));
-		gameTree = loadTreeLocal(gameKey, treeKey);
+		gameTree = await loadTreeLocal(gameKey, treeKey);
 	});
 </script>
 

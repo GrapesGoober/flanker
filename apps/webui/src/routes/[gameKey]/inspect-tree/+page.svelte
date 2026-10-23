@@ -15,8 +15,8 @@
 
 	const gameKey = $derived(page.params['gameKey'] as string);
 
-	onMount(() => {
-		treeNames = getTreeNames(gameKey);
+	onMount(async () => {
+		treeNames = await getTreeNames(gameKey);
 	});
 
 	async function generateTree() {
@@ -39,16 +39,16 @@
 		const gameTree = await GetGameTreeInspection(gameStateJson);
 		if (gameTree !== null) {
 			saveTreeLocal(gameKey, treeName, gameTree);
-			treeNames = getTreeNames(gameKey);
+			treeNames = await getTreeNames(gameKey);
 			newTreeName = '';
 		}
 		generating = false;
 	}
 
-	function deleteTree(treeName: string) {
+	async function deleteTree(treeName: string) {
 		if (confirm(`Confirm delete tree ${treeName}?`)) {
 			deleteTreeLocal(gameKey, treeName);
-			treeNames = getTreeNames(gameKey);
+			treeNames = await getTreeNames(gameKey);
 		}
 	}
 </script>
