@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { GetGameTreeInspection } from '$lib/api';
+	import { GetGameTreeInspection, GetMapData } from '$lib/api';
 	import {
 		deleteTreeLocal,
 		getTreeNames,
@@ -38,7 +38,10 @@
 
 		const gameTree = await GetGameTreeInspection(gameStateJson);
 		if (gameTree !== null) {
-			saveTreeLocal(gameKey, treeName, gameTree);
+			saveTreeLocal(treeName, {
+				mapData: await GetMapData(gameStateJson),
+				gameTree: gameTree
+			});
 			treeNames = await getTreeNames(gameKey);
 			newTreeName = '';
 		}
@@ -47,7 +50,7 @@
 
 	async function deleteTree(treeName: string) {
 		if (confirm(`Confirm delete tree ${treeName}?`)) {
-			deleteTreeLocal(gameKey, treeName);
+			deleteTreeLocal(treeName);
 			treeNames = await getTreeNames(gameKey);
 		}
 	}

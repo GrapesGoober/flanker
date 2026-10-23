@@ -1,5 +1,5 @@
 import { del, get, keys, set } from 'idb-keyval';
-import type { GameTreeInspectionModel } from './api';
+import type { GameTreeInspectionModel, MapViewStateModel } from './api';
 
 const GAME_KEY_PREFIX = 'game:';
 const GAME_TREE_PREFIX = 'tree:';
@@ -7,6 +7,11 @@ const GAME_TREE_PREFIX = 'tree:';
 export type QuickAccess = {
 	quickAccessName: string;
 	sceneNames: string[];
+};
+
+export type TreeInspectionSave = {
+	mapData: MapViewStateModel;
+	gameTree: GameTreeInspectionModel;
 };
 
 const QUICK_ACCESS_KEY = 'QUICK_ACCESSES';
@@ -55,12 +60,11 @@ export async function getTreeNames(gameKey: string): Promise<string[]> {
 }
 
 export async function loadTreeLocal(
-	gameKey: string,
 	treeName: string
-): Promise<GameTreeInspectionModel> {
+): Promise<TreeInspectionSave> {
 	const gameTree = (await get(
-		`${GAME_TREE_PREFIX}${gameKey}:${treeName}`
-	)) as GameTreeInspectionModel;
+		`${GAME_TREE_PREFIX}${treeName}`
+	)) as TreeInspectionSave;
 
 	if (gameTree === undefined) {
 		throw Error('Tree ' + treeName + ' does not exist!');
@@ -69,17 +73,16 @@ export async function loadTreeLocal(
 }
 
 export async function saveTreeLocal(
-	gameKey: string,
 	treeName: string,
-	gameTree: GameTreeInspectionModel
+	gameTree: TreeInspectionSave
 ) {
 	await set(
-		`${GAME_TREE_PREFIX}${gameKey}:${treeName}`,
+		`${GAME_TREE_PREFIX}${treeName}`,
 		// Use JSON parse-unparse to strip of proxy to make it POJO save-able.
 		JSON.parse(JSON.stringify(gameTree))
 	);
 }
 
-export async function deleteTreeLocal(gameKey: string, treeName: string) {
-	await del(`${GAME_TREE_PREFIX}${gameKey}:${treeName}`);
+export async function deleteTreeLocal(treeName: string) {
+	await del(`${GAME_TREE_PREFIX}${treeName}`);
 }

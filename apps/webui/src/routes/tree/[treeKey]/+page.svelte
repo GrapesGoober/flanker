@@ -1,24 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import {
-		GetMapData,
-		type GameTreeInspectionModel,
-		type MapViewStateModel
-	} from '$lib/api';
-	import { loadGameLocal, loadTreeLocal } from '$lib/scenes-storage';
+		loadTreeLocal,
+		type TreeInspectionSave as GameTreeInspectionSave
+	} from '$lib/scenes-storage';
 	import { onMount } from 'svelte';
 	import ExpectimaxTreeNode from './expectimax-tree-node.svelte';
 	import MctsTreeNode from './mcts-tree-node.svelte';
 	import MinimaxTreeNode from './minimax-tree-node.svelte';
 
-	let gameTree: GameTreeInspectionModel | null = $state(null);
-	let mapData: MapViewStateModel = $state({ terrains: [], boundary: [] });
+	let treeSave: GameTreeInspectionSave | null = $state(null);
 
 	onMount(async () => {
-		const gameKey = page.params['gameKey'] as string;
 		const treeKey = page.params['treeKey'] as string;
-		mapData = await GetMapData(await loadGameLocal(gameKey));
-		gameTree = await loadTreeLocal(gameKey, treeKey);
+		treeSave = await loadTreeLocal(treeKey);
 	});
 </script>
 
@@ -28,15 +23,25 @@
 
 <h1>Game tree</h1>
 
-{#if gameTree}
+{#if treeSave}
 	<span>Best action</span>
-	<pre><code>{JSON.stringify(gameTree.bestAction, null, 2)}</code></pre>
+	<pre><code>{JSON.stringify(treeSave.gameTree.bestAction, null, 2)}</code
+		></pre>
 	<span>Root Node</span>
-	{#if gameTree.type === 'MctsTreeInspectionModel'}
-		<MctsTreeNode node={gameTree.treeRoot} {mapData} />
-	{:else if gameTree.type === 'MinimaxTreeInspectionModel'}
-		<MinimaxTreeNode node={gameTree.treeRoot} {mapData} />
-	{:else if gameTree.type === 'ExpectimaxTreeInspectionModel'}
-		<ExpectimaxTreeNode node={gameTree.treeRoot} {mapData} />
+	{#if treeSave.gameTree.type === 'MctsTreeInspectionModel'}
+		<MctsTreeNode
+			node={treeSave.gameTree.treeRoot}
+			mapData={treeSave.mapData}
+		/>
+	{:else if treeSave.gameTree.type === 'MinimaxTreeInspectionModel'}
+		<MinimaxTreeNode
+			node={treeSave.gameTree.treeRoot}
+			mapData={treeSave.mapData}
+		/>
+	{:else if treeSave.gameTree.type === 'ExpectimaxTreeInspectionModel'}
+		<ExpectimaxTreeNode
+			node={treeSave.gameTree.treeRoot}
+			mapData={treeSave.mapData}
+		/>
 	{/if}
 {/if}
