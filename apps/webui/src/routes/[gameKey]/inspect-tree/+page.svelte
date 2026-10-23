@@ -31,7 +31,7 @@
 		}
 
 		generating = true;
-		const gameStateJson = loadGameLocal(gameKey);
+		const gameStateJson = await loadGameLocal(gameKey);
 		if (!gameStateJson) {
 			throw new Error(`No locally saved game state found for "${gameKey}".`);
 		}

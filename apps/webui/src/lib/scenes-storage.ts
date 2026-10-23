@@ -1,4 +1,4 @@
-import { get, set } from 'idb-keyval';
+import { del, get, keys, set } from 'idb-keyval';
 import type { GameTreeInspectionModel } from './api';
 
 const prefix = 'game:';
@@ -24,27 +24,24 @@ export async function setQuickAccesses(quickAccesses: QuickAccess[]) {
 	await set(QUICK_ACCESS_KEY, safeQuickAccesses);
 }
 
-export function getGameKeys(): string[] {
-	const keys: string[] = [];
-	for (let i = 0; i < localStorage.length; i++) {
-		const key = localStorage.key(i);
-		if (key === null) continue;
-		if (!key.startsWith(prefix)) continue;
-		keys.push(key.slice(prefix.length));
-	}
-	return keys;
+export async function getGameKeys(): Promise<string[]> {
+	return (await keys())
+		.filter(
+			(key): key is string => typeof key === 'string' && key.startsWith(prefix)
+		)
+		.map((key) => key.slice(prefix.length));
 }
 
-export function loadGameLocal(gameKey: string): string {
-	return localStorage.getItem(prefix + gameKey) ?? '';
+export async function loadGameLocal(gameKey: string): Promise<string> {
+	return ((await get(prefix + gameKey)) as string) ?? '';
 }
 
-export function deleteGameLocal(gameKey: string): string {
-	return localStorage.removeItem(prefix + gameKey) ?? '';
+export async function deleteGameLocal(gameKey: string) {
+	await del(prefix + gameKey);
 }
 
-export function saveGameLocal(gameKey: string, jsonState: string) {
-	localStorage.setItem(prefix + gameKey, jsonState);
+export async function saveGameLocal(gameKey: string, jsonState: string) {
+	await set(prefix + gameKey, jsonState);
 }
 
 export function getTreeNames(gameKey: string): string[] {

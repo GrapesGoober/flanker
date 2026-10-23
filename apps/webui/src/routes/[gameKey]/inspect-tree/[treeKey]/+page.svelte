@@ -17,7 +17,7 @@
 	onMount(async () => {
 		const gameKey = page.params['gameKey'] as string;
 		const treeKey = page.params['treeKey'] as string;
-		mapData = await GetMapData(loadGameLocal(gameKey));
+		mapData = await GetMapData(await loadGameLocal(gameKey));
 		gameTree = loadTreeLocal(gameKey, treeKey);
 	});
 </script>

@@ -39,9 +39,9 @@
 		}
 	}
 
-	function deleteGameSave(gameKey: string) {
+	async function deleteGameSave(gameKey: string) {
 		if (confirm(`Confirm delete save ${gameKey}?`)) {
-			controller.deleteGameSave(gameKey);
+			await controller.deleteGameSave(gameKey);
 		}
 	}
 
@@ -115,8 +115,8 @@
 								<input
 									type="button"
 									value="❌"
-									onclick={() => {
-										deleteGameSave(gameKey);
+									onclick={async () => {
+										await deleteGameSave(gameKey);
 									}}
 								/>
 							</li>
