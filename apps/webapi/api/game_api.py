@@ -17,10 +17,10 @@ from webapi.services.logging_service import LoggingService
 from webapi.services.scene_service import SceneService
 from webapi.services.terrain_service import TerrainService
 
-router = APIRouter(prefix="/api/game")
+router = APIRouter(prefix="/api/rpc/game")
 
 
-@router.post("/view")
+@router.post("/get-view")
 async def get_view_state(
     state: str = Body(...),
 ) -> GameViewStateModel:
@@ -29,7 +29,7 @@ async def get_view_state(
     return GameViewService.get_view_state(gs)
 
 
-@router.post("/inspect")
+@router.post("/get-inspection")
 async def get_state_inspection(
     state: str = Body(...),
 ) -> GameStateInspectionModel:
@@ -38,7 +38,7 @@ async def get_state_inspection(
     return GameViewService.get_inspection(gs)
 
 
-@router.post("/inspect/game-tree")
+@router.post("/get-game-tree")
 async def get_tree_inspection(
     state: str = Body(...),
 ) -> GameTreeInspectionModel | None:
@@ -47,7 +47,7 @@ async def get_tree_inspection(
     return AiService.get_tree_inspection(gs)
 
 
-@router.post("/map")
+@router.post("/get-map")
 async def get_map(
     state: str = Body(...),
 ) -> MapViewStateModel:
@@ -68,7 +68,7 @@ async def perform_action(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/logs")
+@router.post("/get-logs")
 async def get_logs(
     state: str = Body(...),
 ) -> list[ActionLogModel]:
@@ -76,7 +76,7 @@ async def get_logs(
     return LoggingService.get_logs(gs)
 
 
-@router.post("/ai-play")
+@router.post("/get-ai-match")
 async def run_match(
     state: str = Body(...),
 ) -> AiMatchResponseModel:

@@ -36,10 +36,7 @@ export type FireActionModel = components['schemas']['FireActionModel'];
 export type AssaultActionModel = components['schemas']['AssaultActionModel'];
 export type PivotActionModel = components['schemas']['PivotActionModel'];
 export type ActionModel =
-	| MoveActionModel
-	| FireActionModel
-	| AssaultActionModel
-	| PivotActionModel;
+	MoveActionModel | FireActionModel | AssaultActionModel | PivotActionModel;
 
 export type MoveActionLogModel = components['schemas']['MoveActionLogModel'];
 export type FireActionLogModel = components['schemas']['FireActionLogModel'];
@@ -54,7 +51,7 @@ export type ActionLogModel =
 
 /** Get all available scene names. */
 export async function GetSceneManifest(): Promise<SceneManifest> {
-	const { data, error } = await client.GET('/api/scenes');
+	const { data, error } = await client.GET('/api/scenes/manifest');
 	if (error) throw new Error(JSON.stringify(error));
 	return data;
 }
@@ -63,7 +60,7 @@ export async function GetSceneManifest(): Promise<SceneManifest> {
 export async function GetViewStatesData(
 	jsonState: string
 ): Promise<GameViewStateModel> {
-	const { data, error } = await client.POST('/api/game/view', {
+	const { data, error } = await client.POST('/api/rpc/game/get-view', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -74,7 +71,7 @@ export async function GetViewStatesData(
 export async function GetAiMatchResult(
 	jsonState: string
 ): Promise<AiMatchResponseModel> {
-	const { data, error } = await client.POST('/api/game/ai-play', {
+	const { data, error } = await client.POST('/api/rpc/game/get-ai-match', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -85,7 +82,7 @@ export async function GetAiMatchResult(
 export async function GetStatesInspectionData(
 	jsonState: string
 ): Promise<GameStateInspectionModel> {
-	const { data, error } = await client.POST('/api/game/inspect', {
+	const { data, error } = await client.POST('/api/rpc/game/get-inspection', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -96,7 +93,7 @@ export async function GetStatesInspectionData(
 export async function GetGameTreeInspection(
 	jsonState: string
 ): Promise<GameTreeInspectionModel | null> {
-	const { data, error } = await client.POST('/api/game/inspect/game-tree', {
+	const { data, error } = await client.POST('/api/rpc/game/get-game-tree', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -121,7 +118,7 @@ export async function GetGameStateJSON(sceneNames: string[]): Promise<string> {
 export async function GetMapData(
 	jsonState: string
 ): Promise<MapViewStateModel> {
-	const { data, error } = await client.POST('/api/game/map', {
+	const { data, error } = await client.POST('/api/rpc/game/get-map', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -133,7 +130,7 @@ export async function PerformActionAsync(
 	jsonState: string,
 	action: ActionModel
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.POST('/api/game/perform', {
+	const { data, error } = await client.POST('/api/rpc/game/perform', {
 		body: {
 			state: jsonState,
 			action: action
@@ -145,7 +142,7 @@ export async function PerformActionAsync(
 
 /** Get action logs for the current game. */
 export async function GetLogs(jsonState: string): Promise<ActionLogModel[]> {
-	const { data, error } = await client.POST('/api/game/logs', {
+	const { data, error } = await client.POST('/api/rpc/game/get-logs', {
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -157,7 +154,7 @@ export async function UpdateTerrainData(
 	jsonState: string,
 	terrain: TerrainModel
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.PUT('/api/editor/terrain', {
+	const { data, error } = await client.POST('/api/rpc/editor/update-terrain', {
 		body: {
 			state: jsonState,
 			terrain: terrain
@@ -172,7 +169,7 @@ export async function AddTerrainData(
 	jsonState: string,
 	terrain: TerrainModel
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.POST('/api/editor/terrain', {
+	const { data, error } = await client.POST('/api/rpc/editor/add-terrain', {
 		body: {
 			state: jsonState,
 			terrain: terrain
@@ -187,12 +184,8 @@ export async function DeleteTerrainData(
 	jsonState: string,
 	terrainId: string
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.DELETE('/api/editor/terrain', {
-		params: {
-			query: {
-				terrainId: terrainId
-			}
-		},
+	const { data, error } = await client.POST('/api/rpc/editor/delete-terrain', {
+		params: { query: { terrainId: terrainId } },
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -204,7 +197,7 @@ export async function AddUnit(
 	jsonState: string,
 	unit: RifleSquadData
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.POST('/api/editor/unit', {
+	const { data, error } = await client.POST('/api/rpc/editor/add-unit', {
 		body: {
 			state: jsonState,
 			unit: unit
@@ -219,7 +212,7 @@ export async function UpdateUnit(
 	jsonState: string,
 	unit: RifleSquadData
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.PUT('/api/editor/unit', {
+	const { data, error } = await client.POST('/api/rpc/editor/update-unit', {
 		body: {
 			state: jsonState,
 			unit: unit
@@ -234,12 +227,8 @@ export async function DeleteUnit(
 	jsonState: string,
 	unitId: string
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.DELETE('/api/editor/unit', {
-		params: {
-			query: {
-				unitId: unitId
-			}
-		},
+	const { data, error } = await client.POST('/api/rpc/editor/delete-unit', {
+		params: { query: { unitId: unitId } },
 		body: jsonState
 	});
 	if (error) throw new Error(JSON.stringify(error));
@@ -251,12 +240,15 @@ export async function UpdateWaypointsData(
 	jsonState: string,
 	waypoints: AiWaypointsModel
 ): Promise<GameViewStateResponseModel> {
-	const { data, error } = await client.PUT('/api/editor/ai-waypoints', {
-		body: {
-			state: jsonState,
-			configRequest: waypoints
+	const { data, error } = await client.POST(
+		'/api/rpc/editor/update-ai-waypoints',
+		{
+			body: {
+				state: jsonState,
+				configRequest: waypoints
+			}
 		}
-	});
+	);
 	if (error) throw new Error(JSON.stringify(error));
 	return data;
 }

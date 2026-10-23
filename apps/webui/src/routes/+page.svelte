@@ -75,12 +75,13 @@
 						</summary>
 						<ul>
 							<li>
-								<a href={`/${gameKey}/game`}>Game Page</a>
+								<a href={`/${gameKey}/game`}>Game</a>
 								&nbsp;
-								<a href={`/${gameKey}/logs`}>Logs Page</a>
+								<a href={`/${gameKey}/logs`}>Logs</a>
 								&nbsp;
 								<a href={`/${gameKey}/inspect`}>Inspect</a>
 								&nbsp;
+								<a href={`/${gameKey}/editor`}>Editor</a>
 							</li>
 							<li>
 								<input
@@ -163,7 +164,7 @@
 	<h3>Game Trees</h3>
 
 	{#if controller.treeNames.length === 0}
-		<p>No saved trees for this game.</p>
+		<p>No saved trees.</p>
 	{:else}
 		<ul>
 			{#each controller.treeNames as treeName}
