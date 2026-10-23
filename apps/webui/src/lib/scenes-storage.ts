@@ -58,14 +58,14 @@ export async function loadTreeLocal(
 	gameKey: string,
 	treeName: string
 ): Promise<GameTreeInspectionModel> {
-	const tree_json = (await get(
+	const gameTree = (await get(
 		`${GAME_TREE_PREFIX}${gameKey}:${treeName}`
 	)) as GameTreeInspectionModel;
 
-	if (tree_json === undefined) {
+	if (gameTree === undefined) {
 		throw Error('Tree ' + treeName + ' does not exist!');
 	}
-	return tree_json;
+	return gameTree;
 }
 
 export async function saveTreeLocal(
