@@ -122,27 +122,10 @@ export class GameSavesController {
 		await this.reloadList();
 	}
 
-	private async generateNewGameKeyCopy(gameKey: string) {
-		// It needs to automatically find a new name without deconflicts.
-		// The naming scheme is to replace "xxx-copy-N" with a new number.
-		const baseGameKey = gameKey.replace(/-copy-\d+$/, '');
-
-		// Start search from the current name to find a new copy name.
-		const numberMatch = gameKey.match(/-copy-(\d+)$/);
-		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
-		let newGameKey = gameKey;
-		while ((await getGameKeys()).includes(newGameKey)) {
-			currentNumber++;
-			newGameKey = `${baseGameKey}-copy-${currentNumber}`;
-		}
-
-		return newGameKey;
-	}
-
 	async duplicateGameSave(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 
-		const newGameKey = await this.generateNewGameKeyCopy(gameKey);
+		const newGameKey = this.getDeduplicatedKey(gameKey, await getGameKeys());
 		saveGameLocal(newGameKey, await loadGameLocal(gameKey));
 		await this.reloadList();
 	}
@@ -151,7 +134,7 @@ export class GameSavesController {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
 		const result = await GetAiMatchResult(await loadGameLocal(gameKey));
-		const newGameKey = this.generateNewGameKeyCopy(gameKey);
+		const newGameKey = this.getDeduplicatedKey(gameKey, await getGameKeys());
 		saveGameLocal(await newGameKey, result.jsonState);
 		this.state = { type: 'default' };
 		await this.reloadList();
@@ -172,32 +155,13 @@ export class GameSavesController {
 		);
 		this.state = { type: 'default' };
 	}
-
-	// TODO: refactor this to de-duplicate from generateNewGameKeyCopy
-	private async generateNewTreeKeyCopy(treeKey: string) {
-		// It needs to automatically find a new name without deconflicts.
-		// The naming scheme is to replace "xxx-copy-N" with a new number.
-		const baseGameKey = treeKey.replace(/-tree-\d+$/, '');
-
-		// Start search from the current name to find a new copy name.
-		const numberMatch = treeKey.match(/-tree-(\d+)$/);
-		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
-		let newGameKey = treeKey;
-		while ((await getTreeKeys()).includes(newGameKey)) {
-			currentNumber++;
-			newGameKey = `${baseGameKey}-tree-${currentNumber}`;
-		}
-
-		return newGameKey;
-	}
-
 	async createTree(gameKey: string) {
 		this.state = { type: 'fetching' };
 
 		const gameStateJson = await loadGameLocal(gameKey);
 		const gameTree = await GetGameTreeInspection(gameStateJson);
 		const mapData = await GetMapData(gameStateJson);
-		const newTreeName = await this.generateNewTreeKeyCopy(gameKey);
+		const newTreeName = this.getDeduplicatedKey(gameKey, await getTreeKeys());
 		if (gameTree !== null && mapData !== null) {
 			saveTreeLocal(newTreeName, {
 				mapData: mapData,
@@ -211,5 +175,22 @@ export class GameSavesController {
 	async deleteTree(treeName: string) {
 		await deleteTreeLocal(treeName);
 		this.reloadList();
+	}
+
+	private getDeduplicatedKey(key: string, otherKeys: string[]): string {
+		// It needs to automatically find a new key deconflicts.
+		// The naming scheme is to replace "xxx-copy-N" with a new number.
+		const baseKey = key.replace(/-copy-\d+$/, '');
+
+		// Start search from the current number to find an unused key.
+		const numberMatch = key.match(/-copy-(\d+)$/);
+		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
+		let newGameKey = key;
+		while (otherKeys.includes(newGameKey)) {
+			currentNumber++;
+			newGameKey = `${baseKey}-copy-${currentNumber}`;
+		}
+
+		return newGameKey;
 	}
 }
