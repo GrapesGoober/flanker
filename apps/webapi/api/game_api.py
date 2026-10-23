@@ -77,7 +77,7 @@ async def get_logs(
 
 
 @router.post("/get-ai-match")
-async def run_match(
+async def get_match_result(
     state: str = Body(...),
 ) -> AiMatchResponseModel:
     gs = SceneService.deserialize(state)

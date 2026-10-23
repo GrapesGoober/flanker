@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/rpc/editor")
 
 
 @router.post("/update-ai-waypoints")
-async def update_ai_waypoinys(
+async def update_ai_waypoints(
     state: str = Body(...),
     config_request: AiWaypointConfigRequestModel = Body(..., alias="configRequest"),
 ) -> GameViewStateResponseModel:
