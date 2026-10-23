@@ -1,15 +1,20 @@
 import {
 	GetAiMatchResult,
 	GetGameStateJSON,
+	GetGameTreeInspection,
+	GetMapData,
 	GetSceneManifest,
 	type SceneManifest
 } from '$lib/api';
 import {
 	deleteGameLocal,
+	deleteTreeLocal,
 	getGameKeys,
 	getQuickAccesses,
+	getTreeKeys,
 	loadGameLocal,
 	saveGameLocal,
+	saveTreeLocal,
 	setQuickAccesses,
 	type QuickAccess
 } from '$lib/scenes-storage';
@@ -24,6 +29,7 @@ export class GameSavesController {
 		sceneNames: []
 	});
 	quickAccesses: QuickAccess[] = $state([]);
+	treeNames: string[] = $state([]);
 
 	async reloadList() {
 		if (this.state.type === 'fetching') return;
@@ -31,6 +37,7 @@ export class GameSavesController {
 		this.saveGameKeys = await getGameKeys();
 		this.sceneManifest = await GetSceneManifest();
 		this.quickAccesses = await getQuickAccesses();
+		this.treeNames = await getTreeKeys();
 		this.state = { type: 'default' };
 	}
 
@@ -160,7 +167,49 @@ export class GameSavesController {
 	async copyGameSaveJsonEscaped(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
-		await navigator.clipboard.writeText(JSON.stringify(loadGameLocal(gameKey)));
+		await navigator.clipboard.writeText(
+			JSON.stringify(await loadGameLocal(gameKey))
+		);
 		this.state = { type: 'default' };
+	}
+
+	// TODO: refactor this to de-duplicate from generateNewGameKeyCopy
+	private async generateNewTreeKeyCopy(treeKey: string) {
+		// It needs to automatically find a new name without deconflicts.
+		// The naming scheme is to replace "xxx-copy-N" with a new number.
+		const baseGameKey = treeKey.replace(/-tree-\d+$/, '');
+
+		// Start search from the current name to find a new copy name.
+		const numberMatch = treeKey.match(/-tree-(\d+)$/);
+		let currentNumber = numberMatch ? Number(numberMatch[1]) : 0;
+		let newGameKey = treeKey;
+		while ((await getTreeKeys()).includes(newGameKey)) {
+			currentNumber++;
+			newGameKey = `${baseGameKey}-tree-${currentNumber}`;
+		}
+
+		return newGameKey;
+	}
+
+	async createTree(gameKey: string) {
+		this.state = { type: 'fetching' };
+
+		const gameStateJson = await loadGameLocal(gameKey);
+		const gameTree = await GetGameTreeInspection(gameStateJson);
+		const mapData = await GetMapData(gameStateJson);
+		const newTreeName = await this.generateNewTreeKeyCopy(gameKey);
+		if (gameTree !== null && mapData !== null) {
+			saveTreeLocal(newTreeName, {
+				mapData: mapData,
+				gameTree: gameTree
+			});
+		}
+		this.state = { type: 'default' };
+		this.reloadList();
+	}
+
+	async deleteTree(treeName: string) {
+		await deleteTreeLocal(treeName);
+		this.reloadList();
 	}
 }

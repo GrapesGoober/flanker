@@ -49,35 +49,34 @@ export async function saveGameLocal(gameKey: string, jsonState: string) {
 	await set(GAME_KEY_PREFIX + gameKey, jsonState);
 }
 
-export async function getTreeNames(gameKey: string): Promise<string[]> {
-	const keyPrefix = `${GAME_TREE_PREFIX}${gameKey}:`;
+export async function getTreeKeys(): Promise<string[]> {
 	return (await keys())
 		.filter(
 			(key): key is string =>
-				typeof key === 'string' && key.startsWith(keyPrefix)
+				typeof key === 'string' && key.startsWith(GAME_TREE_PREFIX)
 		)
-		.map((key) => key.slice(keyPrefix.length));
+		.map((key) => key.slice(GAME_TREE_PREFIX.length));
 }
 
 export async function loadTreeLocal(
-	treeName: string
+	treeKey: string
 ): Promise<TreeInspectionSave> {
 	const gameTree = (await get(
-		`${GAME_TREE_PREFIX}${treeName}`
+		`${GAME_TREE_PREFIX}${treeKey}`
 	)) as TreeInspectionSave;
 
 	if (gameTree === undefined) {
-		throw Error('Tree ' + treeName + ' does not exist!');
+		throw Error('Tree ' + treeKey + ' does not exist!');
 	}
 	return gameTree;
 }
 
 export async function saveTreeLocal(
-	treeName: string,
+	treeKey: string,
 	gameTree: TreeInspectionSave
 ) {
 	await set(
-		`${GAME_TREE_PREFIX}${treeName}`,
+		`${GAME_TREE_PREFIX}${treeKey}`,
 		// Use JSON parse-unparse to strip of proxy to make it POJO save-able.
 		JSON.parse(JSON.stringify(gameTree))
 	);

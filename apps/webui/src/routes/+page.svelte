@@ -50,6 +50,12 @@
 		if (!newGameKey) return null;
 		controller.renameGameSave(gameKey, newGameKey);
 	}
+
+	async function deleteTree(treeName: string) {
+		if (confirm(`Confirm delete tree ${treeName}?`)) {
+			controller.deleteTree(treeName);
+		}
+	}
 </script>
 
 <h1>Project Flanker</h1>
@@ -77,13 +83,17 @@
 								&nbsp;
 								<a href={`/${gameKey}/inspect`}>Inspect</a>
 								&nbsp;
-								<a href={`/${gameKey}/inspect-tree`}>Inspect Tree</a>
 							</li>
 							<li>
 								<input
 									type="button"
 									value="Get AI Match Result"
 									onclick={() => controller.createAiMatchSave(gameKey)}
+								/>
+								<input
+									type="button"
+									value="Get Tree Inspection"
+									onclick={() => controller.createTree(gameKey)}
 								/>
 							</li>
 							<li>
@@ -146,6 +156,27 @@
 						type="button"
 						value="❌"
 						onclick={() => deleteQuickAccess(quickAccess.quickAccessName)}
+					/>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+
+	<h3>Game Trees</h3>
+
+	{#if controller.treeNames.length === 0}
+		<p>No saved trees for this game.</p>
+	{:else}
+		<ul>
+			{#each controller.treeNames as treeName}
+				<li>
+					<a href="/tree/{encodeURIComponent(treeName)}">
+						{treeName}
+					</a>
+					<input
+						type="button"
+						value="❌"
+						onclick={() => deleteTree(treeName)}
 					/>
 				</li>
 			{/each}
