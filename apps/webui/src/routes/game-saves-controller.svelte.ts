@@ -66,7 +66,7 @@ export class GameSavesController {
 		await this.reloadList();
 	}
 
-	async addQuickAccess(
+	async createQuickAccess(
 		newQuickAccessName: string,
 		newQuickAccessSceneNames: string[]
 	) {
