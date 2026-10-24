@@ -11,10 +11,9 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
-from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
-from flanker_core.systems.command_system import CommandSystem
 
 
 @dataclass
@@ -134,38 +133,6 @@ def test_pin_fire(fixture: Fixture) -> None:
     assert (
         ActionSystem.has_initiative(fixture.gs, fixture.attacker_id) == False
     ), "Expects attacker to lose initiative"
-
-    # If kills the firer, the fire effect is gone, but status remains
-    CommandSystem.kill_unit(fixture.gs, fixture.attacker_id)
-    assert (
-        target_unit.status == CombatUnit.Status.PINNED
-    ), "Target expects to remain PINNED even if fire effect is gone"
-
-    # The status would only revert automatically once unit regains initiative
-    ActionSystem.set_initiative(fixture.gs, InitiativeState.Faction.RED)
-    assert (
-        target_unit.status == CombatUnit.Status.ACTIVE
-    ), "Target expects to be ACTIVE once fire is gone and regains initiative."
-
-
-def test_fire_reset_on_target_killed(fixture: Fixture) -> None:
-    fixture.fire_controls.override = FireOutcomes.PIN
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=FireAction(
-            unit_id=fixture.attacker_id,
-            target_id=fixture.target_id,
-        ),
-    )
-    assert fixture.fire_controls.firing_at == (
-        fixture.target_id,
-        FireEffect.PINNING,
-    ), "Expects fire effect to point to target."
-
-    CommandSystem.kill_unit(fixture.gs, fixture.target_id)
-    assert (
-        fixture.fire_controls.firing_at == None
-    ), "Expects fire effect to be removed once target is gone."
 
 
 def test_suppress_fire(fixture: Fixture) -> None:

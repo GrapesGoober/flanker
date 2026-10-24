@@ -16,7 +16,6 @@ from flanker_core.models.actions import (
 )
 from flanker_core.models.components import (
     CombatUnit,
-    FireControls,
     InitiativeState,
     Transform,
 )
@@ -155,7 +154,6 @@ class ActionSystem:
                     initiative.faction = InitiativeState.Faction.BLUE
                 case InitiativeState.Faction.BLUE:
                     initiative.faction = InitiativeState.Faction.RED
-        ActionSystem._update_unit_status(gs)
 
     @staticmethod
     def set_initiative(
@@ -165,7 +163,6 @@ class ActionSystem:
         """Sets the given faction to have the initiative."""
         for _, initiative_state in gs.query(InitiativeState):
             initiative_state.faction = faction
-        ActionSystem._update_unit_status(gs)
 
     @staticmethod
     def has_initiative(
@@ -184,28 +181,3 @@ class ActionSystem:
         for _, faction in gs.query(InitiativeState):
             return faction.faction
         raise Exception("InitiativeState component not found")
-
-    @staticmethod
-    def _update_unit_status(
-        gs: GameState,
-    ) -> None:
-        """Updates unit status of combat units from fire effects."""
-
-        for unit_id, unit in gs.query(CombatUnit):
-            if unit.faction != ActionSystem.get_initiative(gs):
-                continue
-
-            # Start at ACTIVE, accumulate each fire effect.
-            unit.status = CombatUnit.Status.ACTIVE
-            for _, fire_controls in gs.query(FireControls):
-                if fire_controls.firing_at == None:
-                    continue
-                fire_at_id, fire_effect = fire_controls.firing_at
-                if fire_at_id != unit_id:
-                    continue
-
-                FireSystem.apply_fire_effect(
-                    gs,
-                    target_id=unit_id,
-                    fire_effect=fire_effect,
-                )

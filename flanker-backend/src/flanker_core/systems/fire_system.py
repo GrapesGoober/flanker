@@ -5,7 +5,7 @@ from uuid import UUID
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import FireActionResult
 from flanker_core.models.components import CombatUnit, FireControls, Transform
-from flanker_core.models.outcomes import FireEffect, FireOutcomes, InvalidAction
+from flanker_core.models.outcomes import FireOutcomes, InvalidAction
 from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -77,12 +77,10 @@ class FireSystem:
     @staticmethod
     def apply_fire_outcome(
         gs: GameState,
-        attacker_id: UUID,
         target_id: UUID,
         fire_outcome: FireOutcomes,
     ) -> None:
         """Applies the fire outcome to the target combat unit."""
-        fire_controls = gs.get_component(attacker_id, FireControls)
         target_unit = gs.get_component(target_id, CombatUnit)
 
         if gs.try_component(target_id, CombatUnit) == None:
@@ -90,46 +88,16 @@ class FireSystem:
 
         match fire_outcome:
             case FireOutcomes.MISS:
-                fire_controls.firing_at = None
+                pass
             case FireOutcomes.PIN:
-                fire_effect = FireEffect.PINNING
-                fire_controls.firing_at = (target_id, fire_effect)
-                FireSystem.apply_fire_effect(gs, target_id, fire_effect)
+                target_unit.status = CombatUnit.Status.PINNED
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
-                    fire_effect = FireEffect.SUPPRESSING
-                    fire_controls.firing_at = (target_id, fire_effect)
-                    FireSystem.apply_fire_effect(gs, target_id, fire_effect)
+                    target_unit.status = CombatUnit.Status.SUPPRESSED
                 else:  # Kills the unit if it is already suppressed
-                    fire_controls.firing_at = None
                     CommandSystem.kill_unit(gs, target_id)
             case FireOutcomes.KILL:
-                fire_controls.firing_at = None
                 CommandSystem.kill_unit(gs, target_id)
-
-    @staticmethod
-    def apply_fire_effect(
-        gs: GameState,
-        target_id: UUID,
-        fire_effect: FireEffect,
-    ) -> None:
-        target_unit = gs.get_component(target_id, CombatUnit)
-        target_fire_controls = gs.try_component(target_id, FireControls)
-
-        match fire_effect:
-            case FireEffect.PINNING:
-                if target_unit.status == CombatUnit.Status.ACTIVE:
-                    target_unit.status = CombatUnit.Status.PINNED
-            case FireEffect.SUPPRESSING:
-                if target_unit.status in [
-                    CombatUnit.Status.ACTIVE,
-                    CombatUnit.Status.PINNED,
-                ]:
-                    target_unit.status = CombatUnit.Status.SUPPRESSED
-                    if target_fire_controls != None:
-                        # Reset the target's fire effect because
-                        # SUPPRESSED units can't fire.
-                        target_fire_controls.firing_at = None
 
     @staticmethod
     def fire(
@@ -151,7 +119,6 @@ class FireSystem:
         fire_outcome = FireSystem.get_fire_outcome(gs, attacker_id)
         FireSystem.apply_fire_outcome(
             gs,
-            attacker_id=attacker_id,
             target_id=target_id,
             fire_outcome=fire_outcome,
         )
