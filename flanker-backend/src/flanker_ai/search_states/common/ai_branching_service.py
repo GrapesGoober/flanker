@@ -11,6 +11,7 @@ from flanker_core.models.actions import (
     FireAction,
     MoveAction,
     PivotAction,
+    RallyAction,
 )
 from flanker_core.models.components import (
     AssaultControls,
@@ -286,6 +287,8 @@ class AiBranchingService:
                     gs=gs,
                     unit_id=action.unit_id,
                 )
+            case RallyAction():
+                branches = [(1, AiBranchingService.copy(gs))]
 
         # Perform the action
         for _, new_state in branches:
@@ -334,6 +337,8 @@ class AiBranchingService:
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
+            case RallyAction():
+                branch = AiBranchingService.copy(gs)
 
         # Perform the action
         result = ActionSystem.perform(branch, action)

@@ -4,6 +4,7 @@ from flanker_core.models.actions import (
     FireAction,
     MoveAction,
     PivotAction,
+    RallyAction,
 )
 from flanker_core.models.outcomes import InvalidAction
 from flanker_core.systems.action_system import ActionSystem
@@ -17,11 +18,16 @@ from webapi.models.action_models import (
     MoveActionModel,
     PivotActionLogModel,
     PivotActionModel,
+    RallyActionLogModel,
+    RallyActionModel,
 )
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
 
 
+# TODO: find some ways to clean this up. The core should be able to dispatch.
+# This service should handle mapping instead, which is already implemented in
+# AiService. That shouldn't do action model mapping.
 class ActionService:
     """Provides static methods to process player actions."""
 
@@ -41,6 +47,8 @@ class ActionService:
                 ActionService._fire(gs, action_request)
             case AssaultActionModel():
                 ActionService._assault(gs, action_request)
+            case RallyActionModel():
+                ActionService._rally(gs, action_request)
 
     @staticmethod
     def _move(
@@ -131,6 +139,27 @@ class ActionService:
                 body=body,
                 outcome=result.outcome,
                 reactive_fire_outcomes=result.reactive_fire_outcomes,
+                view_state=GameViewService.get_view_state(gs),
+            ),
+        )
+
+    @staticmethod
+    def _rally(
+        gs: GameState,
+        body: RallyActionModel,
+    ) -> None:
+        result = ActionSystem.perform(
+            gs=gs,
+            action=RallyAction(
+                unit_id=body.unit_id,
+            ),
+        )
+        if isinstance(result, InvalidAction):
+            raise ValueError(result)
+        LoggingService.log(
+            gs,
+            RallyActionLogModel(
+                body=body,
                 view_state=GameViewService.get_view_state(gs),
             ),
         )

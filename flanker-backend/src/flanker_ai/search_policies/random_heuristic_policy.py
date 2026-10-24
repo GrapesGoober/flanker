@@ -8,6 +8,7 @@ from flanker_core.models.actions import (
     FireAction,
     MoveAction,
     PivotAction,
+    RallyAction,
 )
 
 
@@ -49,6 +50,8 @@ class RandomHeuristicPolicy:
                     fire_actions.append(action)
                 case MoveAction() | AssaultAction() | PivotAction():
                     move_actions.append(action)
+                case RallyAction():
+                    pass
 
         # If any fire actions are valid, perform it first
         random.shuffle(fire_actions)

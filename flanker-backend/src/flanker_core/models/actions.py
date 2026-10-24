@@ -53,6 +53,16 @@ class AssaultAction:
 
 
 @dataclass
+class RallyAction:
+    """
+    Recovers the combat unit status back to ACTIVE.
+    Guaranteed to give up initiative.
+    """
+
+    unit_id: UUID
+
+
+@dataclass
 class MoveActionResult:
     move_interrupted: bool
     reactive_fire_outcomes: list[FireOutcomes]
@@ -74,7 +84,15 @@ class AssaultActionResult:
     reactive_fire_outcomes: list[FireOutcomes]
 
 
-type Action = MoveAction | PivotAction | FireAction | AssaultAction
+@dataclass
+class RallyActionResult: ...
+
+
+type Action = (MoveAction | PivotAction | FireAction | AssaultAction | RallyAction)
 type ActionResult = (
-    MoveActionResult | PivotActionResult | FireActionResult | AssaultActionResult
+    MoveActionResult
+    | PivotActionResult
+    | FireActionResult
+    | AssaultActionResult
+    | RallyActionResult
 )

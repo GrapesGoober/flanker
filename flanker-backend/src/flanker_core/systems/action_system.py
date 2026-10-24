@@ -13,6 +13,8 @@ from flanker_core.models.actions import (
     MoveActionResult,
     PivotAction,
     PivotActionResult,
+    RallyAction,
+    RallyActionResult,
 )
 from flanker_core.models.components import (
     CombatUnit,
@@ -59,6 +61,12 @@ class ActionSystem:
         gs: GameState, action: AssaultAction
     ) -> AssaultActionResult | InvalidAction: ...
 
+    @overload
+    @staticmethod
+    def perform(
+        gs: GameState, action: RallyAction
+    ) -> RallyActionResult | InvalidAction: ...
+
     @staticmethod
     def perform(
         gs: GameState,
@@ -104,6 +112,12 @@ class ActionSystem:
                     ):
                         ActionSystem.flip_initiative(gs)
 
+            case RallyAction():
+                unit = gs.get_component(action.unit_id, CombatUnit)
+                unit.status = CombatUnit.Status.ACTIVE
+                ActionSystem.flip_initiative(gs)
+                result = RallyActionResult()
+
         return result
 
     @staticmethod
@@ -141,6 +155,9 @@ class ActionSystem:
                         unit_id=action.unit_id,
                         to=target_transform.position,
                     )
+            case RallyAction():
+                invalid_reason = None
+
         return not isinstance(invalid_reason, InvalidAction)
 
     @staticmethod

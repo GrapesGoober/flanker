@@ -24,6 +24,8 @@ from flanker_core.models.actions import (
     MoveActionResult,
     PivotAction,
     PivotActionResult,
+    RallyAction,
+    RallyActionResult,
 )
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
@@ -38,6 +40,8 @@ from webapi.models.action_models import (
     MoveActionModel,
     PivotActionLogModel,
     PivotActionModel,
+    RallyActionLogModel,
+    RallyActionModel,
 )
 from webapi.models.inspection_models import (
     ExpectimaxTreeEdgeModel,
@@ -111,7 +115,7 @@ class AiService:
             case MctsTreeNode():
                 return MctsTreeInspectionModel(
                     type="MctsTreeInspectionModel",
-                    best_action=AiService._map_action_to_requests(
+                    best_action=AiService._map_action_to_model(
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_mcts_to_inspection(
@@ -121,7 +125,7 @@ class AiService:
             case ExpectimaxTreeNode():
                 return ExpectimaxTreeInspectionModel(
                     type="ExpectimaxTreeInspectionModel",
-                    best_action=AiService._map_action_to_requests(
+                    best_action=AiService._map_action_to_model(
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_expectimax_to_inspection(
@@ -131,7 +135,7 @@ class AiService:
             case MinimaxTreeNode():
                 return MinimaxTreeInspectionModel(
                     type="MinimaxTreeInspectionModel",
-                    best_action=AiService._map_action_to_requests(
+                    best_action=AiService._map_action_to_model(
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_minimax_to_inspection(
@@ -197,7 +201,7 @@ class AiService:
             LoggingService.log(gs, log)
 
     @staticmethod
-    def _map_action_to_requests(
+    def _map_action_to_model(
         action: Action,
     ) -> ActionModel:
         match action:
@@ -224,6 +228,11 @@ class AiService:
                     action_type="AssaultActionModel",
                     unit_id=action.unit_id,
                     target_id=action.target_id,
+                )
+            case RallyAction():
+                return RallyActionModel(
+                    action_type="RallyActionModel",
+                    unit_id=action.unit_id,
                 )
 
     @staticmethod
@@ -270,6 +279,13 @@ class AiService:
                     reactive_fire_outcomes=result.result.reactive_fire_outcomes,
                     view_state=GameViewService.get_view_state(gs_snapshot),
                 )
+            case RallyAction(), RallyActionResult():
+                return RallyActionLogModel(
+                    body=RallyActionModel(
+                        unit_id=result.action.unit_id,
+                    ),
+                    view_state=GameViewService.get_view_state(gs_snapshot),
+                )
 
             case _:
                 raise ValueError(f"Unknown type {result=}")
@@ -284,7 +300,7 @@ class AiService:
             ),
             children=[
                 MctsTreeEdgeModel(
-                    action=AiService._map_action_to_requests(child.action),
+                    action=AiService._map_action_to_model(child.action),
                     node=AiService._map_mcts_to_inspection(child),
                 )
                 for child in node.children
@@ -304,7 +320,7 @@ class AiService:
             ),
             children=[
                 MinimaxTreeEdgeModel(
-                    action=AiService._map_action_to_requests(edge.action),
+                    action=AiService._map_action_to_model(edge.action),
                     node=AiService._map_minimax_to_inspection(edge.node),
                     best_score=edge.best_score,
                 )
@@ -322,7 +338,7 @@ class AiService:
             ),
             children=[
                 ExpectimaxTreeEdgeModel(
-                    action=AiService._map_action_to_requests(edge.action),
+                    action=AiService._map_action_to_model(edge.action),
                     outcomes=[
                         ExpectimaxTreeOutcomeModel(
                             probability=outcome.probability,
