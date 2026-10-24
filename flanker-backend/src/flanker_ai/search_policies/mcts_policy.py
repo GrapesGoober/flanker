@@ -184,4 +184,4 @@ class MctsPolicy[TAction]:
         winner = current_state.get_winner()
         if winner is None:
             return 0
-        return 1 if winner == root_faction else -1
+        return 1 if winner == root_faction else 0
