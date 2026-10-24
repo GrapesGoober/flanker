@@ -12,17 +12,13 @@
             "move_candidates_pool": {
               "type": "GridConfig",
               "spacing": 50,
-              "offset": 50.1
+              "offset": 25
             },
             "move_candidates_filter": [],
             "transposition_schemes": [
               {
                 "type": "RoundedPosition",
                 "to_nearest": 100
-              },
-              {
-                "type": "RoundedRotation",
-                "to_nearest": 90
               }
             ]
           }
