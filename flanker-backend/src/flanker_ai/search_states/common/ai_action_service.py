@@ -8,6 +8,7 @@ from flanker_core.models.actions import (
     FireAction,
     MoveAction,
     PivotAction,
+    RallyAction,
 )
 from flanker_core.models.components import (
     CombatUnit,
@@ -54,6 +55,9 @@ class AiActionService:
         actions += AiActionService.get_move_actions(
             friendly_ids=friendly_ids,
             move_candidates=move_candidates,
+        )
+        actions += AiActionService.get_rally_actions(
+            friendly_ids=friendly_ids,
         )
 
         if is_legal_only:
@@ -139,4 +143,17 @@ class AiActionService:
                         to=move_position,
                     )
                 )
+        return actions
+
+    @staticmethod
+    def get_rally_actions(
+        friendly_ids: list[UUID],
+    ) -> list[RallyAction]:
+        actions: list[RallyAction] = []
+        for friendly_id in friendly_ids:
+            actions.append(
+                RallyAction(
+                    unit_id=friendly_id,
+                )
+            )
         return actions
