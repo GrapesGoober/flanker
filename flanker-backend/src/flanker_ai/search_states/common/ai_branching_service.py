@@ -111,13 +111,16 @@ class AiBranchingService:
         return AiBranchingService._get_fire_overriden_states(gs, permutations)
 
     @staticmethod
-    def get_one_reactive_fire_branch(
+    def _get_one_reactive_fire_branch(
         gs: GameState,
         unit_id: UUID,
         move_to: Vec2,
+        pins_if_one_reactive_firer: bool = True,
     ) -> GameState:
         """
-        Get a single representative state branch configured with reactive fire overrides.
+        Get a single representative branch with reactive fire overrides.
+        This assumes PIN reactive fire if there's 1 reactive firer,
+        otherwise assumes SUPPRESS.
         """
 
         reactive_fire_candidates = MoveSystem.get_interrupt_candidates(
@@ -129,11 +132,14 @@ class AiBranchingService:
             for firer_id in candidate_firers
         }
 
-        # If there's more than 1 firer, they are all firing SUPPRESS.
-        # If there's only 1 firer, config as PIN. This is bias the tree
-        # to severely avoid moves with many reactive firers, while making it
-        # heavily prefer 1 reactive firer more.
-        outcome = FireOutcomes.PIN if len(firer_ids) == 1 else FireOutcomes.SUPPRESS
+        # Needs to contextualize the risk of reactive fires.
+        # Fewest reactive firer is good, so let it assume a PIN.
+        # Many reactive firers is badd, so let it assume SUPPRESS.
+        outcome = (
+            FireOutcomes.PIN
+            if len(firer_ids) == 1 and pins_if_one_reactive_firer
+            else FireOutcomes.SUPPRESS
+        )
         permutation = {firer_id: outcome for firer_id in firer_ids}
 
         states = AiBranchingService._get_fire_overriden_states(
@@ -236,10 +242,11 @@ class AiBranchingService:
         reactive fire and assault overrides.
         """
         target_transform = gs.get_component(target_id, Transform)
-        new_state = AiBranchingService.get_one_reactive_fire_branch(
+        new_state = AiBranchingService._get_one_reactive_fire_branch(
             gs=gs,
             unit_id=unit_id,
             move_to=target_transform.position,
+            pins_if_one_reactive_firer=False,
         )
 
         assault_controls = new_state.get_component(unit_id, AssaultControls)
@@ -313,26 +320,26 @@ class AiBranchingService:
         # Get configured state depending on action type
         match action:
             case MoveAction():
-                branch = AiBranchingService.get_one_reactive_fire_branch(
+                branch = AiBranchingService._get_one_reactive_fire_branch(
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=action.to,
                 )
             case PivotAction():
                 transform = gs.get_component(action.unit_id, Transform)
-                branch = AiBranchingService.get_one_reactive_fire_branch(
+                branch = AiBranchingService._get_one_reactive_fire_branch(
                     gs=gs,
                     unit_id=action.unit_id,
                     move_to=transform.position,
                 )
-            case AssaultAction():
-                branch = AiBranchingService.get_one_assault_branch(
+            case FireAction():
+                branch = AiBranchingService.get_one_fire_branch(
                     gs=gs,
                     unit_id=action.unit_id,
                     target_id=action.target_id,
                 )
-            case FireAction():
-                branch = AiBranchingService.get_one_fire_branch(
+            case AssaultAction():
+                branch = AiBranchingService.get_one_assault_branch(
                     gs=gs,
                     unit_id=action.unit_id,
                     target_id=action.target_id,
