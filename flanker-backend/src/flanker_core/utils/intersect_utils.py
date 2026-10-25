@@ -15,7 +15,7 @@ class IntersectUtils:
         """
         Returns intersection points between a line and a polyline.
         For a closed loop, the vertices must repeat `polyline[-1] == polyline[0]`.
-        The intersections are not sorted.
+        The intersections are not sorted and not filtered-colocated.
         """
 
         if len(polyline) < 2:
