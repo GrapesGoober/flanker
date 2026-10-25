@@ -7,8 +7,9 @@ from flanker_ai.search_states.common.ai_branch_abstraction_service import (
 )
 from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import MoveAction
+from flanker_core.models.actions import AssaultAction, MoveAction
 from flanker_core.models.components import (
+    AssaultControls,
     CombatUnit,
     FireControls,
     InitiativeState,
@@ -44,6 +45,7 @@ def fixture() -> Fixture:
         FireControls(
             fov_degrees=90,
         ),
+        AssaultControls(),
     )
     # Have the shooters stand on top of each other,
     # so the reactive fire position is the same
@@ -57,6 +59,7 @@ def fixture() -> Fixture:
             fov_degrees=90,
         ),
         Transform(position=Vec2(15, 20), degrees=-90),
+        AssaultControls(),
     )
     enemy_2 = gs.add_entity(
         MoveControls(),
@@ -68,6 +71,7 @@ def fixture() -> Fixture:
             fov_degrees=90,
         ),
         Transform(position=Vec2(15, 20), degrees=-90),
+        AssaultControls(),
     )
 
     # 10x10 opaque box
@@ -81,7 +85,7 @@ def fixture() -> Fixture:
                 Vec2(0, 10),
                 Vec2(0, 0),
             ],
-            flag=TerrainFeature.Flag.OPAQUE,
+            flag=TerrainFeature.Flag.OPAQUE | TerrainFeature.Flag.WALKABLE,
         ),
     )
     # 2000x2000 boundary
@@ -92,7 +96,6 @@ def fixture() -> Fixture:
                 Vec2(1000, -1000),
                 Vec2(1000, 1000),
                 Vec2(-1000, 1000),
-                Vec2(-1000, -1000),
             ],
         ),
     )
@@ -175,8 +178,8 @@ def test_branches(fixture: Fixture) -> None:
 def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:
 
     # Prevent 1 unit from firing, so the state has only 1 other reactive fire
-    firing_unit_1 = fixture.gs.get_component(fixture.enemy_1, CombatUnit)
-    firing_unit_1.status = CombatUnit.Status.SUPPRESSED
+    enemy_unit_1 = fixture.gs.get_component(fixture.enemy_1, CombatUnit)
+    enemy_unit_1.status = CombatUnit.Status.SUPPRESSED
 
     move_action = MoveAction(
         unit_id=fixture.unit_move,
@@ -193,6 +196,28 @@ def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:
     assert (
         moving_unit.status == CombatUnit.Status.PINNED
     ), "Expects the moving unit to be pinned from 1 reactive fire."
+
+
+def test_assault_gets_suppressed(fixture: Fixture) -> None:
+
+    # Prevent 1 unit from firing, so the state has only 1 other reactive fire
+    enemy_unit_1 = fixture.gs.get_component(fixture.enemy_1, CombatUnit)
+    enemy_unit_1.status = CombatUnit.Status.SUPPRESSED
+
+    move_action = AssaultAction(
+        unit_id=fixture.unit_move,
+        target_id=fixture.enemy_2,
+    )
+    branch = AiBranchingService.get_one_action_branch(
+        gs=fixture.gs,
+        action=move_action,
+    )
+    assert branch != None, "The action must be legal and performable"
+
+    moving_unit = branch.get_component(fixture.unit_move, CombatUnit)
+    assert (
+        moving_unit.status == CombatUnit.Status.SUPPRESSED
+    ), "Expects assault to have suppressing for single reactive fire."
 
 
 def test_double_reactive_fire_avoidance(fixture: Fixture) -> None:
