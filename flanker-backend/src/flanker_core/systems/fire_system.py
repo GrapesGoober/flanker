@@ -90,7 +90,8 @@ class FireSystem:
             case FireOutcomes.MISS:
                 pass
             case FireOutcomes.PIN:
-                target_unit.status = CombatUnit.Status.PINNED
+                if target_unit.status == CombatUnit.Status.ACTIVE:
+                    target_unit.status = CombatUnit.Status.PINNED
             case FireOutcomes.SUPPRESS:
                 if target_unit.status != CombatUnit.Status.SUPPRESSED:
                     target_unit.status = CombatUnit.Status.SUPPRESSED
