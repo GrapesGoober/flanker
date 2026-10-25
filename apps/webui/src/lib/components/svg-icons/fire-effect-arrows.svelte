@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { FireEffect, Vec2 } from '$lib/api';
+	import type { Vec2 } from '$lib/api';
 	import Arrow from './arrow.svelte';
 
 	type Props = {
 		positionA: Vec2;
 		positionB: Vec2;
-		fireEffectA: FireEffect | null;
-		fireEffectB: FireEffect | null;
+		fireEffectA: string | null;
+		fireEffectB: string | null;
 	};
 
 	let props: Props = $props();

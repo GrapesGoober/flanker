@@ -29,15 +29,6 @@
 <svg overflow="visible">
 	<!-- Overlay for action icons and arrows -->
 	<g class="transparent-icons">
-		{#each currentView.fireEffectPairs as fireEffect}
-			<FireEffectArrows
-				positionA={fireEffect.positionA}
-				positionB={fireEffect.positionB}
-				fireEffectA={fireEffect.fireEffectA}
-				fireEffectB={fireEffect.fireEffectB}
-			/>
-		{/each}
-
 		{#if currentAction}
 			{@const actorUnit = currentView.squads.filter(
 				(unit) => unit.unitId == currentAction.body.unitId
@@ -69,6 +60,13 @@
 								<BorderHostileUnit />
 							{/if}
 						</g>
+
+						<FireEffectArrows
+							positionA={actorUnit.position}
+							positionB={targetUnit.position}
+							fireEffectA={currentAction.outcome}
+							fireEffectB={null}
+						/>
 					{/if}
 				{/if}
 			{/if}
