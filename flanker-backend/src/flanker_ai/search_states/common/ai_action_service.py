@@ -56,9 +56,10 @@ class AiActionService:
             friendly_ids=friendly_ids,
             move_candidates=move_candidates,
         )
-        actions += AiActionService.get_rally_actions(
-            friendly_ids=friendly_ids,
-        )
+        # FIXME: AI can't deal with rally actions yet.
+        # actions += AiActionService.get_rally_actions(
+        #     friendly_ids=friendly_ids,
+        # )
 
         if is_legal_only:
             actions = [
