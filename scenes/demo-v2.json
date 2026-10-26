@@ -11,6 +11,13 @@
         ]
       }
     },
+    "b5afc0c7-19e7-4b5f-a195-babf0aa50ed2": {
+      "RallyStallLoseCondition": {
+        "rally_stall_count": 0,
+        "rally_stall_limit": 2,
+        "last_rallied_faction": null
+      }
+    },
     "beecf185-723a-4678-82bc-21f81158dcb9": {
       "AiConfigComponent": {
         "faction": "RED",

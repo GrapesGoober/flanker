@@ -11,6 +11,13 @@
         "units_eliminated_counter": 0
       }
     },
+    "b5afc0c7-19e7-4b5f-a195-babf0aa50ed2": {
+      "RallyStallLoseCondition": {
+        "rally_stall_count": 0,
+        "rally_stall_limit": 2,
+        "last_rallied_faction": null
+      }
+    },
     "cc1b3b14-d3df-42bc-9437-2edd234440b8": {
       "MapBoundary": {
         "vertices": [
