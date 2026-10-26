@@ -19,6 +19,7 @@ from flanker_core.models.components import (
     EliminationWinCondition,
     FireControls,
     InitiativeState,
+    RallyStallLoseCondition,
     StallLoseCondition,
     Transform,
 )
@@ -65,6 +66,10 @@ class AiBranchingService:
     def copy(gs: GameState) -> GameState:
         """Selectively copy the game state for mutating entities."""
 
+        # NOTE: should this selective copy be opt-in?
+        # Have it defaults to deep copy everthing by default,
+        # opt-in to shallow copy (no copy) for selected entities,
+        # and opt-in to replace copy for selected entitiies too.
         return gs.selective_copy(
             # Copy the combat units
             Transform,
@@ -75,6 +80,7 @@ class AiBranchingService:
             InitiativeState,
             EliminationWinCondition,
             StallLoseCondition,
+            RallyStallLoseCondition,
             copy_method=replace,
         )
 
