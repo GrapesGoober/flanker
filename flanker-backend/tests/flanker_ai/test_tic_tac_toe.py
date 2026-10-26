@@ -26,7 +26,7 @@ def fixture() -> Fixture:
                 [None, "X", None],
                 ["X", None, "O"],
             ],
-            current_player=InitiativeState.Faction.BLUE,  # O
+            current_player=InitiativeState.Faction.BLUE,
         )
     )
 
