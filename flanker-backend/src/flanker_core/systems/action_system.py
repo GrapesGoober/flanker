@@ -29,6 +29,7 @@ from flanker_core.models.outcomes import (
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class ActionSystem:
@@ -114,6 +115,11 @@ class ActionSystem:
 
             case RallyAction():
                 unit = gs.get_component(action.unit_id, CombatUnit)
+                if unit.status == CombatUnit.Status.ACTIVE:
+                    ObjectiveSystem.count_rally(
+                        gs=gs,
+                        faction=ActionSystem.get_initiative(gs),
+                    )
                 unit.status = CombatUnit.Status.ACTIVE
                 ActionSystem.flip_initiative(gs)
                 result = RallyActionResult()

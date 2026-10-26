@@ -23,6 +23,7 @@ from flanker_core.models.components import (
     InitiativeState,
     MapBoundary,
     MoveControls,
+    RallyStallLoseCondition,
     StallLoseCondition,
     TerrainFeature,
     Transform,
@@ -162,6 +163,13 @@ def fixture() -> Fixture:
             stall_count=0,
             stall_limit=5,
         )
+    )
+    gs.add_entity(
+        RallyStallLoseCondition(
+            rally_stall_count=0,
+            rally_stall_limit=2,
+            last_rallied_faction=None,
+        ),
     )
 
     return Fixture(

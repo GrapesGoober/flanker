@@ -9,6 +9,7 @@ from flanker_core.models.components import (
     EliminationWinCondition,
     FireControls,
     InitiativeState,
+    RallyStallLoseCondition,
     Transform,
 )
 from flanker_core.models.outcomes import FireOutcomes
@@ -36,6 +37,13 @@ def fixture() -> Fixture:
             winning_faction=InitiativeState.Faction.BLUE,
             units_to_eliminate=2,
             units_eliminated_counter=0,
+        ),
+    )
+    gs.add_entity(
+        RallyStallLoseCondition(
+            rally_stall_count=0,
+            rally_stall_limit=2,
+            last_rallied_faction=None,
         ),
     )
     attacker_id = gs.add_entity(
