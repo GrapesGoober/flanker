@@ -75,6 +75,7 @@ def test_optimal_action(
                 max_iterations=10_000,
                 max_simulate_length=20,
                 simulate_policy=simulate_policy,
+                exploration_const=2,
             )
 
     assert action != None
@@ -116,6 +117,7 @@ def test_mcts_takes_immediate_win_as_red() -> None:
         max_iterations=1_000,
         max_simulate_length=20,
         simulate_policy=simulate_policy,
+        exploration_const=2,
     )
 
     assert action == TicTacToeAction(row=0, column=2)

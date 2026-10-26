@@ -198,6 +198,7 @@ def add_agent_config(
                 max_iterations=200,
                 max_simulate_length=20,
                 simulation_policy="rh",
+                exploration_const=2,
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(

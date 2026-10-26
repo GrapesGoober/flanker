@@ -36,6 +36,7 @@ class MctsPolicy[TAction]:
         max_iterations: int,
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
+        exploration_const: float,
     ) -> tuple[TAction | None, MctsSearchLog[TAction]]:
         root_faction = rs.get_initiative()
         root = MctsTreeNode(
@@ -54,7 +55,11 @@ class MctsPolicy[TAction]:
         for _ in range(max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
-            leaf = MctsPolicy[TAction]._select_leaf_best_uct(root, root_faction)
+            leaf = MctsPolicy[TAction]._select_leaf_best_uct(
+                node=root,
+                root_faction=root_faction,
+                exploration_const=exploration_const,
+            )
             child = MctsPolicy[TAction]._expand(leaf)
             value = MctsPolicy[TAction]._simulate(
                 node=child,
@@ -91,6 +96,7 @@ class MctsPolicy[TAction]:
     def _select_leaf_best_uct(
         node: MctsTreeNode[TAction],
         root_faction: InitiativeState.Faction,
+        exploration_const: float,
     ) -> MctsTreeNode[TAction]:
         """Search node's subtree for leaf node with max UCT."""
 
@@ -112,7 +118,7 @@ class MctsPolicy[TAction]:
                 if not maximizing:
                     exploitation = -exploitation
                 exploration = math.sqrt(2 * log_parent / child.total_visits)
-                return exploitation + exploration
+                return exploitation + exploration * exploration_const
 
             current_node = max(current_node.children, key=uct)
 

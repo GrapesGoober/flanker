@@ -82,6 +82,7 @@ class PolicyConfig:
         max_iterations: int
         max_simulate_length: int
         simulation_policy: Literal["random", "rh"]
+        exploration_const: float
 
     @dataclass
     class MinimaxPolicy:
