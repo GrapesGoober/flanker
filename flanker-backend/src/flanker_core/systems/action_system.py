@@ -86,6 +86,7 @@ class ActionSystem:
                         FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
                     ):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case PivotAction():
@@ -95,12 +96,14 @@ class ActionSystem:
                         FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
                     ):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case FireAction():
                 result = FireSystem.fire(gs, action.unit_id, action.target_id)
                 if not isinstance(result, InvalidAction):
                     if result.outcome in (FireOutcomes.MISS, FireOutcomes.PIN):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case AssaultAction():
@@ -111,6 +114,7 @@ class ActionSystem:
                         or FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
                     ):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case RallyAction():
