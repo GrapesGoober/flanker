@@ -116,10 +116,12 @@ class ActionSystem:
             case RallyAction():
                 unit = gs.get_component(action.unit_id, CombatUnit)
                 if unit.status == CombatUnit.Status.ACTIVE:
-                    ObjectiveSystem.count_rally(
+                    ObjectiveSystem.count_rally_stall(
                         gs=gs,
                         faction=ActionSystem.get_initiative(gs),
                     )
+                else:
+                    ObjectiveSystem.reset_rally_stall(gs)
                 unit.status = CombatUnit.Status.ACTIVE
                 ActionSystem.flip_initiative(gs)
                 result = RallyActionResult()

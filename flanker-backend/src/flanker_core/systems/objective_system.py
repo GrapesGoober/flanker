@@ -60,7 +60,7 @@ class ObjectiveSystem:
                 counter.stall_count += 1
 
     @staticmethod
-    def count_rally(
+    def count_rally_stall(
         gs: GameState,
         faction: InitiativeState.Faction,
     ) -> None:
