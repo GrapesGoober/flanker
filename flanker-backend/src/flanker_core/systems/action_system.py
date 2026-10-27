@@ -13,10 +13,11 @@ from flanker_core.models.actions import (
     MoveActionResult,
     PivotAction,
     PivotActionResult,
+    RallyAction,
+    RallyActionResult,
 )
 from flanker_core.models.components import (
     CombatUnit,
-    FireControls,
     InitiativeState,
     Transform,
 )
@@ -28,6 +29,7 @@ from flanker_core.models.outcomes import (
 from flanker_core.systems.assault_system import AssaultSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
 
 
 class ActionSystem:
@@ -60,6 +62,12 @@ class ActionSystem:
         gs: GameState, action: AssaultAction
     ) -> AssaultActionResult | InvalidAction: ...
 
+    @overload
+    @staticmethod
+    def perform(
+        gs: GameState, action: RallyAction
+    ) -> RallyActionResult | InvalidAction: ...
+
     @staticmethod
     def perform(
         gs: GameState,
@@ -78,6 +86,7 @@ class ActionSystem:
                         FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
                     ):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case PivotAction():
@@ -87,12 +96,14 @@ class ActionSystem:
                         FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
                     ):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case FireAction():
                 result = FireSystem.fire(gs, action.unit_id, action.target_id)
                 if not isinstance(result, InvalidAction):
                     if result.outcome in (FireOutcomes.MISS, FireOutcomes.PIN):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
 
             case AssaultAction():
@@ -103,7 +114,21 @@ class ActionSystem:
                         or FireOutcomes.SUPPRESS in result.reactive_fire_outcomes
                         or FireOutcomes.KILL in result.reactive_fire_outcomes
                     ):
+                        ObjectiveSystem.reset_rally_stall(gs)
                         ActionSystem.flip_initiative(gs)
+
+            case RallyAction():
+                unit = gs.get_component(action.unit_id, CombatUnit)
+                if unit.status == CombatUnit.Status.ACTIVE:
+                    ObjectiveSystem.count_rally_stall(
+                        gs=gs,
+                        faction=ActionSystem.get_initiative(gs),
+                    )
+                else:
+                    ObjectiveSystem.reset_rally_stall(gs)
+                unit.status = CombatUnit.Status.ACTIVE
+                ActionSystem.flip_initiative(gs)
+                result = RallyActionResult()
 
         return result
 
@@ -142,6 +167,9 @@ class ActionSystem:
                         unit_id=action.unit_id,
                         to=target_transform.position,
                     )
+            case RallyAction():
+                invalid_reason = None
+
         return not isinstance(invalid_reason, InvalidAction)
 
     @staticmethod
@@ -155,7 +183,6 @@ class ActionSystem:
                     initiative.faction = InitiativeState.Faction.BLUE
                 case InitiativeState.Faction.BLUE:
                     initiative.faction = InitiativeState.Faction.RED
-        ActionSystem._update_unit_status(gs)
 
     @staticmethod
     def set_initiative(
@@ -165,7 +192,6 @@ class ActionSystem:
         """Sets the given faction to have the initiative."""
         for _, initiative_state in gs.query(InitiativeState):
             initiative_state.faction = faction
-        ActionSystem._update_unit_status(gs)
 
     @staticmethod
     def has_initiative(
@@ -184,28 +210,3 @@ class ActionSystem:
         for _, faction in gs.query(InitiativeState):
             return faction.faction
         raise Exception("InitiativeState component not found")
-
-    @staticmethod
-    def _update_unit_status(
-        gs: GameState,
-    ) -> None:
-        """Updates unit status of combat units from fire effects."""
-
-        for unit_id, unit in gs.query(CombatUnit):
-            if unit.faction != ActionSystem.get_initiative(gs):
-                continue
-
-            # Start at ACTIVE, accumulate each fire effect.
-            unit.status = CombatUnit.Status.ACTIVE
-            for _, fire_controls in gs.query(FireControls):
-                if fire_controls.firing_at == None:
-                    continue
-                fire_at_id, fire_effect = fire_controls.firing_at
-                if fire_at_id != unit_id:
-                    continue
-
-                FireSystem.apply_fire_effect(
-                    gs,
-                    target_id=unit_id,
-                    fire_effect=fire_effect,
-                )

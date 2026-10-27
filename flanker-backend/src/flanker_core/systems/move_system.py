@@ -175,7 +175,6 @@ class MoveSystem:
                 outcome = FireSystem.get_fire_outcome(gs, firer_id)
                 FireSystem.apply_fire_outcome(
                     gs,
-                    attacker_id=firer_id,
                     target_id=unit_id,
                     fire_outcome=outcome,
                 )

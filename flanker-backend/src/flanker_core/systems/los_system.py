@@ -87,6 +87,9 @@ class LosSystem:
 
         return abs(angle_diff) <= fov_degrees / 2
 
+    # NOTE: should this `has_los` be redefined to base off-of LOS polygon
+    # entirely? This canonizes the LOS game rule into one SSOT implementation.
+    # It would also simplify the LOS criteria implementation too.
     @staticmethod
     def has_los(
         gs: GameState,

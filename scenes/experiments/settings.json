@@ -17,6 +17,13 @@
         "stall_limit": 5
       }
     },
+    "b5afc0c7-19e7-4b5f-a195-babf0aa50ed2": {
+      "RallyStallLoseCondition": {
+        "rally_stall_count": 0,
+        "rally_stall_limit": 2,
+        "last_rallied_faction": null
+      }
+    },
     "1859782c-bf0d-417c-959f-445375719293": {
       "EliminationWinCondition": {
         "target_faction": "BLUE",

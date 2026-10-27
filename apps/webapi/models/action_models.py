@@ -48,6 +48,13 @@ class PivotActionModel(BaseModel, CamelCaseConfig):
     to: Vec2
 
 
+class RallyActionModel(BaseModel, CamelCaseConfig):
+    """API model for a unit's rally action."""
+
+    action_type: Literal["RallyActionModel"] = "RallyActionModel"
+    unit_id: UUID
+
+
 class MoveActionLogModel(BaseModel, CamelCaseConfig):
     log_type: Literal["MoveActionLogModel"] = "MoveActionLogModel"
     body: MoveActionModel
@@ -77,12 +84,19 @@ class AssaultActionLogModel(BaseModel, CamelCaseConfig):
     view_state: GameViewStateModel
 
 
+class RallyActionLogModel(BaseModel, CamelCaseConfig):
+    log_type: Literal["RallyActionLogModel"] = "RallyActionLogModel"
+    body: RallyActionModel
+    view_state: GameViewStateModel
+
+
 type ActionModel = Annotated[
     Union[
         MoveActionModel,
         PivotActionModel,
         FireActionModel,
         AssaultActionModel,
+        RallyActionModel,
     ],
     Field(discriminator="action_type"),
 ]
@@ -94,6 +108,7 @@ type ActionLogModel = Annotated[
         PivotActionLogModel,
         FireActionLogModel,
         AssaultActionLogModel,
+        RallyActionLogModel,
     ],
     Field(discriminator="log_type"),
 ]

@@ -5,6 +5,7 @@ from flanker_core.models.components import (
     CombatUnit,
     EliminationWinCondition,
     InitiativeState,
+    RallyStallLoseCondition,
     StallLoseCondition,
 )
 
@@ -35,6 +36,18 @@ class ObjectiveSystem:
         for _, counter in gs.query(StallLoseCondition):
             if counter.stall_count > counter.stall_limit:
                 return counter.winning_faction
+        for _, counter in gs.query(RallyStallLoseCondition):
+            if counter.rally_stall_count > counter.rally_stall_limit:
+                match counter.last_rallied_faction:
+                    case InitiativeState.Faction.BLUE:
+                        return InitiativeState.Faction.RED
+                    case InitiativeState.Faction.RED:
+                        return InitiativeState.Faction.BLUE
+                    case None:
+                        raise RuntimeError(
+                            "Unexpected control path! "
+                            "Last rally action isn't tracked!"
+                        )
 
     @staticmethod
     def count_stall(
@@ -47,6 +60,16 @@ class ObjectiveSystem:
                 counter.stall_count += 1
 
     @staticmethod
+    def count_rally_stall(
+        gs: GameState,
+        faction: InitiativeState.Faction,
+    ) -> None:
+        """Count up the number of stalling rallies for the given faction."""
+        for _, counter in gs.query(RallyStallLoseCondition):
+            counter.rally_stall_count += 1
+            counter.last_rallied_faction = faction
+
+    @staticmethod
     def reset_stall(
         gs: GameState,
         faction: InitiativeState.Faction,
@@ -55,3 +78,12 @@ class ObjectiveSystem:
         for _, counter in gs.query(StallLoseCondition):
             if counter.counting_faction == faction:
                 counter.stall_count = 0
+
+    @staticmethod
+    def reset_rally_stall(
+        gs: GameState,
+    ) -> None:
+        """Resets the number of stalling rallies for the given faction."""
+        for _, counter in gs.query(RallyStallLoseCondition):
+            counter.rally_stall_count = 0
+            counter.last_rallied_faction = None

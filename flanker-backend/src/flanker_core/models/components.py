@@ -141,3 +141,18 @@ class StallLoseCondition:
     winning_faction: InitiativeState.Faction
     stall_count: int
     stall_limit: int
+    rally_stall_count = None
+
+
+@dataclass
+class RallyStallLoseCondition:
+    """
+    Represents rally stall losing condition for all factions.
+    Once a faction performs the last allowable stalling rally,
+    that faction is considered loser. Non-stalling rallies
+    reset the counter.
+    """
+
+    rally_stall_count: int
+    rally_stall_limit: int
+    last_rallied_faction: InitiativeState.Faction | None

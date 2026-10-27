@@ -271,6 +271,8 @@ class PolygonUtils:
         # Include each obstacle intersections as special vertices
         for obstacle in obstacles:
             for other_obstacle in obstacles:
+                if obstacle == other_obstacle:
+                    continue
                 for line in pairwise(obstacle.polyline):
                     intersects = IntersectUtils.get_intersects(
                         line=line,

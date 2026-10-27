@@ -213,4 +213,5 @@ class AiSearchAgent:
                     max_iterations=config.policy.max_iterations,
                     max_simulate_length=config.policy.max_simulate_length,
                     simulate_policy=simulate_policy,
+                    exploration_const=config.policy.exploration_const,
                 )

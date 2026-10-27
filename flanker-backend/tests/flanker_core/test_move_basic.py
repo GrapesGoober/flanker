@@ -8,6 +8,7 @@ from flanker_core.models.components import (
     CombatUnit,
     InitiativeState,
     MoveControls,
+    RallyStallLoseCondition,
     StallLoseCondition,
     TerrainFeature,
     Transform,
@@ -53,7 +54,12 @@ def fixture() -> Fixture:
             winning_faction=InitiativeState.Faction.RED,
             stall_count=0,
             stall_limit=5,
-        )
+        ),
+        RallyStallLoseCondition(
+            rally_stall_count=0,
+            rally_stall_limit=2,
+            last_rallied_faction=None,
+        ),
     )
 
     # 10x10 opaque box (not walkable)

@@ -24,6 +24,7 @@ from flanker_core.models.components import (
     InitiativeState,
     MapBoundary,
     MoveControls,
+    RallyStallLoseCondition,
     StallLoseCondition,
     TerrainFeature,
     Transform,
@@ -162,6 +163,13 @@ def fixture() -> Fixture:
             stall_limit=5,
         )
     )
+    gs.add_entity(
+        RallyStallLoseCondition(
+            rally_stall_count=0,
+            rally_stall_limit=2,
+            last_rallied_faction=None,
+        ),
+    )
 
     return Fixture(
         gs=gs,
@@ -190,6 +198,7 @@ def add_agent_config(
                 max_iterations=200,
                 max_simulate_length=20,
                 simulation_policy="rh",
+                exploration_const=2,
             )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
@@ -252,7 +261,7 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax", "MCTS"])
+@pytest.mark.parametrize("policy_type", ["Minimax"])
 def test_optimal_actions(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],

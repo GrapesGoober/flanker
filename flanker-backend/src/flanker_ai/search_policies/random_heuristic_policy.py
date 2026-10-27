@@ -8,6 +8,7 @@ from flanker_core.models.actions import (
     FireAction,
     MoveAction,
     PivotAction,
+    RallyAction,
 )
 
 
@@ -41,30 +42,60 @@ class RandomHeuristicPolicy:
             )
 
         # Categorizes actions into candidate fire actions or move actions
-        fire_actions: list[Action] = []
-        move_actions: list[Action] = []
+        fire_actions: list[FireAction] = []
+        move_actions: list[MoveAction | AssaultAction | PivotAction] = []
+        rally_actions: list[RallyAction] = []
         for action in actions:
             match action:
                 case FireAction():
                     fire_actions.append(action)
                 case MoveAction() | AssaultAction() | PivotAction():
                     move_actions.append(action)
+                case RallyAction():
+                    rally_actions.append(action)
+
+        # Have it randomly rally. This is to break up RH's aggressiveness.
+        if random.randint(0, 1) == 0:
+            random.shuffle(rally_actions)
+            for action in rally_actions:
+                if not rs.is_legal(action):
+                    continue
+                # Make sure that the rally won't straight up lose.
+                branch = rs.get_one_branch(action)
+                if branch == None:
+                    continue
+                if branch.get_winner() != rs.get_initiative():
+                    continue
+                return action, _RandomHeuristicLog(
+                    actions_length=len(rally_actions),
+                )
 
         # If any fire actions are valid, perform it first
         random.shuffle(fire_actions)
         for action in fire_actions:
-            if rs.is_legal(action):
-                return action, _RandomHeuristicLog(
-                    actions_length=len(fire_actions),
-                )
+            if not rs.is_legal(action):
+                continue
+            return action, _RandomHeuristicLog(
+                actions_length=len(fire_actions),
+            )
 
-        # If any move actions are valid, perform it last
+        # If it can't fire, but any move actions are valid, perform it
         random.shuffle(move_actions)
         for action in move_actions:
-            if rs.is_legal(action):
-                return action, _RandomHeuristicLog(
-                    actions_length=len(move_actions),
-                )
+            if not rs.is_legal(action):
+                continue
+            return action, _RandomHeuristicLog(
+                actions_length=len(move_actions),
+            )
+
+        # If no moves valid, try to rally what few units it has left
+        random.shuffle(rally_actions)
+        for action in rally_actions:
+            if not rs.is_legal(action):
+                continue
+            return action, _RandomHeuristicLog(
+                actions_length=len(rally_actions),
+            )
 
         return None, _RandomHeuristicLog(
             actions_length=0,

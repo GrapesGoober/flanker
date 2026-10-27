@@ -16,8 +16,8 @@ class MctsTreeNode[TAction]:
     children: list["MctsTreeNode[TAction]"]
     unexpanded_actions: list[TAction]
 
-    total_visits: int  # N(v) total number of visits
-    total_value: float  # Q(v) total subtree reward from root's perspective
+    total_visits: int
+    total_value: float
 
     action: TAction | None
 
@@ -36,8 +36,8 @@ class MctsPolicy[TAction]:
         max_iterations: int,
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
+        exploration_const: float,
     ) -> tuple[TAction | None, MctsSearchLog[TAction]]:
-        root_faction = rs.get_initiative()
         root = MctsTreeNode(
             state=rs,
             parent=None,
@@ -54,13 +54,15 @@ class MctsPolicy[TAction]:
         for _ in range(max_iterations):
 
             # Choose a leaf node with best UCT, and expand its leaves
-            leaf = MctsPolicy[TAction]._select_leaf_best_uct(root, root_faction)
+            leaf = MctsPolicy[TAction]._select_leaf_best_uct(
+                node=root,
+                exploration_const=exploration_const,
+            )
             child = MctsPolicy[TAction]._expand(leaf)
             value = MctsPolicy[TAction]._simulate(
                 node=child,
                 max_simulate_length=max_simulate_length,
                 simulate_policy=simulate_policy,
-                root_faction=root_faction,
             )
 
             # Back propagate each node (while tracking depth)
@@ -90,7 +92,7 @@ class MctsPolicy[TAction]:
     @staticmethod
     def _select_leaf_best_uct(
         node: MctsTreeNode[TAction],
-        root_faction: InitiativeState.Faction,
+        exploration_const: float,
     ) -> MctsTreeNode[TAction]:
         """Search node's subtree for leaf node with max UCT."""
 
@@ -102,17 +104,19 @@ class MctsPolicy[TAction]:
             and current_node.children != []  # Has children to select from
         ):
             log_parent = math.log(current_node.total_visits)
-            maximizing = current_node.state.get_initiative() == root_faction
+            is_maximizing = (
+                current_node.state.get_initiative() == InitiativeState.Faction.BLUE
+            )
 
             def uct(child: MctsTreeNode[TAction]) -> float:
                 if child.total_visits == 0:  # unvisited nodes chosen first
                     return float("inf")
 
                 exploitation = child.total_value / child.total_visits
-                if not maximizing:
+                if not is_maximizing:
                     exploitation = -exploitation
                 exploration = math.sqrt(2 * log_parent / child.total_visits)
-                return exploitation + exploration
+                return exploitation + exploration * exploration_const
 
             current_node = max(current_node.children, key=uct)
 
@@ -155,7 +159,6 @@ class MctsPolicy[TAction]:
         node: MctsTreeNode[TAction],
         max_simulate_length: int,
         simulate_policy: Callable[[ISearchState[TAction]], TAction | None],
-        root_faction: InitiativeState.Faction,
     ) -> float:
 
         # Make a copy so it doesn't mutate the node itself
@@ -181,7 +184,10 @@ class MctsPolicy[TAction]:
             stagnate_counter = 0
             current_state.perform_action(action)
 
-        winner = current_state.get_winner()
-        if winner is None:
-            return 0
-        return 1 if winner == root_faction else -1
+        match current_state.get_winner():
+            case None:
+                return 0
+            case InitiativeState.Faction.BLUE:
+                return 1
+            case InitiativeState.Faction.RED:
+                return -1

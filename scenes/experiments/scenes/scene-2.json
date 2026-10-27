@@ -17,7 +17,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "fov_degrees": 90
+        "fov_degrees": null
       },
       "AssaultControls": {}
     },
@@ -38,7 +38,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "fov_degrees": 90
+        "fov_degrees": null
       },
       "AssaultControls": {}
     },
@@ -59,7 +59,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "fov_degrees": 90
+        "fov_degrees": null
       },
       "AssaultControls": {}
     },
@@ -80,7 +80,7 @@
       },
       "FireControls": {
         "can_reactive_fire": true,
-        "fov_degrees": 90
+        "fov_degrees": null
       },
       "AssaultControls": {}
     },
