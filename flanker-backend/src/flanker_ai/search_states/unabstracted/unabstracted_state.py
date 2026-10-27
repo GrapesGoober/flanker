@@ -85,6 +85,13 @@ class UnabstractedState(ISearchState[Action]):
                 total_material_value += material_value
             else:
                 total_material_value -= material_value
+
+        # Have it prefer not giving up initiative unless needed.
+        if self.get_initiative() == maximizing_faction:
+            total_material_value += 100
+        else:
+            total_material_value -= 100
+
         return total_material_value
 
     @override
