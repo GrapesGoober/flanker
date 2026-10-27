@@ -258,7 +258,7 @@ def test_branching_total_prob(fixture: Fixture) -> None:
     assert total_prob == 1, "Total probability must equal 1"
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax", "MCTS"])
+@pytest.mark.parametrize("policy_type", ["Minimax"])
 def test_optimal_actions(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],

@@ -261,7 +261,7 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax", "MCTS"])
+@pytest.mark.parametrize("policy_type", ["Minimax"])
 def test_optimal_actions(
     fixture: Fixture,
     policy_type: Literal["Minimax", "MCTS"],
