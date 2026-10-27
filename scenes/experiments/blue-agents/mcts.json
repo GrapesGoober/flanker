@@ -8,7 +8,6 @@
             "max_iterations": 1000,
             "max_simulate_length": 20,
             "simulation_policy": "rh",
-            "score_factor": 1,
             "exploration_const": 2
           },
           "state": {
