@@ -34,8 +34,13 @@ export type MoveActionModel = components['schemas']['MoveActionModel'];
 export type FireActionModel = components['schemas']['FireActionModel'];
 export type AssaultActionModel = components['schemas']['AssaultActionModel'];
 export type PivotActionModel = components['schemas']['PivotActionModel'];
+export type RallyActionModel = components['schemas']['RallyActionModel'];
 export type ActionModel =
-	MoveActionModel | FireActionModel | AssaultActionModel | PivotActionModel;
+	| MoveActionModel
+	| FireActionModel
+	| AssaultActionModel
+	| PivotActionModel
+	| RallyActionModel;
 
 export type MoveActionLogModel = components['schemas']['MoveActionLogModel'];
 export type PivotActionLogModel = components['schemas']['PivotActionLogModel'];
