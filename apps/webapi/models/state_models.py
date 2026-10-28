@@ -2,7 +2,6 @@ from enum import Enum
 from uuid import UUID
 
 from flanker_core.models.components import CombatUnit, InitiativeState
-from flanker_core.models.outcomes import FireEffect
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -33,14 +32,6 @@ class SquadModel(BaseModel, CamelCaseConfig):
     status: CombatUnit.Status
     is_friendly: bool
     fov_degrees: float | None
-    firing_at: tuple[UUID, FireEffect] | None
-
-
-class FireEffectPair(BaseModel, CamelCaseConfig):
-    position_a: Vec2
-    position_b: Vec2
-    fire_effect_a: FireEffect | None
-    fire_effect_b: FireEffect | None
 
 
 class GameViewStateModel(BaseModel, CamelCaseConfig):
@@ -54,7 +45,6 @@ class GameViewStateModel(BaseModel, CamelCaseConfig):
     objective_state: ObjectiveState
     has_initiative: bool
     squads: list[SquadModel]
-    fire_effect_pairs: list[FireEffectPair]
 
 
 class GameViewStateResponseModel(BaseModel, CamelCaseConfig):

@@ -5,7 +5,6 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.actions import MoveActionResult, PivotActionResult
 from flanker_core.models.components import (
     CombatUnit,
-    FireControls,
     MapBoundary,
     MoveControls,
     TerrainFeature,
@@ -137,11 +136,6 @@ class MoveSystem:
             ObjectiveSystem.count_stall(gs, unit.faction)
         else:
             ObjectiveSystem.reset_stall(gs, unit.faction)
-
-        # Reset fire effect if exist
-        fire_controls = gs.try_component(unit_id, FireControls)
-        if fire_controls != None:
-            fire_controls.firing_at = None
 
         # Set orientation towards move direction
         transform.degrees = transform.position.angle_to(to)

@@ -11,7 +11,6 @@ from flanker_core.models.components import (
     StallLoseCondition,
     Transform,
 )
-from flanker_core.models.outcomes import FireEffect
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 
@@ -28,7 +27,6 @@ class CombatUnitKey:
     features: tuple[Feature, ...]
     faction: InitiativeState.Faction
     status: CombatUnit.Status
-    firing_at: tuple[UUID, FireEffect] | None = None
 
 
 @dataclass(frozen=True)
@@ -109,9 +107,7 @@ class AiTranspositionKeyService:
 
         combat_units: list[CombatUnitKey] = []
 
-        for id, transform, unit, fire_controls in gs.query(
-            Transform, CombatUnit, FireControls
-        ):
+        for id, transform, unit in gs.query(Transform, CombatUnit):
             features: list[CombatUnitKey.Feature] = []
             for transposition_scheme in transposition_schemes:
                 match transposition_scheme:
@@ -139,7 +135,6 @@ class AiTranspositionKeyService:
                     features=tuple(features),
                     faction=unit.faction,
                     status=unit.status,
-                    firing_at=fire_controls.firing_at,
                 )
             )
         return combat_units

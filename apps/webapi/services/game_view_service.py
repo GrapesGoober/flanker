@@ -1,6 +1,3 @@
-from typing import FrozenSet
-from uuid import UUID
-
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
 from flanker_ai.search_states.common.ai_aspect_boundary_service import (
@@ -21,7 +18,6 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
 from webapi.models.inspection_models import GameStateInspectionModel
 from webapi.models.state_models import (
-    FireEffectPair,
     GameViewStateModel,
     GameViewStateResponseModel,
     SquadModel,
@@ -39,7 +35,6 @@ class GameViewService:
 
         # Grab all the squads and build its view models
         squads: list[SquadModel] = []
-        fire_effect_pairs: dict[FrozenSet[UUID], FireEffectPair] = {}
         for unit_id, unit, transform, fire_controls in gs.query(
             CombatUnit,
             Transform,
@@ -53,23 +48,8 @@ class GameViewService:
                     status=unit.status,
                     is_friendly=(unit.faction == faction),
                     fov_degrees=fire_controls.fov_degrees,
-                    firing_at=fire_controls.firing_at,
                 )
             )
-
-            if fire_controls.firing_at != None:
-                target_id, fire_effect = fire_controls.firing_at
-                fire_effect_key = frozenset((unit_id, target_id))
-                if fire_effect_key in fire_effect_pairs:
-                    fire_effect_pairs[fire_effect_key].fire_effect_b = fire_effect
-                else:
-                    target_transform = gs.get_component(target_id, Transform)
-                    fire_effect_pairs[fire_effect_key] = FireEffectPair(
-                        position_a=transform.position,
-                        position_b=target_transform.position,
-                        fire_effect_a=fire_effect,
-                        fire_effect_b=None,
-                    )
 
         # Grab all the game match data
         has_initiative = ActionSystem.get_initiative(gs) == faction
@@ -85,7 +65,6 @@ class GameViewService:
             objective_state=objective_state,
             has_initiative=has_initiative,
             squads=squads,
-            fire_effect_pairs=list(fire_effect_pairs.values()),
         )
 
     @staticmethod
