@@ -3,7 +3,7 @@
 	import {
 		BorderFriendlyUnit,
 		BorderHostileUnit,
-		FireEffectArrows,
+		FireOutcomeArrow,
 		RifleSquad
 	} from '$lib/components';
 
@@ -61,11 +61,10 @@
 							{/if}
 						</g>
 
-						<FireEffectArrows
-							positionA={actorUnit.position}
-							positionB={targetUnit.position}
-							fireEffectA={currentAction.outcome}
-							fireEffectB={null}
+						<FireOutcomeArrow
+							from={actorUnit.position}
+							to={targetUnit.position}
+							effectLabel={currentAction.outcome ?? ''}
 						/>
 					{/if}
 				{/if}
