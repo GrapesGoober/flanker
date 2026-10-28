@@ -135,8 +135,7 @@ export class EditorController {
 			degrees: 0,
 			status: 'ACTIVE',
 			isFriendly: true,
-			fovDegrees: 90,
-			firingAt: null
+			fovDegrees: 90
 		});
 		this.updateGameStateJson(viewState.jsonState);
 		await this.refreshData();

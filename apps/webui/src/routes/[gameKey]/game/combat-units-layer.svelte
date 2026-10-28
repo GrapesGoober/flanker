@@ -4,7 +4,6 @@
 		BlankFriendlyUnit,
 		BorderFriendlyUnit,
 		BorderHostileUnit,
-		FireEffectArrows,
 		RifleSquad
 	} from '$lib/components';
 	import { PlayerController } from './player-controller.svelte';
@@ -25,14 +24,6 @@
 
 <!-- Draw overlay for gameplay icons -->
 <svg overflow="visible" class="transparent-icons">
-	{#each controller.viewState.fireEffectPairs as fireEffect}
-		<FireEffectArrows
-			positionA={fireEffect.positionA}
-			positionB={fireEffect.positionB}
-			fireEffectA={fireEffect.fireEffectA}
-			fireEffectB={fireEffect.fireEffectB}
-		/>
-	{/each}
 	{#if controller.state.type !== 'default'}
 		{@const selectedUnit = controller.state.selectedUnit}
 		{@const position = controller.state.selectedUnit.position}

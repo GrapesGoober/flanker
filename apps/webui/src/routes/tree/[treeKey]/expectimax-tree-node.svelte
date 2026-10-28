@@ -1,11 +1,6 @@
 <script lang="ts">
 	import type { ExpectimaxTreeNodeModel, MapViewStateModel } from '$lib/api';
-	import {
-		FireEffectArrows,
-		RifleSquad,
-		SvgMap,
-		TerrainLayer
-	} from '$lib/components';
+	import { RifleSquad, SvgMap, TerrainLayer } from '$lib/components';
 	import ExpectimaxTreeNode from './expectimax-tree-node.svelte';
 
 	type Props = {
@@ -20,17 +15,6 @@
 
 {#snippet mapContent()}
 	<TerrainLayer {mapData} />
-
-	<g class="transparent-map-layer">
-		{#each node.viewState.fireEffectPairs as fireEffect}
-			<FireEffectArrows
-				positionA={fireEffect.positionA}
-				positionB={fireEffect.positionB}
-				fireEffectA={fireEffect.fireEffectA}
-				fireEffectB={fireEffect.fireEffectB}
-			/>
-		{/each}
-	</g>
 
 	<svg overflow="visible">
 		{#each node.viewState.squads as squad}
@@ -103,11 +87,3 @@
 		{/if}
 	</li>
 </ul>
-
-<style lang="less">
-	.transparent-map-layer {
-		opacity: 0.5;
-		font-size: large;
-		font-family: Verdana, Geneva, Tahoma, sans-serif;
-	}
-</style>
