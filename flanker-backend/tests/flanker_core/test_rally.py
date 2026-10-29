@@ -1,0 +1,146 @@
+from dataclasses import dataclass
+from uuid import UUID
+
+import pytest
+from flanker_core.gamestate import GameState
+from flanker_core.models.actions import RallyAction
+from flanker_core.models.components import (
+    CombatUnit,
+    EliminationWinCondition,
+    FireControls,
+    InitiativeState,
+    RallyStallLoseCondition,
+    Transform,
+)
+from flanker_core.models.outcomes import FireOutcomes
+from flanker_core.models.vec2 import Vec2
+from flanker_core.systems.action_system import ActionSystem
+from flanker_core.systems.objective_system import ObjectiveSystem
+
+
+@dataclass
+class Fixture:
+    gs: GameState
+    attacker_id: UUID
+    target_id_1: UUID
+    target_id_2: UUID
+
+
+@pytest.fixture
+def fixture() -> Fixture:
+    gs = GameState()
+    # Rifle Squads
+    gs.add_entity(
+        InitiativeState(),
+        EliminationWinCondition(
+            target_faction=InitiativeState.Faction.RED,
+            winning_faction=InitiativeState.Faction.BLUE,
+            units_to_eliminate=2,
+            units_eliminated_counter=0,
+        ),
+    )
+    gs.add_entity(
+        RallyStallLoseCondition(
+            rally_stall_count=0,
+            rally_stall_limit=2,
+            last_rallied_faction=None,
+        ),
+    )
+    attacker_id = gs.add_entity(
+        CombatUnit(
+            faction=InitiativeState.Faction.BLUE,
+            status=CombatUnit.Status.ACTIVE,
+        ),
+        FireControls(
+            override=FireOutcomes.KILL,
+            fov_degrees=90,
+        ),
+        Transform(position=Vec2(0, 0)),
+    )
+    target_id_1 = gs.add_entity(
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
+        Transform(position=Vec2(2, 1)),
+    )
+    target_id_2 = gs.add_entity(
+        CombatUnit(
+            faction=InitiativeState.Faction.RED,
+            status=CombatUnit.Status.ACTIVE,
+        ),
+        Transform(position=Vec2(3, 1)),
+    )
+
+    return Fixture(
+        gs=gs,
+        attacker_id=attacker_id,
+        target_id_1=target_id_1,
+        target_id_2=target_id_2,
+    )
+
+
+def test_rally_stalls(fixture: Fixture) -> None:
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.attacker_id,
+        ),
+    )
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert winner == None, "Expects no winner as stalls not met"
+
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.target_id_1,
+        ),
+    )
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert winner == None, "Expects no winner as stalls not met"
+
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.attacker_id,
+        ),
+    )
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert (
+        winner == InitiativeState.Faction.RED
+    ), "Expects RED to win as BLUE performs the last stalling rally."
+
+
+def test_rally_stalls_resets(fixture: Fixture) -> None:
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.attacker_id,
+        ),
+    )
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert winner == None, "Expects no winner as stalls not met"
+
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.target_id_1,
+        ),
+    )
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert winner == None, "Expects no winner as stalls not met"
+
+    # Make this unit pinned, so that its rally is not considered stalling
+    unit = fixture.gs.get_component(fixture.attacker_id, CombatUnit)
+    unit.status = CombatUnit.Status.PINNED
+
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.attacker_id,
+        ),
+    )
+    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
+    assert (
+        winner == None
+    ), "Expects no winner since rally is not stalling and resets counter."
