@@ -21,9 +21,8 @@ from flanker_core.systems.objective_system import ObjectiveSystem
 @dataclass
 class Fixture:
     gs: GameState
-    attacker_id: UUID
-    target_id_1: UUID
-    target_id_2: UUID
+    blue_unit_id: UUID
+    red_unit_id: UUID
 
 
 @pytest.fixture
@@ -46,7 +45,7 @@ def fixture() -> Fixture:
             last_rallied_faction=None,
         ),
     )
-    attacker_id = gs.add_entity(
+    blue_unit_id = gs.add_entity(
         CombatUnit(
             faction=InitiativeState.Faction.BLUE,
             status=CombatUnit.Status.ACTIVE,
@@ -57,26 +56,18 @@ def fixture() -> Fixture:
         ),
         Transform(position=Vec2(0, 0)),
     )
-    target_id_1 = gs.add_entity(
+    red_unit_id = gs.add_entity(
         CombatUnit(
             faction=InitiativeState.Faction.RED,
             status=CombatUnit.Status.ACTIVE,
         ),
         Transform(position=Vec2(2, 1)),
     )
-    target_id_2 = gs.add_entity(
-        CombatUnit(
-            faction=InitiativeState.Faction.RED,
-            status=CombatUnit.Status.ACTIVE,
-        ),
-        Transform(position=Vec2(3, 1)),
-    )
 
     return Fixture(
         gs=gs,
-        attacker_id=attacker_id,
-        target_id_1=target_id_1,
-        target_id_2=target_id_2,
+        blue_unit_id=blue_unit_id,
+        red_unit_id=red_unit_id,
     )
 
 
@@ -84,7 +75,7 @@ def test_rally_stalls(fixture: Fixture) -> None:
     _ = ActionSystem.perform(
         gs=fixture.gs,
         action=RallyAction(
-            unit_id=fixture.attacker_id,
+            unit_id=fixture.blue_unit_id,
         ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
@@ -93,7 +84,7 @@ def test_rally_stalls(fixture: Fixture) -> None:
     _ = ActionSystem.perform(
         gs=fixture.gs,
         action=RallyAction(
-            unit_id=fixture.target_id_1,
+            unit_id=fixture.red_unit_id,
         ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
@@ -102,7 +93,7 @@ def test_rally_stalls(fixture: Fixture) -> None:
     _ = ActionSystem.perform(
         gs=fixture.gs,
         action=RallyAction(
-            unit_id=fixture.attacker_id,
+            unit_id=fixture.blue_unit_id,
         ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
@@ -115,7 +106,7 @@ def test_rally_stalls_resets(fixture: Fixture) -> None:
     _ = ActionSystem.perform(
         gs=fixture.gs,
         action=RallyAction(
-            unit_id=fixture.attacker_id,
+            unit_id=fixture.blue_unit_id,
         ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
@@ -124,20 +115,20 @@ def test_rally_stalls_resets(fixture: Fixture) -> None:
     _ = ActionSystem.perform(
         gs=fixture.gs,
         action=RallyAction(
-            unit_id=fixture.target_id_1,
+            unit_id=fixture.red_unit_id,
         ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
     assert winner == None, "Expects no winner as stalls not met"
 
     # Make this unit pinned, so that its rally is not considered stalling
-    unit = fixture.gs.get_component(fixture.attacker_id, CombatUnit)
+    unit = fixture.gs.get_component(fixture.blue_unit_id, CombatUnit)
     unit.status = CombatUnit.Status.PINNED
 
     _ = ActionSystem.perform(
         gs=fixture.gs,
         action=RallyAction(
-            unit_id=fixture.attacker_id,
+            unit_id=fixture.blue_unit_id,
         ),
     )
     winner = ObjectiveSystem.get_winning_faction(fixture.gs)
