@@ -71,6 +71,31 @@ def fixture() -> Fixture:
     )
 
 
+def test_rally(fixture: Fixture) -> None:
+
+    assert (
+        ActionSystem.get_initiative(fixture.gs) == InitiativeState.Faction.BLUE
+    ), "Expects initiative to start with BLUE."
+
+    unit = fixture.gs.get_component(fixture.blue_unit_id, CombatUnit)
+    unit.status = CombatUnit.Status.PINNED
+
+    _ = ActionSystem.perform(
+        gs=fixture.gs,
+        action=RallyAction(
+            unit_id=fixture.blue_unit_id,
+        ),
+    )
+
+    assert (
+        unit.status == CombatUnit.Status.ACTIVE
+    ), "Expects unit status to recover to ACTIVE."
+
+    assert (
+        ActionSystem.get_initiative(fixture.gs) == InitiativeState.Faction.RED
+    ), "Expects initiative to flip to RED."
+
+
 def test_rally_stalls(fixture: Fixture) -> None:
     _ = ActionSystem.perform(
         gs=fixture.gs,
