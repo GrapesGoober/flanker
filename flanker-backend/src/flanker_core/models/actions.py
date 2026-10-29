@@ -32,8 +32,7 @@ class PivotAction:
 class FireAction:
     """
     Fires at an enemy unit. The target must be within line of sight.
-    Fire modifies the target's status and creates a persistent fire effect.
-    A failed fire can lose initiative.
+    Fire modifies the target's status. A failed fire loses initiative.
     """
 
     unit_id: UUID
