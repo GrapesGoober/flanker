@@ -36,8 +36,7 @@ export class PlayerController {
 	viewState: GameViewStateModel = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
-		squads: [],
-		fireEffectPairs: []
+		squads: []
 	});
 	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });

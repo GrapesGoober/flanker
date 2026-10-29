@@ -36,8 +36,7 @@ export class EditorController {
 	viewState: GameViewStateModel = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
-		squads: [],
-		fireEffectPairs: []
+		squads: []
 	});
 	state: EditorControllerState = $state({ type: 'default' });
 	gameKey: string = $state('');

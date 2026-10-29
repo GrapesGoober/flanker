@@ -17,8 +17,7 @@
 		props.logData[props.index]?.viewState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
-			squads: [],
-			fireEffectPairs: []
+			squads: []
 		}
 	);
 	let currentAction: ActionLogModel | null = $derived(
