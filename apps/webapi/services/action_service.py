@@ -57,29 +57,6 @@ class ActionService:
         )
 
     @staticmethod
-    def _move(
-        gs: GameState,
-        body: MoveActionModel,
-    ) -> None:
-        result = ActionSystem.perform(
-            gs=gs,
-            action=MoveAction(
-                unit_id=body.unit_id,
-                to=body.to,
-            ),
-        )
-        if isinstance(result, InvalidAction):
-            raise ValueError(result)
-        LoggingService.log(
-            gs,
-            MoveActionLogModel(
-                body=body,
-                reactive_fire_outcomes=result.reactive_fire_outcomes,
-                view_state=GameViewService.get_view_state(gs),
-            ),
-        )
-
-    @staticmethod
     def map_action_to_model(
         action: Action,
     ) -> ActionModel:
