@@ -29,25 +29,32 @@ export type GameTreeInspectionModel =
 	components['schemas']['GameTreeInspectionModel'];
 export type MapViewStateModel = components['schemas']['MapViewStateModel'];
 export type RifleSquadData = components['schemas']['SquadModel'];
-export type FireEffect = components['schemas']['FireEffect'];
 
 export type MoveActionModel = components['schemas']['MoveActionModel'];
 export type FireActionModel = components['schemas']['FireActionModel'];
 export type AssaultActionModel = components['schemas']['AssaultActionModel'];
 export type PivotActionModel = components['schemas']['PivotActionModel'];
+export type RallyActionModel = components['schemas']['RallyActionModel'];
 export type ActionModel =
-	MoveActionModel | FireActionModel | AssaultActionModel | PivotActionModel;
+	| MoveActionModel
+	| FireActionModel
+	| AssaultActionModel
+	| PivotActionModel
+	| RallyActionModel;
 
 export type MoveActionLogModel = components['schemas']['MoveActionLogModel'];
+export type PivotActionLogModel = components['schemas']['PivotActionLogModel'];
 export type FireActionLogModel = components['schemas']['FireActionLogModel'];
 export type AssaultActionLogModel =
 	components['schemas']['AssaultActionLogModel'];
-export type PivotActionLogModel = components['schemas']['PivotActionLogModel'];
+export type RallyActionLogModel = components['schemas']['RallyActionLogModel'];
+
 export type ActionLogModel =
 	| MoveActionLogModel
 	| FireActionLogModel
 	| AssaultActionLogModel
-	| PivotActionLogModel;
+	| PivotActionLogModel
+	| RallyActionLogModel;
 
 /** Get all available scene names. */
 export async function GetSceneManifest(): Promise<SceneManifest> {

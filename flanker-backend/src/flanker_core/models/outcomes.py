@@ -17,11 +17,11 @@ class FireOutcomes(str, Enum):
     KILL = "KILL"
 
 
-class FireEffect(str, Enum):
-    """Defines all fire effects."""
+class RallyOutcomes(str, Enum):
+    """Defines a rally outcome as fail or success."""
 
-    PINNING = "PINNING"
-    SUPPRESSING = "SUPPRESSING"
+    FAIL = "FAIL"
+    SUCCESS = "SUCCESS"
 
 
 class InvalidAction(str, Enum):

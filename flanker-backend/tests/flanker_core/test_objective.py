@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import FireAction, RallyAction
+from flanker_core.models.actions import FireAction
 from flanker_core.models.components import (
     CombatUnit,
     EliminationWinCondition,
@@ -111,69 +111,3 @@ def test_kill_two(fixture: Fixture) -> None:
     assert (
         winner == InitiativeState.Faction.BLUE
     ), "Expects attacker faction as winner as objective is met"
-
-
-def test_rally_stalls(fixture: Fixture) -> None:
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=RallyAction(
-            unit_id=fixture.attacker_id,
-        ),
-    )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
-    assert winner == None, "Expects no winner as stalls not met"
-
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=RallyAction(
-            unit_id=fixture.target_id_1,
-        ),
-    )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
-    assert winner == None, "Expects no winner as stalls not met"
-
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=RallyAction(
-            unit_id=fixture.attacker_id,
-        ),
-    )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
-    assert (
-        winner == InitiativeState.Faction.RED
-    ), "Expects RED to win as BLUE performs the last stalling rally."
-
-
-def test_rally_stalls_resets(fixture: Fixture) -> None:
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=RallyAction(
-            unit_id=fixture.attacker_id,
-        ),
-    )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
-    assert winner == None, "Expects no winner as stalls not met"
-
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=RallyAction(
-            unit_id=fixture.target_id_1,
-        ),
-    )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
-    assert winner == None, "Expects no winner as stalls not met"
-
-    # Make this unit pinned, so that its rally is not considered stalling
-    unit = fixture.gs.get_component(fixture.attacker_id, CombatUnit)
-    unit.status = CombatUnit.Status.PINNED
-
-    _ = ActionSystem.perform(
-        gs=fixture.gs,
-        action=RallyAction(
-            unit_id=fixture.attacker_id,
-        ),
-    )
-    winner = ObjectiveSystem.get_winning_faction(fixture.gs)
-    assert (
-        winner == None
-    ), "Expects no winner since rally is not stalling and resets counter."

@@ -1,7 +1,7 @@
 from typing import Annotated, Literal, Union
 from uuid import UUID
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, RallyOutcomes
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -87,6 +87,7 @@ class AssaultActionLogModel(BaseModel, CamelCaseConfig):
 class RallyActionLogModel(BaseModel, CamelCaseConfig):
     log_type: Literal["RallyActionLogModel"] = "RallyActionLogModel"
     body: RallyActionModel
+    outcome: RallyOutcomes
     view_state: GameViewStateModel
 
 

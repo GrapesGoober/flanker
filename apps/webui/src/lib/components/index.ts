@@ -9,7 +9,7 @@ export { default as Arrow } from './svg-icons/arrow.svelte';
 export { default as BlankFriendlyUnit } from './svg-icons/blank-friendly-unit.svelte';
 export { default as BorderFriendlyUnit } from './svg-icons/border-friendly-unit.svelte';
 export { default as BorderHostileUnit } from './svg-icons/border-hostile-unit.svelte';
-export { default as FireEffectArrows } from './svg-icons/fire-effect-arrows.svelte';
+export { default as FireOutcomeArrow } from './svg-icons/fire-outcome-arrow.svelte';
 export { default as FriendlyRifleSquad } from './svg-icons/friendly-rifle-squad.svelte';
 export { default as HostileRifleSquad } from './svg-icons/hostile-rifle-squad.svelte';
 export { default as LoadingSpinner } from './svg-icons/loading-spinner.svelte';

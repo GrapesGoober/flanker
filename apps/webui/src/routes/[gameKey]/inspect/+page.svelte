@@ -24,8 +24,7 @@
 		viewState: {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
-			squads: [],
-			fireEffectPairs: []
+			squads: []
 		},
 		losPolygons: [],
 		moveCandidates: [],

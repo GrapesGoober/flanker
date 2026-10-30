@@ -21,6 +21,7 @@
 		else if (key === 'f') await controller.fireActionAsync();
 		else if (key === 'a') await controller.assaultActionAsync();
 		else if (key === 'p') await controller.pivotActionAsync();
+		else if (key === 'r') await controller.rallyActionAsync();
 	}
 </script>
 
@@ -83,6 +84,15 @@
 			disabled={!controller.isAssaultActionValid()}
 		>
 			Assault (a)
+		</button>
+		<button
+			class="action-button"
+			onclick={() => {
+				controller.rallyActionAsync();
+			}}
+			disabled={!controller.isRallyActionValid()}
+		>
+			Rally (r)
 		</button>
 		{#if controller.isFetching}
 			<!-- Loading spinner shown while actions are processing -->

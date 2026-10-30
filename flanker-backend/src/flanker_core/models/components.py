@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, IntFlag, auto
-from uuid import UUID
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireEffect, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 
 
@@ -70,7 +69,6 @@ class FireControls:
 
     fov_degrees: float | None
     override: FireOutcomes | None = None
-    firing_at: tuple[UUID, FireEffect] | None = None
 
 
 @dataclass

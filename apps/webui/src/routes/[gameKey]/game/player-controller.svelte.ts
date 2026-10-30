@@ -36,8 +36,7 @@ export class PlayerController {
 	viewState: GameViewStateModel = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
-		squads: [],
-		fireEffectPairs: []
+		squads: []
 	});
 	isFetching: boolean = $state(false);
 	state: PlayerControllerState = $state({ type: 'default' });
@@ -158,6 +157,15 @@ export class PlayerController {
 		return true;
 	}
 
+	/* Returns true if assault action is valid. */
+	isRallyActionValid(): boolean {
+		if (this.isFetching) return false;
+		if (this.state.type !== 'selected') return false;
+		if (!this.state.selectedUnit.isFriendly) return false;
+		if (!this.viewState.hasInitiative) return false;
+		return true;
+	}
+
 	/* Performs move action for the selected unit. */
 	async moveActionAsync() {
 		if (!this.isMoveActionValid()) return;
@@ -223,6 +231,22 @@ export class PlayerController {
 			actionType: 'AssaultActionModel',
 			unitId: unitId,
 			targetId: this.state.target.unitId
+		});
+		this.viewState = result.viewState;
+		this.updateGameStateJson(result.jsonState);
+		this.isFetching = false;
+		this.reselectUnit(unitId);
+	}
+
+	/* Performs assault action for the selected unit. */
+	async rallyActionAsync() {
+		if (this.state.type !== 'selected') return;
+		let unitId = this.state.selectedUnit.unitId;
+		this.isFetching = true;
+		const gameStateJson = await this.getGameStateJson();
+		const result = await PerformActionAsync(gameStateJson, {
+			actionType: 'RallyActionModel',
+			unitId: unitId
 		});
 		this.viewState = result.viewState;
 		this.updateGameStateJson(result.jsonState);

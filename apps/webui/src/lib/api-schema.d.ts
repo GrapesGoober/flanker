@@ -170,8 +170,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Run Match */
-        post: operations["run_match_api_rpc_game_get_ai_match_post"];
+        /** Get Match Result */
+        post: operations["get_match_result_api_rpc_game_get_ai_match_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -187,8 +187,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Update Ai Waypoinys */
-        post: operations["update_ai_waypoinys_api_rpc_editor_update_ai_waypoints_post"];
+        /** Update Ai Waypoints */
+        post: operations["update_ai_waypoints_api_rpc_editor_update_ai_waypoints_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -319,8 +319,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ActionLogModel: components["schemas"]["MoveActionLogModel"] | components["schemas"]["PivotActionLogModel"] | components["schemas"]["FireActionLogModel"] | components["schemas"]["AssaultActionLogModel"];
-        ActionModel: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
+        ActionLogModel: components["schemas"]["MoveActionLogModel"] | components["schemas"]["PivotActionLogModel"] | components["schemas"]["FireActionLogModel"] | components["schemas"]["AssaultActionLogModel"] | components["schemas"]["RallyActionLogModel"];
+        ActionModel: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"] | components["schemas"]["RallyActionModel"];
         /** AiActionResultModel */
         AiActionResultModel: {
             faction: components["schemas"]["Faction"];
@@ -409,12 +409,12 @@ export interface components {
         /** Body_perform_action_api_rpc_game_perform_post */
         Body_perform_action_api_rpc_game_perform_post: {
             /** Action */
-            action: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"];
+            action: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"] | components["schemas"]["RallyActionModel"];
             /** State */
             state: string;
         };
-        /** Body_update_ai_waypoinys_api_rpc_editor_update_ai_waypoints_post */
-        Body_update_ai_waypoinys_api_rpc_editor_update_ai_waypoints_post: {
+        /** Body_update_ai_waypoints_api_rpc_editor_update_ai_waypoints_post */
+        Body_update_ai_waypoints_api_rpc_editor_update_ai_waypoints_post: {
             /** State */
             state: string;
             configRequest: components["schemas"]["AiWaypointConfigRequestModel"];
@@ -513,19 +513,6 @@ export interface components {
             targetId: string;
         };
         /**
-         * FireEffect
-         * @description Defines all fire effects.
-         * @enum {string}
-         */
-        FireEffect: "PINNING" | "SUPPRESSING";
-        /** FireEffectPair */
-        FireEffectPair: {
-            positionA: components["schemas"]["Vec2"];
-            positionB: components["schemas"]["Vec2"];
-            fireEffectA: components["schemas"]["FireEffect"] | null;
-            fireEffectB: components["schemas"]["FireEffect"] | null;
-        };
-        /**
          * FireOutcomes
          * @description Defines all fire outcomes.
          * @enum {string}
@@ -558,8 +545,6 @@ export interface components {
             hasInitiative: boolean;
             /** Squads */
             squads: components["schemas"]["SquadModel"][];
-            /** Fireeffectpairs */
-            fireEffectPairs: components["schemas"]["FireEffectPair"][];
         };
         /**
          * GameViewStateResponseModel
@@ -722,6 +707,39 @@ export interface components {
             unitId: string;
             to: components["schemas"]["Vec2"];
         };
+        /** RallyActionLogModel */
+        RallyActionLogModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            logType: "RallyActionLogModel";
+            body: components["schemas"]["RallyActionModel"];
+            outcome: components["schemas"]["RallyOutcomes"];
+            viewState: components["schemas"]["GameViewStateModel"];
+        };
+        /**
+         * RallyActionModel
+         * @description API model for a unit's rally action.
+         */
+        RallyActionModel: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            actionType: "RallyActionModel";
+            /**
+             * Unitid
+             * Format: uuid
+             */
+            unitId: string;
+        };
+        /**
+         * RallyOutcomes
+         * @description Defines a rally outcome as fail or success.
+         * @enum {string}
+         */
+        RallyOutcomes: "FAIL" | "SUCCESS";
         /** SceneManifestResponse */
         SceneManifestResponse: {
             /** Scenenames */
@@ -745,11 +763,6 @@ export interface components {
             isFriendly: boolean;
             /** Fovdegrees */
             fovDegrees: number | null;
-            /** Firingat */
-            firingAt: [
-                string,
-                components["schemas"]["FireEffect"]
-            ] | null;
         };
         /**
          * Status
@@ -1060,7 +1073,7 @@ export interface operations {
             };
         };
     };
-    run_match_api_rpc_game_get_ai_match_post: {
+    get_match_result_api_rpc_game_get_ai_match_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1093,7 +1106,7 @@ export interface operations {
             };
         };
     };
-    update_ai_waypoinys_api_rpc_editor_update_ai_waypoints_post: {
+    update_ai_waypoints_api_rpc_editor_update_ai_waypoints_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1102,7 +1115,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Body_update_ai_waypoinys_api_rpc_editor_update_ai_waypoints_post"];
+                "application/json": components["schemas"]["Body_update_ai_waypoints_api_rpc_editor_update_ai_waypoints_post"];
             };
         };
         responses: {

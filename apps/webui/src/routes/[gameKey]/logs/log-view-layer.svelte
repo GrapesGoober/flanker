@@ -3,7 +3,7 @@
 	import {
 		BorderFriendlyUnit,
 		BorderHostileUnit,
-		FireEffectArrows,
+		FireOutcomeArrow,
 		RifleSquad
 	} from '$lib/components';
 
@@ -17,8 +17,7 @@
 		props.logData[props.index]?.viewState ?? {
 			objectiveState: 'INCOMPLETE',
 			hasInitiative: false,
-			squads: [],
-			fireEffectPairs: []
+			squads: []
 		}
 	);
 	let currentAction: ActionLogModel | null = $derived(
@@ -61,11 +60,10 @@
 							{/if}
 						</g>
 
-						<FireEffectArrows
-							positionA={actorUnit.position}
-							positionB={targetUnit.position}
-							fireEffectA={currentAction.outcome}
-							fireEffectB={null}
+						<FireOutcomeArrow
+							from={actorUnit.position}
+							to={targetUnit.position}
+							effectLabel={currentAction.outcome ?? ''}
 						/>
 					{/if}
 				{/if}

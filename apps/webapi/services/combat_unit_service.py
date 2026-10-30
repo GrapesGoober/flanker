@@ -45,7 +45,6 @@ class CombatUnitService:
             else InitiativeState.Faction.RED
         )
         fire_controls.fov_degrees = unit.fov_degrees
-        fire_controls.firing_at = unit.firing_at
 
     @staticmethod
     def add_unit(
@@ -70,7 +69,6 @@ class CombatUnitService:
             ),
             FireControls(
                 fov_degrees=unit.fov_degrees,
-                firing_at=unit.firing_at,
             ),
             AssaultControls(),
             id=unit.unit_id,

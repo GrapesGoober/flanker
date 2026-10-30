@@ -36,8 +36,7 @@ export class EditorController {
 	viewState: GameViewStateModel = $state({
 		objectiveState: 'INCOMPLETE',
 		hasInitiative: false,
-		squads: [],
-		fireEffectPairs: []
+		squads: []
 	});
 	state: EditorControllerState = $state({ type: 'default' });
 	gameKey: string = $state('');
@@ -135,8 +134,7 @@ export class EditorController {
 			degrees: 0,
 			status: 'ACTIVE',
 			isFriendly: true,
-			fovDegrees: 90,
-			firingAt: null
+			fovDegrees: 90
 		});
 		this.updateGameStateJson(viewState.jsonState);
 		await this.refreshData();

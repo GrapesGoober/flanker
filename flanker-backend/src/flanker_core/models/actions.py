@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, RallyOutcomes
 from flanker_core.models.vec2 import Vec2
 
 
@@ -32,8 +32,7 @@ class PivotAction:
 class FireAction:
     """
     Fires at an enemy unit. The target must be within line of sight.
-    Fire modifies the target's status and creates a persistent fire effect.
-    A failed fire can lose initiative.
+    Fire modifies the target's status. A failed fire loses initiative.
     """
 
     unit_id: UUID
@@ -85,7 +84,8 @@ class AssaultActionResult:
 
 
 @dataclass
-class RallyActionResult: ...
+class RallyActionResult:
+    outcome: RallyOutcomes
 
 
 type Action = (MoveAction | PivotAction | FireAction | AssaultAction | RallyAction)

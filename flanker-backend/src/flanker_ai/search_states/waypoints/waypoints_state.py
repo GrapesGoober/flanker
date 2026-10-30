@@ -26,11 +26,10 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
 from flanker_core.models.components import (
     CombatUnit,
-    FireControls,
     InitiativeState,
     Transform,
 )
-from flanker_core.models.outcomes import FireEffect, InvalidAction
+from flanker_core.models.outcomes import InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystemOverrides
@@ -69,7 +68,7 @@ class WaypointsState(ISearchState[Action]):
                 return -10000
 
         total_material_value = 0.0
-        for _, combat_unit, fire_controls in self.gs.query(CombatUnit, FireControls):
+        for _, combat_unit in self.gs.query(CombatUnit):
             material_value = 0
 
             # Count unit statuses as its material value
@@ -80,18 +79,6 @@ class WaypointsState(ISearchState[Action]):
                     material_value += 2
                 case CombatUnit.Status.SUPPRESSED:
                     material_value += 1
-
-            # The unit's fire effect is also counted as material value
-            match fire_controls.firing_at:
-                case None:
-                    pass  # No additional value for no fires
-                case _:
-                    _, fire_effect = fire_controls.firing_at
-                    match fire_effect:
-                        case FireEffect.PINNING:
-                            material_value += 0.5
-                        case FireEffect.SUPPRESSING:
-                            material_value += 1
 
             if combat_unit.faction == maximizing_faction:
                 total_material_value += material_value
