@@ -715,6 +715,7 @@ export interface components {
              */
             logType: "RallyActionLogModel";
             body: components["schemas"]["RallyActionModel"];
+            outcome: components["schemas"]["RallyOutcomes"];
             viewState: components["schemas"]["GameViewStateModel"];
         };
         /**
@@ -733,6 +734,12 @@ export interface components {
              */
             unitId: string;
         };
+        /**
+         * RallyOutcomes
+         * @description Defines a rally outcome as fail or success.
+         * @enum {string}
+         */
+        RallyOutcomes: "FAIL" | "SUCCESS";
         /** SceneManifestResponse */
         SceneManifestResponse: {
             /** Scenenames */
