@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, RallyOutcomes
 from flanker_core.models.vec2 import Vec2
 
 
@@ -84,7 +84,8 @@ class AssaultActionResult:
 
 
 @dataclass
-class RallyActionResult: ...
+class RallyActionResult:
+    outcome: RallyOutcomes
 
 
 type Action = (MoveAction | PivotAction | FireAction | AssaultAction | RallyAction)

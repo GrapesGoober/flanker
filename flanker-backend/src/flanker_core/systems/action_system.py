@@ -27,6 +27,7 @@ from flanker_core.models.outcomes import (
     InvalidAction,
 )
 from flanker_core.systems.assault_system import AssaultSystem
+from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.fire_system import FireSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
@@ -118,17 +119,9 @@ class ActionSystem:
                         ActionSystem.flip_initiative(gs)
 
             case RallyAction():
-                unit = gs.get_component(action.unit_id, CombatUnit)
-                if unit.status == CombatUnit.Status.ACTIVE:
-                    ObjectiveSystem.count_rally_stall(
-                        gs=gs,
-                        faction=ActionSystem.get_initiative(gs),
-                    )
-                else:
-                    ObjectiveSystem.reset_rally_stall(gs)
-                unit.status = CombatUnit.Status.ACTIVE
+                result = CommandSystem.rally(gs, action.unit_id)
+                # TODO: have it flip initiative only when is success.
                 ActionSystem.flip_initiative(gs)
-                result = RallyActionResult()
 
         return result
 

@@ -17,6 +17,13 @@ class FireOutcomes(str, Enum):
     KILL = "KILL"
 
 
+class RallyOutcomes(str, Enum):
+    """Defines a rally outcome as fail or success."""
+
+    FAIL = "FAIL"
+    SUCCESS = "SUCCESS"
+
+
 class InvalidAction(str, Enum):
     """Defines reasons of invalid (not error) actions."""
 
