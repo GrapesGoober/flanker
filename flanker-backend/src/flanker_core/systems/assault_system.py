@@ -43,7 +43,6 @@ class AssaultSystem:
         """Rolls a randomized assault outcome, or overriden if provided."""
         attacker_assault = gs.get_component(attacker_id, AssaultControls)
 
-        # Once at location, do dice roll; only one can survive
         if attacker_assault.override == None:
             attacker_roll = random.uniform(0, 1)
         else:
