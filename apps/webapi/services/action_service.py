@@ -34,9 +34,6 @@ from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
 
 
-# TODO: find some ways to clean this up. The core should be able to dispatch.
-# This service should handle mapping instead, which is already implemented in
-# AiService. That shouldn't do action model mapping.
 class ActionService:
     """Provides static methods to process player actions."""
 
@@ -153,53 +150,40 @@ class ActionService:
         result: ActionResult,
         view_state_snapshot: GameViewStateModel,
     ) -> ActionLogModel:
-        match action, result:
-            case MoveAction(), MoveActionResult():
+        action_model = ActionService.map_action_to_model(action)
+        match action_model, result:
+            case MoveActionModel(), MoveActionResult():
                 return MoveActionLogModel(
-                    body=MoveActionModel(
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    ),
+                    body=action_model,
                     reactive_fire_outcomes=result.reactive_fire_outcomes,
                     view_state=view_state_snapshot,
                 )
-
-            case PivotAction(), PivotActionResult():
+            case PivotActionModel(), PivotActionResult():
                 return PivotActionLogModel(
-                    body=PivotActionModel(
-                        unit_id=action.unit_id,
-                        to=action.to,
-                    ),
+                    body=action_model,
                     reactive_fire_outcomes=result.reactive_fire_outcomes,
                     view_state=view_state_snapshot,
                 )
-            case FireAction(), FireActionResult():
+            case FireActionModel(), FireActionResult():
                 return FireActionLogModel(
-                    body=FireActionModel(
-                        unit_id=action.unit_id,
-                        target_id=action.target_id,
-                    ),
+                    body=action_model,
                     outcome=result.outcome,
                     view_state=view_state_snapshot,
                 )
-            case AssaultAction(), AssaultActionResult():
+            case AssaultActionModel(), AssaultActionResult():
                 return AssaultActionLogModel(
-                    body=AssaultActionModel(
-                        unit_id=action.unit_id,
-                        target_id=action.target_id,
-                    ),
+                    body=action_model,
                     outcome=result.outcome,
                     reactive_fire_outcomes=result.reactive_fire_outcomes,
                     view_state=view_state_snapshot,
                 )
-            case RallyAction(), RallyActionResult():
+            case RallyActionModel(), RallyActionResult():
                 return RallyActionLogModel(
-                    body=RallyActionModel(
-                        unit_id=action.unit_id,
-                    ),
+                    body=action_model,
                     outcome=result.outcome,
                     view_state=view_state_snapshot,
                 )
-
             case _:
-                raise ValueError(f"Unknown type {result=}")
+                raise RuntimeError(
+                    f"Action and result pair ({action=}, {result=}) mismatched!"
+                )
