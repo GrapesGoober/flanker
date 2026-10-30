@@ -14,35 +14,9 @@ from flanker_ai.search_policies.expectimax_policy import (
 from flanker_ai.search_policies.mcts_policy import MctsTreeNode
 from flanker_ai.search_policies.minimax_policy import MinimaxTreeNode
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import (
-    Action,
-    AssaultAction,
-    AssaultActionResult,
-    FireAction,
-    FireActionResult,
-    MoveAction,
-    MoveActionResult,
-    PivotAction,
-    PivotActionResult,
-    RallyAction,
-    RallyActionResult,
-)
+from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
-from webapi.models.action_models import (
-    ActionLogModel,
-    ActionModel,
-    AssaultActionLogModel,
-    AssaultActionModel,
-    FireActionLogModel,
-    FireActionModel,
-    MoveActionLogModel,
-    MoveActionModel,
-    PivotActionLogModel,
-    PivotActionModel,
-    RallyActionLogModel,
-    RallyActionModel,
-)
 from webapi.models.inspection_models import (
     ExpectimaxTreeEdgeModel,
     ExpectimaxTreeInspectionModel,
@@ -62,6 +36,7 @@ from webapi.models.state_models import (
     AiSearchLogModel,
     AiWaypointConfigRequestModel,
 )
+from webapi.services.action_service import ActionService
 from webapi.services.game_view_service import GameViewService
 from webapi.services.logging_service import LoggingService
 from webapi.services.scene_service import SceneService
@@ -115,7 +90,7 @@ class AiService:
             case MctsTreeNode():
                 return MctsTreeInspectionModel(
                     type="MctsTreeInspectionModel",
-                    best_action=AiService._map_action_to_model(
+                    best_action=ActionService.map_action_to_model(
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_mcts_to_inspection(
@@ -125,7 +100,7 @@ class AiService:
             case ExpectimaxTreeNode():
                 return ExpectimaxTreeInspectionModel(
                     type="ExpectimaxTreeInspectionModel",
-                    best_action=AiService._map_action_to_model(
+                    best_action=ActionService.map_action_to_model(
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_expectimax_to_inspection(
@@ -135,7 +110,7 @@ class AiService:
             case MinimaxTreeNode():
                 return MinimaxTreeInspectionModel(
                     type="MinimaxTreeInspectionModel",
-                    best_action=AiService._map_action_to_model(
+                    best_action=ActionService.map_action_to_model(
                         tree_result.best_action,
                     ),
                     tree_root=AiService._map_minimax_to_inspection(
@@ -197,99 +172,12 @@ class AiService:
         gs_snapshots: list[GameState],
     ) -> None:
         for result, gs_snapshot in zip(results, gs_snapshots):
-            log = AiService._map_action_result_to_logs(result, gs_snapshot)
+            log = ActionService.map_action_result_to_logs(
+                action=result.action,
+                result=result.result,
+                view_state_snapshot=GameViewService.get_view_state(gs_snapshot),
+            )
             LoggingService.log(gs, log)
-
-    @staticmethod
-    def _map_action_to_model(
-        action: Action,
-    ) -> ActionModel:
-        match action:
-            case MoveAction():
-                return MoveActionModel(
-                    action_type="MoveActionModel",
-                    unit_id=action.unit_id,
-                    to=action.to,
-                )
-            case PivotAction():
-                return PivotActionModel(
-                    action_type="PivotActionModel",
-                    unit_id=action.unit_id,
-                    to=action.to,
-                )
-            case FireAction():
-                return FireActionModel(
-                    action_type="FireActionModel",
-                    unit_id=action.unit_id,
-                    target_id=action.target_id,
-                )
-            case AssaultAction():
-                return AssaultActionModel(
-                    action_type="AssaultActionModel",
-                    unit_id=action.unit_id,
-                    target_id=action.target_id,
-                )
-            case RallyAction():
-                return RallyActionModel(
-                    action_type="RallyActionModel",
-                    unit_id=action.unit_id,
-                )
-
-    @staticmethod
-    def _map_action_result_to_logs(
-        result: AiActionResult,
-        gs_snapshot: GameState,
-    ) -> ActionLogModel:
-        match result.action, result.result:
-            case MoveAction(), MoveActionResult():
-                return MoveActionLogModel(
-                    body=MoveActionModel(
-                        unit_id=result.action.unit_id,
-                        to=result.action.to,
-                    ),
-                    reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                    view_state=GameViewService.get_view_state(gs_snapshot),
-                )
-
-            case PivotAction(), PivotActionResult():
-                return PivotActionLogModel(
-                    body=PivotActionModel(
-                        unit_id=result.action.unit_id,
-                        to=result.action.to,
-                    ),
-                    reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                    view_state=GameViewService.get_view_state(gs_snapshot),
-                )
-            case FireAction(), FireActionResult():
-                return FireActionLogModel(
-                    body=FireActionModel(
-                        unit_id=result.action.unit_id,
-                        target_id=result.action.target_id,
-                    ),
-                    outcome=result.result.outcome,
-                    view_state=GameViewService.get_view_state(gs_snapshot),
-                )
-            case AssaultAction(), AssaultActionResult():
-                return AssaultActionLogModel(
-                    body=AssaultActionModel(
-                        unit_id=result.action.unit_id,
-                        target_id=result.action.target_id,
-                    ),
-                    outcome=result.result.outcome,
-                    reactive_fire_outcomes=result.result.reactive_fire_outcomes,
-                    view_state=GameViewService.get_view_state(gs_snapshot),
-                )
-            case RallyAction(), RallyActionResult():
-                return RallyActionLogModel(
-                    body=RallyActionModel(
-                        unit_id=result.action.unit_id,
-                    ),
-                    outcome=result.result.outcome,
-                    view_state=GameViewService.get_view_state(gs_snapshot),
-                )
-
-            case _:
-                raise ValueError(f"Unknown type {result=}")
 
     @staticmethod
     def _map_mcts_to_inspection(
@@ -301,7 +189,7 @@ class AiService:
             ),
             children=[
                 MctsTreeEdgeModel(
-                    action=AiService._map_action_to_model(child.action),
+                    action=ActionService.map_action_to_model(child.action),
                     node=AiService._map_mcts_to_inspection(child),
                 )
                 for child in node.children
@@ -321,7 +209,7 @@ class AiService:
             ),
             children=[
                 MinimaxTreeEdgeModel(
-                    action=AiService._map_action_to_model(edge.action),
+                    action=ActionService.map_action_to_model(edge.action),
                     node=AiService._map_minimax_to_inspection(edge.node),
                     best_score=edge.best_score,
                 )
@@ -339,7 +227,7 @@ class AiService:
             ),
             children=[
                 ExpectimaxTreeEdgeModel(
-                    action=AiService._map_action_to_model(edge.action),
+                    action=ActionService.map_action_to_model(edge.action),
                     outcomes=[
                         ExpectimaxTreeOutcomeModel(
                             probability=outcome.probability,
