@@ -160,6 +160,7 @@ class ActionService:
             gs,
             RallyActionLogModel(
                 body=body,
+                outcome=result.outcome,
                 view_state=GameViewService.get_view_state(gs),
             ),
         )

@@ -284,6 +284,7 @@ class AiService:
                     body=RallyActionModel(
                         unit_id=result.action.unit_id,
                     ),
+                    outcome=result.result.outcome,
                     view_state=GameViewService.get_view_state(gs_snapshot),
                 )
 
