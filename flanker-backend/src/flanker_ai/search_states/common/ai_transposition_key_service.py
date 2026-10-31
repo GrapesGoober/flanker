@@ -23,7 +23,6 @@ class CombatUnitKey:
     type LosSignature = tuple[bool, ...]
     type Feature = RoundedPosition | RoundedRotation | LosSignature
 
-    id: UUID
     features: tuple[Feature, ...]
     faction: InitiativeState.Faction
     status: CombatUnit.Status
@@ -131,7 +130,6 @@ class AiTranspositionKeyService:
 
             combat_units.append(
                 CombatUnitKey(
-                    id=id,
                     features=tuple(features),
                     faction=unit.faction,
                     status=unit.status,
