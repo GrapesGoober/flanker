@@ -10,7 +10,8 @@
 	let newNameTextbox: string = $state('');
 
 	onMount(async () => {
-		await controller.reloadList();
+		await controller.reloadManifest();
+		await controller.reloadLocal();
 	});
 
 	$effect(() => {
