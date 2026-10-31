@@ -1,0 +1,30 @@
+{
+  "entities": {
+    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
+      "AiConfigComponent": {
+        "config": {
+          "policy": {
+            "type": "MinimaxPolicy",
+            "depth": 4
+          },
+          "state": {
+            "type": "UnabstractedStateConfig",
+            "move_candidates_pool": {
+              "type": "GridConfig",
+              "spacing": 75,
+              "offset": 37.5
+            },
+            "move_candidates_filter": [],
+            "transposition_schemes": [
+              {
+                "type": "RoundedPosition",
+                "to_nearest": 50
+              }
+            ]
+          }
+        },
+        "faction": "RED"
+      }
+    }
+  }
+}
