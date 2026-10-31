@@ -1,14 +1,14 @@
 {
   "entities": {
     "843fadf4-9645-44ec-9d42-9ac658e964ca": {
-      "Transform": { "position": { "x": 40.0, "y": 40.0 }, "degrees": 0.0 },
+      "Transform": { "position": { "x": 45.0, "y": 42.0 }, "degrees": 0.0 },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
       "MoveControls": { "move_type": "FOOT" },
       "FireControls": { "fov_degrees": null, "override": null },
       "AssaultControls": { "override": null }
     },
     "301ab44d-d18b-47d7-8406-add359176995": {
-      "Transform": { "position": { "x": 60.0, "y": 40.0 }, "degrees": 0.0 },
+      "Transform": { "position": { "x": 82.0, "y": 47.0 }, "degrees": 0.0 },
       "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
       "MoveControls": { "move_type": "FOOT" },
       "FireControls": { "fov_degrees": null, "override": null },
@@ -18,99 +18,146 @@
       "MapBoundary": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": 200.0, "y": 0.0 },
-          { "x": 200.0, "y": 200.0 },
-          { "x": 0.0, "y": 200.0 }
+          { "x": 300.0, "y": 0.0 },
+          { "x": 300.0, "y": 300.0 },
+          { "x": 0.0, "y": 300.0 }
         ]
       }
     },
     "f0a3514a-2e5e-49e4-9cb3-efbe5902d688": {
-      "Transform": {
-        "position": { "x": 95.0, "y": 173.15265213524634 },
-        "degrees": 0.0
-      },
+      "Transform": { "position": { "x": 181.0, "y": 259.0 }, "degrees": 0.0 },
       "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
       "MoveControls": { "move_type": "FOOT" },
       "FireControls": { "fov_degrees": null, "override": null },
       "AssaultControls": { "override": null }
     },
     "f0c0ac1a-4a2e-494d-872d-a43f3f891a70": {
-      "Transform": {
-        "position": { "x": 128.0, "y": 176.56301440989475 },
-        "degrees": 0.0
-      },
+      "Transform": { "position": { "x": 231.0, "y": 252.0 }, "degrees": 0.0 },
       "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
       "MoveControls": { "move_type": "FOOT" },
       "FireControls": { "fov_degrees": null, "override": null },
       "AssaultControls": { "override": null }
     },
-    "d7cc0767-2cf0-410a-a386-c620b313c797": {
-      "Transform": {
-        "position": { "x": 111.5989079436175, "y": 104.33376806334458 },
-        "degrees": 0.0
-      },
+    "ccdf3650-aa05-459a-b180-e98b7f2f20e9": {
+      "Transform": { "position": { "x": 126.5, "y": 66.5 }, "degrees": 0.0 },
       "TerrainFeature": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": -39.255360345493585, "y": 11.545694219262828 },
-          { "x": -52.45043945322253, "y": 29.688927992390106 },
-          { "x": -16.493848884661162, "y": 41.23462221165293 },
-          { "x": 20.782249594673075, "y": 39.58523732318683 },
-          { "x": 26.390158215457873, "y": 15.174340973888278 }
+          { "x": -42.0, "y": 8.0 },
+          { "x": -78.0, "y": 29.5 },
+          { "x": -61.0, "y": 57.5 },
+          { "x": -1.0, "y": 50.5 },
+          { "x": 19.5, "y": 19.5 }
         ],
         "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": { "type": "FOREST" }
     },
-    "b3db0cc9-620f-42b2-8d97-8fa6ccbb0f73": {
-      "Transform": {
-        "position": { "x": 200.99556889848105, "y": 70.0 },
-        "degrees": 0.0
-      },
+    "4c393790-146c-4321-8d95-5e8212a0b1e7": {
+      "Transform": { "position": { "x": 227.5, "y": 171.0 }, "degrees": 0.0 },
       "TerrainFeature": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": 0.32987697769323177, "y": 48.821792698597065 },
-          { "x": -38.59560639010712, "y": 35.95659056856135 },
-          { "x": -43.543761055505485, "y": 2.3091388438525655 },
-          { "x": -33.317574747015556, "y": -9.236555375410255 }
+          { "x": -54.0, "y": 9.0 },
+          { "x": -78.5, "y": 28.0 },
+          { "x": -78.0, "y": 52.0 },
+          { "x": -14.0, "y": 47.5 },
+          { "x": 20.5, "y": 26.5 }
         ],
         "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": { "type": "FOREST" }
     },
-    "ef160371-8589-4ea8-adca-a28b22b439a0": {
-      "Transform": {
-        "position": { "x": 109.94952305515139, "y": 32.75046390391506 },
-        "degrees": 0.0
-      },
+    "fae01a2d-a2e9-415d-85f1-e257ecdfc1bd": {
+      "Transform": { "position": { "x": 135.5, "y": 301.0 }, "degrees": 0.0 },
       "TerrainFeature": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": -29.359051014696888, "y": 15.834094929274727 },
-          { "x": -33.64745172470879, "y": 32.65782079162912 },
-          { "x": 15.50421795158151, "y": 45.52302292166485 },
-          { "x": 28.36942008161722, "y": 18.143233773127292 }
+          { "x": -15.0, "y": -45.0 },
+          { "x": -43.5, "y": -52.0 },
+          { "x": -76.0, "y": -23.0 },
+          { "x": -73.0, "y": 1.0 }
         ],
         "is_closed_loop": true,
         "flag": 3
       },
       "TerrainTypeTag": { "type": "FOREST" }
     },
-    "b8b99fd9-d202-4343-81d2-6d1e4c6ed656": {
-      "Transform": {
-        "position": { "x": -0.5592644720784754, "y": 85.2009033571376 },
-        "degrees": 0.0
-      },
+    "2aab3519-5731-4aa1-8414-ad636cde55a3": {
+      "Transform": { "position": { "x": 302.0, "y": 176.0 }, "degrees": 0.0 },
       "TerrainFeature": {
         "vertices": [
           { "x": 0.0, "y": 0.0 },
-          { "x": 0.32987697769322344, "y": 31.338312880856222 },
-          { "x": 34.966959635481686, "y": 32.98769776932234 },
-          { "x": 51.46080852014286, "y": 2.639015821545783 },
-          { "x": 21.112126572366304, "y": -7.587170486944146 }
+          { "x": -23.0, "y": -26.0 },
+          { "x": -43.5, "y": -42.5 },
+          { "x": -39.5, "y": -61.0 },
+          { "x": -18.5, "y": -69.5 },
+          { "x": 0.0, "y": -69.5 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "529d21db-9b31-4965-92bb-5956b02b7241": {
+      "Transform": { "position": { "x": 232.5, "y": 121.0 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 7.0, "y": -32.0 },
+          { "x": -20.5, "y": -52.5 },
+          { "x": -56.0, "y": -27.0 },
+          { "x": -54.0, "y": 9.0 },
+          { "x": -25.0, "y": 20.5 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "ab41dae4-7b42-4c1f-a2aa-1cad677e6dd9": {
+      "Transform": { "position": { "x": 78.0, "y": 168.5 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": -23.5, "y": 32.0 },
+          { "x": 4.5, "y": 58.0 },
+          { "x": 41.0, "y": 44.5 },
+          { "x": 61.0, "y": 12.5 },
+          { "x": 38.0, "y": -4.5 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "68f42072-382f-456b-89aa-1f8f770cfc23": {
+      "Transform": { "position": { "x": 0.0, "y": 124.5 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 33.5, "y": 8.5 },
+          { "x": 39.5, "y": 30.5 },
+          { "x": 27.5, "y": 47.5 },
+          { "x": 0.0, "y": 46.5 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "eb5a3d3f-f524-4c66-a983-9489fa95cb99": {
+      "Transform": { "position": { "x": 148.5, "y": -1.5 }, "degrees": 0.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 45.5, "y": -0.5 },
+          { "x": 39.0, "y": 35.5 },
+          { "x": 27.0, "y": 54.5 },
+          { "x": 3.5, "y": 44.0 },
+          { "x": -6.0, "y": 19.5 }
         ],
         "is_closed_loop": true,
         "flag": 3
