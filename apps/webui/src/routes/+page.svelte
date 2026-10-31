@@ -20,15 +20,11 @@
 	async function createQuickAccessFromSelection() {
 		if (selectedScenesChecklist.length == 0) return;
 		await controller.createQuickAccess(newNameTextbox, selectedScenesChecklist);
-		newNameTextbox = '';
-		selectedScenesChecklist = [];
 	}
 
 	async function createNewGameFromSelection() {
 		if (selectedScenesChecklist.length == 0) return;
 		await controller.createNewGame(selectedScenesChecklist, newNameTextbox);
-		newNameTextbox = '';
-		selectedScenesChecklist = [];
 	}
 
 	async function deleteQuickAccess(quickAccessName: string) {
