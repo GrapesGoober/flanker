@@ -14,6 +14,7 @@
     "blue-transposition": "scenes/experiments/blue-agents/transposition.json",
     "red-analysis": "scenes/experiments/red-agents/analysis.json",
     "red-grid": "scenes/experiments/red-agents/grid.json",
+    "red-transposition": "scenes/experiments/red-agents/transposition.json",
     "red-rh": "scenes/experiments/red-agents/rh.json",
     "scene-v1-1-fov": "scenes/experiments/scenes-v1/scene-1-fov.json",
     "scene-v1-1": "scenes/experiments/scenes-v1/scene-1.json",
