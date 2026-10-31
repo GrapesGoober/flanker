@@ -23,7 +23,6 @@ class CombatUnitKey:
     type LosSignature = tuple[bool, ...]
     type Feature = RoundedPosition | RoundedRotation | LosSignature
 
-    id: UUID
     features: tuple[Feature, ...]
     faction: InitiativeState.Faction
     status: CombatUnit.Status
@@ -54,7 +53,7 @@ class CacheKey:
 
 
 class AiTranspositionKeyService:
-    """Utility for creating a transposition key of a game state."""
+    """Utility for creating a Zobrist transposition key of a game state."""
 
     @staticmethod
     def get_key(
@@ -131,7 +130,6 @@ class AiTranspositionKeyService:
 
             combat_units.append(
                 CombatUnitKey(
-                    id=id,
                     features=tuple(features),
                     faction=unit.faction,
                     status=unit.status,

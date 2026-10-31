@@ -11,18 +11,14 @@
             "type": "UnabstractedStateConfig",
             "move_candidates_pool": {
               "type": "GridConfig",
-              "spacing": 140.0,
-              "offset": 10.0
+              "spacing": 33.333,
+              "offset": 16.665
             },
             "move_candidates_filter": [],
             "transposition_schemes": [
               {
                 "type": "RoundedPosition",
-                "to_nearest": 1
-              },
-              {
-                "type": "RoundedRotation",
-                "to_nearest": 1
+                "to_nearest": 50
               }
             ]
           }
