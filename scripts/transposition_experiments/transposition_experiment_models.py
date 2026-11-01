@@ -1,5 +1,8 @@
+from dataclasses import dataclass
 from typing import Literal
 
+from flanker_core.gamestate import GameState
+from flanker_core.models.actions import Action
 from pydantic import BaseModel
 
 
@@ -15,3 +18,23 @@ class TranspositionExperimentSetConfig(BaseModel):
     state_populating_method: Literal["random"]
     max_workers: int
     target: Literal["local"] | str
+
+
+@dataclass(frozen=True)
+class AiTreeResult:
+    best_action: Action | None
+    value: float
+
+
+@dataclass
+class TranspositionExperiment:
+    name: str
+    state_populating_method: Literal["random"]
+    n_tests: int
+
+
+@dataclass
+class TranspositionTestRun:
+    experiment_name: str
+    state_a: GameState
+    state_b: GameState

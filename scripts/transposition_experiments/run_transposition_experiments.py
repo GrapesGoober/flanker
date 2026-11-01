@@ -1,12 +1,11 @@
 import random
 from copy import deepcopy
-from dataclasses import dataclass
 from datetime import datetime
 from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -39,32 +38,15 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.vec2 import Vec2
 from transposition_experiment_models import (
+    AiTreeResult,
+    TranspositionExperiment,
     TranspositionExperimentSetConfig,
     TranspositionTestResult,
+    TranspositionTestRun,
 )
 
 _log_file_path: str | None = None
 _log_lock: LockType | None = None
-
-
-@dataclass(frozen=True)
-class AiTreeResult:
-    best_action: Action | None
-    value: float
-
-
-@dataclass
-class TranspositionExperiment:
-    name: str
-    state_populating_method: Literal["random"]
-    n_tests: int
-
-
-@dataclass
-class TranspositionTestRun:
-    experiment_name: str
-    state_a: GameState
-    state_b: GameState
 
 
 def main() -> None:
