@@ -3,6 +3,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from multiprocessing.pool import Pool, ThreadPool
 from pathlib import Path
+from typing import Literal
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -46,11 +47,11 @@ class AiTreeResult:
 
 @dataclass(frozen=True)
 class TranspositionTestRun:
-    same_states: bool
+    state_copying_method: Literal["same", "random"]
 
 
 class TranspositionTestResult(BaseModel):
-    same_states: bool
+    state_copying_method: Literal["same", "random"]
     key_is_same: bool
     result_is_same: bool
 
@@ -74,10 +75,10 @@ def main() -> None:
             pool_type = ThreadPool
 
     transposition_tests = [
-        TranspositionTestRun(same_states=True)
+        TranspositionTestRun(state_copying_method="same")
         for _ in range(experiment_set.same_states_iterations)
     ] + [
-        TranspositionTestRun(same_states=False)
+        TranspositionTestRun(state_copying_method="random")
         for _ in range(experiment_set.random_states_iterations)
     ]
     random.shuffle(transposition_tests)
@@ -105,10 +106,11 @@ def run_transposition_test(
     map = get_map()
     state_a = get_state_from_map(map)
 
-    if params.same_states:
-        state_b = deepcopy(state_a)
-    else:
-        state_b = get_state_from_map(map)
+    match params.state_copying_method:
+        case "same":
+            state_b = deepcopy(state_a)
+        case "random":
+            state_b = get_state_from_map(map)
 
     key_a: CacheKey = get_key(state_a)
     key_b: CacheKey = get_key(state_b)
@@ -119,7 +121,7 @@ def run_transposition_test(
     result_is_same = result_a == result_b
 
     return TranspositionTestResult(
-        same_states=params.same_states,
+        state_copying_method=params.state_copying_method,
         key_is_same=key_is_same,
         result_is_same=result_is_same,
     )

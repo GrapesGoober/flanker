@@ -380,6 +380,8 @@ def update_metadata(
         f.write(metadata.model_dump_json(indent=2))
 
 
+# TODO: files should be opened once outside the stream loop, not inside.
+# This reduces IO overhead and disk wear. I don't want to hurt my PC.
 def append_results(
     experiment_name: str,
     result: MatchResultRecordModel,
