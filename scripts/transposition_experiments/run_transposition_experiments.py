@@ -38,8 +38,10 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
-from pydantic import BaseModel
-from transposition_experiment_models import TranspositionExperimentSetConfig
+from transposition_experiment_models import (
+    TranspositionExperimentSetConfig,
+    TranspositionTestResult,
+)
 
 _log_file_path: str | None = None
 _log_lock: LockType | None = None
@@ -63,11 +65,6 @@ class TranspositionTestRun:
     experiment_name: str
     state_a: GameState
     state_b: GameState
-
-
-class TranspositionTestResult(BaseModel):
-    key_is_same: bool
-    result_is_same: bool
 
 
 def main() -> None:

@@ -3,6 +3,11 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+class TranspositionTestResult(BaseModel):
+    key_is_same: bool
+    result_is_same: bool
+
+
 class TranspositionExperimentSetConfig(BaseModel):
     """Input config model for entire transposition experiment-set run."""
 
