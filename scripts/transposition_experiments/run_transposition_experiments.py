@@ -2,6 +2,7 @@ import random
 from copy import deepcopy
 from dataclasses import dataclass
 from multiprocessing.pool import Pool, ThreadPool
+from pathlib import Path
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -33,6 +34,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
+from pydantic import BaseModel
 from transposition_experiment_models import TranspositionExperimentSetConfig
 
 
@@ -47,14 +49,19 @@ class TranspositionTestRun:
     same_states: bool
 
 
-@dataclass(frozen=True)
-class TranspositionTestResult:
+class TranspositionTestResult(BaseModel):
     same_states: bool
     key_is_same: bool
     result_is_same: bool
 
 
 def main() -> None:
+    results_path = Path(
+        "./scripts/outputs/transposition-experiment-results/"
+        "transposition-experiment-results.jsonl"
+    )
+    results_path.parent.mkdir(parents=True, exist_ok=True)
+
     experiment_set = get_config(
         config_path="./scripts/configs/transposition-experiment-config.json",
     )
@@ -75,13 +82,15 @@ def main() -> None:
     ]
     random.shuffle(transposition_tests)
 
-    with pool_type(processes=experiment_set.max_workers) as pool:
-        results = pool.imap_unordered(
-            run_transposition_test,
-            transposition_tests,
-        )
-        for result in results:
-            print(f"{result.key_is_same=}, {result.result_is_same=}")
+    with results_path.open("a") as results_file:
+        with pool_type(processes=experiment_set.max_workers) as pool:
+            results = pool.imap_unordered(
+                run_transposition_test,
+                transposition_tests,
+            )
+            for result in results:
+                print(f"{result.key_is_same=}, {result.result_is_same=}")
+                results_file.write(result.model_dump_json() + "\n")
 
 
 def get_config(config_path: str) -> TranspositionExperimentSetConfig:
@@ -101,10 +110,10 @@ def run_transposition_test(
     else:
         state_b = get_state_from_map(map)
 
-    key_a = get_key(state_a)
-    key_b = get_key(state_b)
-    result_a = get_ai_tree_result(state_a)
-    result_b = get_ai_tree_result(state_b)
+    key_a: CacheKey = get_key(state_a)
+    key_b: CacheKey = get_key(state_b)
+    result_a: AiTreeResult = get_ai_tree_result(state_a)
+    result_b: AiTreeResult = get_ai_tree_result(state_b)
 
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
