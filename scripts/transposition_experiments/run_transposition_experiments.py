@@ -42,6 +42,14 @@ class AiTreeResult:
     value: float
 
 
+@dataclass(frozen=True)
+class TranspositionExperimentResult:
+    experiment_type: str
+    iteration: int
+    key_is_same: bool
+    result_is_same: bool
+
+
 def main() -> None:
     experiment_set = get_config(
         config_path="./scripts/configs/transposition-experiment-config.json",
@@ -54,13 +62,24 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
+    experiments = [
+        (True, iteration) for iteration in range(experiment_set.same_states_iterations)
+    ] + [
+        (False, iteration)
+        for iteration in range(experiment_set.random_states_iterations)
+    ]
+    random.shuffle(experiments)
+
     with pool_type(processes=experiment_set.max_workers) as pool:
         results = pool.imap_unordered(
             run_experiment,
-            range(experiment_set.iterations),
+            experiments,
         )
-        for iteration, key_is_same, result_is_same in results:
-            print(f"Iteration {iteration + 1}: " f"{key_is_same=}, {result_is_same=}")
+        for result in results:
+            print(
+                f"{result.experiment_type} iteration {result.iteration + 1}: "
+                f"{result.key_is_same=}, {result.result_is_same=}"
+            )
 
 
 def get_config(config_path: str) -> TranspositionExperimentSetConfig:
@@ -68,12 +87,14 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
         return TranspositionExperimentSetConfig.model_validate_json(f.read())
 
 
-def run_experiment(iteration: int) -> tuple[int, bool, bool]:
-    print(f"running {iteration=}...")
-
+def run_experiment(
+    experiment: tuple[bool, int],
+) -> TranspositionExperimentResult:
+    print(f"running...")
+    same_states, iteration = experiment
     map = get_map()
     state_a = get_state_from_map(map)
-    state_b = get_state_from_map(map)
+    state_b = deepcopy(state_a) if same_states else get_state_from_map(map)
 
     key_a = get_key(state_a)
     key_b = get_key(state_b)
@@ -83,7 +104,12 @@ def run_experiment(iteration: int) -> tuple[int, bool, bool]:
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
 
-    return iteration, key_is_same, result_is_same
+    return TranspositionExperimentResult(
+        experiment_type="same-states" if same_states else "random-states",
+        iteration=iteration,
+        key_is_same=key_is_same,
+        result_is_same=result_is_same,
+    )
 
 
 def get_map() -> GameState:
