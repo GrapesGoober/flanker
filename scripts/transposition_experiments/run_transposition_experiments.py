@@ -43,9 +43,13 @@ class AiTreeResult:
 
 
 @dataclass(frozen=True)
-class TranspositionExperimentResult:
-    experiment_type: str
-    iteration: int
+class TranspositionTestRun:
+    same_states: bool
+
+
+@dataclass(frozen=True)
+class TranspositionTestResult:
+    same_states: bool
     key_is_same: bool
     result_is_same: bool
 
@@ -62,24 +66,22 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
-    experiments = [
-        (True, iteration) for iteration in range(experiment_set.same_states_iterations)
+    transposition_tests = [
+        TranspositionTestRun(same_states=True)
+        for _ in range(experiment_set.same_states_iterations)
     ] + [
-        (False, iteration)
-        for iteration in range(experiment_set.random_states_iterations)
+        TranspositionTestRun(same_states=False)
+        for _ in range(experiment_set.random_states_iterations)
     ]
-    random.shuffle(experiments)
+    random.shuffle(transposition_tests)
 
     with pool_type(processes=experiment_set.max_workers) as pool:
         results = pool.imap_unordered(
-            run_experiment,
-            experiments,
+            run_transposition_test,
+            transposition_tests,
         )
         for result in results:
-            print(
-                f"{result.experiment_type} iteration {result.iteration + 1}: "
-                f"{result.key_is_same=}, {result.result_is_same=}"
-            )
+            print(f"{result.key_is_same=}, {result.result_is_same=}")
 
 
 def get_config(config_path: str) -> TranspositionExperimentSetConfig:
@@ -87,14 +89,17 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
         return TranspositionExperimentSetConfig.model_validate_json(f.read())
 
 
-def run_experiment(
-    experiment: tuple[bool, int],
-) -> TranspositionExperimentResult:
+def run_transposition_test(
+    params: TranspositionTestRun,
+) -> TranspositionTestResult:
     print(f"running...")
-    same_states, iteration = experiment
     map = get_map()
     state_a = get_state_from_map(map)
-    state_b = deepcopy(state_a) if same_states else get_state_from_map(map)
+
+    if params.same_states:
+        state_b = deepcopy(state_a)
+    else:
+        state_b = get_state_from_map(map)
 
     key_a = get_key(state_a)
     key_b = get_key(state_b)
@@ -104,9 +109,8 @@ def run_experiment(
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
 
-    return TranspositionExperimentResult(
-        experiment_type="same-states" if same_states else "random-states",
-        iteration=iteration,
+    return TranspositionTestResult(
+        same_states=params.same_states,
         key_is_same=key_is_same,
         result_is_same=result_is_same,
     )
