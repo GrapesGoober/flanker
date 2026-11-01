@@ -33,6 +33,7 @@ from procedural_state_generator import (
 from transposition_experiment_models import (
     AiTreeResult,
     TranspositionExperiment,
+    TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
     TranspositionTestResult,
     TranspositionTestRun,
@@ -58,18 +59,23 @@ def main() -> None:
     transposition_experiments = get_transposition_experiments(
         config=experiment_set,
     )
+    results_root_path = "./scripts/outputs/transposition-experiment-results/"
+    for experiment in transposition_experiments:
+        init_metadata_file(experiment, results_root_path)
+
     transposition_tests = [
         transposition_test
         for experiment_config in transposition_experiments
         for transposition_test in get_transposition_tests(
             config=experiment_config,
+            results_root_path=results_root_path,
         )
     ]
     random.shuffle(transposition_tests)
 
-    results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
-    results_root_path.mkdir(parents=True, exist_ok=True)
-    log_file_path = results_root_path / "run_transposition_experiment.log"
+    results_root = Path(results_root_path)
+    results_root.mkdir(parents=True, exist_ok=True)
+    log_file_path = results_root / "run_transposition_experiment.log"
     log_lock: LockType = Lock()
     configure_logging(str(log_file_path), log_lock)
 
@@ -84,10 +90,11 @@ def main() -> None:
         )
         for experiment_name, result in results:
             log_message(f"    {experiment_name} done, tallying")
-            results_path = results_root_path / f"{experiment_name}.jsonl"
-            with results_path.open("a", encoding="utf-8") as results_file:
-                results_file.write(result.model_dump_json())
-                results_file.write("\n")
+            record_transposition_test_result(
+                experiment_name=experiment_name,
+                result=result,
+                results_root_path=results_root_path,
+            )
 
 
 def get_config(config_path: str) -> TranspositionExperimentSetConfig:
@@ -111,7 +118,13 @@ def get_transposition_experiments(
 
 def get_transposition_tests(
     config: TranspositionExperiment,
+    results_root_path: str,
 ) -> list[TranspositionTestRun]:
+    metadata = get_metadata(config.name, results_root_path)
+    remaining_tests = max(0, config.n_tests - metadata.n_tests)
+    if remaining_tests == 0:
+        return []
+
     map = get_map()
     state_a = get_state_from_map(map)
 
@@ -125,7 +138,7 @@ def get_transposition_tests(
             state_a=state_a,
             state_b=state_b,
         )
-        for _ in range(config.n_tests)
+        for _ in range(remaining_tests)
     ]
 
 
@@ -226,6 +239,59 @@ def log_message(message: str) -> None:
     with _log_lock:
         with open(_log_file_path, "a") as log_file:
             log_file.write(f"{timestamp}\t{message}\n")
+
+
+def init_metadata_file(
+    experiment_config: TranspositionExperiment,
+    results_root_path: str,
+) -> None:
+    file_path = Path(results_root_path) / f"{experiment_config.name}-metadata.json"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    if file_path.is_file():
+        return
+
+    metadata = TranspositionExperimentMetadata(
+        state_populating_method=experiment_config.state_populating_method,
+        n_tests=0,
+        target_n_tests=experiment_config.n_tests,
+    )
+    with file_path.open("w") as metadata_file:
+        metadata_file.write(metadata.model_dump_json(indent=2))
+
+
+def get_metadata(
+    experiment_name: str,
+    results_root_path: str,
+) -> TranspositionExperimentMetadata:
+    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    if not file_path.is_file():
+        raise FileNotFoundError(f"Metadata file for {experiment_name} does not exist")
+
+    file_data = file_path.read_text()
+    if not file_data:
+        raise ValueError(f"{file_path} file is empty")
+    return TranspositionExperimentMetadata.model_validate_json(file_data)
+
+
+def record_transposition_test_result(
+    experiment_name: str,
+    result: TranspositionTestResult,
+    results_root_path: str,
+) -> None:
+    metadata = get_metadata(experiment_name, results_root_path)
+    if metadata.n_tests >= metadata.target_n_tests:
+        return
+    metadata.n_tests += 1
+
+    metadata_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    if not metadata_path.is_file():
+        raise FileNotFoundError(f"Metadata file for {experiment_name} does not exist")
+    metadata_path.write_text(metadata.model_dump_json(indent=2))
+
+    result_path = Path(results_root_path) / f"{experiment_name}.jsonl"
+    with result_path.open("a") as results_file:
+        results_file.write(result.model_dump_json())
+        results_file.write("\n")
 
 
 if __name__ == "__main__":

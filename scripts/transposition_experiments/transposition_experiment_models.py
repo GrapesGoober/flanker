@@ -33,6 +33,12 @@ class TranspositionExperiment:
     n_tests: int
 
 
+class TranspositionExperimentMetadata(BaseModel):
+    state_populating_method: Literal["random"]
+    n_tests: int
+    target_n_tests: int
+
+
 @dataclass
 class TranspositionTestRun:
     experiment_name: str
