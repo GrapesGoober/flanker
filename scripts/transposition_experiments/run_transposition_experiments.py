@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 from dataclasses import dataclass
+from multiprocessing.pool import Pool, ThreadPool
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -32,8 +33,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
-from pydantic import BaseModel, ConfigDict
-from pydantic.alias_generators import to_camel
+from transposition_experiment_models import TranspositionExperimentSetConfig
 
 
 @dataclass(frozen=True)
@@ -42,30 +42,48 @@ class AiTreeResult:
     value: float
 
 
-class SceneManifest(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=to_camel,
-        populate_by_name=True,
-    )
-    scene_paths: dict[str, str]
-
-
 def main() -> None:
+    experiment_set = get_config(
+        config_path="./scripts/configs/transposition-experiment-config.json",
+    )
+
+    pool_type: type[Pool] | type[ThreadPool]
+    match experiment_set.target:
+        case "local":
+            pool_type = Pool
+        case _:
+            pool_type = ThreadPool
+
+    with pool_type(processes=experiment_set.max_workers) as pool:
+        results = pool.imap_unordered(
+            run_experiment,
+            range(experiment_set.iterations),
+        )
+        for iteration, key_is_same, result_is_same in results:
+            print(f"Iteration {iteration + 1}: " f"{key_is_same=}, {result_is_same=}")
+
+
+def get_config(config_path: str) -> TranspositionExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return TranspositionExperimentSetConfig.model_validate_json(f.read())
+
+
+def run_experiment(iteration: int) -> tuple[int, bool, bool]:
+    print(f"running {iteration=}...")
+
     map = get_map()
     state_a = get_state_from_map(map)
     state_b = get_state_from_map(map)
 
     key_a = get_key(state_a)
     key_b = get_key(state_b)
-
-    key_is_same = key_a == key_b
-
     result_a = get_ai_tree_result(state_a)
     result_b = get_ai_tree_result(state_b)
 
+    key_is_same = key_a == key_b
     result_is_same = result_a == result_b
 
-    print(f"{key_is_same=}, {result_is_same=}")
+    return iteration, key_is_same, result_is_same
 
 
 def get_map() -> GameState:
