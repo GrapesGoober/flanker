@@ -1,9 +1,12 @@
 import random
 from copy import deepcopy
 from dataclasses import dataclass, is_dataclass
+from datetime import datetime
 from inspect import isclass
 from itertools import product
+from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
+from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
 from time import sleep
 from typing import Any, Iterable, Literal
@@ -26,6 +29,9 @@ from flanker_core.models.components import InitiativeState
 from flanker_core.serializer import Serializer
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
+
+_log_file_path: str | None = None
+_log_lock: LockType | None = None
 
 
 @dataclass
@@ -76,8 +82,27 @@ class _MatchResultApiResponse(BaseModel, _CamelCaseConfig):
     json_state: str
 
 
+def _configure_logging(log_file_path: str, log_lock: Any) -> None:
+    global _log_file_path, _log_lock
+    _log_file_path = log_file_path
+    _log_lock = log_lock
+
+
+def log_message(message: str) -> None:
+    print(message)
+    if _log_file_path is None or _log_lock is None:
+        raise RuntimeError("Experiment file logging has not been configured")
+
+    timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
+    with _log_lock:
+        with open(_log_file_path, "a") as log_file:
+            log_file.write(f"{timestamp}\t{message}\n")
+
+
 def main() -> None:
     results_root_path = "./scripts/outputs/experiment-results/"
+    log_file_path = Path(results_root_path) / "run_ai_experiment.log"
+    log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     experiment_set = get_config(
         config_path="./scripts/configs/experiment-config.json",
@@ -99,12 +124,19 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
+    log_lock: LockType = Lock()
+    _configure_logging(str(log_file_path), log_lock)
+
     # Run and record all matches
-    with pool_type(processes=experiment_set.max_workers) as p:
+    with pool_type(
+        processes=experiment_set.max_workers,
+        initializer=_configure_logging,
+        initargs=(str(log_file_path), log_lock),
+    ) as p:
         results = p.imap_unordered(run_match, matches)
         for match_result in results:
             result, match_config = match_result
-            print(f"    {match_config.name} done, tallying")
+            log_message(f"    {match_config.name} done, tallying")
             experiment_metadata = get_metadata(
                 experiment_name=match_config.name,
                 results_root_path=results_root_path,
@@ -132,7 +164,7 @@ def get_config(config_path: str) -> ExperimentSetConfig:
 def run_match(
     match_config: _MatchConfig,
 ) -> tuple[MatchResultRecordModel, _MatchConfig]:
-    print(f"Running match {match_config.name}")
+    log_message(f"Running match {match_config.name}")
 
     # Run locally if config says so
     if match_config.target == "local":
@@ -176,8 +208,8 @@ def run_match(
                 break
 
             except requests.RequestException as e:
-                print(f"Request had error {e}")
-                print(f"Rerunning {match_config.name} in 30 seconds")
+                log_message(f"Request had error {e}")
+                log_message(f"Rerunning {match_config.name} in 30 seconds")
                 sleep(30)
 
         result = _MatchResultApiResponse.model_validate_json(response.text)

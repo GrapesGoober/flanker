@@ -38,12 +38,12 @@ def main() -> None:
     match_setting = experiment_set.match_settings[0]
 
     # Generate cells of each win rate to render
-    blue_config = "blue-grid"
+    BLUE_CONFIG_TO_RENDER = "blue-grid"
     df = pd.DataFrame(
         [
             {
                 "scene": scene_name,
-                "blue": blue_config,
+                "blue": BLUE_CONFIG_TO_RENDER,
                 "red": red_config,
                 "search_size": action_result.policy_log.tree_size,
             }
@@ -51,7 +51,7 @@ def main() -> None:
             for red_config in experiment_set.red_configs
             for match_result in experiment_results_by_name[
                 "-".join(
-                    [scene_name, blue_config, red_config, match_setting],
+                    [scene_name, BLUE_CONFIG_TO_RENDER, red_config, match_setting],
                 )
             ]
             for action_result in match_result.action_results
@@ -67,6 +67,7 @@ def main() -> None:
         + theme_matplotlib()
     )
     plot.show()
+    plot.save("scripts/outputs/visualize-grid-search-size.png")
 
 
 def get_config(config_path: str) -> ExperimentSetConfig:

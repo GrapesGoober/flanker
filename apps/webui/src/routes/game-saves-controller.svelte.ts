@@ -31,11 +31,17 @@ export class GameSavesController {
 	quickAccesses: QuickAccess[] = $state([]);
 	treeNames: string[] = $state([]);
 
-	async reloadList() {
+	async reloadManifest() {
+		if (this.state.type === 'fetching') return;
+		this.state = { type: 'fetching' };
+		this.sceneManifest = await GetSceneManifest();
+		this.state = { type: 'default' };
+	}
+
+	async reloadLocal() {
 		if (this.state.type === 'fetching') return;
 		this.state = { type: 'fetching' };
 		this.saveGameKeys = await getGameKeys();
-		this.sceneManifest = await GetSceneManifest();
 		this.quickAccesses = await getQuickAccesses();
 		this.treeNames = await getTreeKeys();
 		this.state = { type: 'default' };
@@ -47,14 +53,14 @@ export class GameSavesController {
 		const stateJson = await GetGameStateJSON(selectedScenes);
 		saveGameLocal(newGameName, stateJson);
 		this.state = { type: 'default' };
-		await this.reloadList();
+		await this.reloadLocal();
 	}
 
 	async deleteGameSave(gameKey: string) {
 		if (this.state.type === 'fetching') return;
 
 		await deleteGameLocal(gameKey);
-		await this.reloadList();
+		await this.reloadLocal();
 	}
 
 	async createNewFromQuickAccess(quickAccess: QuickAccess) {
@@ -63,7 +69,7 @@ export class GameSavesController {
 		const stateJson = await GetGameStateJSON(quickAccess.sceneNames);
 		saveGameLocal(quickAccess.quickAccessName, stateJson);
 		this.state = { type: 'default' };
-		await this.reloadList();
+		await this.reloadLocal();
 	}
 
 	async createQuickAccess(
@@ -119,7 +125,7 @@ export class GameSavesController {
 		const gameStateJson = await loadGameLocal(gameKey);
 		await deleteGameLocal(gameKey);
 		await saveGameLocal(newGameKey, gameStateJson);
-		await this.reloadList();
+		await this.reloadLocal();
 	}
 
 	async duplicateGameSave(gameKey: string) {
@@ -127,7 +133,7 @@ export class GameSavesController {
 
 		const newGameKey = this.getDeduplicatedKey(gameKey, await getGameKeys());
 		saveGameLocal(newGameKey, await loadGameLocal(gameKey));
-		await this.reloadList();
+		await this.reloadLocal();
 	}
 
 	async createAiMatchSave(gameKey: string) {
@@ -137,7 +143,7 @@ export class GameSavesController {
 		const newGameKey = this.getDeduplicatedKey(gameKey, await getGameKeys());
 		saveGameLocal(await newGameKey, result.jsonState);
 		this.state = { type: 'default' };
-		await this.reloadList();
+		await this.reloadLocal();
 	}
 
 	async copyGameSaveJson(gameKey: string) {
@@ -169,12 +175,12 @@ export class GameSavesController {
 			});
 		}
 		this.state = { type: 'default' };
-		this.reloadList();
+		this.reloadLocal();
 	}
 
 	async deleteTree(treeName: string) {
 		await deleteTreeLocal(treeName);
-		this.reloadList();
+		this.reloadLocal();
 	}
 
 	private getDeduplicatedKey(key: string, otherKeys: string[]): string {

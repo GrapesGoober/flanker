@@ -1,9 +1,7 @@
 {
   "entities": {
     "066d81b5-2e25-4175-8ea5-0b1f71f73c1d": {
-      "InitiativeState": {
-        "faction": "BLUE"
-      },
+      "InitiativeState": { "faction": "BLUE" },
       "EliminationWinCondition": {
         "target_faction": "RED",
         "winning_faction": "BLUE",
