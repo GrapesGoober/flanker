@@ -45,23 +45,26 @@ class AiTreeResult:
     value: float
 
 
-@dataclass(frozen=True)
+@dataclass
+class TranspositionExperiment:
+    name: str
+    state_populating_method: Literal["random"]
+    n_tests: int
+
+
+@dataclass
 class TranspositionTestRun:
-    state_copying_method: Literal["same", "random"]
+    experiment_name: str
+    state_a: GameState
+    state_b: GameState
 
 
 class TranspositionTestResult(BaseModel):
-    state_copying_method: Literal["same", "random"]
     key_is_same: bool
     result_is_same: bool
 
 
 def main() -> None:
-    results_path = Path(
-        "./scripts/outputs/transposition-experiment-results/"
-        "transposition-experiment-results.jsonl"
-    )
-    results_path.parent.mkdir(parents=True, exist_ok=True)
 
     experiment_set = get_config(
         config_path="./scripts/configs/transposition-experiment-config.json",
@@ -74,23 +77,28 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
+    transposition_experiments = get_transposition_experiments(
+        config=experiment_set,
+    )
     transposition_tests = [
-        TranspositionTestRun(state_copying_method="same")
-        for _ in range(experiment_set.same_states_iterations)
-    ] + [
-        TranspositionTestRun(state_copying_method="random")
-        for _ in range(experiment_set.random_states_iterations)
+        transposition_test
+        for experiment_config in transposition_experiments
+        for transposition_test in get_transposition_tests(
+            config=experiment_config,
+        )
     ]
     random.shuffle(transposition_tests)
 
-    with results_path.open("a") as results_file:
-        with pool_type(processes=experiment_set.max_workers) as pool:
-            results = pool.imap_unordered(
-                run_transposition_test,
-                transposition_tests,
-            )
-            for result in results:
-                print(f"{result.key_is_same=}, {result.result_is_same=}")
+    results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
+    results_root_path.mkdir(parents=True, exist_ok=True)
+    with pool_type(processes=experiment_set.max_workers) as pool:
+        results = pool.imap_unordered(
+            run_transposition_test,
+            transposition_tests,
+        )
+        for experiment_name, result in results:
+            results_path = results_root_path / f"{experiment_name}.jsonl"
+            with results_path.open("a") as results_file:
                 results_file.write(result.model_dump_json() + "\n")
 
 
@@ -99,29 +107,55 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
         return TranspositionExperimentSetConfig.model_validate_json(f.read())
 
 
-def run_transposition_test(
-    params: TranspositionTestRun,
-) -> TranspositionTestResult:
-    print(f"running...")
+def get_transposition_experiments(
+    config: TranspositionExperimentSetConfig,
+) -> list[TranspositionExperiment]:
+    # TODO: add experiments permutations here, if needed.
+    # For now, I only have one possible permutation, thus one experiment.
+    return [
+        TranspositionExperiment(
+            name="randomly-populated",
+            state_populating_method=config.state_populating_method,
+            n_tests=config.n_tests,
+        )
+    ]
+
+
+def get_transposition_tests(
+    config: TranspositionExperiment,
+) -> list[TranspositionTestRun]:
     map = get_map()
     state_a = get_state_from_map(map)
 
-    match params.state_copying_method:
-        case "same":
-            state_b = deepcopy(state_a)
+    match config.state_populating_method:
         case "random":
             state_b = get_state_from_map(map)
 
-    key_a: CacheKey = get_key(state_a)
-    key_b: CacheKey = get_key(state_b)
-    result_a: AiTreeResult = get_ai_tree_result(state_a)
-    result_b: AiTreeResult = get_ai_tree_result(state_b)
+    return [
+        TranspositionTestRun(
+            experiment_name=config.name,
+            state_a=state_a,
+            state_b=state_b,
+        )
+        for _ in range(config.n_tests)
+    ]
+
+
+def run_transposition_test(
+    test_run_config: TranspositionTestRun,
+) -> tuple[str, TranspositionTestResult]:
+    print(f"running {test_run_config.experiment_name}...")
+
+    key_a: CacheKey = get_key(test_run_config.state_a)
+    key_b: CacheKey = get_key(test_run_config.state_b)
+    result_a: AiTreeResult = get_ai_tree_result(test_run_config.state_a)
+    result_b: AiTreeResult = get_ai_tree_result(test_run_config.state_b)
 
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
 
-    return TranspositionTestResult(
-        state_copying_method=params.state_copying_method,
+    print(f"    finished {test_run_config.experiment_name}, recording...")
+    return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
         result_is_same=result_is_same,
     )
