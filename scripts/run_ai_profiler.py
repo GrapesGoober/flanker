@@ -4,12 +4,12 @@ from inspect import isclass
 from typing import Any, Iterable
 from uuid import UUID
 
-from experiment_models import SceneManifest
 from flanker_ai.ai_match import AiMatch
 from flanker_ai.config_models import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
+from match_experiments.experiment_models import SceneManifest
 
 
 def get_component_types() -> Iterable[type]:
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         scene_names=[
             "experiment-settings",
             "scene-v2-1",
-            "blue-transposition",
+            "blue-grid-100-zobrist-r100",
             "red-rh",
         ]
     )

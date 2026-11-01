@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from experiment_models import SceneManifest
+from match_experiments.experiment_models import SceneManifest
 
 
 @dataclass
