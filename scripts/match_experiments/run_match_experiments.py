@@ -100,7 +100,7 @@ def log_message(message: str) -> None:
 
 
 def main() -> None:
-    results_root_path = "./scripts/outputs/experiment-results/"
+    results_root_path = "./scripts/outputs/match-experiment-results/"
     log_file_path = Path(results_root_path) / "run_ai_experiment.log"
     log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
