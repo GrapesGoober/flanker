@@ -1,9 +1,12 @@
 import random
 from copy import deepcopy
 from dataclasses import dataclass
+from datetime import datetime
+from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
+from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -37,6 +40,9 @@ from flanker_core.models.components import (
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel
 from transposition_experiment_models import TranspositionExperimentSetConfig
+
+_log_file_path: str | None = None
+_log_lock: LockType | None = None
 
 
 @dataclass(frozen=True)
@@ -91,15 +97,25 @@ def main() -> None:
 
     results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
     results_root_path.mkdir(parents=True, exist_ok=True)
-    with pool_type(processes=experiment_set.max_workers) as pool:
+    log_file_path = results_root_path / "run_transposition_experiment.log"
+    log_lock: LockType = Lock()
+    configure_logging(str(log_file_path), log_lock)
+
+    with pool_type(
+        processes=experiment_set.max_workers,
+        initializer=configure_logging,
+        initargs=(str(log_file_path), log_lock),
+    ) as pool:
         results = pool.imap_unordered(
             run_transposition_test,
             transposition_tests,
         )
         for experiment_name, result in results:
+            log_message(f"    {experiment_name} done, tallying")
             results_path = results_root_path / f"{experiment_name}.jsonl"
-            with results_path.open("a") as results_file:
-                results_file.write(result.model_dump_json() + "\n")
+            with results_path.open("a", encoding="utf-8") as results_file:
+                results_file.write(result.model_dump_json())
+                results_file.write("\n")
 
 
 def get_config(config_path: str) -> TranspositionExperimentSetConfig:
@@ -144,7 +160,7 @@ def get_transposition_tests(
 def run_transposition_test(
     test_run_config: TranspositionTestRun,
 ) -> tuple[str, TranspositionTestResult]:
-    print(f"running {test_run_config.experiment_name}...")
+    log_message(f"Running transposition test {test_run_config.experiment_name}")
 
     key_a: CacheKey = get_key(test_run_config.state_a)
     key_b: CacheKey = get_key(test_run_config.state_b)
@@ -154,7 +170,7 @@ def run_transposition_test(
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
 
-    print(f"    finished {test_run_config.experiment_name}, recording...")
+    log_message(f"    finished {test_run_config.experiment_name}, recording...")
     return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
         result_is_same=result_is_same,
@@ -334,6 +350,23 @@ def get_ai_tree_result(
         best_action=action,
         value=log.action_value,
     )
+
+
+def configure_logging(log_file_path: str, log_lock: Any) -> None:
+    global _log_file_path, _log_lock
+    _log_file_path = log_file_path
+    _log_lock = log_lock
+
+
+def log_message(message: str) -> None:
+    print(message)
+    if _log_file_path is None or _log_lock is None:
+        raise RuntimeError("Experiment file logging has not been configured")
+
+    timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
+    with _log_lock:
+        with open(_log_file_path, "a") as log_file:
+            log_file.write(f"{timestamp}\t{message}\n")
 
 
 if __name__ == "__main__":
