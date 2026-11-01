@@ -26,16 +26,16 @@ from flanker_core.models.actions import Action
 from flanker_core.models.components import (
     InitiativeState,
 )
+from procedural_state_generator import (
+    get_map,
+    get_state_from_map,
+)
 from transposition_experiment_models import (
     AiTreeResult,
     TranspositionExperiment,
     TranspositionExperimentSetConfig,
     TranspositionTestResult,
     TranspositionTestRun,
-)
-from transposition_experiments.procedural_state_generator import (
-    get_map,
-    get_state_from_map,
 )
 
 _log_file_path: str | None = None
