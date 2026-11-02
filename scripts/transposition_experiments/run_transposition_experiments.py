@@ -6,7 +6,7 @@ from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -109,12 +109,31 @@ def get_transposition_experiments(
     # For now, I only have one possible permutation, thus one experiment.
     return [
         TranspositionExperiment(
-            name=f"state-{state_method}",
+            name=get_experiment_name(state_method, key_method),
             state_populating_method=state_method,
+            key_method=key_method,
             n_tests=config.n_tests,
         )
-        for (state_method,) in product(config.state_populating_methods)
+        for (state_method, key_method) in product(
+            config.state_populating_methods,
+            config.zobrist_key_methods,
+        )
     ]
+
+
+def get_experiment_name(
+    state_method: Literal["random", "perturbation"],
+    key_method: TranspositionScheme.ALL,
+) -> str:
+    state_name = f"{state_method}"
+    match key_method:
+        case TranspositionScheme.RoundedPosition():
+            key_name = f"{key_method.type.lower()}-r{key_method.to_nearest}"
+        case TranspositionScheme.RoundedRotation():
+            key_name = f"{key_method.type.lower()}-r{key_method.to_nearest}"
+        case TranspositionScheme.LosSignatures():
+            key_name = f"{key_method.type.lower()}-{key_method.with_fov}"
+    return f"{state_name}-{key_name}"
 
 
 def get_transposition_tests(
@@ -140,6 +159,7 @@ def get_transposition_tests(
             experiment_name=config.name,
             state_a=state_a,
             state_b=state_b,
+            key_method=config.key_method,
         )
         for _ in range(remaining_tests)
     ]
@@ -150,10 +170,20 @@ def run_transposition_test(
 ) -> tuple[str, TranspositionTestResult]:
     log_message(f"Running transposition test {test_run_config.experiment_name}")
 
-    key_a: CacheKey = get_key(test_run_config.state_a)
-    key_b: CacheKey = get_key(test_run_config.state_b)
-    result_a: AiTreeResult = get_ai_tree_result(test_run_config.state_a)
-    result_b: AiTreeResult = get_ai_tree_result(test_run_config.state_b)
+    key_a: CacheKey = get_key(
+        test_run_config.state_a,
+        test_run_config.key_method,
+    )
+    key_b: CacheKey = get_key(
+        test_run_config.state_b,
+        test_run_config.key_method,
+    )
+    result_a: AiTreeResult = get_ai_tree_result(
+        test_run_config.state_a,
+    )
+    result_b: AiTreeResult = get_ai_tree_result(
+        test_run_config.state_b,
+    )
 
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
@@ -167,15 +197,11 @@ def run_transposition_test(
 
 def get_key(
     gs: GameState,
+    key_method: TranspositionScheme.ALL,
 ) -> CacheKey:
     return AiTranspositionKeyService.get_key(
         gs=gs,
-        transposition_schemes=[
-            TranspositionScheme.RoundedPosition(
-                type="RoundedPosition",
-                to_nearest=1,
-            ),
-        ],
+        transposition_schemes=[key_method],
     )
 
 
@@ -255,6 +281,7 @@ def init_metadata_file(
 
     metadata = TranspositionExperimentMetadata(
         state_populating_method=experiment_config.state_populating_method,
+        key_method=experiment_config.key_method,
         n_tests=0,
         target_n_tests=experiment_config.n_tests,
     )
