@@ -105,8 +105,6 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
 def get_transposition_experiments(
     config: TranspositionExperimentSetConfig,
 ) -> list[TranspositionExperiment]:
-    # TODO: add experiments permutations here, if needed.
-    # For now, I only have one possible permutation, thus one experiment.
     return [
         TranspositionExperiment(
             name=get_experiment_name(state_method, key_method),
@@ -132,8 +130,9 @@ def get_experiment_name(
         case TranspositionScheme.RoundedRotation():
             key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
         case TranspositionScheme.LosSignatures():
-            with_fov_name = "with-fov" if key_method.with_fov else "without-fov"
-            key_name = f"{key_method.type}-{with_fov_name}".lower()
+            key_name = key_method.type.lower()
+            if key_method.with_fov:
+                key_name += "-fov"
     return f"{state_name}-{key_name}"
 
 
