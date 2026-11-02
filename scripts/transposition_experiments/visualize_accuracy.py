@@ -43,28 +43,29 @@ def main() -> None:
 
     tally_records: list[dict[str, str]] = []
     for result_file in result_files:
+        experiment_name = result_file.stem
         tally = get_accuracy_tally(get_experiment_results(result_file))
         tally_records += [
             {
-                "experiment": result_file.stem,
+                "experiment": experiment_name,
                 "key_prediction": "Keys same",
                 "tree_result": "Values same",
                 "count": f"TP: {tally.true_positives}",
             },
             {
-                "experiment": result_file.stem,
+                "experiment": experiment_name,
                 "key_prediction": "Keys same",
                 "tree_result": "Values differ",
                 "count": f"FP: {tally.false_positives}",
             },
             {
-                "experiment": result_file.stem,
+                "experiment": experiment_name,
                 "key_prediction": "Keys differ",
                 "tree_result": "Values same",
                 "count": f"FN: {tally.false_negatives}",
             },
             {
-                "experiment": result_file.stem,
+                "experiment": experiment_name,
                 "key_prediction": "Keys differ",
                 "tree_result": "Values differ",
                 "count": f"TN: {tally.true_negatives}",
@@ -103,6 +104,11 @@ def get_experiment_results(
 def get_accuracy_tally(
     results: Iterable[TranspositionTestResult],
 ) -> AccuracyTally:
+    """
+    Counts the true/false positives/negatives of the test results
+    of the same experiment.
+    """
+
     tally = AccuracyTally()
     for result in results:
         tree_results_match = result.tree_a_value == result.tree_b_value
