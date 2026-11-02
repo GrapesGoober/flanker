@@ -129,3 +129,15 @@ def get_state_from_map(
         )
 
     return gs
+
+
+def get_perturbed_state(
+    gs: GameState,
+) -> GameState:
+    gs = deepcopy(gs)
+    for _, _, transform in gs.query(CombatUnit, Transform):
+        transform.position = Vec2(
+            transform.position.x + random.randrange(-10, 10),
+            transform.position.y + random.randrange(-10, 10),
+        )
+    return gs

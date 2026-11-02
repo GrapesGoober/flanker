@@ -29,6 +29,7 @@ from flanker_core.models.components import (
 )
 from procedural_state_generator import (
     get_map,
+    get_perturbed_state,
     get_state_from_map,
 )
 from transposition_experiment_models import (
@@ -128,11 +129,11 @@ def get_experiment_name(
     state_name = f"{state_method}"
     match key_method:
         case TranspositionScheme.RoundedPosition():
-            key_name = f"{key_method.type.lower()}-r{key_method.to_nearest}"
+            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
         case TranspositionScheme.RoundedRotation():
-            key_name = f"{key_method.type.lower()}-r{key_method.to_nearest}"
+            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
         case TranspositionScheme.LosSignatures():
-            key_name = f"{key_method.type.lower()}-{key_method.with_fov}"
+            key_name = f"{key_method.type}-{key_method.with_fov}".lower()
     return f"{state_name}-{key_name}"
 
 
@@ -152,7 +153,7 @@ def get_transposition_tests(
         case "random":
             state_b = get_state_from_map(map)
         case "perturbation":
-            raise NotImplementedError()
+            state_b = get_perturbed_state(state_a)
 
     return [
         TranspositionTestRun(
