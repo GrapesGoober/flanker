@@ -43,8 +43,8 @@ def main() -> None:
 
     tally_records: list[dict[str, str]] = []
     for result_file in result_files:
-        experiment_name = result_file.stem
         tally = get_accuracy_tally(get_experiment_results(result_file))
+        experiment_name = f"{result_file.stem} (N={tally.total_tests})"
         tally_records += [
             {
                 "experiment": experiment_name,
@@ -69,6 +69,18 @@ def main() -> None:
                 "key_prediction": "Keys differ",
                 "tree_result": "Values differ",
                 "count": f"TN: {tally.true_negatives}",
+            },
+            {
+                "experiment": experiment_name,
+                "key_prediction": "Tree outcome total",
+                "tree_result": "Values same",
+                "count": (f"Total: " f"{tally.true_positives + tally.false_negatives}"),
+            },
+            {
+                "experiment": experiment_name,
+                "key_prediction": "Tree outcome total",
+                "tree_result": "Values differ",
+                "count": (f"Total: " f"{tally.false_positives + tally.true_negatives}"),
             },
         ]
 
