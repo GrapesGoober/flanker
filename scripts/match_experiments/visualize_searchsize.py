@@ -22,7 +22,7 @@ def main() -> None:
 
     # Retrieve the each experiment results
     experiment_set = get_config(
-        config_path="./scripts/configs/experiment-config.json",
+        config_path="./scripts/configs/match-experiment-config.json",
     )
     experiment_results_by_name: dict[str, list[MatchResultRecordModel]] = {
         name: list(

@@ -25,13 +25,13 @@ def main() -> None:
 
     # Retrieve the each experiment results
     experiment_set = get_config(
-        config_path="./scripts/configs/experiment-config.json",
+        config_path="./scripts/configs/match-experiment-config.json",
     )
     experiment_results_by_name: dict[str, list[MatchResultRecordModel]] = {
         name: list(
             get_experiment_results(
                 experiment_name=name,
-                results_root_path="./scripts/outputs/experiment-results/",
+                results_root_path="./scripts/outputs/match-experiment-results/",
             )
         )
         for name in get_experiment_names(experiment_set)
