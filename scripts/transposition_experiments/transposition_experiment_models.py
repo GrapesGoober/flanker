@@ -3,7 +3,6 @@ from typing import Literal
 
 from flanker_ai.config_models import TranspositionScheme
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action
 from pydantic import BaseModel
 
 
@@ -26,7 +25,6 @@ class TranspositionExperimentSetConfig(BaseModel):
 
 @dataclass(frozen=True)
 class AiTreeResult:
-    best_action: Action | None
     value: float
 
 

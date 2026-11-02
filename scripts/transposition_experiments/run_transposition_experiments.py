@@ -243,13 +243,12 @@ def get_ai_tree_result(
     # The framework isn't built for this kind of use case whatsover.
     state = AiSearchAgent.get_state(gs, config)
     assert isinstance(config.policy, PolicyConfig.MinimaxPolicy)
-    action, log = MinimaxPolicy[Action].get_action(
+    _, log = MinimaxPolicy[Action].get_action(
         state=state,
         depth=config.policy.depth,
         log_with_tree=False,
     )
     return AiTreeResult(
-        best_action=action,
         value=log.action_value,
     )
 
