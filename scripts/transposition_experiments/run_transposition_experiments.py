@@ -1,6 +1,7 @@
 import random
 from copy import deepcopy
 from datetime import datetime
+from itertools import product
 from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
@@ -89,7 +90,6 @@ def main() -> None:
             transposition_tests,
         )
         for experiment_name, result in results:
-            log_message(f"    {experiment_name} done, tallying")
             record_transposition_test_result(
                 experiment_name=experiment_name,
                 result=result,
@@ -109,10 +109,11 @@ def get_transposition_experiments(
     # For now, I only have one possible permutation, thus one experiment.
     return [
         TranspositionExperiment(
-            name="randomly-populated",
-            state_populating_method=config.state_populating_method,
+            name=f"state-{state_method}",
+            state_populating_method=state_method,
             n_tests=config.n_tests,
         )
+        for (state_method,) in product(config.state_populating_methods)
     ]
 
 
@@ -131,6 +132,8 @@ def get_transposition_tests(
     match config.state_populating_method:
         case "random":
             state_b = get_state_from_map(map)
+        case "perturbation":
+            raise NotImplementedError()
 
     return [
         TranspositionTestRun(
@@ -155,7 +158,7 @@ def run_transposition_test(
     key_is_same = key_a == key_b
     result_is_same = result_a == result_b
 
-    log_message(f"    finished {test_run_config.experiment_name}, recording...")
+    log_message(f"    {test_run_config.experiment_name} done , recording...")
     return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
         result_is_same=result_is_same,

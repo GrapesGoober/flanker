@@ -15,7 +15,7 @@ class TranspositionExperimentSetConfig(BaseModel):
     """Input config model for entire transposition experiment-set run."""
 
     n_tests: int
-    state_populating_method: Literal["random"]
+    state_populating_methods: list[Literal["random", "perturbation"]]
     max_workers: int
     target: Literal["local"] | str
 
@@ -29,12 +29,12 @@ class AiTreeResult:
 @dataclass
 class TranspositionExperiment:
     name: str
-    state_populating_method: Literal["random"]
+    state_populating_method: Literal["random", "perturbation"]
     n_tests: int
 
 
 class TranspositionExperimentMetadata(BaseModel):
-    state_populating_method: Literal["random"]
+    state_populating_method: Literal["random", "perturbation"]
     n_tests: int
     target_n_tests: int
 
