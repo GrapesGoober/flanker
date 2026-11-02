@@ -4,16 +4,16 @@ from typing import Iterable
 
 import matplotlib
 import pandas as pd
-from experiment_models import ExperimentSetConfig, MatchResultRecordModel
+from experiment_models import (
+    AiSearchLogRecordModel,
+    ExperimentSetConfig,
+    MatchResultRecordModel,
+)
 from flanker_core.models.components import InitiativeState
 from plotnine import (
     aes,
-    facet_wrap,
-    geom_text,
-    geom_tile,
+    geom_histogram,
     ggplot,
-    labs,
-    scale_fill_cmap,
     theme_matplotlib,
 )
 
@@ -26,7 +26,7 @@ def main() -> None:
     )
     experiment_results_by_name: dict[str, list[MatchResultRecordModel]] = {
         name: list(
-            get_experiment_results(
+            get_experiment_result(
                 experiment_name=name,
                 results_root_path="./scripts/outputs/experiment-results/",
             )
@@ -38,41 +38,36 @@ def main() -> None:
     match_setting = experiment_set.match_settings[0]
 
     # Generate cells of each win rate to render
+    BLUE_CONFIG_TO_RENDER = "blue-grid-140-zobrist-r1"
     df = pd.DataFrame(
         [
             {
                 "scene": scene_name,
-                "blue": blue_config,
+                "blue": BLUE_CONFIG_TO_RENDER,
                 "red": red_config,
-                "win_rate": get_win_rate(
-                    experiment_name="-".join(
-                        [scene_name, blue_config, red_config, match_setting],
-                    ),
-                    experiment_results_by_name=experiment_results_by_name,
-                ),
+                "search_size": action_result.policy_log.tree_size,
             }
             for scene_name in experiment_set.scene_configs
-            for blue_config in experiment_set.blue_configs
             for red_config in experiment_set.red_configs
+            for match_result in experiment_results_by_name[
+                "-".join(
+                    [scene_name, BLUE_CONFIG_TO_RENDER, red_config, match_setting],
+                )
+            ]
+            for action_result in match_result.action_results
+            if isinstance(action_result.policy_log, AiSearchLogRecordModel)
+            if action_result.faction == InitiativeState.Faction.BLUE
         ]
     )
 
-    # Plot those cells
     matplotlib.use("tkagg")
     plot = (
-        ggplot(df, aes(x="red", y="blue", fill="win_rate"))
-        + geom_tile()
-        + geom_text(aes(label="win_rate"))
-        + scale_fill_cmap(limits=(0, 1))
-        + facet_wrap("~scene", nrow=1)
-        + labs(
-            x="RED configuration",
-            y="BLUE configuration",
-        )
+        ggplot(df, aes(x="search_size"))
+        + geom_histogram(binwidth=1_000)
         + theme_matplotlib()
     )
     plot.show()
-    plot.save("scripts/outputs/visualize-wins.png")
+    plot.save("scripts/outputs/visualize-grid-search-size.png")
 
 
 def get_config(config_path: str) -> ExperimentSetConfig:
@@ -94,7 +89,7 @@ def get_experiment_names(
     ]
 
 
-def get_experiment_results(
+def get_experiment_result(
     experiment_name: str,
     results_root_path: str,
 ) -> Iterable[MatchResultRecordModel]:
@@ -106,21 +101,6 @@ def get_experiment_results(
         # This file reading is unreliable... need better file IO?
         for line in f:
             yield MatchResultRecordModel.model_validate_json(line)
-
-
-def get_win_rate(
-    experiment_name: str,
-    experiment_results_by_name: dict[str, list[MatchResultRecordModel]],
-) -> float:
-    match_results = experiment_results_by_name[experiment_name]
-    return round(
-        sum(
-            match_result.winner == InitiativeState.Faction.BLUE
-            for match_result in match_results
-        )
-        / len(match_results),
-        ndigits=2,
-    )
 
 
 if __name__ == "__main__":

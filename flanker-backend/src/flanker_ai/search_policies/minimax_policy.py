@@ -30,6 +30,7 @@ class MinimaxTreeEdge[TAction]:
 @dataclass
 class MinimaxSearchLog[TAction]:
     tree_size: int
+    action_value: float
     tree_root: MinimaxTreeNode[TAction] | None = None
 
 
@@ -54,7 +55,7 @@ class MinimaxPolicy[TAction]:
         if log_with_tree:
             root = MinimaxTreeNode(state=state, children=[])
 
-        _, action = MinimaxPolicy[TAction]._search(
+        value, action = MinimaxPolicy[TAction]._search(
             state=state,
             depth_remaining=depth,
             alpha=-inf,
@@ -65,6 +66,7 @@ class MinimaxPolicy[TAction]:
         )
         return action, MinimaxSearchLog(
             tree_size=next(counter) - 1,
+            action_value=value,
             tree_root=root,
         )
 
