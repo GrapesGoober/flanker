@@ -11,10 +11,8 @@ from plotnine import (
     geom_tile,
     ggplot,
     labs,
-    scale_fill_cmap,
     theme_matplotlib,
 )
-
 from transposition_experiment_models import TranspositionTestResult
 
 
@@ -43,53 +41,49 @@ def main() -> None:
             f"No transposition result files found in {results_root_path}"
         )
 
-    tally_records: list[dict[str, str | int]] = []
+    tally_records: list[dict[str, str]] = []
     for result_file in result_files:
         tally = get_accuracy_tally(get_experiment_results(result_file))
-        tally_records.extend(
-            [
-                {
-                    "experiment": result_file.stem,
-                    "key_prediction": "Keys same",
-                    "tree_result": "Values same",
-                    "count": tally.true_positives,
-                },
-                {
-                    "experiment": result_file.stem,
-                    "key_prediction": "Keys same",
-                    "tree_result": "Values differ",
-                    "count": tally.false_positives,
-                },
-                {
-                    "experiment": result_file.stem,
-                    "key_prediction": "Keys differ",
-                    "tree_result": "Values same",
-                    "count": tally.false_negatives,
-                },
-                {
-                    "experiment": result_file.stem,
-                    "key_prediction": "Keys differ",
-                    "tree_result": "Values differ",
-                    "count": tally.true_negatives,
-                },
-            ]
-        )
+        tally_records += [
+            {
+                "experiment": result_file.stem,
+                "key_prediction": "Keys same",
+                "tree_result": "Values same",
+                "count": f"TP: {tally.true_positives}",
+            },
+            {
+                "experiment": result_file.stem,
+                "key_prediction": "Keys same",
+                "tree_result": "Values differ",
+                "count": f"FP: {tally.false_positives}",
+            },
+            {
+                "experiment": result_file.stem,
+                "key_prediction": "Keys differ",
+                "tree_result": "Values same",
+                "count": f"FN: {tally.false_negatives}",
+            },
+            {
+                "experiment": result_file.stem,
+                "key_prediction": "Keys differ",
+                "tree_result": "Values differ",
+                "count": f"TN: {tally.true_negatives}",
+            },
+        ]
 
     df = pd.DataFrame(tally_records)
     matplotlib.use("tkagg")
     plot = (
         ggplot(
             df,
-            aes(x="tree_result", y="key_prediction", fill="count"),
+            aes(x="tree_result", y="key_prediction"),
         )
-        + geom_tile()
+        + geom_tile(fill="white", color="black")
         + geom_text(aes(label="count"))
         + facet_wrap("~experiment")
-        + scale_fill_cmap()
         + labs(
-            x="Tree results (ground truth)",
-            y="Zobrist key prediction",
-            fill="Tests",
+            x="Tree results",
+            y="Zobrist keys",
         )
         + theme_matplotlib()
     )
