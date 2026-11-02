@@ -1,5 +1,6 @@
 import random
 from copy import deepcopy
+from math import ceil, floor
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
@@ -16,6 +17,7 @@ from flanker_core.models.components import (
     Transform,
 )
 from flanker_core.models.vec2 import Vec2
+from flanker_core.utils.polygon_utils import PolygonUtils
 
 
 def get_map() -> GameState:
@@ -105,12 +107,34 @@ def get_state_from_map(
 
     # Generates 2 blue and 2 red units at random positions.
     # TODO: remove the hardcoding, and make it generates more cases.
+
+    boundary = []
+    for _, map_boundary in gs.query(MapBoundary):
+        boundary = map_boundary.vertices
+        break
+    if not boundary:
+        raise RuntimeError("Map boundary not found.")
+
+    min_x = ceil(min(vertex.x for vertex in boundary))
+    max_x = floor(max(vertex.x for vertex in boundary))
+    min_y = ceil(min(vertex.y for vertex in boundary))
+    max_y = floor(max(vertex.y for vertex in boundary))
+    if min_x > max_x or min_y > max_y:
+        raise ValueError("Map boundary contains no integer coordinates.")
+
     for faction in [
         InitiativeState.Faction.BLUE,
         InitiativeState.Faction.BLUE,
         InitiativeState.Faction.RED,
         InitiativeState.Faction.RED,
     ]:
+        position: Vec2 | None = None
+        while position is None or not is_point_in_bound(gs, position):
+            position = Vec2(
+                random.randint(min_x, max_x),
+                random.randint(min_y, max_y),
+            )
+
         gs.add_entity(
             MoveControls(),
             CombatUnit(
@@ -118,10 +142,7 @@ def get_state_from_map(
                 status=CombatUnit.Status.ACTIVE,
             ),
             Transform(
-                position=Vec2(
-                    random.randint(10, 190),
-                    random.randint(10, 190),
-                ),
+                position=position,
                 degrees=0,
             ),
             FireControls(fov_degrees=None),
@@ -131,13 +152,31 @@ def get_state_from_map(
     return gs
 
 
+def is_point_in_bound(
+    gs: GameState,
+    point: Vec2,
+) -> bool:
+    bound = []
+    for _, map_boundary in gs.query(MapBoundary):
+        bound = map_boundary.vertices
+        break
+    if not bound:
+        raise RuntimeError("Map boundary not found.")
+    if bound[-1] != bound[0]:
+        bound = [*bound, bound[0]]
+    return PolygonUtils.is_inside(point, bound)
+
+
 def get_perturbed_state(
     gs: GameState,
 ) -> GameState:
     gs = deepcopy(gs)
     for _, _, transform in gs.query(CombatUnit, Transform):
-        transform.position = Vec2(
-            transform.position.x + random.randrange(-10, 10),
-            transform.position.y + random.randrange(-10, 10),
-        )
+        position: Vec2 | None = None
+        while position is None or not is_point_in_bound(gs, position):
+            position = Vec2(
+                transform.position.x + random.randrange(-10, 10),
+                transform.position.y + random.randrange(-10, 10),
+            )
+        transform.position = position
     return gs
