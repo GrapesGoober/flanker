@@ -33,7 +33,6 @@ from procedural_state_generator import (
     get_state_from_map,
 )
 from transposition_experiment_models import (
-    AiTreeResult,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
@@ -133,7 +132,8 @@ def get_experiment_name(
         case TranspositionScheme.RoundedRotation():
             key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
         case TranspositionScheme.LosSignatures():
-            key_name = f"{key_method.type}-{key_method.with_fov}".lower()
+            with_fov_name = "with-fov" if key_method.with_fov else "without-fov"
+            key_name = f"{key_method.type}-{with_fov_name}".lower()
     return f"{state_name}-{key_name}"
 
 
@@ -179,20 +179,20 @@ def run_transposition_test(
         test_run_config.state_b,
         test_run_config.key_method,
     )
-    result_a: AiTreeResult = get_ai_tree_result(
+    tree_a_value: float = get_ai_tree_value(
         test_run_config.state_a,
     )
-    result_b: AiTreeResult = get_ai_tree_result(
+    tree_b_value: float = get_ai_tree_value(
         test_run_config.state_b,
     )
 
     key_is_same = key_a == key_b
-    result_is_same = result_a == result_b
 
     log_message(f"    {test_run_config.experiment_name} done , recording...")
     return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
-        result_is_same=result_is_same,
+        tree_a_value=tree_a_value,
+        tree_b_value=tree_b_value,
     )
 
 
@@ -206,9 +206,9 @@ def get_key(
     )
 
 
-def get_ai_tree_result(
+def get_ai_tree_value(
     gs: GameState,
-) -> AiTreeResult:
+) -> float:
     """Runs the game-tree and returns its results."""
 
     gs = deepcopy(gs)
@@ -221,8 +221,8 @@ def get_ai_tree_result(
             type="UnabstractedStateConfig",
             move_candidates_pool=PointsConfig.Grid(
                 type="GridConfig",
-                spacing=50,
-                offset=25,
+                spacing=100,
+                offset=50,
             ),
             move_candidates_filter=[],
             transposition_schemes=[
@@ -248,9 +248,7 @@ def get_ai_tree_result(
         depth=config.policy.depth,
         log_with_tree=False,
     )
-    return AiTreeResult(
-        value=log.action_value,
-    )
+    return log.action_value
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:

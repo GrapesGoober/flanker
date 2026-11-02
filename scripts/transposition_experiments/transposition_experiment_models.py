@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Literal
 
@@ -8,7 +10,8 @@ from pydantic import BaseModel
 
 class TranspositionTestResult(BaseModel):
     key_is_same: bool
-    result_is_same: bool
+    tree_a_value: float
+    tree_b_value: float
 
 
 class TranspositionExperimentSetConfig(BaseModel):
@@ -21,11 +24,6 @@ class TranspositionExperimentSetConfig(BaseModel):
     zobrist_key_methods: list[TranspositionScheme.ALL]
     max_workers: int
     target: Literal["local"] | str
-
-
-@dataclass(frozen=True)
-class AiTreeResult:
-    value: float
 
 
 @dataclass
