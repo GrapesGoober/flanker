@@ -146,24 +146,28 @@ def get_transposition_tests(
     if remaining_tests == 0:
         return []
 
-    map = get_map()
-    state_a = get_state_from_map(map)
+    tests: list[TranspositionTestRun] = []
+    for _ in range(remaining_tests):
 
-    match config.state_populating_method:
-        case "random":
-            state_b = get_state_from_map(map)
-        case "perturbation":
-            state_b = get_perturbed_state(state_a)
+        map = get_map()
+        state_a = get_state_from_map(map)
 
-    return [
-        TranspositionTestRun(
-            experiment_name=config.name,
-            state_a=state_a,
-            state_b=state_b,
-            key_method=config.key_method,
+        match config.state_populating_method:
+            case "random":
+                state_b = get_state_from_map(map)
+            case "perturbation":
+                state_b = get_perturbed_state(state_a)
+
+        tests.append(
+            TranspositionTestRun(
+                experiment_name=config.name,
+                state_a=state_a,
+                state_b=state_b,
+                key_method=config.key_method,
+            )
         )
-        for _ in range(remaining_tests)
-    ]
+
+    return tests
 
 
 def run_transposition_test(
