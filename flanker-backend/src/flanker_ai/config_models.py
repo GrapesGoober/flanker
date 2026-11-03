@@ -55,7 +55,11 @@ class TranspositionScheme:
         type: Literal["LosSignatures"]
         with_fov: bool
 
-    type ALL = RoundedPosition | RoundedRotation | LosSignatures
+    @dataclass
+    class AspectSignatures:
+        type: Literal["AspectSignatures"]
+
+    type ALL = RoundedPosition | RoundedRotation | LosSignatures | AspectSignatures
 
 
 @dataclass

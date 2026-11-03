@@ -133,6 +133,9 @@ def get_experiment_name(
             key_name = key_method.type.lower()
             if key_method.with_fov:
                 key_name += "-fov"
+        case TranspositionScheme.AspectSignatures():
+            key_name = key_method.type.lower()
+
     return f"{state_name}-{key_name}"
 
 
