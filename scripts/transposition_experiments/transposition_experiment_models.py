@@ -19,9 +19,7 @@ class TranspositionExperimentSetConfig(BaseModel):
 
     n_tests: int
     state_populating_methods: list[Literal["random", "perturbation"]]
-    # TODO: Should this key methods be combinable?
-    # A single key generation can combine different key methods.
-    zobrist_key_methods: list[TranspositionScheme.ALL]
+    zobrist_key_methods: dict[str, list[TranspositionScheme.ALL]]
     max_workers: int
     target: Literal["local"] | str
 
@@ -30,13 +28,13 @@ class TranspositionExperimentSetConfig(BaseModel):
 class TranspositionExperiment:
     name: str
     state_populating_method: Literal["random", "perturbation"]
-    key_method: TranspositionScheme.ALL
+    key_methods: list[TranspositionScheme.ALL]
     n_tests: int
 
 
 class TranspositionExperimentMetadata(BaseModel):
     state_populating_method: Literal["random", "perturbation"]
-    key_method: TranspositionScheme.ALL
+    key_methods: list[TranspositionScheme.ALL]
     n_tests: int
     target_n_tests: int
 
@@ -46,4 +44,4 @@ class TranspositionTestRun:
     experiment_name: str
     state_a: GameState
     state_b: GameState
-    key_method: TranspositionScheme.ALL
+    key_method: list[TranspositionScheme.ALL]

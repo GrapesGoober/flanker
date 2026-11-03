@@ -6,7 +6,7 @@ from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -107,36 +107,16 @@ def get_transposition_experiments(
 ) -> list[TranspositionExperiment]:
     return [
         TranspositionExperiment(
-            name=get_experiment_name(state_method, key_method),
+            name=f"{state_method}-{key_methods_name}",
             state_populating_method=state_method,
-            key_method=key_method,
+            key_methods=key_methods,
             n_tests=config.n_tests,
         )
-        for (state_method, key_method) in product(
+        for (state_method, (key_methods_name, key_methods)) in product(
             config.state_populating_methods,
-            config.zobrist_key_methods,
+            config.zobrist_key_methods.items(),
         )
     ]
-
-
-def get_experiment_name(
-    state_method: Literal["random", "perturbation"],
-    key_method: TranspositionScheme.ALL,
-) -> str:
-    state_name = f"{state_method}"
-    match key_method:
-        case TranspositionScheme.RoundedPosition():
-            key_name = f"rounded-r{key_method.to_nearest}".lower()
-        case TranspositionScheme.RoundedRotation():
-            key_name = f"rounded-rotation-r{key_method.to_nearest}".lower()
-        case TranspositionScheme.LosSignatures():
-            key_name = "los"
-            if key_method.with_fov:
-                key_name += "-fov"
-        case TranspositionScheme.AspectSignatures():
-            key_name = "aspect"
-
-    return f"{state_name}-{key_name}"
 
 
 def get_transposition_tests(
@@ -165,7 +145,7 @@ def get_transposition_tests(
                 experiment_name=config.name,
                 state_a=state_a,
                 state_b=state_b,
-                key_method=config.key_method,
+                key_method=config.key_methods,
             )
         )
 
@@ -204,11 +184,11 @@ def run_transposition_test(
 
 def get_key(
     gs: GameState,
-    key_method: TranspositionScheme.ALL,
+    key_methods: list[TranspositionScheme.ALL],
 ) -> CacheKey:
     return AiTranspositionKeyService.get_key(
         gs=gs,
-        transposition_schemes=[key_method],
+        transposition_schemes=key_methods,
     )
 
 
@@ -285,7 +265,7 @@ def init_metadata_file(
 
     metadata = TranspositionExperimentMetadata(
         state_populating_method=experiment_config.state_populating_method,
-        key_method=experiment_config.key_method,
+        key_methods=experiment_config.key_methods,
         n_tests=0,
         target_n_tests=experiment_config.n_tests,
     )
