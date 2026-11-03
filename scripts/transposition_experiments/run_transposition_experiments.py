@@ -8,7 +8,7 @@ from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
 from typing import Any, Literal
 
-from flanker_ai.agents.ai_search_agent import AiSearchAgent
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -17,16 +17,15 @@ from flanker_ai.config_models import (
     TranspositionScheme,
     UnabstractedStateConfig,
 )
-from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
 from flanker_ai.search_states.common.ai_transposition_key_service import (
     AiTranspositionKeyService,
     CacheKey,
 )
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action
 from flanker_core.models.components import (
     InitiativeState,
 )
+from flanker_core.systems.action_system import ActionSystem
 from procedural_state_generator import (
     get_map,
     get_perturbed_state,
@@ -191,10 +190,10 @@ def run_transposition_test(
         test_run_config.state_b,
         test_run_config.key_method,
     )
-    action_a_value: float = get_ai_action_value(
+    action_a_value: float = get_tree_action_value(
         test_run_config.state_a,
     )
-    action_b_value: float = get_ai_action_value(
+    action_b_value: float = get_tree_action_value(
         test_run_config.state_b,
     )
 
@@ -218,10 +217,11 @@ def get_key(
     )
 
 
-def get_ai_action_value(
+def get_tree_action_value(
     gs: GameState,
+    # target: Literal["local"] | str,
 ) -> float:
-    """Runs the game-tree and returns its results."""
+    """Runs the game-tree and returns its action value."""
 
     gs = deepcopy(gs)
     config = SearchPolicyConfig(
@@ -251,16 +251,21 @@ def get_ai_action_value(
             config=config,
         ),
     )
-    # TODO: This AI shenanigans is so messy. Clean this up?
-    # The framework isn't built for this kind of use case whatsover.
-    state = AiSearchAgent.get_state(gs, config)
-    assert isinstance(config.policy, PolicyConfig.MinimaxPolicy)
-    _, log = MinimaxPolicy[Action].get_action(
-        state=state,
-        depth=config.policy.depth,
-        log_with_tree=False,
+    gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.RED,
+            config=config,
+        ),
     )
-    return log.action_value
+
+    initiative = ActionSystem.get_initiative(gs)
+    result = AiSystem.perform_action(gs, initiative)
+    if result is None:
+        raise RuntimeError("AI can't perform action!")
+    if result.policy_log is None:
+        raise RuntimeError("Expects a search policy log from AI.")
+
+    return result.policy_log.action_value
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:
