@@ -44,7 +44,7 @@ def main() -> None:
     tally_records: list[dict[str, str]] = []
     for result_file in result_files:
         tally = get_accuracy_tally(get_experiment_results(result_file))
-        experiment_name = f"{result_file.stem} (N={tally.total_tests})"
+        experiment_name = result_file.stem
         tally_records += [
             {
                 "experiment": experiment_name,
