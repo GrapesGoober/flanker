@@ -12,29 +12,23 @@ class AiAspectSignatureService:
         position: Vec2,
         vertices: list[Vec2],
     ) -> tuple[float, float]:
-        # TODO: this code is AI generated. Although it is probably correct,
-        # this is such a mess that I don't wanna use it.
-        # I should clean this up. I should handle this edge case myself.
-        angles = sorted(position.angle_to(vertex) % 360.0 for vertex in vertices)
-        angles.append(angles[0] + 360.0)
+        left_vector = vertices[0] - position
+        right_vector = vertices[0] - position
 
-        # The obstacle is the arc opposite the largest gap between vertices.
-        gap_start, gap_end = max(
-            zip(angles, angles[1:]),
-            key=lambda pair: pair[1] - pair[0],
-        )
+        for vertex in vertices:
+            current_vector = vertex - position
 
-        left = gap_end % 360.0
-        right = gap_start
-        if right < left:
-            right += 360.0
+            cross_product = left_vector.cross(current_vector)
+            if cross_product > 0:
+                left_vector = current_vector
 
-        # Keep the left bound in angle_to's [-180, 180] range.
-        if left > 180.0:
-            left -= 360.0
-            right -= 360.0
+            cross_product = right_vector.cross(current_vector)
+            if cross_product < 0:
+                right_vector = current_vector
 
-        return left, right
+        left_angle = position.angle_to(position + left_vector)
+        right_angle = position.angle_to(position + right_vector)
+        return left_angle, right_angle
 
     @staticmethod
     def get_aspects_angles(
