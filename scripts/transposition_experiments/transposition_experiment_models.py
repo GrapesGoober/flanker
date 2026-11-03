@@ -17,7 +17,7 @@ class TranspositionTestResult(BaseModel):
 class TranspositionExperimentSetConfig(BaseModel):
     """Input config model for entire transposition experiment-set run."""
 
-    n_tests: int
+    target_n_tests: int
     state_populating_methods: list[Literal["random", "perturbation"]]
     zobrist_key_methods: dict[str, list[TranspositionScheme.ALL]]
     max_workers: int

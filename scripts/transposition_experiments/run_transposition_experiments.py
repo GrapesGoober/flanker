@@ -65,16 +65,24 @@ def main() -> None:
         init_metadata_file(
             experiment_config=experiment,
             results_root_path=results_root_path,
-            target_n_tests=experiment_set.n_tests,
+            target_n_tests=experiment_set.target_n_tests,
         )
+
+    n_test_per_experiment: dict[str, int] = {
+        experiment.name: max(
+            0,
+            experiment_set.target_n_tests
+            - get_metadata(experiment.name, results_root_path).n_tests,
+        )
+        for experiment in transposition_experiments
+    }
 
     transposition_tests = [
         transposition_test
         for experiment_config in transposition_experiments
         for transposition_test in get_transposition_tests(
-            experiment_set=experiment_set,
             experiment=experiment_config,
-            results_root_path=results_root_path,
+            n_test=n_test_per_experiment[experiment_config.name],
         )
     ]
     random.shuffle(transposition_tests)
@@ -124,17 +132,11 @@ def get_transposition_experiments(
 
 
 def get_transposition_tests(
-    experiment_set: TranspositionExperimentSetConfig,
     experiment: TranspositionExperiment,
-    results_root_path: str,
+    n_test: int,
 ) -> list[TranspositionTestRun]:
-    metadata = get_metadata(experiment.name, results_root_path)
-    remaining_tests = max(0, experiment_set.n_tests - metadata.n_tests)
-    if remaining_tests == 0:
-        return []
-
     tests: list[TranspositionTestRun] = []
-    for _ in range(remaining_tests):
+    for _ in range(n_test):
 
         map = get_map()
         state_a = get_state_from_map(map)
