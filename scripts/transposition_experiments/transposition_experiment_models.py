@@ -5,7 +5,9 @@ from typing import Literal
 
 from flanker_ai.config_models import TranspositionScheme
 from flanker_core.gamestate import GameState
-from pydantic import BaseModel
+from flanker_core.models.components import InitiativeState
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
 class TranspositionTestResult(BaseModel):
@@ -29,6 +31,7 @@ class TranspositionExperiment:
     name: str
     state_populating_method: Literal["random", "perturbation"]
     key_methods: list[TranspositionScheme.ALL]
+    target: Literal["local"] | str
 
 
 class TranspositionExperimentMetadata(BaseModel):
@@ -44,3 +47,28 @@ class TranspositionTestRun:
     state_a: GameState
     state_b: GameState
     key_method: list[TranspositionScheme.ALL]
+    target: Literal["local"] | str
+
+
+class _CamelCaseConfig:
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        from_attributes=True,
+    )
+
+
+class ApiAiSearchLogModel(BaseModel, _CamelCaseConfig):
+    tree_size: int
+    tree_depth: int
+    action_value: float
+
+
+class ApiAiActionResultModel(BaseModel, _CamelCaseConfig):
+    faction: InitiativeState.Faction
+    action_runtime_seconds: float
+    policy_log: ApiAiSearchLogModel | None
+
+
+class ApiAiPerformedActionResult(BaseModel, _CamelCaseConfig):
+    action_result: ApiAiActionResultModel

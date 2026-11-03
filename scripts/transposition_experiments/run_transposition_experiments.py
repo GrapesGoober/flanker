@@ -1,13 +1,17 @@
 import random
 from copy import deepcopy
+from dataclasses import is_dataclass
 from datetime import datetime
+from inspect import isclass
 from itertools import product
 from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any, Literal
+from time import sleep
+from typing import Any, Iterable, Literal
 
+import requests
 from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
@@ -22,9 +26,11 @@ from flanker_ai.search_states.common.ai_transposition_key_service import (
     CacheKey,
 )
 from flanker_core.gamestate import GameState
+from flanker_core.models import components
 from flanker_core.models.components import (
     InitiativeState,
 )
+from flanker_core.serializer import Serializer
 from flanker_core.systems.action_system import ActionSystem
 from procedural_state_generator import (
     get_map,
@@ -32,6 +38,7 @@ from procedural_state_generator import (
     get_state_from_map,
 )
 from transposition_experiment_models import (
+    ApiAiPerformedActionResult,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
@@ -132,6 +139,7 @@ def get_transposition_experiments(
             name=f"{state_method}-{key_methods_name}",
             state_populating_method=state_method,
             key_methods=key_methods,
+            target=config.target,
         )
         for (state_method, (key_methods_name, key_methods)) in product(
             config.state_populating_methods,
@@ -150,6 +158,7 @@ def get_all_transposition_tests(
             state_a=state_a,
             state_b=state_b,
             key_method=experiment_config.key_methods,
+            target=experiment_config.target,
         )
         for experiment_config in experiment_configs
         for state_a, state_b in state_sequence_per_method[
@@ -191,10 +200,12 @@ def run_transposition_test(
         test_run_config.key_method,
     )
     action_a_value: float = get_tree_action_value(
-        test_run_config.state_a,
+        gs=test_run_config.state_a,
+        test_run_config=test_run_config,
     )
     action_b_value: float = get_tree_action_value(
-        test_run_config.state_b,
+        gs=test_run_config.state_b,
+        test_run_config=test_run_config,
     )
 
     key_is_same = key_a == key_b
@@ -219,7 +230,7 @@ def get_key(
 
 def get_tree_action_value(
     gs: GameState,
-    # target: Literal["local"] | str,
+    test_run_config: TranspositionTestRun,
 ) -> float:
     """Runs the game-tree and returns its action value."""
 
@@ -259,13 +270,51 @@ def get_tree_action_value(
     )
 
     initiative = ActionSystem.get_initiative(gs)
-    result = AiSystem.perform_action(gs, initiative)
-    if result is None:
-        raise RuntimeError("AI can't perform action!")
-    if result.policy_log is None:
-        raise RuntimeError("Expects a search policy log from AI.")
 
-    return result.policy_log.action_value
+    match test_run_config.target:
+        case "local":
+            result = AiSystem.perform_action(gs, initiative)
+            if result is None:
+                raise RuntimeError("AI can't perform action!")
+            if result.policy_log is None:
+                raise RuntimeError("Expects a search policy log from AI.")
+            return result.policy_log.action_value
+        case _:
+            scene_data = Serializer.serialize(
+                entities=gs.dump(),
+                component_types=list(get_component_types()),
+            )
+            response: requests.Response | None = None
+
+            # Keep retrying requests if it fails
+            while True:
+                try:
+                    response = requests.post(
+                        f"{test_run_config.target}/api/rpc/game/ai-perform",
+                        data=scene_data,
+                    )
+                    response.raise_for_status()
+                    break
+
+                except requests.RequestException as e:
+                    log_message(f"Request had error {e}")
+                    log_message(
+                        f"Rerunning {test_run_config.experiment_name} in 30 seconds"
+                    )
+                    sleep(30)
+
+            api_result = ApiAiPerformedActionResult.model_validate_json(response.text)
+            policy_log = api_result.action_result.policy_log
+            if policy_log is None:
+                raise RuntimeError("Expects a search policy log from AI.")
+            return policy_log.action_value
+
+
+def get_component_types() -> Iterable[type]:
+    for _, cls in vars(components).items():
+        if isclass(cls) and is_dataclass(cls):
+            yield cls
+    yield AiConfigComponent
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:
