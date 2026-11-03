@@ -1,7 +1,7 @@
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
-from flanker_ai.search_states.common.ai_aspect_boundary_service import (
-    AiAspectBoundaryService,
+from flanker_ai.search_states.common.ai_aspect_signature_service import (
+    AiAspectSignatureService,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import MoveAction
@@ -106,8 +106,14 @@ class GameViewService:
                 )
             )
 
-            aspect = AiAspectBoundaryService.get_aspects_boundaries(gs, transform)
-            unit_aspects.append((transform.position, aspect))
+            aspect_angles: list[float] = [
+                angle
+                for _, angle in AiAspectSignatureService.get_aspects_angles(
+                    gs=gs,
+                    position=transform.position,
+                )
+            ]
+            unit_aspects.append((transform.position, aspect_angles))
 
         config: SearchPolicyConfig | None = None
         for _, component in gs.query(AiConfigComponent):
