@@ -77,16 +77,9 @@ def main() -> None:
     }
 
     # Generate all tests for each experiment configs.
-    transposition_tests = [
-        transposition_test
-        for experiment_config in transposition_experiments
-        for transposition_test in get_transposition_tests(
-            experiment=experiment_config,
-            state_sequences=state_sequence_per_method[
-                experiment_config.state_populating_method
-            ],
-        )
-    ]
+    transposition_tests = get_all_transposition_tests(
+        transposition_experiments, state_sequence_per_method
+    )
     random.shuffle(transposition_tests)
 
     results_root = Path(results_root_path)
@@ -133,22 +126,22 @@ def get_transposition_experiments(
     ]
 
 
-def get_transposition_tests(
-    experiment: TranspositionExperiment,
-    state_sequences: list[tuple[GameState, GameState]],
+def get_all_transposition_tests(
+    experiment_configs: list[TranspositionExperiment],
+    state_sequence_per_method: dict[str, list[tuple[GameState, GameState]]],
 ) -> list[TranspositionTestRun]:
-    tests: list[TranspositionTestRun] = []
-    for state_a, state_b in state_sequences:
-        tests.append(
-            TranspositionTestRun(
-                experiment_name=experiment.name,
-                state_a=state_a,
-                state_b=state_b,
-                key_method=experiment.key_methods,
-            )
+    return [
+        TranspositionTestRun(
+            experiment_name=experiment_config.name,
+            state_a=state_a,
+            state_b=state_b,
+            key_method=experiment_config.key_methods,
         )
-
-    return tests
+        for experiment_config in experiment_configs
+        for state_a, state_b in state_sequence_per_method[
+            experiment_config.state_populating_method
+        ]
+    ]
 
 
 def get_state_sequence(
