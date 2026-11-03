@@ -50,6 +50,7 @@ def main() -> None:
         config_path="./scripts/configs/transposition-experiment-config.json",
     )
 
+    # Supports local running or if parallelize in cloud use threads for IO.
     pool_type: type[Pool] | type[ThreadPool]
     match experiment_set.target:
         case "local":
@@ -57,12 +58,30 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
+    results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
+
+    # Configs parallel-safe logs
+    log_file_path = results_root_path / "run_transposition_experiment.log"
+    log_lock: LockType = Lock()
+    configure_logging(str(log_file_path), log_lock)
+
+    # Safety check if there are other data still there.
+    # Should be a clean run.
+    result_files = [
+        file
+        for pattern in ("*.jsonl", "*.json")
+        for file in results_root_path.glob(pattern)
+    ]
+    if result_files:
+        raise FileExistsError(
+            f"Results folder not empty: {', '.join(file.stem for file in result_files)}"
+        )
+    results_root_path.mkdir(parents=True, exist_ok=True)
+
+    # Get init each experiment permutations
     transposition_experiments = get_transposition_experiments(
         config=experiment_set,
     )
-    results_root_path = "./scripts/outputs/transposition-experiment-results/"
-
-    # TODO: modify the init to throw exception if there are old data.
     for experiment in transposition_experiments:
         init_metadata_file(
             experiment_config=experiment,
@@ -70,24 +89,20 @@ def main() -> None:
             target_n_tests=experiment_set.target_n_tests,
         )
 
-    # Ensure that the experiments with same state methods use the same states.
+    # Ensure that the experiments with same state methods
+    # use the same states sequence. Ensures consistency between experiments.
     state_sequence_per_method = {
         method: get_state_sequence(method, experiment_set.target_n_tests)
         for method in experiment_set.state_populating_methods
     }
 
-    # Generate all tests for each experiment configs.
+    # Generate tests for all experiments.
     transposition_tests = get_all_transposition_tests(
         transposition_experiments, state_sequence_per_method
     )
     random.shuffle(transposition_tests)
 
-    results_root = Path(results_root_path)
-    results_root.mkdir(parents=True, exist_ok=True)
-    log_file_path = results_root / "run_transposition_experiment.log"
-    log_lock: LockType = Lock()
-    configure_logging(str(log_file_path), log_lock)
-
+    # Run all the tests.
     with pool_type(
         processes=experiment_set.max_workers,
         initializer=configure_logging,
@@ -267,10 +282,10 @@ def log_message(message: str) -> None:
 
 def init_metadata_file(
     experiment_config: TranspositionExperiment,
-    results_root_path: str,
+    results_root_path: Path,
     target_n_tests: int,
 ) -> None:
-    file_path = Path(results_root_path) / f"{experiment_config.name}-metadata.json"
+    file_path = results_root_path / f"{experiment_config.name}-metadata.json"
     file_path.parent.mkdir(parents=True, exist_ok=True)
     if file_path.is_file():
         return
@@ -287,9 +302,9 @@ def init_metadata_file(
 
 def get_metadata(
     experiment_name: str,
-    results_root_path: str,
+    results_root_path: Path,
 ) -> TranspositionExperimentMetadata:
-    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    file_path = results_root_path / f"{experiment_name}-metadata.json"
     if not file_path.is_file():
         raise FileNotFoundError(f"Metadata file for {experiment_name} does not exist")
 
@@ -302,19 +317,19 @@ def get_metadata(
 def record_transposition_test_result(
     experiment_name: str,
     result: TranspositionTestResult,
-    results_root_path: str,
+    results_root_path: Path,
 ) -> None:
     metadata = get_metadata(experiment_name, results_root_path)
     if metadata.n_tests >= metadata.target_n_tests:
         return
     metadata.n_tests += 1
 
-    metadata_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    metadata_path = results_root_path / f"{experiment_name}-metadata.json"
     if not metadata_path.is_file():
         raise FileNotFoundError(f"Metadata file for {experiment_name} does not exist")
     metadata_path.write_text(metadata.model_dump_json(indent=2))
 
-    result_path = Path(results_root_path) / f"{experiment_name}.jsonl"
+    result_path = results_root_path / f"{experiment_name}.jsonl"
     with result_path.open("a") as results_file:
         results_file.write(result.model_dump_json())
         results_file.write("\n")
