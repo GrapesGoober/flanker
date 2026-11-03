@@ -92,6 +92,11 @@ class AiActionResultModel(BaseModel, CamelCaseConfig):
     policy_log: AiSearchLogModel | None
 
 
+class AiPerformedActionResultModel(BaseModel, CamelCaseConfig):
+    action_result: AiActionResultModel
+    view_state: GameViewStateResponseModel
+
+
 class AiMatchResponseModel(BaseModel, CamelCaseConfig):
     """Response model for AI match contains match result and final game state."""
 
