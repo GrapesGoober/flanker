@@ -105,7 +105,7 @@ def main() -> None:
     log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     experiment_set = get_config(
-        config_path="./scripts/configs/experiment-config.json",
+        config_path="./scripts/configs/match-experiment-config.json",
     )
     experiments = get_experiments(experiment_set)
 

@@ -1,11 +1,12 @@
 import random
 from copy import deepcopy
 from datetime import datetime
+from itertools import product
 from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -28,10 +29,10 @@ from flanker_core.models.components import (
 )
 from procedural_state_generator import (
     get_map,
+    get_perturbed_state,
     get_state_from_map,
 )
 from transposition_experiment_models import (
-    AiTreeResult,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
@@ -89,7 +90,6 @@ def main() -> None:
             transposition_tests,
         )
         for experiment_name, result in results:
-            log_message(f"    {experiment_name} done, tallying")
             record_transposition_test_result(
                 experiment_name=experiment_name,
                 result=result,
@@ -105,15 +105,35 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
 def get_transposition_experiments(
     config: TranspositionExperimentSetConfig,
 ) -> list[TranspositionExperiment]:
-    # TODO: add experiments permutations here, if needed.
-    # For now, I only have one possible permutation, thus one experiment.
     return [
         TranspositionExperiment(
-            name="randomly-populated",
-            state_populating_method=config.state_populating_method,
+            name=get_experiment_name(state_method, key_method),
+            state_populating_method=state_method,
+            key_method=key_method,
             n_tests=config.n_tests,
         )
+        for (state_method, key_method) in product(
+            config.state_populating_methods,
+            config.zobrist_key_methods,
+        )
     ]
+
+
+def get_experiment_name(
+    state_method: Literal["random", "perturbation"],
+    key_method: TranspositionScheme.ALL,
+) -> str:
+    state_name = f"{state_method}"
+    match key_method:
+        case TranspositionScheme.RoundedPosition():
+            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
+        case TranspositionScheme.RoundedRotation():
+            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
+        case TranspositionScheme.LosSignatures():
+            key_name = key_method.type.lower()
+            if key_method.with_fov:
+                key_name += "-fov"
+    return f"{state_name}-{key_name}"
 
 
 def get_transposition_tests(
@@ -125,21 +145,28 @@ def get_transposition_tests(
     if remaining_tests == 0:
         return []
 
-    map = get_map()
-    state_a = get_state_from_map(map)
+    tests: list[TranspositionTestRun] = []
+    for _ in range(remaining_tests):
 
-    match config.state_populating_method:
-        case "random":
-            state_b = get_state_from_map(map)
+        map = get_map()
+        state_a = get_state_from_map(map)
 
-    return [
-        TranspositionTestRun(
-            experiment_name=config.name,
-            state_a=state_a,
-            state_b=state_b,
+        match config.state_populating_method:
+            case "random":
+                state_b = get_state_from_map(map)
+            case "perturbation":
+                state_b = get_perturbed_state(state_a)
+
+        tests.append(
+            TranspositionTestRun(
+                experiment_name=config.name,
+                state_a=state_a,
+                state_b=state_b,
+                key_method=config.key_method,
+            )
         )
-        for _ in range(remaining_tests)
-    ]
+
+    return tests
 
 
 def run_transposition_test(
@@ -147,38 +174,44 @@ def run_transposition_test(
 ) -> tuple[str, TranspositionTestResult]:
     log_message(f"Running transposition test {test_run_config.experiment_name}")
 
-    key_a: CacheKey = get_key(test_run_config.state_a)
-    key_b: CacheKey = get_key(test_run_config.state_b)
-    result_a: AiTreeResult = get_ai_tree_result(test_run_config.state_a)
-    result_b: AiTreeResult = get_ai_tree_result(test_run_config.state_b)
+    key_a: CacheKey = get_key(
+        test_run_config.state_a,
+        test_run_config.key_method,
+    )
+    key_b: CacheKey = get_key(
+        test_run_config.state_b,
+        test_run_config.key_method,
+    )
+    tree_a_value: float = get_ai_tree_value(
+        test_run_config.state_a,
+    )
+    tree_b_value: float = get_ai_tree_value(
+        test_run_config.state_b,
+    )
 
     key_is_same = key_a == key_b
-    result_is_same = result_a == result_b
 
-    log_message(f"    finished {test_run_config.experiment_name}, recording...")
+    log_message(f"    {test_run_config.experiment_name} done , recording...")
     return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
-        result_is_same=result_is_same,
+        tree_a_value=tree_a_value,
+        tree_b_value=tree_b_value,
     )
 
 
 def get_key(
     gs: GameState,
+    key_method: TranspositionScheme.ALL,
 ) -> CacheKey:
     return AiTranspositionKeyService.get_key(
         gs=gs,
-        transposition_schemes=[
-            TranspositionScheme.RoundedPosition(
-                type="RoundedPosition",
-                to_nearest=1,
-            ),
-        ],
+        transposition_schemes=[key_method],
     )
 
 
-def get_ai_tree_result(
+def get_ai_tree_value(
     gs: GameState,
-) -> AiTreeResult:
+) -> float:
     """Runs the game-tree and returns its results."""
 
     gs = deepcopy(gs)
@@ -191,8 +224,8 @@ def get_ai_tree_result(
             type="UnabstractedStateConfig",
             move_candidates_pool=PointsConfig.Grid(
                 type="GridConfig",
-                spacing=50,
-                offset=25,
+                spacing=100,
+                offset=50,
             ),
             move_candidates_filter=[],
             transposition_schemes=[
@@ -213,15 +246,12 @@ def get_ai_tree_result(
     # The framework isn't built for this kind of use case whatsover.
     state = AiSearchAgent.get_state(gs, config)
     assert isinstance(config.policy, PolicyConfig.MinimaxPolicy)
-    action, log = MinimaxPolicy[Action].get_action(
+    _, log = MinimaxPolicy[Action].get_action(
         state=state,
         depth=config.policy.depth,
         log_with_tree=False,
     )
-    return AiTreeResult(
-        best_action=action,
-        value=log.action_value,
-    )
+    return log.action_value
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:
@@ -252,6 +282,7 @@ def init_metadata_file(
 
     metadata = TranspositionExperimentMetadata(
         state_populating_method=experiment_config.state_populating_method,
+        key_method=experiment_config.key_method,
         n_tests=0,
         target_n_tests=experiment_config.n_tests,
     )
