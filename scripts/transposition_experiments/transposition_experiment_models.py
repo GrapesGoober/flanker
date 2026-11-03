@@ -29,7 +29,6 @@ class TranspositionExperiment:
     name: str
     state_populating_method: Literal["random", "perturbation"]
     key_methods: list[TranspositionScheme.ALL]
-    n_tests: int
 
 
 class TranspositionExperimentMetadata(BaseModel):

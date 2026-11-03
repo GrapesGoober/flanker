@@ -62,13 +62,18 @@ def main() -> None:
     )
     results_root_path = "./scripts/outputs/transposition-experiment-results/"
     for experiment in transposition_experiments:
-        init_metadata_file(experiment, results_root_path)
+        init_metadata_file(
+            experiment_config=experiment,
+            results_root_path=results_root_path,
+            target_n_tests=experiment_set.n_tests,
+        )
 
     transposition_tests = [
         transposition_test
         for experiment_config in transposition_experiments
         for transposition_test in get_transposition_tests(
-            config=experiment_config,
+            experiment_set=experiment_set,
+            experiment=experiment_config,
             results_root_path=results_root_path,
         )
     ]
@@ -110,7 +115,6 @@ def get_transposition_experiments(
             name=f"{state_method}-{key_methods_name}",
             state_populating_method=state_method,
             key_methods=key_methods,
-            n_tests=config.n_tests,
         )
         for (state_method, (key_methods_name, key_methods)) in product(
             config.state_populating_methods,
@@ -120,11 +124,12 @@ def get_transposition_experiments(
 
 
 def get_transposition_tests(
-    config: TranspositionExperiment,
+    experiment_set: TranspositionExperimentSetConfig,
+    experiment: TranspositionExperiment,
     results_root_path: str,
 ) -> list[TranspositionTestRun]:
-    metadata = get_metadata(config.name, results_root_path)
-    remaining_tests = max(0, config.n_tests - metadata.n_tests)
+    metadata = get_metadata(experiment.name, results_root_path)
+    remaining_tests = max(0, experiment_set.n_tests - metadata.n_tests)
     if remaining_tests == 0:
         return []
 
@@ -134,7 +139,7 @@ def get_transposition_tests(
         map = get_map()
         state_a = get_state_from_map(map)
 
-        match config.state_populating_method:
+        match experiment.state_populating_method:
             case "random":
                 state_b = get_state_from_map(map)
             case "perturbation":
@@ -142,10 +147,10 @@ def get_transposition_tests(
 
         tests.append(
             TranspositionTestRun(
-                experiment_name=config.name,
+                experiment_name=experiment.name,
                 state_a=state_a,
                 state_b=state_b,
-                key_method=config.key_methods,
+                key_method=experiment.key_methods,
             )
         )
 
@@ -257,6 +262,7 @@ def log_message(message: str) -> None:
 def init_metadata_file(
     experiment_config: TranspositionExperiment,
     results_root_path: str,
+    target_n_tests: int,
 ) -> None:
     file_path = Path(results_root_path) / f"{experiment_config.name}-metadata.json"
     file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -267,7 +273,7 @@ def init_metadata_file(
         state_populating_method=experiment_config.state_populating_method,
         key_methods=experiment_config.key_methods,
         n_tests=0,
-        target_n_tests=experiment_config.n_tests,
+        target_n_tests=target_n_tests,
     )
     with file_path.open("w") as metadata_file:
         metadata_file.write(metadata.model_dump_json(indent=2))
