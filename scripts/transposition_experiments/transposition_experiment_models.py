@@ -10,8 +10,8 @@ from pydantic import BaseModel
 
 class TranspositionTestResult(BaseModel):
     key_is_same: bool
-    tree_a_value: float
-    tree_b_value: float
+    action_a_value: float
+    action_b_value: float
 
 
 class TranspositionExperimentSetConfig(BaseModel):

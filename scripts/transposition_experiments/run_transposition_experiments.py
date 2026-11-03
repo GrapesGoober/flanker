@@ -191,10 +191,10 @@ def run_transposition_test(
         test_run_config.state_b,
         test_run_config.key_method,
     )
-    tree_a_value: float = get_ai_tree_value(
+    action_a_value: float = get_ai_action_value(
         test_run_config.state_a,
     )
-    tree_b_value: float = get_ai_tree_value(
+    action_b_value: float = get_ai_action_value(
         test_run_config.state_b,
     )
 
@@ -203,8 +203,8 @@ def run_transposition_test(
     log_message(f"    {test_run_config.experiment_name} done , recording...")
     return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
-        tree_a_value=tree_a_value,
-        tree_b_value=tree_b_value,
+        action_a_value=action_a_value,
+        action_b_value=action_b_value,
     )
 
 
@@ -218,7 +218,7 @@ def get_key(
     )
 
 
-def get_ai_tree_value(
+def get_ai_action_value(
     gs: GameState,
 ) -> float:
     """Runs the game-tree and returns its results."""
