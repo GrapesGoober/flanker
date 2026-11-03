@@ -6,7 +6,7 @@ from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from flanker_ai.agents.ai_search_agent import AiSearchAgent
 from flanker_ai.config_models import (
@@ -61,6 +61,8 @@ def main() -> None:
         config=experiment_set,
     )
     results_root_path = "./scripts/outputs/transposition-experiment-results/"
+
+    # TODO: modify the init to throw exception if there are old data.
     for experiment in transposition_experiments:
         init_metadata_file(
             experiment_config=experiment,
@@ -68,21 +70,21 @@ def main() -> None:
             target_n_tests=experiment_set.target_n_tests,
         )
 
-    n_test_per_experiment: dict[str, int] = {
-        experiment.name: max(
-            0,
-            experiment_set.target_n_tests
-            - get_metadata(experiment.name, results_root_path).n_tests,
-        )
-        for experiment in transposition_experiments
+    # Ensure that the experiments with same state methods use the same states.
+    state_sequence_per_method = {
+        method: get_state_sequence(method, experiment_set.target_n_tests)
+        for method in experiment_set.state_populating_methods
     }
 
+    # Generate all tests for each experiment configs.
     transposition_tests = [
         transposition_test
         for experiment_config in transposition_experiments
         for transposition_test in get_transposition_tests(
             experiment=experiment_config,
-            n_test=n_test_per_experiment[experiment_config.name],
+            state_sequences=state_sequence_per_method[
+                experiment_config.state_populating_method
+            ],
         )
     ]
     random.shuffle(transposition_tests)
@@ -133,20 +135,10 @@ def get_transposition_experiments(
 
 def get_transposition_tests(
     experiment: TranspositionExperiment,
-    n_test: int,
+    state_sequences: list[tuple[GameState, GameState]],
 ) -> list[TranspositionTestRun]:
     tests: list[TranspositionTestRun] = []
-    for _ in range(n_test):
-
-        map = get_map()
-        state_a = get_state_from_map(map)
-
-        match experiment.state_populating_method:
-            case "random":
-                state_b = get_state_from_map(map)
-            case "perturbation":
-                state_b = get_perturbed_state(state_a)
-
+    for state_a, state_b in state_sequences:
         tests.append(
             TranspositionTestRun(
                 experiment_name=experiment.name,
@@ -157,6 +149,25 @@ def get_transposition_tests(
         )
 
     return tests
+
+
+def get_state_sequence(
+    method: Literal["random", "perturbation"],
+    target_n_tests: int,
+) -> list[tuple[GameState, GameState]]:
+    state_sequences: list[tuple[GameState, GameState]] = []
+    for _ in range(target_n_tests):
+        map = get_map()
+        state_a = get_state_from_map(map)
+
+        match method:
+            case "random":
+                state_b = get_state_from_map(map)
+            case "perturbation":
+                state_b = get_perturbed_state(state_a)
+
+        state_sequences.append((state_a, state_b))
+    return state_sequences
 
 
 def run_transposition_test(
