@@ -37,6 +37,7 @@ class ExpectimaxTreeEdge[TAction]:
 @dataclass
 class ExpectimaxSearchLog[TAction]:
     tree_size: int
+    action_value: float
     tree_root: ExpectimaxTreeNode[TAction] | None = None
 
 
@@ -60,7 +61,7 @@ class ExpectimaxPolicy[TAction]:
         if log_with_tree:
             root = ExpectimaxTreeNode(state=rs, children=[])
 
-        _, action = ExpectimaxPolicy[TAction]._search(
+        score, action = ExpectimaxPolicy[TAction]._search(
             state=rs,
             depth_remaining=depth,
             counter=counter,
@@ -70,6 +71,7 @@ class ExpectimaxPolicy[TAction]:
         return action, ExpectimaxSearchLog(
             tree_size=next(counter) - 1,
             tree_root=root,
+            action_value=score,
         )
 
     @staticmethod

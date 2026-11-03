@@ -96,6 +96,7 @@ class AiService:
                     AiSearchLogModel(
                         tree_size=result.policy_log.tree_size,
                         tree_depth=result.policy_log.tree_depth,
+                        action_value=result.policy_log.action_value,
                     )
                     if result.policy_log
                     else None
@@ -165,6 +166,7 @@ class AiService:
                         AiSearchLogModel(
                             tree_size=result.policy_log.tree_size,
                             tree_depth=result.policy_log.tree_depth,
+                            action_value=result.policy_log.action_value,
                         )
                         if result.policy_log
                         else None

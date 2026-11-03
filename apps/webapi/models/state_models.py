@@ -84,6 +84,7 @@ class MapViewStateModel(BaseModel, CamelCaseConfig):
 class AiSearchLogModel(BaseModel, CamelCaseConfig):
     tree_size: int
     tree_depth: int
+    action_value: float
 
 
 class AiActionResultModel(BaseModel, CamelCaseConfig):
