@@ -126,15 +126,15 @@ def get_experiment_name(
     state_name = f"{state_method}"
     match key_method:
         case TranspositionScheme.RoundedPosition():
-            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
+            key_name = f"rounded-r{key_method.to_nearest}".lower()
         case TranspositionScheme.RoundedRotation():
-            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
+            key_name = f"rounded-rotation-r{key_method.to_nearest}".lower()
         case TranspositionScheme.LosSignatures():
-            key_name = key_method.type.lower()
+            key_name = "los"
             if key_method.with_fov:
                 key_name += "-fov"
         case TranspositionScheme.AspectSignatures():
-            key_name = key_method.type.lower()
+            key_name = "aspect"
 
     return f"{state_name}-{key_name}"
 
