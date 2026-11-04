@@ -13,7 +13,7 @@ from typing import Any, Iterable, Literal
 
 import requests
 from flanker_ai.ai_system import AiSystem
-from flanker_ai.config_models import AiConfigComponent
+from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
 from flanker_ai.search_states.common.ai_transposition_key_service import (
     AiTranspositionKeyService,
     CacheKey,
@@ -89,7 +89,11 @@ def main() -> None:
     # Ensure that the experiments with same state methods
     # use the same states sequence. Ensures consistency between experiments.
     state_sequence_per_method = {
-        method: get_state_sequence(method, experiment_set.target_n_tests)
+        method: get_state_sequence(
+            method=method,
+            target_n_tests=experiment_set.target_n_tests,
+            ai_config=experiment_set.game_tree_method,
+        )
         for method in experiment_set.state_populating_methods
     }
 
@@ -161,10 +165,12 @@ def get_all_transposition_tests(
 def get_state_sequence(
     method: Literal["random", "perturbation"],
     target_n_tests: int,
+    ai_config: SearchPolicyConfig,
 ) -> list[tuple[GameState, GameState]]:
     state_sequences: list[tuple[GameState, GameState]] = []
     for _ in range(target_n_tests):
         map = get_map()
+        add_ai_configs(map, ai_config)
         state_a = get_state_from_map(map)
 
         match method:
@@ -257,6 +263,24 @@ def get_component_types() -> Iterable[type]:
         if isclass(cls) and is_dataclass(cls):
             yield cls
     yield AiConfigComponent
+
+
+def add_ai_configs(
+    gs: GameState,
+    ai_config: SearchPolicyConfig,
+) -> None:
+    gs.add_entity(
+        AiConfigComponent(
+            faction=components.InitiativeState.Faction.BLUE,
+            config=ai_config,
+        ),
+    )
+    gs.add_entity(
+        AiConfigComponent(
+            faction=components.InitiativeState.Faction.RED,
+            config=ai_config,
+        ),
+    )
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:

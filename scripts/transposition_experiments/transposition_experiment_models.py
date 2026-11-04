@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from flanker_ai.config_models import TranspositionScheme
+from flanker_ai.config_models import SearchPolicyConfig, TranspositionScheme
 from flanker_core.gamestate import GameState
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -22,6 +22,7 @@ class TranspositionExperimentSetConfig(BaseModel):
     state_populating_methods: list[Literal["random", "perturbation"]]
     zobrist_key_methods: dict[str, list[TranspositionScheme.ALL]]
     max_workers: int
+    game_tree_method: SearchPolicyConfig
     target: Literal["local"] | str
 
 
