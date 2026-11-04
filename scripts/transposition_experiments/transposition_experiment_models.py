@@ -5,7 +5,6 @@ from typing import Literal
 
 from flanker_ai.config_models import TranspositionScheme
 from flanker_core.gamestate import GameState
-from flanker_core.models.components import InitiativeState
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
@@ -58,17 +57,17 @@ class _CamelCaseConfig:
     )
 
 
-class ApiAiSearchLogModel(BaseModel, _CamelCaseConfig):
-    tree_size: int
-    tree_depth: int
-    action_value: float
+class ApiTranspositionTestRequest(BaseModel, _CamelCaseConfig):
+    """Request model for transposition experiment tests."""
+
+    state_a: str
+    state_b: str
+    key_methods: list[TranspositionScheme.ALL]
 
 
-class ApiAiActionResultModel(BaseModel, _CamelCaseConfig):
-    faction: InitiativeState.Faction
-    action_runtime_seconds: float
-    policy_log: ApiAiSearchLogModel | None
+class ApiTranspositionTestResponse(BaseModel, _CamelCaseConfig):
+    """Response model for transposition experiment tests."""
 
-
-class ApiAiPerformedActionResult(BaseModel, _CamelCaseConfig):
-    action_result: ApiAiActionResultModel
+    key_is_same: bool
+    action_a_value: float
+    action_b_value: float

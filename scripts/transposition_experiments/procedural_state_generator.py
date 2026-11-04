@@ -6,6 +6,14 @@ from math import ceil, floor
 from typing import Any
 from uuid import UUID
 
+from flanker_ai.config_models import (
+    AiConfigComponent,
+    PointsConfig,
+    PolicyConfig,
+    SearchPolicyConfig,
+    TranspositionScheme,
+    UnabstractedStateConfig,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.models.components import (
@@ -75,13 +83,15 @@ def get_map() -> GameState:
 def get_state_from_map(
     map: GameState,
 ) -> GameState:
+    """
+    Given the empty map state, populate with combat units and configs.
+    This makes it a complete state that is game-tree runnable.
+    """
     gs = deepcopy(map)
-    """
-    Given the empty map state, populate with combat units and other entities.
-    This makes it a complete state that is game-tree runnable. 
-    """
 
-    # TODO: have it randomize initial faction
+    add_ai_configs(gs)
+
+    # TODO: have it randomize initial initiative
     gs.add_entity(
         InitiativeState(
             faction=InitiativeState.Faction.BLUE,
@@ -173,6 +183,43 @@ def get_state_from_map(
         )
 
     return gs
+
+
+def add_ai_configs(gs: GameState) -> None:
+
+    config = SearchPolicyConfig(
+        policy=PolicyConfig.MinimaxPolicy(
+            type="MinimaxPolicy",
+            depth=4,
+        ),
+        state=UnabstractedStateConfig(
+            type="UnabstractedStateConfig",
+            move_candidates_pool=PointsConfig.Grid(
+                type="GridConfig",
+                spacing=100,
+                offset=50,
+            ),
+            move_candidates_filter=[],
+            transposition_schemes=[
+                TranspositionScheme.RoundedPosition(
+                    type="RoundedPosition",
+                    to_nearest=1,
+                ),
+            ],
+        ),
+    )
+    gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.BLUE,
+            config=config,
+        ),
+    )
+    gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.RED,
+            config=config,
+        ),
+    )
 
 
 def is_point_in_bound(
