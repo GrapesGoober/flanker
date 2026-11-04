@@ -41,7 +41,7 @@ class AiAspectSignatureService:
         towards obstacles.
         """
 
-        obstacles = LosSystem.get_obstacles(gs, position)
+        obstacles = LosSystem.get_los_obstacles(gs, position)
         aspect_angles: list[tuple[UUID, float]] = []
         for obstacle in obstacles:
             if len(obstacle.polyline) != 0:
