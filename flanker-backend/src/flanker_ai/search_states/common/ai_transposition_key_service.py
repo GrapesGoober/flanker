@@ -184,13 +184,11 @@ class AiTranspositionKeyService:
         gs: GameState,
         unit_id: UUID,
     ) -> CombatUnitKey.AspectSignature:
-
-        # TODO: build aspects with other units too, not just against terrains.
         unit_transform = gs.get_component(unit_id, Transform)
-        obstacle_angles = AiAspectSignatureService.get_aspects_angles(
+        aspects = AiAspectSignatureService.get_aspects_angles(
             gs=gs,
             position=unit_transform.position,
         )
-        obstacle_angles.sort(key=lambda obstacle: obstacle[0])
-        obstacle_ids = [terrain_id for terrain_id, _ in obstacle_angles]
-        return tuple(obstacle_ids)
+        aspects.sort(key=lambda aspect_entry: aspect_entry[1])
+        aspects_signature = [terrain_id for terrain_id, _ in aspects]
+        return tuple(aspects_signature)
