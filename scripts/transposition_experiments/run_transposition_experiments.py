@@ -157,7 +157,7 @@ def get_all_transposition_tests(
             experiment_name=experiment_config.name,
             state_a=state_a,
             state_b=state_b,
-            key_method=experiment_config.key_methods,
+            key_methods=experiment_config.key_methods,
             target=experiment_config.target,
         )
         for experiment_config in experiment_configs
@@ -191,13 +191,13 @@ def run_transposition_test(
 ) -> tuple[str, TranspositionTestResult]:
     log_message(f"Running transposition test {test_run_config.experiment_name}")
 
-    key_a: CacheKey = get_key(
-        test_run_config.state_a,
-        test_run_config.key_method,
+    key_a: CacheKey = AiTranspositionKeyService.get_key(
+        gs=test_run_config.state_a,
+        transposition_schemes=test_run_config.key_methods,
     )
-    key_b: CacheKey = get_key(
-        test_run_config.state_b,
-        test_run_config.key_method,
+    key_b: CacheKey = AiTranspositionKeyService.get_key(
+        gs=test_run_config.state_b,
+        transposition_schemes=test_run_config.key_methods,
     )
     action_a_value: float = get_tree_action_value(
         gs=test_run_config.state_a,
@@ -215,16 +215,6 @@ def run_transposition_test(
         key_is_same=key_is_same,
         action_a_value=action_a_value,
         action_b_value=action_b_value,
-    )
-
-
-def get_key(
-    gs: GameState,
-    key_methods: list[TranspositionScheme.ALL],
-) -> CacheKey:
-    return AiTranspositionKeyService.get_key(
-        gs=gs,
-        transposition_schemes=key_methods,
     )
 
 

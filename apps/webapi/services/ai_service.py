@@ -13,6 +13,10 @@ from flanker_ai.search_policies.expectimax_policy import (
 )
 from flanker_ai.search_policies.mcts_policy import MctsTreeNode
 from flanker_ai.search_policies.minimax_policy import MinimaxTreeNode
+from flanker_ai.search_states.common.ai_transposition_key_service import (
+    AiTranspositionKeyService,
+    CacheKey,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
@@ -36,6 +40,8 @@ from webapi.models.state_models import (
     AiPerformedActionResultModel,
     AiSearchLogModel,
     AiWaypointConfigRequestModel,
+    TranspositionTestRequest,
+    TranspositionTestResult,
 )
 from webapi.services.action_service import ActionService
 from webapi.services.game_view_service import GameViewService
@@ -104,6 +110,47 @@ class AiService:
             ),
             view_state=GameViewService.get_view_state_response(gs),
         )
+
+    @staticmethod
+    def get_transposition_test_result(
+        body: TranspositionTestRequest,
+    ) -> TranspositionTestResult:
+
+        state_a_gs = SceneService.deserialize(body.state_a)
+        state_b_gs = SceneService.deserialize(body.state_b)
+
+        key_a: CacheKey = AiTranspositionKeyService.get_key(
+            gs=state_a_gs,
+            transposition_schemes=body.key_methods,
+        )
+        key_b: CacheKey = AiTranspositionKeyService.get_key(
+            gs=state_b_gs,
+            transposition_schemes=body.key_methods,
+        )
+        action_a_value: float = AiService.get_tree_action_value(
+            gs=state_a_gs,
+        )
+        action_b_value: float = AiService.get_tree_action_value(
+            gs=state_b_gs,
+        )
+        key_is_same = key_a == key_b
+        return TranspositionTestResult(
+            key_is_same=key_is_same,
+            action_a_value=action_a_value,
+            action_b_value=action_b_value,
+        )
+
+    @staticmethod
+    def get_tree_action_value(
+        gs: GameState,
+    ) -> float:
+        initiative = ActionSystem.get_initiative(gs)
+        result = AiSystem.perform_action(gs, initiative)
+        if result is None:
+            raise RuntimeError("AI can't perform action!")
+        if result.policy_log is None:
+            raise RuntimeError("Expects a search policy log from AI.")
+        return result.policy_log.action_value
 
     @staticmethod
     def get_tree_inspection(

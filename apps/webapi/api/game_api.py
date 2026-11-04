@@ -10,6 +10,8 @@ from webapi.models.state_models import (
     GameViewStateModel,
     GameViewStateResponseModel,
     MapViewStateModel,
+    TranspositionTestRequest,
+    TranspositionTestResult,
 )
 from webapi.services.action_service import ActionService
 from webapi.services.ai_service import AiService
@@ -76,6 +78,14 @@ async def ai_perform_action(
     """Have AI perform an action and returns the mutated view state."""
     gs = SceneService.deserialize(state)
     return AiService.perform_action(gs)
+
+
+@router.post("/get-transposition-test")
+async def get_transposition_test_result(
+    body: TranspositionTestRequest = Body(...),
+) -> TranspositionTestResult:
+    """Have AI perform an action and returns the mutated view state."""
+    return AiService.get_transposition_test_result(body=body)
 
 
 @router.post("/get-logs")

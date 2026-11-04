@@ -46,7 +46,7 @@ class TranspositionTestRun:
     experiment_name: str
     state_a: GameState
     state_b: GameState
-    key_method: list[TranspositionScheme.ALL]
+    key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
 
 
