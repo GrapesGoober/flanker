@@ -1,7 +1,6 @@
 from enum import Enum
 from uuid import UUID
 
-from flanker_ai.config_models import TranspositionScheme
 from flanker_core.models.components import CombatUnit, InitiativeState
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict
@@ -97,22 +96,6 @@ class AiActionResultModel(BaseModel, CamelCaseConfig):
 class AiPerformedActionResultModel(BaseModel, CamelCaseConfig):
     action_result: AiActionResultModel
     view_state: GameViewStateResponseModel
-
-
-class TranspositionTestRequest(BaseModel):
-    """Request model for transposition experiment tests."""
-
-    state_a: str
-    state_b: str
-    key_methods: list[TranspositionScheme.ALL]
-
-
-class TranspositionTestResult(BaseModel):
-    """Result model for transposition experiment tests."""
-
-    key_is_same: bool
-    action_a_value: float
-    action_b_value: float
 
 
 class AiMatchResponseModel(BaseModel, CamelCaseConfig):

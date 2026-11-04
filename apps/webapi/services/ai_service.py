@@ -21,6 +21,10 @@ from flanker_core.gamestate import GameState
 from flanker_core.models.actions import Action
 from flanker_core.models.components import InitiativeState
 from flanker_core.systems.action_system import ActionSystem
+from webapi.models.experiment_models import (
+    TranspositionTestRequest,
+    TranspositionTestResponse,
+)
 from webapi.models.inspection_models import (
     ExpectimaxTreeEdgeModel,
     ExpectimaxTreeInspectionModel,
@@ -40,8 +44,6 @@ from webapi.models.state_models import (
     AiPerformedActionResultModel,
     AiSearchLogModel,
     AiWaypointConfigRequestModel,
-    TranspositionTestRequest,
-    TranspositionTestResult,
 )
 from webapi.services.action_service import ActionService
 from webapi.services.game_view_service import GameViewService
@@ -114,7 +116,7 @@ class AiService:
     @staticmethod
     def get_transposition_test_result(
         body: TranspositionTestRequest,
-    ) -> TranspositionTestResult:
+    ) -> TranspositionTestResponse:
 
         state_a_gs = SceneService.deserialize(body.state_a)
         state_b_gs = SceneService.deserialize(body.state_b)
@@ -134,7 +136,7 @@ class AiService:
             gs=state_b_gs,
         )
         key_is_same = key_a == key_b
-        return TranspositionTestResult(
+        return TranspositionTestResponse(
             key_is_same=key_is_same,
             action_a_value=action_a_value,
             action_b_value=action_b_value,
