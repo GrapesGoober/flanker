@@ -190,5 +190,12 @@ class AiTranspositionKeyService:
             position=unit_transform.position,
         )
         aspects.sort(key=lambda aspect_entry: aspect_entry[1])
-        aspects_signature = [terrain_id for terrain_id, _ in aspects]
+        aspects_signature = [
+            (
+                entity_id
+                if (unit := gs.try_component(entity_id, CombatUnit)) == None
+                else CombatUnitSignature(unit.faction, unit.status)
+            )
+            for entity_id, _ in aspects
+        ]
         return tuple(aspects_signature)
