@@ -196,8 +196,8 @@ def add_ai_configs(gs: GameState) -> None:
             type="UnabstractedStateConfig",
             move_candidates_pool=PointsConfig.Grid(
                 type="GridConfig",
-                spacing=100,
-                offset=50,
+                spacing=50,
+                offset=25,
             ),
             move_candidates_filter=[],
             transposition_schemes=[
