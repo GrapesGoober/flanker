@@ -33,6 +33,7 @@ from webapi.models.inspection_models import (
 from webapi.models.state_models import (
     AiActionResultModel,
     AiMatchResponseModel,
+    AiPerformedActionResultModel,
     AiSearchLogModel,
     AiWaypointConfigRequestModel,
 )
@@ -76,6 +77,33 @@ class AiService:
                 results=action_results,
                 gs_snapshots=gs_snapshots,
             )
+
+    @staticmethod
+    def perform_action(
+        gs: GameState,
+    ) -> AiPerformedActionResultModel:
+        "Have AI perform action and mutate the game state"
+        initiative = ActionSystem.get_initiative(gs)
+        result = AiSystem.perform_action(gs, initiative)
+        if result == None:
+            # TODO: should this be proper response model?
+            raise ValueError("AI cannot perform action.")
+        return AiPerformedActionResultModel(
+            action_result=AiActionResultModel(
+                faction=result.faction,
+                action_runtime_seconds=result.action_runtime_seconds,
+                policy_log=(
+                    AiSearchLogModel(
+                        tree_size=result.policy_log.tree_size,
+                        tree_depth=result.policy_log.tree_depth,
+                        action_value=result.policy_log.action_value,
+                    )
+                    if result.policy_log
+                    else None
+                ),
+            ),
+            view_state=GameViewService.get_view_state_response(gs),
+        )
 
     @staticmethod
     def get_tree_inspection(
@@ -138,6 +166,7 @@ class AiService:
                         AiSearchLogModel(
                             tree_size=result.policy_log.tree_size,
                             tree_depth=result.policy_log.tree_depth,
+                            action_value=result.policy_log.action_value,
                         )
                         if result.policy_log
                         else None

@@ -84,12 +84,18 @@ class MapViewStateModel(BaseModel, CamelCaseConfig):
 class AiSearchLogModel(BaseModel, CamelCaseConfig):
     tree_size: int
     tree_depth: int
+    action_value: float
 
 
 class AiActionResultModel(BaseModel, CamelCaseConfig):
     faction: InitiativeState.Faction
     action_runtime_seconds: float
     policy_log: AiSearchLogModel | None
+
+
+class AiPerformedActionResultModel(BaseModel, CamelCaseConfig):
+    action_result: AiActionResultModel
+    view_state: GameViewStateResponseModel
 
 
 class AiMatchResponseModel(BaseModel, CamelCaseConfig):

@@ -6,6 +6,7 @@ from webapi.models.inspection_models import (
 )
 from webapi.models.state_models import (
     AiMatchResponseModel,
+    AiPerformedActionResultModel,
     GameViewStateModel,
     GameViewStateResponseModel,
     MapViewStateModel,
@@ -61,11 +62,20 @@ async def perform_action(
     action: ActionModel = Body(...),
     state: str = Body(...),
 ) -> GameViewStateResponseModel:
-    """Move a unit and return updated rifle squads."""
+    """Performs an action and returns the mutated view state."""
     gs = SceneService.deserialize(state)
     ActionService.perform(gs, action)
     AiService.play_red_initiative(gs)
     return GameViewService.get_view_state_response(gs)
+
+
+@router.post("/ai-perform")
+async def ai_perform_action(
+    state: str = Body(...),
+) -> AiPerformedActionResultModel:
+    """Have AI perform an action and returns the mutated view state."""
+    gs = SceneService.deserialize(state)
+    return AiService.perform_action(gs)
 
 
 @router.post("/get-logs")

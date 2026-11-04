@@ -1,14 +1,18 @@
 import random
 from copy import deepcopy
+from dataclasses import is_dataclass
 from datetime import datetime
+from inspect import isclass
 from itertools import product
 from multiprocessing import Lock
 from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
-from typing import Any, Literal
+from time import sleep
+from typing import Any, Iterable, Literal
 
-from flanker_ai.agents.ai_search_agent import AiSearchAgent
+import requests
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import (
     AiConfigComponent,
     PointsConfig,
@@ -17,22 +21,24 @@ from flanker_ai.config_models import (
     TranspositionScheme,
     UnabstractedStateConfig,
 )
-from flanker_ai.search_policies.minimax_policy import MinimaxPolicy
 from flanker_ai.search_states.common.ai_transposition_key_service import (
     AiTranspositionKeyService,
     CacheKey,
 )
 from flanker_core.gamestate import GameState
-from flanker_core.models.actions import Action
+from flanker_core.models import components
 from flanker_core.models.components import (
     InitiativeState,
 )
+from flanker_core.serializer import Serializer
+from flanker_core.systems.action_system import ActionSystem
 from procedural_state_generator import (
     get_map,
     get_perturbed_state,
     get_state_from_map,
 )
 from transposition_experiment_models import (
+    ApiAiPerformedActionResult,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
@@ -50,6 +56,7 @@ def main() -> None:
         config_path="./scripts/configs/transposition-experiment-config.json",
     )
 
+    # Supports local running or if parallelize in cloud use threads for IO.
     pool_type: type[Pool] | type[ThreadPool]
     match experiment_set.target:
         case "local":
@@ -57,29 +64,51 @@ def main() -> None:
         case _:
             pool_type = ThreadPool
 
-    transposition_experiments = get_transposition_experiments(
-        config=experiment_set,
-    )
-    results_root_path = "./scripts/outputs/transposition-experiment-results/"
-    for experiment in transposition_experiments:
-        init_metadata_file(experiment, results_root_path)
+    results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
 
-    transposition_tests = [
-        transposition_test
-        for experiment_config in transposition_experiments
-        for transposition_test in get_transposition_tests(
-            config=experiment_config,
-            results_root_path=results_root_path,
-        )
-    ]
-    random.shuffle(transposition_tests)
-
-    results_root = Path(results_root_path)
-    results_root.mkdir(parents=True, exist_ok=True)
-    log_file_path = results_root / "run_transposition_experiment.log"
+    # Configs parallel-safe logs
+    log_file_path = results_root_path / "run_transposition_experiment.log"
     log_lock: LockType = Lock()
     configure_logging(str(log_file_path), log_lock)
 
+    # Safety check if there are other data still there.
+    # Should be a clean run.
+    result_files = [
+        file
+        for pattern in ("*.jsonl", "*.json")
+        for file in results_root_path.glob(pattern)
+    ]
+    if result_files:
+        raise FileExistsError(
+            f"Results folder not empty: {', '.join(file.stem for file in result_files)}"
+        )
+    results_root_path.mkdir(parents=True, exist_ok=True)
+
+    # Get init each experiment permutations
+    transposition_experiments = get_transposition_experiments(
+        config=experiment_set,
+    )
+    for experiment in transposition_experiments:
+        init_metadata_file(
+            experiment_config=experiment,
+            results_root_path=results_root_path,
+            target_n_tests=experiment_set.target_n_tests,
+        )
+
+    # Ensure that the experiments with same state methods
+    # use the same states sequence. Ensures consistency between experiments.
+    state_sequence_per_method = {
+        method: get_state_sequence(method, experiment_set.target_n_tests)
+        for method in experiment_set.state_populating_methods
+    }
+
+    # Generate tests for all experiments.
+    transposition_tests = get_all_transposition_tests(
+        transposition_experiments, state_sequence_per_method
+    )
+    random.shuffle(transposition_tests)
+
+    # Run all the tests.
     with pool_type(
         processes=experiment_set.max_workers,
         initializer=configure_logging,
@@ -107,66 +136,54 @@ def get_transposition_experiments(
 ) -> list[TranspositionExperiment]:
     return [
         TranspositionExperiment(
-            name=get_experiment_name(state_method, key_method),
+            name=f"{state_method}-{key_methods_name}",
             state_populating_method=state_method,
-            key_method=key_method,
-            n_tests=config.n_tests,
+            key_methods=key_methods,
+            target=config.target,
         )
-        for (state_method, key_method) in product(
+        for (state_method, (key_methods_name, key_methods)) in product(
             config.state_populating_methods,
-            config.zobrist_key_methods,
+            config.zobrist_key_methods.items(),
         )
     ]
 
 
-def get_experiment_name(
-    state_method: Literal["random", "perturbation"],
-    key_method: TranspositionScheme.ALL,
-) -> str:
-    state_name = f"{state_method}"
-    match key_method:
-        case TranspositionScheme.RoundedPosition():
-            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
-        case TranspositionScheme.RoundedRotation():
-            key_name = f"{key_method.type}-r{key_method.to_nearest}".lower()
-        case TranspositionScheme.LosSignatures():
-            key_name = key_method.type.lower()
-            if key_method.with_fov:
-                key_name += "-fov"
-    return f"{state_name}-{key_name}"
-
-
-def get_transposition_tests(
-    config: TranspositionExperiment,
-    results_root_path: str,
+def get_all_transposition_tests(
+    experiment_configs: list[TranspositionExperiment],
+    state_sequence_per_method: dict[str, list[tuple[GameState, GameState]]],
 ) -> list[TranspositionTestRun]:
-    metadata = get_metadata(config.name, results_root_path)
-    remaining_tests = max(0, config.n_tests - metadata.n_tests)
-    if remaining_tests == 0:
-        return []
+    return [
+        TranspositionTestRun(
+            experiment_name=experiment_config.name,
+            state_a=state_a,
+            state_b=state_b,
+            key_method=experiment_config.key_methods,
+            target=experiment_config.target,
+        )
+        for experiment_config in experiment_configs
+        for state_a, state_b in state_sequence_per_method[
+            experiment_config.state_populating_method
+        ]
+    ]
 
-    tests: list[TranspositionTestRun] = []
-    for _ in range(remaining_tests):
 
+def get_state_sequence(
+    method: Literal["random", "perturbation"],
+    target_n_tests: int,
+) -> list[tuple[GameState, GameState]]:
+    state_sequences: list[tuple[GameState, GameState]] = []
+    for _ in range(target_n_tests):
         map = get_map()
         state_a = get_state_from_map(map)
 
-        match config.state_populating_method:
+        match method:
             case "random":
                 state_b = get_state_from_map(map)
             case "perturbation":
                 state_b = get_perturbed_state(state_a)
 
-        tests.append(
-            TranspositionTestRun(
-                experiment_name=config.name,
-                state_a=state_a,
-                state_b=state_b,
-                key_method=config.key_method,
-            )
-        )
-
-    return tests
+        state_sequences.append((state_a, state_b))
+    return state_sequences
 
 
 def run_transposition_test(
@@ -182,11 +199,13 @@ def run_transposition_test(
         test_run_config.state_b,
         test_run_config.key_method,
     )
-    tree_a_value: float = get_ai_tree_value(
-        test_run_config.state_a,
+    action_a_value: float = get_tree_action_value(
+        gs=test_run_config.state_a,
+        test_run_config=test_run_config,
     )
-    tree_b_value: float = get_ai_tree_value(
-        test_run_config.state_b,
+    action_b_value: float = get_tree_action_value(
+        gs=test_run_config.state_b,
+        test_run_config=test_run_config,
     )
 
     key_is_same = key_a == key_b
@@ -194,25 +213,26 @@ def run_transposition_test(
     log_message(f"    {test_run_config.experiment_name} done , recording...")
     return test_run_config.experiment_name, TranspositionTestResult(
         key_is_same=key_is_same,
-        tree_a_value=tree_a_value,
-        tree_b_value=tree_b_value,
+        action_a_value=action_a_value,
+        action_b_value=action_b_value,
     )
 
 
 def get_key(
     gs: GameState,
-    key_method: TranspositionScheme.ALL,
+    key_methods: list[TranspositionScheme.ALL],
 ) -> CacheKey:
     return AiTranspositionKeyService.get_key(
         gs=gs,
-        transposition_schemes=[key_method],
+        transposition_schemes=key_methods,
     )
 
 
-def get_ai_tree_value(
+def get_tree_action_value(
     gs: GameState,
+    test_run_config: TranspositionTestRun,
 ) -> float:
-    """Runs the game-tree and returns its results."""
+    """Runs the game-tree and returns its action value."""
 
     gs = deepcopy(gs)
     config = SearchPolicyConfig(
@@ -242,16 +262,59 @@ def get_ai_tree_value(
             config=config,
         ),
     )
-    # TODO: This AI shenanigans is so messy. Clean this up?
-    # The framework isn't built for this kind of use case whatsover.
-    state = AiSearchAgent.get_state(gs, config)
-    assert isinstance(config.policy, PolicyConfig.MinimaxPolicy)
-    _, log = MinimaxPolicy[Action].get_action(
-        state=state,
-        depth=config.policy.depth,
-        log_with_tree=False,
+    gs.add_entity(
+        AiConfigComponent(
+            faction=InitiativeState.Faction.RED,
+            config=config,
+        ),
     )
-    return log.action_value
+
+    initiative = ActionSystem.get_initiative(gs)
+
+    match test_run_config.target:
+        case "local":
+            result = AiSystem.perform_action(gs, initiative)
+            if result is None:
+                raise RuntimeError("AI can't perform action!")
+            if result.policy_log is None:
+                raise RuntimeError("Expects a search policy log from AI.")
+            return result.policy_log.action_value
+        case _:
+            scene_data = Serializer.serialize(
+                entities=gs.dump(),
+                component_types=list(get_component_types()),
+            )
+            response: requests.Response | None = None
+
+            # Keep retrying requests if it fails
+            while True:
+                try:
+                    response = requests.post(
+                        f"{test_run_config.target}/api/rpc/game/ai-perform",
+                        data=scene_data,
+                    )
+                    response.raise_for_status()
+                    break
+
+                except requests.RequestException as e:
+                    log_message(f"Request had error {e}")
+                    log_message(
+                        f"Rerunning {test_run_config.experiment_name} in 30 seconds"
+                    )
+                    sleep(30)
+
+            api_result = ApiAiPerformedActionResult.model_validate_json(response.text)
+            policy_log = api_result.action_result.policy_log
+            if policy_log is None:
+                raise RuntimeError("Expects a search policy log from AI.")
+            return policy_log.action_value
+
+
+def get_component_types() -> Iterable[type]:
+    for _, cls in vars(components).items():
+        if isclass(cls) and is_dataclass(cls):
+            yield cls
+    yield AiConfigComponent
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:
@@ -273,18 +336,19 @@ def log_message(message: str) -> None:
 
 def init_metadata_file(
     experiment_config: TranspositionExperiment,
-    results_root_path: str,
+    results_root_path: Path,
+    target_n_tests: int,
 ) -> None:
-    file_path = Path(results_root_path) / f"{experiment_config.name}-metadata.json"
+    file_path = results_root_path / f"{experiment_config.name}-metadata.json"
     file_path.parent.mkdir(parents=True, exist_ok=True)
     if file_path.is_file():
         return
 
     metadata = TranspositionExperimentMetadata(
         state_populating_method=experiment_config.state_populating_method,
-        key_method=experiment_config.key_method,
+        key_methods=experiment_config.key_methods,
         n_tests=0,
-        target_n_tests=experiment_config.n_tests,
+        target_n_tests=target_n_tests,
     )
     with file_path.open("w") as metadata_file:
         metadata_file.write(metadata.model_dump_json(indent=2))
@@ -292,9 +356,9 @@ def init_metadata_file(
 
 def get_metadata(
     experiment_name: str,
-    results_root_path: str,
+    results_root_path: Path,
 ) -> TranspositionExperimentMetadata:
-    file_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    file_path = results_root_path / f"{experiment_name}-metadata.json"
     if not file_path.is_file():
         raise FileNotFoundError(f"Metadata file for {experiment_name} does not exist")
 
@@ -307,19 +371,19 @@ def get_metadata(
 def record_transposition_test_result(
     experiment_name: str,
     result: TranspositionTestResult,
-    results_root_path: str,
+    results_root_path: Path,
 ) -> None:
     metadata = get_metadata(experiment_name, results_root_path)
     if metadata.n_tests >= metadata.target_n_tests:
         return
     metadata.n_tests += 1
 
-    metadata_path = Path(results_root_path) / f"{experiment_name}-metadata.json"
+    metadata_path = results_root_path / f"{experiment_name}-metadata.json"
     if not metadata_path.is_file():
         raise FileNotFoundError(f"Metadata file for {experiment_name} does not exist")
     metadata_path.write_text(metadata.model_dump_json(indent=2))
 
-    result_path = Path(results_root_path) / f"{experiment_name}.jsonl"
+    result_path = results_root_path / f"{experiment_name}.jsonl"
     with result_path.open("a") as results_file:
         results_file.write(result.model_dump_json())
         results_file.write("\n")

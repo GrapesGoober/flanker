@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from flanker_ai.config_models import TranspositionScheme
+from flanker_ai.search_states.common.ai_aspect_signature_service import (
+    AiAspectSignatureService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import (
     CombatUnit,
@@ -16,16 +19,22 @@ from flanker_core.systems.los_system import LosSystem
 
 
 @dataclass(frozen=True)
+class CombatUnitSignature:
+    faction: InitiativeState.Faction
+    status: CombatUnit.Status
+
+
+@dataclass(frozen=True)
 class CombatUnitKey:
 
     type RoundedPosition = tuple[int, int]
     type RoundedRotation = int
     type LosSignature = tuple[bool, ...]
-    type Feature = RoundedPosition | RoundedRotation | LosSignature
+    type AspectSignature = tuple[UUID | CombatUnitSignature, ...]
+    type Feature = RoundedPosition | RoundedRotation | LosSignature | AspectSignature
 
     features: tuple[Feature, ...]
-    faction: InitiativeState.Faction
-    status: CombatUnit.Status
+    unit_signature: CombatUnitSignature
 
 
 @dataclass(frozen=True)
@@ -106,7 +115,7 @@ class AiTranspositionKeyService:
 
         combat_units: list[CombatUnitKey] = []
 
-        for id, transform, unit in gs.query(Transform, CombatUnit):
+        for unit_id, transform, unit in gs.query(Transform, CombatUnit):
             features: list[CombatUnitKey.Feature] = []
             for transposition_scheme in transposition_schemes:
                 match transposition_scheme:
@@ -122,8 +131,14 @@ class AiTranspositionKeyService:
                     case TranspositionScheme.LosSignatures():
                         feature = AiTranspositionKeyService._get_los_signature_of_unit(
                             gs=gs,
-                            unit_id=id,
+                            unit_id=unit_id,
                             with_fov=transposition_scheme.with_fov,
+                        )
+                    case TranspositionScheme.AspectSignatures():
+                        feature = (
+                            AiTranspositionKeyService._get_aspect_signature_of_unit(
+                                gs=gs, unit_id=unit_id
+                            )
                         )
 
                 features.append(feature)
@@ -131,8 +146,10 @@ class AiTranspositionKeyService:
             combat_units.append(
                 CombatUnitKey(
                     features=tuple(features),
-                    faction=unit.faction,
-                    status=unit.status,
+                    unit_signature=CombatUnitSignature(
+                        faction=unit.faction,
+                        status=unit.status,
+                    ),
                 )
             )
         return combat_units
@@ -161,3 +178,19 @@ class AiTranspositionKeyService:
             los_signatures.append(has_los)
 
         return tuple(los_signatures)
+
+    @staticmethod
+    def _get_aspect_signature_of_unit(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> CombatUnitKey.AspectSignature:
+
+        # TODO: build aspects with other units too, not just against terrains.
+        unit_transform = gs.get_component(unit_id, Transform)
+        obstacle_angles = AiAspectSignatureService.get_aspects_angles(
+            gs=gs,
+            position=unit_transform.position,
+        )
+        obstacle_angles.sort(key=lambda obstacle: obstacle[0])
+        obstacle_ids = [terrain_id for terrain_id, _ in obstacle_angles]
+        return tuple(obstacle_ids)

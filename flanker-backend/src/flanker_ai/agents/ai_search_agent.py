@@ -39,6 +39,7 @@ from flanker_core.systems.action_system import ActionSystem
 class AiSearchAgentLog:
     tree_size: int
     tree_depth: int
+    action_value: float
 
 
 @dataclass
@@ -108,16 +109,19 @@ class AiSearchAgent:
                 search_log = AiSearchAgentLog(
                     tree_size=log.tree_size,
                     tree_depth=config.policy.depth,
+                    action_value=log.action_value,
                 )
             case PolicyConfig.MinimaxPolicy(), MinimaxSearchLog():
                 search_log = AiSearchAgentLog(
                     tree_size=log.tree_size,
                     tree_depth=config.policy.depth,
+                    action_value=log.action_value,
                 )
             case PolicyConfig.MctsPolicy(), MctsSearchLog():
                 search_log = AiSearchAgentLog(
                     tree_size=config.policy.max_iterations,
                     tree_depth=log.tree_depth,
+                    action_value=log.max_visits,
                 )
             case _:
                 raise RuntimeError("Policy log is mismatched from config!")

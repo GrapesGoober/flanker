@@ -26,6 +26,7 @@ class MctsTreeNode[TAction]:
 class MctsSearchLog[TAction]:
     tree_depth: int
     tree_root: MctsTreeNode[TAction]
+    max_visits: int
 
 
 class MctsPolicy[TAction]:
@@ -80,6 +81,7 @@ class MctsPolicy[TAction]:
             return None, MctsSearchLog(
                 tree_depth=max_depth,
                 tree_root=root,
+                max_visits=0,
             )
 
         # Choose the root's best action to perform
@@ -87,6 +89,7 @@ class MctsPolicy[TAction]:
         return best.action, MctsSearchLog(
             tree_depth=max_depth,
             tree_root=root,
+            max_visits=best.total_visits,
         )
 
     @staticmethod
