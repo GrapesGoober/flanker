@@ -218,7 +218,7 @@ def run_transposition_test(
                 try:
                     response = requests.post(
                         f"{target_url}/api/rpc/experiment/get-transposition-test",
-                        data=test_request,
+                        json=test_request.model_dump(),
                     )
                     response.raise_for_status()
                     break
@@ -235,7 +235,7 @@ def run_transposition_test(
                 action_b_value=api_result.action_b_value,
             )
 
-    log_message(f"    {test_run_config.experiment_name} done , recording...")
+    log_message(f"    {test_run_config.experiment_name} done, recording...")
     return test_run_config.experiment_name, test_result
 
 
