@@ -13,23 +13,13 @@ from typing import Any, Iterable, Literal
 
 import requests
 from flanker_ai.ai_system import AiSystem
-from flanker_ai.config_models import (
-    AiConfigComponent,
-    PointsConfig,
-    PolicyConfig,
-    SearchPolicyConfig,
-    TranspositionScheme,
-    UnabstractedStateConfig,
-)
+from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
 from flanker_ai.search_states.common.ai_transposition_key_service import (
     AiTranspositionKeyService,
     CacheKey,
 )
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
-from flanker_core.models.components import (
-    InitiativeState,
-)
 from flanker_core.serializer import Serializer
 from flanker_core.systems.action_system import ActionSystem
 from procedural_state_generator import (
@@ -38,7 +28,8 @@ from procedural_state_generator import (
     get_state_from_map,
 )
 from transposition_experiment_models import (
-    ApiAiPerformedActionResult,
+    ApiTranspositionTestRequest,
+    ApiTranspositionTestResponse,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
@@ -98,7 +89,11 @@ def main() -> None:
     # Ensure that the experiments with same state methods
     # use the same states sequence. Ensures consistency between experiments.
     state_sequence_per_method = {
-        method: get_state_sequence(method, experiment_set.target_n_tests)
+        method: get_state_sequence(
+            method=method,
+            target_n_tests=experiment_set.target_n_tests,
+            ai_config=experiment_set.game_tree_method,
+        )
         for method in experiment_set.state_populating_methods
     }
 
@@ -157,7 +152,7 @@ def get_all_transposition_tests(
             experiment_name=experiment_config.name,
             state_a=state_a,
             state_b=state_b,
-            key_method=experiment_config.key_methods,
+            key_methods=experiment_config.key_methods,
             target=experiment_config.target,
         )
         for experiment_config in experiment_configs
@@ -170,10 +165,12 @@ def get_all_transposition_tests(
 def get_state_sequence(
     method: Literal["random", "perturbation"],
     target_n_tests: int,
+    ai_config: SearchPolicyConfig,
 ) -> list[tuple[GameState, GameState]]:
     state_sequences: list[tuple[GameState, GameState]] = []
     for _ in range(target_n_tests):
         map = get_map()
+        add_ai_configs(map, ai_config)
         state_a = get_state_from_map(map)
 
         match method:
@@ -191,123 +188,74 @@ def run_transposition_test(
 ) -> tuple[str, TranspositionTestResult]:
     log_message(f"Running transposition test {test_run_config.experiment_name}")
 
-    key_a: CacheKey = get_key(
-        test_run_config.state_a,
-        test_run_config.key_method,
-    )
-    key_b: CacheKey = get_key(
-        test_run_config.state_b,
-        test_run_config.key_method,
-    )
-    action_a_value: float = get_tree_action_value(
-        gs=test_run_config.state_a,
-        test_run_config=test_run_config,
-    )
-    action_b_value: float = get_tree_action_value(
-        gs=test_run_config.state_b,
-        test_run_config=test_run_config,
-    )
-
-    key_is_same = key_a == key_b
-
-    log_message(f"    {test_run_config.experiment_name} done , recording...")
-    return test_run_config.experiment_name, TranspositionTestResult(
-        key_is_same=key_is_same,
-        action_a_value=action_a_value,
-        action_b_value=action_b_value,
-    )
-
-
-def get_key(
-    gs: GameState,
-    key_methods: list[TranspositionScheme.ALL],
-) -> CacheKey:
-    return AiTranspositionKeyService.get_key(
-        gs=gs,
-        transposition_schemes=key_methods,
-    )
-
-
-def get_tree_action_value(
-    gs: GameState,
-    test_run_config: TranspositionTestRun,
-) -> float:
-    """Runs the game-tree and returns its action value."""
-
-    gs = deepcopy(gs)
-    config = SearchPolicyConfig(
-        policy=PolicyConfig.MinimaxPolicy(
-            type="MinimaxPolicy",
-            depth=4,
-        ),
-        state=UnabstractedStateConfig(
-            type="UnabstractedStateConfig",
-            move_candidates_pool=PointsConfig.Grid(
-                type="GridConfig",
-                spacing=100,
-                offset=50,
-            ),
-            move_candidates_filter=[],
-            transposition_schemes=[
-                TranspositionScheme.RoundedPosition(
-                    type="RoundedPosition",
-                    to_nearest=1,
-                ),
-            ],
-        ),
-    )
-    gs.add_entity(
-        AiConfigComponent(
-            faction=InitiativeState.Faction.BLUE,
-            config=config,
-        ),
-    )
-    gs.add_entity(
-        AiConfigComponent(
-            faction=InitiativeState.Faction.RED,
-            config=config,
-        ),
-    )
-
-    initiative = ActionSystem.get_initiative(gs)
-
     match test_run_config.target:
         case "local":
-            result = AiSystem.perform_action(gs, initiative)
-            if result is None:
-                raise RuntimeError("AI can't perform action!")
-            if result.policy_log is None:
-                raise RuntimeError("Expects a search policy log from AI.")
-            return result.policy_log.action_value
-        case _:
-            scene_data = Serializer.serialize(
-                entities=gs.dump(),
-                component_types=list(get_component_types()),
+            key_a: CacheKey = AiTranspositionKeyService.get_key(
+                gs=test_run_config.state_a,
+                transposition_schemes=test_run_config.key_methods,
+            )
+            key_b: CacheKey = AiTranspositionKeyService.get_key(
+                gs=test_run_config.state_b,
+                transposition_schemes=test_run_config.key_methods,
+            )
+            action_a_value: float = get_tree_action_value(test_run_config.state_a)
+            action_b_value: float = get_tree_action_value(test_run_config.state_b)
+            key_is_same = key_a == key_b
+            test_result = TranspositionTestResult(
+                key_is_same=key_is_same,
+                action_a_value=action_a_value,
+                action_b_value=action_b_value,
+            )
+        case target_url:
+            component_types = list(get_component_types())
+            test_request = ApiTranspositionTestRequest(
+                state_a=Serializer.serialize(
+                    entities=test_run_config.state_a.dump(),
+                    component_types=component_types,
+                ),
+                state_b=Serializer.serialize(
+                    entities=test_run_config.state_b.dump(),
+                    component_types=component_types,
+                ),
+                key_methods=test_run_config.key_methods,
             )
             response: requests.Response | None = None
-
-            # Keep retrying requests if it fails
-            while True:
+            while True:  # Keep retrying requests if it fails
                 try:
                     response = requests.post(
-                        f"{test_run_config.target}/api/rpc/game/ai-perform",
-                        data=scene_data,
+                        f"{target_url}/api/rpc/experiment/get-transposition-test",
+                        json=test_request.model_dump(),
                     )
                     response.raise_for_status()
                     break
-
                 except requests.RequestException as e:
                     log_message(f"Request had error {e}")
                     log_message(
                         f"Rerunning {test_run_config.experiment_name} in 30 seconds"
                     )
                     sleep(30)
+            api_result = ApiTranspositionTestResponse.model_validate_json(response.text)
+            test_result = TranspositionTestResult(
+                key_is_same=api_result.key_is_same,
+                action_a_value=api_result.action_a_value,
+                action_b_value=api_result.action_b_value,
+            )
 
-            api_result = ApiAiPerformedActionResult.model_validate_json(response.text)
-            policy_log = api_result.action_result.policy_log
-            if policy_log is None:
-                raise RuntimeError("Expects a search policy log from AI.")
-            return policy_log.action_value
+    log_message(f"    {test_run_config.experiment_name} done, recording...")
+    return test_run_config.experiment_name, test_result
+
+
+def get_tree_action_value(
+    gs: GameState,
+) -> float:
+    gs = deepcopy(gs)
+    initiative = ActionSystem.get_initiative(gs)
+    result = AiSystem.perform_action(gs, initiative)
+    if result is None:
+        raise RuntimeError("AI can't perform action!")
+    if result.policy_log is None:
+        raise RuntimeError("Expects a search policy log from AI.")
+    return result.policy_log.action_value
 
 
 def get_component_types() -> Iterable[type]:
@@ -315,6 +263,24 @@ def get_component_types() -> Iterable[type]:
         if isclass(cls) and is_dataclass(cls):
             yield cls
     yield AiConfigComponent
+
+
+def add_ai_configs(
+    gs: GameState,
+    ai_config: SearchPolicyConfig,
+) -> None:
+    gs.add_entity(
+        AiConfigComponent(
+            faction=components.InitiativeState.Faction.BLUE,
+            config=ai_config,
+        ),
+    )
+    gs.add_entity(
+        AiConfigComponent(
+            faction=components.InitiativeState.Faction.RED,
+            config=ai_config,
+        ),
+    )
 
 
 def configure_logging(log_file_path: str, log_lock: Any) -> None:

@@ -107,7 +107,7 @@ class LosSystem:
 
         # Find all intersections towards the target point
         obstacle_intersections: list[ObstacleIntersection[UUID]] = []
-        for obstacle in LosSystem.get_obstacles(gs, spotter_pos):
+        for obstacle in LosSystem.get_los_obstacles(gs, spotter_pos):
             intersections: list[Vec2] = IntersectUtils.get_intersects(
                 line=(spotter_pos, target_pos),
                 polyline=obstacle.polyline,
@@ -241,7 +241,7 @@ class LosSystem:
             return cache.los_polygon_by_point[spotter_pos]
 
         # Not in cache; recompute LOS polygon and update cache
-        obstacles = list(LosSystem.get_obstacles(gs, spotter_pos))
+        obstacles = list(LosSystem.get_los_obstacles(gs, spotter_pos))
         boundary_vertices = [
             vertex
             for _, boundary in gs.query(MapBoundary)
@@ -286,7 +286,7 @@ class LosSystem:
         return None
 
     @staticmethod
-    def get_obstacles(
+    def get_los_obstacles(
         gs: GameState,
         spotter_pos: Vec2,
         mask: int = TerrainFeature.Flag.OPAQUE,

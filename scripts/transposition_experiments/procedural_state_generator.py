@@ -75,13 +75,13 @@ def get_map() -> GameState:
 def get_state_from_map(
     map: GameState,
 ) -> GameState:
+    """
+    Given the empty map state, populate with combat units and configs.
+    This makes it a complete state that is game-tree runnable.
+    """
     gs = deepcopy(map)
-    """
-    Given the empty map state, populate with combat units and other entities.
-    This makes it a complete state that is game-tree runnable. 
-    """
 
-    # TODO: have it randomize initial faction
+    # TODO: have it randomize initial initiative
     gs.add_entity(
         InitiativeState(
             faction=InitiativeState.Faction.BLUE,

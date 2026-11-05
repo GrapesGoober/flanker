@@ -12,10 +12,13 @@ from flanker_core.models.components import (
     FireControls,
     InitiativeState,
     StallLoseCondition,
+    TerrainFeature,
     Transform,
 )
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
+from flanker_core.utils.polygon_utils import PolygonUtils
+from flanker_core.utils.transform_utils import TransformUtils
 
 
 @dataclass(frozen=True)
@@ -31,7 +34,14 @@ class CombatUnitKey:
     type RoundedRotation = int
     type LosSignature = tuple[bool, ...]
     type AspectSignature = tuple[UUID | CombatUnitSignature, ...]
-    type Feature = RoundedPosition | RoundedRotation | LosSignature | AspectSignature
+    type TerrainSignature = tuple[UUID, ...]
+    type Feature = (
+        RoundedPosition
+        | RoundedRotation
+        | LosSignature
+        | AspectSignature
+        | TerrainSignature
+    )
 
     features: tuple[Feature, ...]
     unit_signature: CombatUnitSignature
@@ -140,6 +150,12 @@ class AiTranspositionKeyService:
                                 gs=gs, unit_id=unit_id
                             )
                         )
+                    case TranspositionScheme.TerrainSignatures():
+                        feature = (
+                            AiTranspositionKeyService._get_terrain_signature_of_unit(
+                                gs=gs, unit_id=unit_id
+                            )
+                        )
 
                 features.append(feature)
 
@@ -184,13 +200,33 @@ class AiTranspositionKeyService:
         gs: GameState,
         unit_id: UUID,
     ) -> CombatUnitKey.AspectSignature:
-
-        # TODO: build aspects with other units too, not just against terrains.
         unit_transform = gs.get_component(unit_id, Transform)
-        obstacle_angles = AiAspectSignatureService.get_aspects_angles(
+        aspects = AiAspectSignatureService.get_aspects_angles(
             gs=gs,
             position=unit_transform.position,
         )
-        obstacle_angles.sort(key=lambda obstacle: obstacle[0])
-        obstacle_ids = [terrain_id for terrain_id, _ in obstacle_angles]
-        return tuple(obstacle_ids)
+        aspects.sort(key=lambda aspect_entry: aspect_entry[1])
+        aspects_signature = [
+            (
+                entity_id
+                if (unit := gs.try_component(entity_id, CombatUnit)) == None
+                else CombatUnitSignature(unit.faction, unit.status)
+            )
+            for entity_id, _ in aspects
+        ]
+        return tuple(aspects_signature)
+
+    @staticmethod
+    def _get_terrain_signature_of_unit(
+        gs: GameState,
+        unit_id: UUID,
+    ) -> CombatUnitKey.TerrainSignature:
+        terrain_ids: list[UUID] = []
+        unit_transform = gs.get_component(unit_id, Transform)
+        for terrain_id, terrain, transform in gs.query(TerrainFeature, Transform):
+            vertices = TransformUtils.apply(terrain.vertices, transform)
+            if terrain.is_closed_loop:
+                vertices.append(vertices[0])
+                if PolygonUtils.is_inside(unit_transform.position, vertices):
+                    terrain_ids.append(terrain_id)
+        return tuple(terrain_ids)

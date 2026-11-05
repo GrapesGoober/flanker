@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
+from flanker_core.models.components import CombatUnit, Transform
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.los_system import LosSystem
 
@@ -40,7 +41,7 @@ class AiAspectSignatureService:
         towards obstacles.
         """
 
-        obstacles = LosSystem.get_obstacles(gs, position)
+        obstacles = LosSystem.get_los_obstacles(gs, position)
         aspect_angles: list[tuple[UUID, float]] = []
         for obstacle in obstacles:
             if len(obstacle.polyline) != 0:
@@ -49,4 +50,12 @@ class AiAspectSignatureService:
                 )
                 aspect_angles.append((obstacle.metadata, left_bound))
                 aspect_angles.append((obstacle.metadata, right_bound))
+
+        # Add combat unit aspect signatures
+        for other_unit_id, _, other_transform in gs.query(CombatUnit, Transform):
+            if other_transform.position.is_close(position):
+                continue
+            angle = position.angle_to(other_transform.position)
+            aspect_angles.append((other_unit_id, angle))
+
         return aspect_angles

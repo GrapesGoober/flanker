@@ -18,10 +18,10 @@ from webapi.services.logging_service import LoggingService
 from webapi.services.scene_service import SceneService
 from webapi.services.terrain_service import TerrainService
 
-router = APIRouter(prefix="/api/rpc/game")
+game_router = APIRouter(prefix="/api/rpc/game")
 
 
-@router.post("/get-view")
+@game_router.post("/get-view")
 async def get_view_state(
     state: str = Body(...),
 ) -> GameViewStateModel:
@@ -30,7 +30,7 @@ async def get_view_state(
     return GameViewService.get_view_state(gs)
 
 
-@router.post("/get-inspection")
+@game_router.post("/get-inspection")
 async def get_state_inspection(
     state: str = Body(...),
 ) -> GameStateInspectionModel:
@@ -39,7 +39,7 @@ async def get_state_inspection(
     return GameViewService.get_inspection(gs)
 
 
-@router.post("/get-game-tree")
+@game_router.post("/get-game-tree")
 async def get_tree_inspection(
     state: str = Body(...),
 ) -> GameTreeInspectionModel | None:
@@ -48,7 +48,7 @@ async def get_tree_inspection(
     return AiService.get_tree_inspection(gs)
 
 
-@router.post("/get-map")
+@game_router.post("/get-map")
 async def get_map(
     state: str = Body(...),
 ) -> MapViewStateModel:
@@ -57,7 +57,7 @@ async def get_map(
     return TerrainService.get_map(gs)
 
 
-@router.post("/perform")
+@game_router.post("/perform")
 async def perform_action(
     action: ActionModel = Body(...),
     state: str = Body(...),
@@ -69,7 +69,7 @@ async def perform_action(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/ai-perform")
+@game_router.post("/ai-perform")
 async def ai_perform_action(
     state: str = Body(...),
 ) -> AiPerformedActionResultModel:
@@ -78,7 +78,7 @@ async def ai_perform_action(
     return AiService.perform_action(gs)
 
 
-@router.post("/get-logs")
+@game_router.post("/get-logs")
 async def get_logs(
     state: str = Body(...),
 ) -> list[ActionLogModel]:
@@ -86,7 +86,7 @@ async def get_logs(
     return LoggingService.get_logs(gs)
 
 
-@router.post("/get-ai-match")
+@game_router.post("/get-ai-match")
 async def get_match_result(
     state: str = Body(...),
 ) -> AiMatchResponseModel:

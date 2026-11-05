@@ -13,10 +13,10 @@ from webapi.services.game_view_service import GameViewService
 from webapi.services.scene_service import SceneService
 from webapi.services.terrain_service import TerrainService
 
-router = APIRouter(prefix="/api/rpc/editor")
+editor_router = APIRouter(prefix="/api/rpc/editor")
 
 
-@router.post("/update-ai-waypoints")
+@editor_router.post("/update-ai-waypoints")
 async def update_ai_waypoints(
     state: str = Body(...),
     config_request: AiWaypointConfigRequestModel = Body(..., alias="configRequest"),
@@ -26,7 +26,7 @@ async def update_ai_waypoints(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/update-terrain")
+@editor_router.post("/update-terrain")
 async def update_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -37,7 +37,7 @@ async def update_terrain(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/add-terrain")
+@editor_router.post("/add-terrain")
 async def add_terrain(
     state: str = Body(...),
     terrain: TerrainModel = Body(...),
@@ -48,7 +48,7 @@ async def add_terrain(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/delete-terrain")
+@editor_router.post("/delete-terrain")
 async def delete_terrain(
     state: str = Body(...),
     terrain_id: UUID = Query(..., alias="terrainId"),
@@ -59,7 +59,7 @@ async def delete_terrain(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/add-unit")
+@editor_router.post("/add-unit")
 async def add_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),
@@ -70,7 +70,7 @@ async def add_unit(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/delete-unit")
+@editor_router.post("/delete-unit")
 async def delete_unit(
     state: str = Body(...),
     unit_id: UUID = Query(..., alias="unitId"),
@@ -81,7 +81,7 @@ async def delete_unit(
     return GameViewService.get_view_state_response(gs)
 
 
-@router.post("/update-unit")
+@editor_router.post("/update-unit")
 async def update_unit(
     state: str = Body(...),
     unit: SquadModel = Body(...),

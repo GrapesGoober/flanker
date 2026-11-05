@@ -59,7 +59,17 @@ class TranspositionScheme:
     class AspectSignatures:
         type: Literal["AspectSignatures"]
 
-    type ALL = RoundedPosition | RoundedRotation | LosSignatures | AspectSignatures
+    @dataclass
+    class TerrainSignatures:
+        type: Literal["TerrainSignatures"]
+
+    type ALL = (
+        RoundedPosition
+        | RoundedRotation
+        | LosSignatures
+        | AspectSignatures
+        | TerrainSignatures
+    )
 
 
 @dataclass

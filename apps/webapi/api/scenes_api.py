@@ -2,16 +2,16 @@ from fastapi import APIRouter, Query
 from webapi.models.state_models import SceneManifestResponse
 from webapi.services.scene_service import SceneService
 
-router = APIRouter(prefix="/api/scenes")
+scenes_router = APIRouter(prefix="/api/scenes")
 
 
-@router.get("/manifest")
+@scenes_router.get("/manifest")
 async def get_scene_manifest() -> SceneManifestResponse:
     """Gets the scene manifest"""
     return SceneService.get_scenes()
 
 
-@router.get("/json")
+@scenes_router.get("/json")
 async def get_game_state_json(
     scene_names: list[str] = Query(..., alias="sceneNames"),
 ) -> str:
