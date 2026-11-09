@@ -10,6 +10,7 @@
     "blue-grid-75-zobrist-r100": "scenes/experiments/blue-agents/grid-75-zobrist-r100.json",
     "blue-grid-100-zobrist-r100": "scenes/experiments/blue-agents/grid-100-zobrist-r100.json",
     "blue-expectimax-grid-100-zobrist-r100": "scenes/experiments/blue-agents/expectimax-grid-100-zobrist-r100.json",
+    "blue-expectimax-grid-75-zobrist-r1": "scenes/experiments/blue-agents/expectimax-grid-75-zobrist-r1.json",
     "blue-grid-33-zobrist-r50": "scenes/experiments/blue-agents/grid-33-zobrist-r50.json",
     "blue-grid-50-zobrist-r50": "scenes/experiments/blue-agents/grid-50-zobrist-r50.json",
     "blue-grid-75-zobrist-r50": "scenes/experiments/blue-agents/grid-75-zobrist-r50.json",
