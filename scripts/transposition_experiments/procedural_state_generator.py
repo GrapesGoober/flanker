@@ -197,9 +197,9 @@ def get_perturbed_state(
     for _, _, transform in gs.query(CombatUnit, Transform):
         position: Vec2 | None = None
         while position is None or not is_point_in_bound(gs, position):
-            position = Vec2(
-                transform.position.x + random.randrange(-10, 10),
-                transform.position.y + random.randrange(-10, 10),
+            position = transform.position + Vec2(
+                random.uniform(-10, 10),
+                random.uniform(-10, 10),
             )
         transform.position = position
     return gs
