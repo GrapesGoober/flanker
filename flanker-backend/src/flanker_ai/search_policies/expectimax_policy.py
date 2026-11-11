@@ -50,7 +50,8 @@ class ExpectimaxPolicy[TAction]:
     def get_action(
         rs: ISearchState[TAction],
         depth: int,
-        log_with_tree: bool = False,
+        use_transposition_table: bool,
+        log_with_tree: bool,
     ) -> tuple[TAction | None, ExpectimaxSearchLog[TAction]]:
         """
         Returns the best action and its search log given a current game state.
@@ -65,7 +66,7 @@ class ExpectimaxPolicy[TAction]:
             state=rs,
             depth_remaining=depth,
             counter=counter,
-            transposition_table={},
+            transposition_table={} if use_transposition_table else None,
             log_tree_to_append=root,
         )
         return action, ExpectimaxSearchLog(
@@ -79,7 +80,7 @@ class ExpectimaxPolicy[TAction]:
         state: ISearchState[TAction],
         depth_remaining: int,
         counter: "count[int]",
-        transposition_table: dict[object, _TranspositionEntry],
+        transposition_table: dict[object, _TranspositionEntry] | None,
         log_tree_to_append: ExpectimaxTreeNode[TAction] | None,
     ) -> tuple[float, TAction | None]:
 
@@ -109,29 +110,13 @@ class ExpectimaxPolicy[TAction]:
                     outcome_node = ExpectimaxTreeNode(state=branch, children=[])
 
                 new_branch_depth = depth_remaining - 1
-                state_key = branch.get_hashable_key()
-                cached_entry = transposition_table.get(state_key)
-
-                # Reuse the cached score value if exist, but also only if the
-                # cached entry is more near-root than the current ply.
-                if (
-                    cached_entry is not None
-                    and cached_entry.depth_remaining >= new_branch_depth
-                ):
-                    score = cached_entry.score
-                else:
-                    score, _ = ExpectimaxPolicy[TAction]._search(
-                        state=branch,
-                        depth_remaining=new_branch_depth,
-                        counter=counter,
-                        transposition_table=transposition_table,
-                        log_tree_to_append=outcome_node,
-                    )
-                    transposition_table[state_key] = _TranspositionEntry(
-                        score=score,
-                        depth_remaining=new_branch_depth,
-                    )
-
+                score = ExpectimaxPolicy[TAction]._get_payoff_score(
+                    state=branch,
+                    new_branch_depth=new_branch_depth,
+                    counter=counter,
+                    transposition_table=transposition_table,
+                    log_tree_to_append=log_tree_to_append,
+                )
                 expected_score += score * probability
                 if outcome_node is not None:
                     outcomes.append(
@@ -167,3 +152,49 @@ class ExpectimaxPolicy[TAction]:
                     best_action = action
 
         return best_score, best_action
+
+    @staticmethod
+    def _get_payoff_score(
+        state: ISearchState[TAction],
+        new_branch_depth: int,
+        counter: "count[int]",
+        transposition_table: dict[object, _TranspositionEntry] | None,
+        log_tree_to_append: ExpectimaxTreeNode[TAction] | None,
+    ) -> float:
+        """
+        Helper method to recursively call the tree search,
+        with transposition checks.
+        """
+
+        if transposition_table is None:
+            score, _ = ExpectimaxPolicy[TAction]._search(
+                state=state,
+                depth_remaining=new_branch_depth,
+                counter=counter,
+                transposition_table=transposition_table,
+                log_tree_to_append=log_tree_to_append,
+            )
+        else:
+            state_key = state.get_hashable_key()
+            cached_entry = transposition_table.get(state_key)
+
+            # Reuse the cached score value if exist, but also only if the
+            # cached entry is more near-root than the current ply.
+            if (
+                cached_entry is not None
+                and cached_entry.depth_remaining >= new_branch_depth
+            ):
+                score = cached_entry.score
+            else:
+                score, _ = ExpectimaxPolicy[TAction]._search(
+                    state=state,
+                    depth_remaining=new_branch_depth,
+                    counter=counter,
+                    transposition_table=transposition_table,
+                    log_tree_to_append=log_tree_to_append,
+                )
+                transposition_table[state_key] = _TranspositionEntry(
+                    score=score,
+                    depth_remaining=new_branch_depth,
+                )
+        return score

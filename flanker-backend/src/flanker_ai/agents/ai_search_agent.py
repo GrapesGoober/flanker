@@ -190,12 +190,14 @@ class AiSearchAgent:
                 return ExpectimaxPolicy[Action].get_action(
                     rs=state,
                     depth=config.policy.depth,
+                    use_transposition_table=config.policy.use_transposition_table,
                     log_with_tree=log_with_tree,
                 )
             case PolicyConfig.MinimaxPolicy():
                 return MinimaxPolicy[Action].get_action(
                     state=state,
                     depth=config.policy.depth,
+                    use_transposition_table=config.policy.use_transposition_table,
                     log_with_tree=log_with_tree,
                 )
             case PolicyConfig.MctsPolicy():
