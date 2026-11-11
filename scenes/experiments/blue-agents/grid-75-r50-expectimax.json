@@ -19,7 +19,7 @@
             "transposition_schemes": [
               {
                 "type": "RoundedPosition",
-                "to_nearest": 1
+                "to_nearest": 50
               }
             ]
           }
