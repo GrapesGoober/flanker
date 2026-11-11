@@ -40,9 +40,14 @@ class SceneService:
         )
 
         # Combine both. Local takes priority (right hand side)
-        return SceneManifest(
+        all_manifest = SceneManifest(
             scene_paths=manifest.scene_paths | local_manifest.scene_paths,
         )
+        for scene_path in all_manifest.scene_paths.values():
+            if not Path(scene_path).exists():
+                raise FileNotFoundError(f"Scene path does not exist: {scene_path}")
+
+        return all_manifest
 
     @staticmethod
     def get_scenes() -> SceneManifestResponse:
