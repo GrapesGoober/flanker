@@ -204,6 +204,7 @@ def add_agent_config(
             policy = PolicyConfig.MinimaxPolicy(
                 type="MinimaxPolicy",
                 depth=4,
+                use_transposition_table=True,
             )
 
     config = SearchPolicyConfig(

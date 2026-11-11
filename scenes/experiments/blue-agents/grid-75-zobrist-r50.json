@@ -5,7 +5,8 @@
         "config": {
           "policy": {
             "type": "MinimaxPolicy",
-            "depth": 4
+            "depth": 4,
+            "use_transposition_table": true
           },
           "state": {
             "type": "UnabstractedStateConfig",

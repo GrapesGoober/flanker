@@ -102,6 +102,7 @@ class PolicyConfig:
     class MinimaxPolicy:
         type: Literal["MinimaxPolicy"]
         depth: int
+        use_transposition_table: bool
 
     @dataclass
     class ExpectimaxPolicy:
