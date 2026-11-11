@@ -108,6 +108,7 @@ class PolicyConfig:
     class ExpectimaxPolicy:
         type: Literal["ExpectimaxPolicy"]
         depth: int
+        use_transposition_table: bool
 
     @dataclass
     class RandomHeuristicPolicy:
