@@ -21,6 +21,7 @@
     "scene-v1-2": "scenes/experiments/scenes-v1/scene-2.json",
     "scene-v2-1": "scenes/experiments/scenes-v2/scene-1.json",
     "scene-v2-1-no-units": "scenes/experiments/scenes-v2/scene-1-no-units.json",
+    "scene-v2-2-no-units": "scenes/experiments/scenes-v2/scene-2-no-units.json",
     "experiment-settings": "scenes/experiments/settings.json",
     "visualize-expansion": "scenes/visualizations/expansion.json",
     "visualize-interrupt": "scenes/visualizations/interrupt.json",
