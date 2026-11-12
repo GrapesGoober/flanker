@@ -109,10 +109,9 @@ class ExpectimaxPolicy[TAction]:
                 if log_tree_to_append is not None:
                     outcome_node = ExpectimaxTreeNode(state=branch, children=[])
 
-                new_branch_depth = depth_remaining - 1
                 score = ExpectimaxPolicy[TAction]._get_payoff_score(
                     state=branch,
-                    new_branch_depth=new_branch_depth,
+                    new_branch_depth=depth_remaining - 1,
                     counter=counter,
                     transposition_table=transposition_table,
                     log_tree_to_append=log_tree_to_append,

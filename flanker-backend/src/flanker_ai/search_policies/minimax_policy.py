@@ -111,10 +111,9 @@ class MinimaxPolicy[TAction]:
                     state=branch,
                     children=[],
                 )
-            new_branch_depth = depth_remaining - 1
             score = MinimaxPolicy[TAction]._get_payoff_score(
                 state=branch,
-                new_branch_depth=new_branch_depth,
+                new_branch_depth=depth_remaining - 1,
                 alpha=alpha,
                 beta=beta,
                 counter=counter,
