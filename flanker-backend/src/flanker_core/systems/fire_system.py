@@ -10,7 +10,7 @@ from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-_FIRE_OUTCOME_PROBABILITIES = {
+FIRE_OUTCOME_PROBABILITIES = {
     FireOutcomes.MISS: 0.3,
     FireOutcomes.PIN: 0.4,
     FireOutcomes.SUPPRESS: 0.3,
@@ -70,8 +70,8 @@ class FireSystem:
             return fire_controls.override
 
         # Roll outcome
-        outcomes = list(_FIRE_OUTCOME_PROBABILITIES.keys())
-        weights = list(_FIRE_OUTCOME_PROBABILITIES.values())
+        outcomes = list(FIRE_OUTCOME_PROBABILITIES.keys())
+        weights = list(FIRE_OUTCOME_PROBABILITIES.values())
         return random.choices(outcomes, weights=weights, k=1)[0]
 
     @staticmethod

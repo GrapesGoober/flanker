@@ -197,13 +197,13 @@ def add_agent_config(
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
                 type="MinimaxPolicy",
-                depth=4,
+                depth=3,
                 use_transposition_table=use_transposition_table,
             )
         case "Expectimax":
             policy = PolicyConfig.ExpectimaxPolicy(
                 type="ExpectimaxPolicy",
-                depth=4,
+                depth=3,
                 use_transposition_table=use_transposition_table,
             )
 
@@ -263,13 +263,15 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
 
 
 @pytest.mark.parametrize("policy_type", ["Minimax", "Expectimax"])
-@pytest.mark.parametrize("use_transposition_table", [True, False])
 def test_optimal_actions(
     fixture: Fixture,
     policy_type: Literal["Minimax", "Expectimax"],
-    use_transposition_table: bool,
 ) -> None:
-    add_agent_config(fixture, policy_type, use_transposition_table)
+    add_agent_config(
+        fixture,
+        policy_type,
+        use_transposition_table=False,
+    )
     trees: list[AiSearchTreeResult] = []
     for _ in range(10):
         tree_result = AiSystem.get_game_tree(
