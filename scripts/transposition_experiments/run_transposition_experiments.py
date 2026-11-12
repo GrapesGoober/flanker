@@ -9,7 +9,7 @@ from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
 from time import sleep
-from typing import Any, Iterable, Literal
+from typing import Any, Iterable
 
 import requests
 from flanker_ai.ai_system import AiSystem
@@ -30,6 +30,7 @@ from procedural_state_generator import (
 from transposition_experiment_models import (
     ApiTranspositionTestRequest,
     ApiTranspositionTestResponse,
+    StatePopulatingMethod,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
@@ -77,7 +78,7 @@ def main() -> None:
 
     # Get init each experiment permutations
     transposition_experiments = get_transposition_experiments(
-        config=experiment_set,
+        experiment_set=experiment_set,
     )
     for experiment in transposition_experiments:
         init_metadata_file(
@@ -86,20 +87,9 @@ def main() -> None:
             target_n_tests=experiment_set.target_n_tests,
         )
 
-    # Ensure that the experiments with same state methods
-    # use the same states sequence. Ensures consistency between experiments.
-    state_sequence_per_method = {
-        method: get_state_sequence(
-            method=method,
-            target_n_tests=experiment_set.target_n_tests,
-            ai_config=experiment_set.game_tree_method,
-        )
-        for method in experiment_set.state_populating_methods
-    }
-
     # Generate tests for all experiments.
     transposition_tests = get_all_transposition_tests(
-        transposition_experiments, state_sequence_per_method
+        experiment_configs=transposition_experiments,
     )
     random.shuffle(transposition_tests)
 
@@ -127,25 +117,43 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
 
 
 def get_transposition_experiments(
-    config: TranspositionExperimentSetConfig,
+    experiment_set: TranspositionExperimentSetConfig,
 ) -> list[TranspositionExperiment]:
+    """
+    Returns all permutations of experiments given the experiment set config.
+    """
+
+    # Ensure that the experiments with same state methods
+    # use the same states sequence. Ensures consistency between experiments.
+    state_sequence_per_method: dict[str, list[tuple[GameState, GameState]]] = {
+        method_name: get_state_sequence(
+            method=method,
+            target_n_tests=experiment_set.target_n_tests,
+            ai_config=experiment_set.game_tree_method,
+        )
+        for (method_name, method) in experiment_set.state_populating_methods.items()
+    }
+
     return [
         TranspositionExperiment(
-            name=f"{state_method}-{key_methods_name}",
-            state_populating_method=state_method,
+            name=f"{state_method_name}-{key_methods_name}",
+            state_sequence=state_sequence_per_method[state_method_name],
+            state_method_metadata=state_method,
             key_methods=key_methods,
-            target=config.target,
+            target=experiment_set.target,
         )
-        for (state_method, (key_methods_name, key_methods)) in product(
-            config.state_populating_methods,
-            config.zobrist_key_methods.items(),
+        for (
+            (state_method_name, state_method),
+            (key_methods_name, key_methods),
+        ) in product(
+            experiment_set.state_populating_methods.items(),
+            experiment_set.transposition_key_methods.items(),
         )
     ]
 
 
 def get_all_transposition_tests(
     experiment_configs: list[TranspositionExperiment],
-    state_sequence_per_method: dict[str, list[tuple[GameState, GameState]]],
 ) -> list[TranspositionTestRun]:
     return [
         TranspositionTestRun(
@@ -156,14 +164,12 @@ def get_all_transposition_tests(
             target=experiment_config.target,
         )
         for experiment_config in experiment_configs
-        for state_a, state_b in state_sequence_per_method[
-            experiment_config.state_populating_method
-        ]
+        for state_a, state_b in experiment_config.state_sequence
     ]
 
 
 def get_state_sequence(
-    method: Literal["random", "perturbation"],
+    method: StatePopulatingMethod.ALL,
     target_n_tests: int,
     ai_config: SearchPolicyConfig,
 ) -> list[tuple[GameState, GameState]]:
@@ -174,10 +180,10 @@ def get_state_sequence(
         state_a = get_state_from_map(map)
 
         match method:
-            case "random":
+            case StatePopulatingMethod.Random():
                 state_b = get_state_from_map(map)
-            case "perturbation":
-                state_b = get_perturbed_state(state_a)
+            case StatePopulatingMethod.Perturbation():
+                state_b = get_perturbed_state(state_a, size=method.size)
 
         state_sequences.append((state_a, state_b))
     return state_sequences
@@ -311,7 +317,7 @@ def init_metadata_file(
         return
 
     metadata = TranspositionExperimentMetadata(
-        state_populating_method=experiment_config.state_populating_method,
+        state_populating_method=experiment_config.state_method_metadata,
         key_methods=experiment_config.key_methods,
         n_tests=0,
         target_n_tests=target_n_tests,
