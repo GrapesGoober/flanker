@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     prof_file = "./scripts/outputs/ai-perftest.prof"
     cProfile.run("run_perf_test()", sort="cumtime", filename=prof_file)
-    p = pstats.Stats("./scripts/outputs/ai-perftest.prof")
+    p = pstats.Stats(prof_file)
     p.strip_dirs()
     p.sort_stats("cumtime")
     p.print_stats(20)
