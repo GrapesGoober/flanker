@@ -106,6 +106,11 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.HasLos):
             return override.method(gs, spotter_pos, target_pos)
 
+        # Use cache if exists
+        cache = LosSystem._get_los_cache(gs)
+        if cached_los := cache.has_los_between_points.get((spotter_pos, target_pos)):
+            return cached_los
+
         # Find all intersections towards the target point
         obstacle_intersections: list[ObstacleIntersection[UUID]] = []
         for obstacle in LosSystem.get_los_obstacles(gs, spotter_pos):
@@ -123,7 +128,10 @@ class LosSystem:
         )
 
         # LOS is valid if there's no obstacles blocking it
-        return LosSystem.get_furthest_los_point(obstacle_intersections) == None
+        has_los = LosSystem.get_furthest_los_point(obstacle_intersections) == None
+        cache.has_los_between_points[(spotter_pos, target_pos)] = has_los
+        cache.has_los_between_points[(target_pos, spotter_pos)] = has_los
+        return has_los
 
     @staticmethod
     def get_los_from_line(
@@ -304,5 +312,11 @@ class LosSystem:
         if ent := gs.query(_LosCacheComponent):
             _, cache = ent[0]
         else:
-            gs.add_entity(cache := _LosCacheComponent({}, {}, {}))
+            gs.add_entity(
+                cache := _LosCacheComponent(
+                    has_los_between_points={},
+                    los_polygon_by_point={},
+                    fov_polygon_by_point={},
+                )
+            )
         return cache
