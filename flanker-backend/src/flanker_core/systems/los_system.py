@@ -29,6 +29,7 @@ class _Terrain:
 
 @dataclass
 class _LosCacheComponent:
+    has_los_between_points: dict[tuple[Vec2, Vec2], bool]
     los_polygon_by_point: dict[Vec2, list[Vec2]]
     fov_polygon_by_point: dict[tuple[Vec2, float], list[Vec2]]
 
@@ -140,13 +141,8 @@ class LosSystem:
         for _, override in gs.query(LosSystemOverrides.GetLosFromLine):
             return override.method(gs, spotter_id, (line_from, line_to))
 
-        # Reuse the cache object if exists
-        if ent := gs.query(_LosCacheComponent):
-            _, cache = ent[0]
-        else:
-            gs.add_entity(cache := _LosCacheComponent({}, {}))
-
         # Create the cache key
+        cache = LosSystem._get_los_cache(gs)
         spotter_transform = gs.get_component(spotter_id, Transform)
         cache_key: tuple[Vec2, float] = (
             spotter_transform.position,
@@ -233,10 +229,7 @@ class LosSystem:
             return override.method(gs, spotter_pos)
 
         # If already exists in cache, no need to recalculate
-        if ent := gs.query(_LosCacheComponent):
-            _, cache = ent[0]
-        else:
-            gs.add_entity(cache := _LosCacheComponent({}, {}))
+        cache = LosSystem._get_los_cache(gs)
         if spotter_pos in cache.los_polygon_by_point:
             return cache.los_polygon_by_point[spotter_pos]
 
@@ -305,3 +298,11 @@ class LosSystem:
                     if PolygonUtils.is_inside(spotter_pos, vertices):
                         continue
                 yield Obstacle(polyline=vertices, metadata=obstacle_id)
+
+    @staticmethod
+    def _get_los_cache(gs: GameState) -> _LosCacheComponent:
+        if ent := gs.query(_LosCacheComponent):
+            _, cache = ent[0]
+        else:
+            gs.add_entity(cache := _LosCacheComponent({}, {}, {}))
+        return cache
