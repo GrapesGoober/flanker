@@ -50,7 +50,7 @@ if __name__ == "__main__":
         scene_names=[
             "experiment-settings",
             "scene-v2-1",
-            "blue-expectimax-grid-75-zobrist-r1",
+            "blue-expectimax-grid-75-r1",
             "red-rh",
         ]
     )

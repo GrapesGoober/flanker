@@ -72,7 +72,7 @@ class CacheKey:
 
 
 class AiTranspositionKeyService:
-    """Utility for creating a Zobrist transposition key of a game state."""
+    """Utility for creating a transposition key of a game state."""
 
     @staticmethod
     def get_key(
