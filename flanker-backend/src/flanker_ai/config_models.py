@@ -43,12 +43,12 @@ class TranspositionScheme:
     @dataclass
     class RoundedPosition:
         type: Literal["RoundedPosition"]
-        to_nearest: float
+        to_nearest: int
 
     @dataclass
     class RoundedRotation:
         type: Literal["RoundedRotation"]
-        to_nearest: float
+        to_nearest: int
 
     @dataclass
     class LosSignatures:
