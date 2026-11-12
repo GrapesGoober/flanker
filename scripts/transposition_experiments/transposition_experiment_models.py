@@ -33,6 +33,7 @@ class TranspositionExperimentSetConfig(BaseModel):
     """Input config model for entire transposition experiment-set run."""
 
     target_n_tests: int
+    maps: list[str]
     state_populating_methods: dict[str, StatePopulatingMethod.ALL]
     transposition_key_methods: dict[str, list[TranspositionScheme.ALL]]
     max_workers: int

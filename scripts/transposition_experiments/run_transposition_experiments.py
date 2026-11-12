@@ -23,7 +23,7 @@ from flanker_core.models import components
 from flanker_core.serializer import Serializer
 from flanker_core.systems.action_system import ActionSystem
 from procedural_state_generator import (
-    get_map,
+    get_game_state,
     get_perturbed_state,
     get_state_from_map,
 )
@@ -125,19 +125,27 @@ def get_transposition_experiments(
 
     # Ensure that the experiments with same state methods
     # use the same states sequence. Ensures consistency between experiments.
-    state_sequence_per_method: dict[str, list[tuple[GameState, GameState]]] = {
-        method_name: get_state_sequence(
+    state_sequence_per_map_and_method: dict[
+        tuple[str, str], list[tuple[GameState, GameState]]
+    ] = {
+        (map_name, method_name): get_state_sequence(
+            map_name=map_name,
             method=method,
             target_n_tests=experiment_set.target_n_tests,
             ai_config=experiment_set.game_tree_method,
         )
-        for (method_name, method) in experiment_set.state_populating_methods.items()
+        for (method_name, method), map_name in product(
+            experiment_set.state_populating_methods.items(),
+            experiment_set.maps,
+        )
     }
 
     return [
         TranspositionExperiment(
-            name=f"{state_method_name}-{key_methods_name}",
-            state_sequence=state_sequence_per_method[state_method_name],
+            name=f"{state_method_name}-{key_methods_name}-{map_name}",
+            state_sequence=state_sequence_per_map_and_method[
+                map_name, state_method_name
+            ],
             state_method_metadata=state_method,
             key_methods=key_methods,
             target=experiment_set.target,
@@ -145,9 +153,11 @@ def get_transposition_experiments(
         for (
             (state_method_name, state_method),
             (key_methods_name, key_methods),
+            map_name,
         ) in product(
             experiment_set.state_populating_methods.items(),
             experiment_set.transposition_key_methods.items(),
+            experiment_set.maps,
         )
     ]
 
@@ -169,13 +179,14 @@ def get_all_transposition_tests(
 
 
 def get_state_sequence(
+    map_name: str,
     method: StatePopulatingMethod.ALL,
     target_n_tests: int,
     ai_config: SearchPolicyConfig,
 ) -> list[tuple[GameState, GameState]]:
     state_sequences: list[tuple[GameState, GameState]] = []
     for _ in range(target_n_tests):
-        map = get_map()
+        map = get_game_state([map_name])
         add_ai_configs(map, ai_config)
         state_a = get_state_from_map(map)
 

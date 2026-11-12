@@ -64,14 +64,6 @@ def get_game_state(
     return gs
 
 
-def get_map() -> GameState:
-    """
-    Generates an empty state containing just the terrains and boundary.
-    """
-    # TODO: need PCG for this step. Using a hand-drawn scene for now.
-    return get_game_state(["scene-v2-1-no-units"])
-
-
 def get_state_from_map(
     map: GameState,
 ) -> GameState:
