@@ -3,7 +3,7 @@ from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
 from math import ceil, floor
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
@@ -66,6 +66,7 @@ def get_game_state(
 
 def get_state_from_map(
     map: GameState,
+    initiative: InitiativeState.Faction | Literal["random"],
 ) -> GameState:
     """
     Given the empty map state, populate with combat units and configs.
@@ -73,12 +74,15 @@ def get_state_from_map(
     """
     gs = deepcopy(map)
 
-    # TODO: have it randomize initial initiative
-    gs.add_entity(
-        InitiativeState(
-            faction=InitiativeState.Faction.BLUE,
+    if initiative == "random":
+        initiative = random.choice(
+            [
+                InitiativeState.Faction.BLUE,
+                InitiativeState.Faction.RED,
+            ]
         )
-    )
+    gs.add_entity(InitiativeState(faction=initiative))
+
     gs.add_entity(
         EliminationWinCondition(
             target_faction=InitiativeState.Faction.RED,

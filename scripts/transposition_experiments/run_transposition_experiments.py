@@ -188,11 +188,12 @@ def get_state_sequence(
     for _ in range(target_n_tests):
         map = get_game_state([map_name])
         add_ai_configs(map, ai_config)
-        state_a = get_state_from_map(map)
+        state_a = get_state_from_map(map, initiative="random")
 
         match method:
             case StatePopulatingMethod.Random():
-                state_b = get_state_from_map(map)
+                initiative = ActionSystem.get_initiative(state_a)
+                state_b = get_state_from_map(map, initiative=initiative)
             case StatePopulatingMethod.Perturbation():
                 state_b = get_perturbed_state(state_a, size=method.size)
 
