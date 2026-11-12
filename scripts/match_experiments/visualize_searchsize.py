@@ -38,7 +38,7 @@ def main() -> None:
     match_setting = experiment_set.match_settings[0]
 
     # Generate cells of each win rate to render
-    BLUE_CONFIG_TO_RENDER = "blue-grid-140-zobrist-r1"
+    BLUE_CONFIG_TO_RENDER = "blue-grid-140-r1"
     df = pd.DataFrame(
         [
             {
