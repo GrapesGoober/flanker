@@ -41,6 +41,10 @@ class FilterConfig:
 class TranspositionScheme:
 
     @dataclass
+    class ExactPosition:
+        type: Literal["ExactPosition"]
+
+    @dataclass
     class RoundedPosition:
         type: Literal["RoundedPosition"]
         to_nearest: int
@@ -64,7 +68,8 @@ class TranspositionScheme:
         type: Literal["TerrainSignatures"]
 
     type ALL = (
-        RoundedPosition
+        ExactPosition
+        | RoundedPosition
         | RoundedRotation
         | LosSignatures
         | AspectSignatures

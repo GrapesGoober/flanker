@@ -8,6 +8,7 @@
     "blue-grid-75-r50-expectimax": "scenes/experiments/blue-agents/grid-75-r50-expectimax.json",
     "blue-grid-75-r1-expectimax": "scenes/experiments/blue-agents/grid-75-r1-expectimax.json",
     "blue-grid-75-r1": "scenes/experiments/blue-agents/grid-75-r1.json",
+    "blue-grid-75-r0": "scenes/experiments/blue-agents/grid-75-r0.json",
     "blue-handdrawn-s1-expectimax": "scenes/experiments/blue-agents/handdrawn-s1-expectimax.json",
     "blue-handdrawn-s1": "scenes/experiments/blue-agents/handdrawn-s1.json",
     "blue-handdrawn-s2": "scenes/experiments/blue-agents/handdrawn-s2.json",
