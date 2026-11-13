@@ -34,7 +34,10 @@ def main() -> None:
     )
     results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
     experiment_names = get_experiment_names(experiment_set)
-    df = get_formatted_table(results_root_path, experiment_names)
+    df = get_formatted_table(
+        results_root_path,
+        experiment_names,
+    )
     latex_table = df.to_latex(index=False)
     for rule in ("\\toprule", "\\midrule", "\\bottomrule"):
         latex_table = latex_table.replace(rule, "\\hline")
@@ -52,11 +55,14 @@ def get_formatted_table(
     for experiment_name in experiment_names:
         metadata_path = results_root_path / f"{experiment_name}-metadata.json"
         results_path = results_root_path / f"{experiment_name}.jsonl"
-        _ = get_experiment_metadata(metadata_path)
+        metadata = get_experiment_metadata(metadata_path)
         tally = get_accuracy_tally(get_experiment_results(results_path))
         tally_records.append(
             {
-                "experiment": experiment_name,
+                "State": f"{metadata.state_populating_method.type}",
+                "Key": "-".join(
+                    [key_method.type for key_method in metadata.key_methods]
+                ),
                 "TP": tally.true_positives,
                 "FP": tally.false_positives,
                 "TN": tally.true_negatives,
@@ -80,9 +86,9 @@ def get_experiment_results(
 
 def get_experiment_metadata(
     metadata_file: Path,
-) -> Iterable[TranspositionExperimentMetadata]:
+) -> TranspositionExperimentMetadata:
     with metadata_file.open("r", encoding="utf-8") as file:
-        yield TranspositionExperimentMetadata.model_validate_json(
+        return TranspositionExperimentMetadata.model_validate_json(
             file.read(),
         )
 
