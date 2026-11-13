@@ -45,14 +45,17 @@ class TranspositionExperimentSetConfig(BaseModel):
 class TranspositionExperiment:
     name: str
     state_sequence: list[tuple[GameState, GameState]]
-    state_method_metadata: StatePopulatingMethod.ALL
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
 
 
 class TranspositionExperimentMetadata(BaseModel):
+    name: str
+    state_populating_method_name: str
     state_populating_method: StatePopulatingMethod.ALL
+    key_method_name: str
     key_methods: list[TranspositionScheme.ALL]
+    map_name: str
     n_tests: int
     target_n_tests: int
 

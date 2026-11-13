@@ -59,11 +59,9 @@ def get_formatted_table(
         tally = get_accuracy_tally(get_experiment_results(results_path))
         tally_records.append(
             {
-                "Key": "-".join(
-                    [key_method.type for key_method in metadata.key_methods]
-                ),
-                "State": f"{metadata.state_populating_method.type}-Xx",
-                "Map": f"Xxx",
+                "Key Method": metadata.key_method_name,
+                "State Mode": metadata.state_populating_method_name,
+                "Map": metadata.map_name,
                 "TP": tally.true_positives,
                 "FP": tally.false_positives,
                 "TN": tally.true_negatives,

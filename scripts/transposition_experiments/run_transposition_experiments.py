@@ -77,19 +77,20 @@ def main() -> None:
     results_root_path.mkdir(parents=True, exist_ok=True)
 
     # Get init each experiment permutations
-    transposition_experiments = get_transposition_experiments(
+    experiments = get_transposition_experiments(
         experiment_set=experiment_set,
     )
-    for experiment in transposition_experiments:
-        init_metadata_file(
-            experiment_config=experiment,
-            results_root_path=results_root_path,
-            target_n_tests=experiment_set.target_n_tests,
-        )
+    for _, metadata in experiments:
+        file_path = results_root_path / f"{metadata.name}-metadata.json"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        if file_path.is_file():
+            return
+        with file_path.open("w") as metadata_file:
+            metadata_file.write(metadata.model_dump_json(indent=2))
 
     # Generate tests for all experiments.
     transposition_tests = get_all_transposition_tests(
-        experiment_configs=transposition_experiments,
+        experiment_configs=[experiment for experiment, _ in experiments],
     )
     random.shuffle(transposition_tests)
 
@@ -118,7 +119,12 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
 
 def get_transposition_experiments(
     experiment_set: TranspositionExperimentSetConfig,
-) -> list[TranspositionExperiment]:
+) -> list[
+    tuple[
+        TranspositionExperiment,
+        TranspositionExperimentMetadata,
+    ]
+]:
     """
     Returns all permutations of experiments given the experiment set config.
     """
@@ -140,15 +146,26 @@ def get_transposition_experiments(
         )
     }
 
-    return [
-        TranspositionExperiment(
-            name=f"{state_method_name}-{key_methods_name}-{map_name}",
-            state_sequence=state_sequence_per_map_and_method[
-                map_name, state_method_name
-            ],
-            state_method_metadata=state_method,
-            key_methods=key_methods,
-            target=experiment_set.target,
+    return [  # Oh jeez, this is so disgusting. I should clean this up.
+        (
+            TranspositionExperiment(
+                name=f"{state_method_name}-{key_methods_name}-{map_name}",
+                state_sequence=state_sequence_per_map_and_method[
+                    map_name, state_method_name
+                ],
+                key_methods=key_methods,
+                target=experiment_set.target,
+            ),
+            TranspositionExperimentMetadata(
+                name=f"{state_method_name}-{key_methods_name}-{map_name}",
+                state_populating_method_name=state_method_name,
+                state_populating_method=state_method,
+                key_method_name=key_methods_name,
+                key_methods=key_methods,
+                map_name=map_name,
+                n_tests=0,
+                target_n_tests=experiment_set.target_n_tests,
+            ),
         )
         for (
             (state_method_name, state_method),
@@ -316,26 +333,6 @@ def log_message(message: str) -> None:
     with _log_lock:
         with open(_log_file_path, "a") as log_file:
             log_file.write(f"{timestamp}\t{message}\n")
-
-
-def init_metadata_file(
-    experiment_config: TranspositionExperiment,
-    results_root_path: Path,
-    target_n_tests: int,
-) -> None:
-    file_path = results_root_path / f"{experiment_config.name}-metadata.json"
-    file_path.parent.mkdir(parents=True, exist_ok=True)
-    if file_path.is_file():
-        return
-
-    metadata = TranspositionExperimentMetadata(
-        state_populating_method=experiment_config.state_method_metadata,
-        key_methods=experiment_config.key_methods,
-        n_tests=0,
-        target_n_tests=target_n_tests,
-    )
-    with file_path.open("w") as metadata_file:
-        metadata_file.write(metadata.model_dump_json(indent=2))
 
 
 def get_metadata(
