@@ -15,6 +15,7 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
+from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
 from flanker_core.systems.los_system import LosSystem
 from flanker_core.utils.polygon_utils import PolygonUtils
@@ -30,13 +31,15 @@ class CombatUnitSignature:
 @dataclass(frozen=True)
 class CombatUnitKey:
 
+    type ExactPosition = Vec2
     type RoundedPosition = tuple[int, int]
     type RoundedRotation = int
     type LosSignature = tuple[bool, ...]
     type AspectSignature = tuple[UUID | CombatUnitSignature, ...]
     type TerrainSignature = tuple[UUID, ...]
     type Feature = (
-        RoundedPosition
+        ExactPosition
+        | RoundedPosition
         | RoundedRotation
         | LosSignature
         | AspectSignature
@@ -72,7 +75,7 @@ class CacheKey:
 
 
 class AiTranspositionKeyService:
-    """Utility for creating a Zobrist transposition key of a game state."""
+    """Utility for creating a transposition key of a game state."""
 
     @staticmethod
     def get_key(
@@ -129,6 +132,8 @@ class AiTranspositionKeyService:
             features: list[CombatUnitKey.Feature] = []
             for transposition_scheme in transposition_schemes:
                 match transposition_scheme:
+                    case TranspositionScheme.ExactPosition():
+                        feature = transform.position
                     case TranspositionScheme.RoundedPosition():
                         to_nearest = transposition_scheme.to_nearest
                         feature = (

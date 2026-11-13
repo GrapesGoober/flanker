@@ -41,14 +41,18 @@ class FilterConfig:
 class TranspositionScheme:
 
     @dataclass
+    class ExactPosition:
+        type: Literal["ExactPosition"]
+
+    @dataclass
     class RoundedPosition:
         type: Literal["RoundedPosition"]
-        to_nearest: float
+        to_nearest: int
 
     @dataclass
     class RoundedRotation:
         type: Literal["RoundedRotation"]
-        to_nearest: float
+        to_nearest: int
 
     @dataclass
     class LosSignatures:
@@ -64,7 +68,8 @@ class TranspositionScheme:
         type: Literal["TerrainSignatures"]
 
     type ALL = (
-        RoundedPosition
+        ExactPosition
+        | RoundedPosition
         | RoundedRotation
         | LosSignatures
         | AspectSignatures
@@ -102,11 +107,13 @@ class PolicyConfig:
     class MinimaxPolicy:
         type: Literal["MinimaxPolicy"]
         depth: int
+        use_transposition_table: bool
 
     @dataclass
     class ExpectimaxPolicy:
         type: Literal["ExpectimaxPolicy"]
         depth: int
+        use_transposition_table: bool
 
     @dataclass
     class RandomHeuristicPolicy:

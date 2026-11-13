@@ -26,6 +26,7 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
+from flanker_core.systems.fire_system import FIRE_OUTCOME_PROBABILITIES
 from flanker_core.systems.move_system import MoveSystem
 
 
@@ -107,10 +108,7 @@ class AiBranchingService:
         permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
         permutations = AiBranchingService.get_permutations(
             unit_ids=reactive_fire_ids,
-            outcome_probabilities={
-                FireOutcomes.PIN: 0.6,
-                FireOutcomes.SUPPRESS: 0.4,
-            },
+            outcome_probabilities=FIRE_OUTCOME_PROBABILITIES,
         )
         if len(permutations) == 0:
             raise Exception("Permutations are empty, something went wrong!")
@@ -166,11 +164,7 @@ class AiBranchingService:
         permutations: list[tuple[float, dict[UUID, FireOutcomes]]]
         permutations = AiBranchingService.get_permutations(
             unit_ids={unit_id},
-            outcome_probabilities={
-                # Make AI assume it's more likely to suppress
-                FireOutcomes.SUPPRESS: 0.6,
-                FireOutcomes.PIN: 0.4,
-            },
+            outcome_probabilities=FIRE_OUTCOME_PROBABILITIES,
         )
         if len(permutations) == 0:
             raise Exception("Permutations are empty, something went wrong!")

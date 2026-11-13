@@ -4,15 +4,16 @@
       "AiConfigComponent": {
         "config": {
           "policy": {
-            "type": "MinimaxPolicy",
-            "depth": 4
+            "type": "ExpectimaxPolicy",
+            "depth": 4,
+            "use_transposition_table": true
           },
           "state": {
             "type": "UnabstractedStateConfig",
             "move_candidates_pool": {
               "type": "GridConfig",
-              "spacing": 33.333,
-              "offset": 16.665
+              "spacing": 75,
+              "offset": 37.5
             },
             "move_candidates_filter": [],
             "transposition_schemes": [

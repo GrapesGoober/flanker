@@ -3,7 +3,7 @@ from copy import deepcopy
 from dataclasses import is_dataclass
 from inspect import isclass
 from math import ceil, floor
-from typing import Any
+from typing import Any, Literal
 from uuid import UUID
 
 from flanker_core.gamestate import GameState
@@ -64,16 +64,9 @@ def get_game_state(
     return gs
 
 
-def get_map() -> GameState:
-    """
-    Generates an empty state containing just the terrains and boundary.
-    """
-    # TODO: need PCG for this step. Using a hand-drawn scene for now.
-    return get_game_state(["scene-v2-1-no-units"])
-
-
 def get_state_from_map(
     map: GameState,
+    initiative: InitiativeState.Faction | Literal["random"],
 ) -> GameState:
     """
     Given the empty map state, populate with combat units and configs.
@@ -81,12 +74,15 @@ def get_state_from_map(
     """
     gs = deepcopy(map)
 
-    # TODO: have it randomize initial initiative
-    gs.add_entity(
-        InitiativeState(
-            faction=InitiativeState.Faction.BLUE,
+    if initiative == "random":
+        initiative = random.choice(
+            [
+                InitiativeState.Faction.BLUE,
+                InitiativeState.Faction.RED,
+            ]
         )
-    )
+    gs.add_entity(InitiativeState(faction=initiative))
+
     gs.add_entity(
         EliminationWinCondition(
             target_faction=InitiativeState.Faction.RED,
@@ -192,14 +188,15 @@ def is_point_in_bound(
 
 def get_perturbed_state(
     gs: GameState,
+    size: float,
 ) -> GameState:
     gs = deepcopy(gs)
     for _, _, transform in gs.query(CombatUnit, Transform):
         position: Vec2 | None = None
         while position is None or not is_point_in_bound(gs, position):
-            position = Vec2(
-                transform.position.x + random.randrange(-10, 10),
-                transform.position.y + random.randrange(-10, 10),
+            position = transform.position + Vec2(
+                random.uniform(-size, size),
+                random.uniform(-size, size),
             )
         transform.position = position
     return gs

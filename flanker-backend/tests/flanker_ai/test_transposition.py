@@ -144,11 +144,11 @@ def fixture() -> Fixture:
         transposition_schemes=[
             TranspositionScheme.RoundedPosition(
                 type="RoundedPosition",
-                to_nearest=33.33,
+                to_nearest=33,
             ),
             TranspositionScheme.RoundedRotation(
                 type="RoundedRotation",
-                to_nearest=22.5,
+                to_nearest=22,
             ),
             TranspositionScheme.LosSignatures(
                 type="LosSignatures",

@@ -96,7 +96,7 @@ def main() -> None:
         + facet_wrap("~experiment")
         + labs(
             x="Tree results",
-            y="Zobrist keys",
+            y="Transposition keys",
         )
         + theme_matplotlib()
     )

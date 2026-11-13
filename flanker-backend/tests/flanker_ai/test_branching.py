@@ -2,9 +2,6 @@ from dataclasses import dataclass
 from uuid import UUID
 
 import pytest
-from flanker_ai.search_states.common.ai_branch_abstraction_service import (
-    AiBranchAbstractionService,
-)
 from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import AssaultAction, MoveAction
@@ -164,20 +161,6 @@ def test_branches(fixture: Fixture) -> None:
     for probability, _ in branches:
         total_probability += probability
     assert total_probability == 1, "The total probability must be 1"
-
-    merged_branches = AiBranchAbstractionService.merge_branches(
-        branches=branches,
-        action=move_action,
-    )
-
-    total_probability = 0
-    for probability, _ in merged_branches:
-        total_probability += probability
-    assert total_probability == 1, "The total probability must be 1"
-
-    assert len(merged_branches) < len(
-        branches
-    ), "The merged branches must be smaller than original branches"
 
 
 def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:

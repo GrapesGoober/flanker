@@ -7,9 +7,6 @@ from flanker_ai.config_models import (
     TranspositionScheme,
 )
 from flanker_ai.search_states.common.ai_action_service import AiActionService
-from flanker_ai.search_states.common.ai_branch_abstraction_service import (
-    AiBranchAbstractionService,
-)
 from flanker_ai.search_states.common.ai_branching_service import AiBranchingService
 from flanker_ai.search_states.common.ai_points_filter_service import (
     AiPointsFilterService,
@@ -102,21 +99,7 @@ class UnabstractedState(ISearchState[Action]):
         branches = AiBranchingService.get_action_branches(self.gs, action)
         if branches == []:
             return []
-        branches = AiBranchAbstractionService.merge_branches(branches, action)
-        # Remove the unlikeliest branch to curb branching factor
-        if len(branches) >= 3:
-            unlikeliest_branch = min(branches, key=lambda i: i[0])
-            branches.remove(unlikeliest_branch)
-            leftover_prob, _ = unlikeliest_branch
-            prob_to_adjust = leftover_prob / len(branches)
-            for i, (prob, branch) in enumerate(branches):
-                branches[i] = (prob + prob_to_adjust, branch)
-
-        state_branches: list[tuple[float, UnabstractedState]] = []
-        for prob, branch in branches:
-            new_state = self.copy(new_gs=branch)
-            state_branches.append((prob, new_state))
-        return state_branches
+        return [(prob, self.copy(new_gs=branch)) for prob, branch in branches]
 
     @override
     def perform_action(self, action: Action) -> bool:

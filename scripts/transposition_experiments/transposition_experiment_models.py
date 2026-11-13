@@ -15,12 +15,27 @@ class TranspositionTestResult(BaseModel):
     action_b_value: float
 
 
+class StatePopulatingMethod:
+
+    @dataclass
+    class Random:
+        type: Literal["random"]
+
+    @dataclass
+    class Perturbation:
+        type: Literal["perturbation"]
+        size: float
+
+    ALL = Random | Perturbation
+
+
 class TranspositionExperimentSetConfig(BaseModel):
     """Input config model for entire transposition experiment-set run."""
 
     target_n_tests: int
-    state_populating_methods: list[Literal["random", "perturbation"]]
-    zobrist_key_methods: dict[str, list[TranspositionScheme.ALL]]
+    maps: list[str]
+    state_populating_methods: dict[str, StatePopulatingMethod.ALL]
+    transposition_key_methods: dict[str, list[TranspositionScheme.ALL]]
     max_workers: int
     game_tree_method: SearchPolicyConfig
     target: Literal["local"] | str
@@ -29,13 +44,14 @@ class TranspositionExperimentSetConfig(BaseModel):
 @dataclass
 class TranspositionExperiment:
     name: str
-    state_populating_method: Literal["random", "perturbation"]
+    state_sequence: list[tuple[GameState, GameState]]
+    state_method_metadata: StatePopulatingMethod.ALL
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
 
 
 class TranspositionExperimentMetadata(BaseModel):
-    state_populating_method: Literal["random", "perturbation"]
+    state_populating_method: StatePopulatingMethod.ALL
     key_methods: list[TranspositionScheme.ALL]
     n_tests: int
     target_n_tests: int

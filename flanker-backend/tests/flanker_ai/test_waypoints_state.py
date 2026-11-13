@@ -189,21 +189,22 @@ def fixture() -> Fixture:
 
 def add_agent_config(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "MCTS"],
+    policy_type: Literal["Minimax", "Expectimax"],
+    use_transposition_table: bool = True,
 ) -> SearchPolicyConfig:
+
     match policy_type:
-        case "MCTS":
-            policy = PolicyConfig.MctsPolicy(
-                type="MctsPolicy",
-                max_iterations=200,
-                max_simulate_length=20,
-                simulation_policy="rh",
-                exploration_const=2,
-            )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
                 type="MinimaxPolicy",
-                depth=4,
+                depth=3,
+                use_transposition_table=use_transposition_table,
+            )
+        case "Expectimax":
+            policy = PolicyConfig.ExpectimaxPolicy(
+                type="ExpectimaxPolicy",
+                depth=3,
+                use_transposition_table=use_transposition_table,
             )
 
     config = SearchPolicyConfig(
@@ -261,12 +262,16 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax"])
+@pytest.mark.parametrize("policy_type", ["Minimax", "Expectimax"])
 def test_optimal_actions(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "MCTS"],
+    policy_type: Literal["Minimax", "Expectimax"],
 ) -> None:
-    add_agent_config(fixture, policy_type)
+    add_agent_config(
+        fixture,
+        policy_type,
+        use_transposition_table=False,
+    )
     trees: list[AiSearchTreeResult] = []
     for _ in range(10):
         tree_result = AiSystem.get_game_tree(

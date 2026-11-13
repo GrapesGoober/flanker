@@ -183,7 +183,8 @@ def fixture() -> Fixture:
 
 def add_agent_config(
     gs: GameState,
-    policy_type: Literal["Minimax", "MCTS"],
+    policy_type: Literal["Minimax", "Expectimax"],
+    use_transposition_table: bool = True,
 ) -> SearchPolicyConfig:
 
     move_candidate_points = [
@@ -195,18 +196,17 @@ def add_agent_config(
     ]
 
     match policy_type:
-        case "MCTS":
-            policy = PolicyConfig.MctsPolicy(
-                type="MctsPolicy",
-                max_iterations=200,
-                max_simulate_length=20,
-                simulation_policy="rh",
-                exploration_const=2,
-            )
         case "Minimax":
             policy = PolicyConfig.MinimaxPolicy(
                 type="MinimaxPolicy",
-                depth=4,
+                depth=3,
+                use_transposition_table=use_transposition_table,
+            )
+        case "Expectimax":
+            policy = PolicyConfig.ExpectimaxPolicy(
+                type="ExpectimaxPolicy",
+                depth=3,
+                use_transposition_table=use_transposition_table,
             )
     config = SearchPolicyConfig(
         policy=policy,
@@ -258,12 +258,16 @@ def test_branching_total_prob(fixture: Fixture) -> None:
     assert total_prob == 1, "Total probability must equal 1"
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax"])
+@pytest.mark.parametrize("policy_type", ["Minimax", "Expectimax"])
 def test_optimal_actions(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "MCTS"],
+    policy_type: Literal["Minimax", "Expectimax"],
 ) -> None:
-    add_agent_config(fixture.gs, policy_type)
+    add_agent_config(
+        fixture.gs,
+        policy_type,
+        use_transposition_table=True,
+    )
     trees: list[AiSearchTreeResult] = []
     for _ in range(10):
         tree_result = AiSystem.get_game_tree(

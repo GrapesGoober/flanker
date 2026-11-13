@@ -1,11 +1,12 @@
 {
   "entities": {
-    "9d8d492b-f5a7-49a1-a835-4db89614e8a0": {
+    "722332cc-99c2-41f0-9b60-96916cb9a726": {
       "AiConfigComponent": {
         "config": {
           "policy": {
             "type": "MinimaxPolicy",
-            "depth": 4
+            "depth": 4,
+            "use_transposition_table": true
           },
           "state": {
             "type": "UnabstractedStateConfig",
@@ -18,12 +19,12 @@
             "transposition_schemes": [
               {
                 "type": "RoundedPosition",
-                "to_nearest": 100
+                "to_nearest": 50
               }
             ]
           }
         },
-        "faction": "RED"
+        "faction": "BLUE"
       }
     }
   }

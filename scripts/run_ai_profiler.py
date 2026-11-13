@@ -4,11 +4,12 @@ from inspect import isclass
 from typing import Any, Iterable
 from uuid import UUID
 
-from flanker_ai.ai_match import AiMatch
+from flanker_ai.ai_system import AiSystem
 from flanker_ai.config_models import AiConfigComponent
 from flanker_core.gamestate import GameState
 from flanker_core.models import components
 from flanker_core.serializer import Serializer
+from flanker_core.systems.action_system import ActionSystem
 from match_experiments.experiment_models import SceneManifest
 
 
@@ -49,7 +50,7 @@ if __name__ == "__main__":
         scene_names=[
             "experiment-settings",
             "scene-v2-1",
-            "blue-expectimax-grid-100-zobrist-r100",
+            "blue-grid-75-r0",
             "red-rh",
         ]
     )
@@ -57,24 +58,26 @@ if __name__ == "__main__":
     # Ensures that each run is consistent in search size
     random.seed(10)
 
-    def run_ai_trial() -> None:
-        result = AiMatch.run_match(gs)
-        if result.winner == None:
-            print(f"No winner; draw")
-        else:
-            print(f"Winner is {result.winner}")
+    def run_perf_test() -> None:
+        # result = AiMatch.run_match(gs)
+        # if result.winner == None:
+        #     print(f"No winner; draw")
+        # else:
+        #     print(f"Winner is {result.winner}")
+        initiative = ActionSystem.get_initiative(gs)
+        AiSystem.perform_action(gs, faction=initiative)
 
     # from timeit import timeit
 
-    # exec_time = timeit(run_ai_trial, number=1)
+    # exec_time = timeit(run_perf_test, number=1)
     # print(f"Execution time: {exec_time:.6f} seconds")
 
     import cProfile
     import pstats
 
     prof_file = "./scripts/outputs/ai-perftest.prof"
-    cProfile.run("run_ai_trial()", sort="cumtime", filename=prof_file)
-    p = pstats.Stats("./scripts/outputs/ai-perftest.prof")
+    cProfile.run("run_perf_test()", sort="cumtime", filename=prof_file)
+    p = pstats.Stats(prof_file)
     p.strip_dirs()
     p.sort_stats("cumtime")
     p.print_stats(20)
