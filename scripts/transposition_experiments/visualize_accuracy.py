@@ -119,36 +119,20 @@ def get_matrix_plot(
 def get_formatted_table(
     result_files: list[Path],
 ) -> pd.DataFrame:
-    tally_records: list[dict[str, str]] = []
+    tally_records: list[dict[str, str | int]] = []
     for result_file in result_files:
         tally = get_accuracy_tally(get_experiment_results(result_file))
-        experiment_name = result_file.stem
-        tally_records += [
+        tally_records.append(
             {
-                "experiment": experiment_name,
-                "count": f"TP: {tally.true_positives}",
-            },
-            {
-                "experiment": experiment_name,
-                "count": f"FP: {tally.false_positives}",
-            },
-            {
-                "experiment": experiment_name,
-                "count": f"FN: {tally.false_negatives}",
-            },
-            {
-                "experiment": experiment_name,
-                "count": f"TN: {tally.true_negatives}",
-            },
-            {
-                "experiment": experiment_name,
-                "count": (f"Total: " f"{tally.true_positives + tally.false_negatives}"),
-            },
-            {
-                "experiment": experiment_name,
-                "count": (f"Total: " f"{tally.false_positives + tally.true_negatives}"),
-            },
-        ]
+                "experiment": result_file.stem,
+                "TP": tally.true_positives,
+                "FP": tally.false_positives,
+                "TN": tally.true_negatives,
+                "FN": tally.false_negatives,
+                "P": (tally.true_positives + tally.false_negatives),
+                "N": (tally.false_positives + tally.true_negatives),
+            }
+        )
 
     return pd.DataFrame(tally_records)
 
