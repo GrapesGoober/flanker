@@ -63,30 +63,33 @@ def get_formatted_table(
                 "State Mode": metadata.state_populating_method_name,
                 "Map": metadata.map_name,
                 "TP": tally.true_positives,
-                "FP": tally.false_positives,
                 "TN": tally.true_negatives,
+                "FP": tally.false_positives,
                 "FN": tally.false_negatives,
                 "P": (tally.true_positives + tally.false_negatives),
                 "N": (tally.false_positives + tally.true_negatives),
             }
         )
+    tally_records.sort(
+        key=lambda row: f"{row['Key Method']}{row['State Mode']}{row['Map']}"
+    )
 
     return pd.DataFrame(tally_records)
 
 
 def get_experiment_results(
-    result_file: Path,
+    result_path: Path,
 ) -> Iterable[TranspositionTestResult]:
-    with result_file.open("r", encoding="utf-8") as file:
+    with result_path.open("r", encoding="utf-8") as file:
         for line in file:
             if line.strip():
                 yield TranspositionTestResult.model_validate_json(line)
 
 
 def get_experiment_metadata(
-    metadata_file: Path,
+    metadata_path: Path,
 ) -> TranspositionExperimentMetadata:
-    with metadata_file.open("r", encoding="utf-8") as file:
+    with metadata_path.open("r", encoding="utf-8") as file:
         return TranspositionExperimentMetadata.model_validate_json(
             file.read(),
         )
