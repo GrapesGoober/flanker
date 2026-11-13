@@ -46,9 +46,12 @@ def main() -> None:
     # plot.save("scripts/outputs/visualize-transposition-accuracy.png")
 
     df = get_formatted_table(result_files)
-    df.to_latex(
-        "scripts/outputs/transposition-accuracy.tex",
-        index=False,
+    latex_table = df.to_latex(index=False)
+    for rule in ("\\toprule", "\\midrule", "\\bottomrule"):
+        latex_table = latex_table.replace(rule, "\\hline")
+    Path("scripts/outputs/confusion-matrix.tex").write_text(
+        latex_table,
+        encoding="utf-8",
     )
 
 
