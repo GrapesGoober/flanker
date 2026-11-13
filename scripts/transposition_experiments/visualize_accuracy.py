@@ -41,6 +41,20 @@ def main() -> None:
             f"No transposition result files found in {results_root_path}"
         )
 
+    # plot = get_matrix_plot(result_files)
+    # plot.show()
+    # plot.save("scripts/outputs/visualize-transposition-accuracy.png")
+
+    df = get_formatted_table(result_files)
+    df.to_latex(
+        "scripts/outputs/transposition-accuracy.tex",
+        index=False,
+    )
+
+
+def get_matrix_plot(
+    result_files: list[Path],
+) -> ggplot:
     tally_records: list[dict[str, str]] = []
     for result_file in result_files:
         tally = get_accuracy_tally(get_experiment_results(result_file))
@@ -85,12 +99,8 @@ def main() -> None:
         ]
 
     df = pd.DataFrame(tally_records)
-    df.to_latex(
-        "scripts/outputs/visualize-transposition-accuracy.tex",
-        index=False,
-    )
     matplotlib.use("tkagg")
-    plot = (
+    return (
         ggplot(
             df,
             aes(x="tree_result", y="key_prediction"),
@@ -104,8 +114,43 @@ def main() -> None:
         )
         + theme_matplotlib()
     )
-    plot.show()
-    plot.save("scripts/outputs/visualize-transposition-accuracy.png")
+
+
+def get_formatted_table(
+    result_files: list[Path],
+) -> pd.DataFrame:
+    tally_records: list[dict[str, str]] = []
+    for result_file in result_files:
+        tally = get_accuracy_tally(get_experiment_results(result_file))
+        experiment_name = result_file.stem
+        tally_records += [
+            {
+                "experiment": experiment_name,
+                "count": f"TP: {tally.true_positives}",
+            },
+            {
+                "experiment": experiment_name,
+                "count": f"FP: {tally.false_positives}",
+            },
+            {
+                "experiment": experiment_name,
+                "count": f"FN: {tally.false_negatives}",
+            },
+            {
+                "experiment": experiment_name,
+                "count": f"TN: {tally.true_negatives}",
+            },
+            {
+                "experiment": experiment_name,
+                "count": (f"Total: " f"{tally.true_positives + tally.false_negatives}"),
+            },
+            {
+                "experiment": experiment_name,
+                "count": (f"Total: " f"{tally.false_positives + tally.true_negatives}"),
+            },
+        ]
+
+    return pd.DataFrame(tally_records)
 
 
 def get_experiment_results(

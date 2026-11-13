@@ -3,7 +3,7 @@ fastapi[standard]
 numpy==2.2.*
 numba==0.61.*
 matplotlib==3.11.0
-plotnine==0.15.8
+plotnine==0.15.9
 seaborn==0.13.2
 requests==2.34.2
 -e ./flanker-backend
