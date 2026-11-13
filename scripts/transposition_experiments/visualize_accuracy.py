@@ -85,6 +85,10 @@ def main() -> None:
         ]
 
     df = pd.DataFrame(tally_records)
+    df.to_latex(
+        "scripts/outputs/visualize-transposition-accuracy.tex",
+        index=False,
+    )
     matplotlib.use("tkagg")
     plot = (
         ggplot(
