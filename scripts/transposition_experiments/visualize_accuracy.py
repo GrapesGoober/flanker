@@ -57,11 +57,13 @@ def get_formatted_table(
         results_path = results_root_path / f"{experiment_name}.jsonl"
         metadata = get_experiment_metadata(metadata_path)
         tally = get_accuracy_tally(get_experiment_results(results_path))
+        input_sequence_name = (
+            f"{metadata.map_name}-{metadata.state_populating_method_name}"
+        )
         tally_records.append(
             {
                 "Key Method": metadata.key_method_name,
-                "State Mode": metadata.state_populating_method_name,
-                "Map": metadata.map_name,
+                "Input States": input_sequence_name,
                 "TP": tally.true_positives,
                 "TN": tally.true_negatives,
                 "FP": tally.false_positives,
@@ -70,9 +72,7 @@ def get_formatted_table(
                 "N": (tally.false_positives + tally.true_negatives),
             }
         )
-    tally_records.sort(
-        key=lambda row: f"{row['Key Method']}{row['State Mode']}{row['Map']}"
-    )
+    tally_records.sort(key=lambda row: f"{row['Key Method']}{row['Input States']}")
 
     return pd.DataFrame(tally_records)
 
