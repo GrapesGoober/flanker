@@ -1,5 +1,6 @@
 from typing import Annotated, Literal, Union
 
+from flanker_ai.search_states.common.ai_transposition_key_service import CacheKey
 from flanker_core.models.components import InitiativeState
 from flanker_core.models.vec2 import Vec2
 from pydantic import BaseModel, ConfigDict, Field
@@ -28,6 +29,7 @@ class GameStateInspectionModel(BaseModel, CamelCaseConfig):
     los_polygons: list[LosPolygon]
     move_candidates: list[Vec2]
     units_aspects: list[tuple[Vec2, list[float]]]
+    transposition_key: None | CacheKey
 
 
 class MctsTreeEdgeModel(BaseModel, CamelCaseConfig):

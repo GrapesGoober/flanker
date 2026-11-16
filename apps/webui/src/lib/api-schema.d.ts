@@ -135,9 +135,29 @@ export interface paths {
         put?: never;
         /**
          * Perform Action
-         * @description Move a unit and return updated rifle squads.
+         * @description Performs an action and returns the mutated view state.
          */
         post: operations["perform_action_api_rpc_game_perform_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/rpc/game/ai-perform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ai Perform Action
+         * @description Have AI perform an action and returns the mutated view state.
+         */
+        post: operations["ai_perform_action_api_rpc_game_ai_perform_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -315,10 +335,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/rpc/experiment/get-transposition-test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get Transposition Test Result
+         * @description Have AI perform an action and returns the mutated view state.
+         */
+        post: operations["get_transposition_test_result_api_rpc_experiment_get_transposition_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ALL: components["schemas"]["ExactPosition-Input"] | components["schemas"]["RoundedPosition-Input"] | components["schemas"]["RoundedRotation-Input"] | components["schemas"]["LosSignatures"] | components["schemas"]["AspectSignatures"] | components["schemas"]["TerrainSignatures"];
         ActionLogModel: components["schemas"]["MoveActionLogModel"] | components["schemas"]["PivotActionLogModel"] | components["schemas"]["FireActionLogModel"] | components["schemas"]["AssaultActionLogModel"] | components["schemas"]["RallyActionLogModel"];
         ActionModel: components["schemas"]["MoveActionModel"] | components["schemas"]["PivotActionModel"] | components["schemas"]["FireActionModel"] | components["schemas"]["AssaultActionModel"] | components["schemas"]["RallyActionModel"];
         /** AiActionResultModel */
@@ -341,18 +382,34 @@ export interface components {
             /** Jsonstate */
             jsonState: string;
         };
+        /** AiPerformedActionResultModel */
+        AiPerformedActionResultModel: {
+            actionResult: components["schemas"]["AiActionResultModel"];
+            viewState: components["schemas"]["GameViewStateResponseModel"];
+        };
         /** AiSearchLogModel */
         AiSearchLogModel: {
             /** Treesize */
             treeSize: number;
             /** Treedepth */
             treeDepth: number;
+            /** Actionvalue */
+            actionValue: number;
         };
         /** AiWaypointConfigRequestModel */
         AiWaypointConfigRequestModel: {
             faction: components["schemas"]["Faction"];
             /** Points */
             points: components["schemas"]["Vec2"][];
+        };
+        AspectSignature: (string | components["schemas"]["CombatUnitSignature"])[];
+        /** AspectSignatures */
+        AspectSignatures: {
+            /**
+             * Type
+             * @constant
+             */
+            type: "AspectSignatures";
         };
         /** AssaultActionLogModel */
         AssaultActionLogModel: {
@@ -431,6 +488,54 @@ export interface components {
             state: string;
             unit: components["schemas"]["SquadModel"];
         };
+        /** CacheKey */
+        CacheKey: {
+            initiative: components["schemas"]["Faction"];
+            /** Combatunits */
+            combatUnits: components["schemas"]["CombatUnitKey"][];
+            /** Eliminations */
+            eliminations: components["schemas"]["EliminationKey"][];
+            /** Stalls */
+            stalls: components["schemas"]["StallsKey"][];
+        };
+        /** CombatUnitKey */
+        CombatUnitKey: {
+            /** Features */
+            features: components["schemas"]["Feature"][];
+            unitSignature: components["schemas"]["CombatUnitSignature"];
+        };
+        /** CombatUnitSignature */
+        CombatUnitSignature: {
+            faction: components["schemas"]["Faction"];
+            status: components["schemas"]["Status"];
+        };
+        /** EliminationKey */
+        EliminationKey: {
+            targetFaction: components["schemas"]["Faction"];
+            winningFaction: components["schemas"]["Faction"];
+            /** Unitstoeliminate */
+            unitsToEliminate: number;
+            /** Unitseliminatedcounter */
+            unitsEliminatedCounter: number;
+        };
+        /** ExactPosition */
+        "ExactPosition-Input": {
+            /**
+             * Type
+             * @constant
+             */
+            type: "ExactPosition";
+        };
+        /**
+         * Vec2
+         * @description 2D vector class for basic vector operations
+         */
+        "ExactPosition-Output": {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
         /**
          * ExpectimaxTreeEdgeModel
          * @description An expectimax action and its probabilistic outcomes.
@@ -480,6 +585,7 @@ export interface components {
          * @enum {string}
          */
         Faction: "BLUE" | "RED";
+        Feature: components["schemas"]["ExactPosition-Output"] | components["schemas"]["RoundedPosition-Output"] | components["schemas"]["RoundedRotation-Output"] | components["schemas"]["LosSignature"] | components["schemas"]["AspectSignature"] | components["schemas"]["TerrainSignature"];
         /** FireActionLogModel */
         FireActionLogModel: {
             /**
@@ -533,6 +639,7 @@ export interface components {
                 components["schemas"]["Vec2"],
                 number[]
             ][];
+            transpositionKey: components["schemas"]["CacheKey"] | null;
         };
         GameTreeInspectionModel: components["schemas"]["MinimaxTreeInspectionModel"] | components["schemas"]["MctsTreeInspectionModel"] | components["schemas"]["ExpectimaxTreeInspectionModel"];
         /**
@@ -567,6 +674,17 @@ export interface components {
             losPolygon: components["schemas"]["Vec2"][];
             /** Fovpolygon */
             fovPolygon: components["schemas"]["Vec2"][];
+        };
+        LosSignature: boolean[];
+        /** LosSignatures */
+        LosSignatures: {
+            /**
+             * Type
+             * @constant
+             */
+            type: "LosSignatures";
+            /** Withfov */
+            withFov: boolean;
         };
         /**
          * MapViewStateModel
@@ -740,6 +858,31 @@ export interface components {
          * @enum {string}
          */
         RallyOutcomes: "FAIL" | "SUCCESS";
+        /** RoundedPosition */
+        "RoundedPosition-Input": {
+            /**
+             * Type
+             * @constant
+             */
+            type: "RoundedPosition";
+            /** Tonearest */
+            toNearest: number;
+        };
+        "RoundedPosition-Output": [
+            number,
+            number
+        ];
+        /** RoundedRotation */
+        "RoundedRotation-Input": {
+            /**
+             * Type
+             * @constant
+             */
+            type: "RoundedRotation";
+            /** Tonearest */
+            toNearest: number;
+        };
+        "RoundedRotation-Output": number;
         /** SceneManifestResponse */
         SceneManifestResponse: {
             /** Scenenames */
@@ -764,6 +907,15 @@ export interface components {
             /** Fovdegrees */
             fovDegrees: number | null;
         };
+        /** StallsKey */
+        StallsKey: {
+            countingFaction: components["schemas"]["Faction"];
+            winningFaction: components["schemas"]["Faction"];
+            /** Stallcount */
+            stallCount: number;
+            /** Stalllimit */
+            stallLimit: number;
+        };
         /**
          * Status
          * @enum {string}
@@ -786,12 +938,45 @@ export interface components {
             vertices: components["schemas"]["Vec2"][];
             terrainType: components["schemas"]["TerrainType"];
         };
+        TerrainSignature: string[];
+        /** TerrainSignatures */
+        TerrainSignatures: {
+            /**
+             * Type
+             * @constant
+             */
+            type: "TerrainSignatures";
+        };
         /**
          * TerrainType
          * @description Supported terrain types.
          * @enum {string}
          */
         TerrainType: "FOREST" | "ROAD" | "FIELD" | "WATER" | "BUILDING";
+        /**
+         * TranspositionTestRequest
+         * @description Request model for transposition experiment tests.
+         */
+        TranspositionTestRequest: {
+            /** Statea */
+            stateA: string;
+            /** Stateb */
+            stateB: string;
+            /** Keymethods */
+            keyMethods: components["schemas"]["ALL"][];
+        };
+        /**
+         * TranspositionTestResponse
+         * @description Response model for transposition experiment tests.
+         */
+        TranspositionTestResponse: {
+            /** Keyissame */
+            keyIsSame: boolean;
+            /** Actionavalue */
+            actionAValue: number;
+            /** Actionbvalue */
+            actionBValue: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -1027,6 +1212,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameViewStateResponseModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_perform_action_api_rpc_game_ai_perform_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiPerformedActionResultModel"];
                 };
             };
             /** @description Validation Error */
@@ -1328,6 +1546,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GameViewStateResponseModel"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_transposition_test_result_api_rpc_experiment_get_transposition_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TranspositionTestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranspositionTestResponse"];
                 };
             };
             /** @description Validation Error */

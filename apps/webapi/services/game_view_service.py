@@ -3,6 +3,9 @@ from flanker_ai.config_models import AiConfigComponent, SearchPolicyConfig
 from flanker_ai.search_states.common.ai_aspect_signature_service import (
     AiAspectSignatureService,
 )
+from flanker_ai.search_states.common.ai_transposition_key_service import (
+    AiTranspositionKeyService,
+)
 from flanker_core.gamestate import GameState
 from flanker_core.models.actions import MoveAction
 from flanker_core.models.components import (
@@ -133,9 +136,13 @@ class GameViewService:
             unit_id = actions[0].unit_id if actions else None
             move_candidates = [a.to for a in actions if a.unit_id == unit_id]
 
+        # TODO: have a way to pass the transposition schemes into here
+        key = AiTranspositionKeyService.get_key(gs, transposition_schemes=[])
+
         return GameStateInspectionModel(
             view_state=GameViewService.get_view_state(gs),
             los_polygons=los_polygons,
             move_candidates=move_candidates,
             units_aspects=unit_aspects,
+            transposition_key=key,
         )

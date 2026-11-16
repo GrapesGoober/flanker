@@ -28,7 +28,8 @@
 		},
 		losPolygons: [],
 		moveCandidates: [],
-		unitsAspects: []
+		unitsAspects: [],
+		transpositionKey: null
 	});
 
 	let losPolygonDrawMode: 'No Draw' | 'LOS' | 'FOV' = $state('FOV');
@@ -90,3 +91,17 @@ Draw Move Candidates <br />
 Draw Unit Texts <br />
 <input type="checkbox" bind:checked={drawAspects} />
 Draw Aspects <br />
+
+<div class="action-details">
+	<pre><code>{JSON.stringify(inspectionData.transpositionKey, null, 2)}</code>
+	</pre>
+</div>
+
+<style>
+	.action-details {
+		height: 30vh;
+		resize: vertical;
+		overflow-y: scroll;
+		background: #f5f5f5;
+	}
+</style>
