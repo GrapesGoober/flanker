@@ -36,6 +36,7 @@
 	let drawMoveCandidates: boolean = $state(true);
 	let drawUnitTexts: boolean = $state(true);
 	let drawAspects: boolean = $state(false);
+	let drawGridLines: boolean = $state(true);
 
 	/* Loads terrain and log data on mount. */
 	onMount(async () => {
@@ -74,7 +75,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div onclick={placeMarker} bind:this={clickTarget}>
-	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} />
+	<SvgMap svgSnippet={mapSvgSnippet} bind:this={map} bind:drawGridLines />
 </div>
 
 LOS Polygon Draw Mode
@@ -91,6 +92,8 @@ Draw Move Candidates <br />
 Draw Unit Texts <br />
 <input type="checkbox" bind:checked={drawAspects} />
 Draw Aspects <br />
+<input type="checkbox" bind:checked={drawGridLines} />
+Draw Grid Lines <br />
 
 <div class="action-details">
 	<pre><code>{JSON.stringify(inspectionData.transpositionKey, null, 2)}</code>
