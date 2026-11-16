@@ -36,6 +36,7 @@
     "visualize-interrupt": "scenes/visualizations/interrupt.json",
     "visualize-los": "scenes/visualizations/los.json",
     "visualize-peeking": "scenes/visualizations/peeking.json",
-    "visualize-polytope": "scenes/visualizations/polytope.json"
+    "visualize-polytope": "scenes/visualizations/polytope.json",
+    "visualize-qsr": "scenes/visualizations/qsr.json"
   }
 }
