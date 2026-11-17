@@ -1,10 +1,9 @@
-from typing import Protocol, Sequence, runtime_checkable
+from typing import Protocol, Sequence
 
 from flanker_core.gamestate import GameState
 from flanker_core.models.components import InitiativeState
 
 
-@runtime_checkable
 class ISearchState[TAction](Protocol):
     """Interface for defining a search state for search policy."""
 
