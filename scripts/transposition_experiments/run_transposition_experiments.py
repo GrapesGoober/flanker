@@ -80,17 +80,17 @@ def main() -> None:
     experiments = get_transposition_experiments(
         experiment_set=experiment_set,
     )
-    for _, metadata in experiments:
-        file_path = results_root_path / f"{metadata.name}-metadata.json"
+    for experiment in experiments:
+        file_path = results_root_path / f"{experiment.metadata.name}-metadata.json"
         file_path.parent.mkdir(parents=True, exist_ok=True)
         if file_path.is_file():
             return
         with file_path.open("w") as metadata_file:
-            metadata_file.write(metadata.model_dump_json(indent=2))
+            metadata_file.write(experiment.metadata.model_dump_json(indent=2))
 
     # Generate tests for all experiments.
     transposition_tests = get_all_transposition_tests(
-        experiment_configs=[experiment for experiment, _ in experiments],
+        experiment_configs=[experiment for experiment in experiments],
     )
     random.shuffle(transposition_tests)
 
@@ -119,12 +119,7 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
 
 def get_transposition_experiments(
     experiment_set: TranspositionExperimentSetConfig,
-) -> list[
-    tuple[
-        TranspositionExperiment,
-        TranspositionExperimentMetadata,
-    ]
-]:
+) -> list[TranspositionExperiment]:
     """
     Returns all permutations of experiments given the experiment set config.
     """
@@ -147,16 +142,13 @@ def get_transposition_experiments(
     }
 
     return [  # Oh jeez, this is so disgusting. I should clean this up.
-        (
-            TranspositionExperiment(
-                name=f"{state_method_name}-{key_methods_name}-{map_name}",
-                state_sequence=state_sequence_per_map_and_method[
-                    map_name, state_method_name
-                ],
-                key_methods=key_methods,
-                target=experiment_set.target,
-            ),
-            TranspositionExperimentMetadata(
+        TranspositionExperiment(
+            state_sequence=state_sequence_per_map_and_method[
+                map_name, state_method_name
+            ],
+            key_methods=key_methods,
+            target=experiment_set.target,
+            metadata=TranspositionExperimentMetadata(
                 name=f"{state_method_name}-{key_methods_name}-{map_name}",
                 state_populating_method_name=state_method_name,
                 state_populating_method=state_method,
@@ -184,7 +176,7 @@ def get_all_transposition_tests(
 ) -> list[TranspositionTestRun]:
     return [
         TranspositionTestRun(
-            experiment_name=experiment_config.name,
+            experiment_name=experiment_config.metadata.name,
             state_a=state_a,
             state_b=state_b,
             key_methods=experiment_config.key_methods,

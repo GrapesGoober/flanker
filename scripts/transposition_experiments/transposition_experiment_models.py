@@ -41,14 +41,6 @@ class TranspositionExperimentSetConfig(BaseModel):
     target: Literal["local"] | str
 
 
-@dataclass
-class TranspositionExperiment:
-    name: str
-    state_sequence: list[tuple[GameState, GameState]]
-    key_methods: list[TranspositionScheme.ALL]
-    target: Literal["local"] | str
-
-
 class TranspositionExperimentMetadata(BaseModel):
     name: str
     state_populating_method_name: str
@@ -61,6 +53,14 @@ class TranspositionExperimentMetadata(BaseModel):
 
 
 @dataclass
+class TranspositionExperiment:
+    state_sequence: list[tuple[GameState, GameState]]
+    key_methods: list[TranspositionScheme.ALL]
+    target: Literal["local"] | str
+    metadata: TranspositionExperimentMetadata
+
+
+@dataclass
 class TranspositionTestRun:
     experiment_name: str
     state_a: GameState
@@ -69,7 +69,7 @@ class TranspositionTestRun:
     target: Literal["local"] | str
 
 
-class _CamelCaseConfig:
+class _ApiCamelCaseConfig:
     model_config = ConfigDict(
         alias_generator=to_camel,
         populate_by_name=True,
@@ -77,7 +77,7 @@ class _CamelCaseConfig:
     )
 
 
-class ApiTranspositionTestRequest(BaseModel, _CamelCaseConfig):
+class ApiTranspositionTestRequest(BaseModel, _ApiCamelCaseConfig):
     """Request model for transposition experiment tests."""
 
     state_a: str
@@ -85,7 +85,7 @@ class ApiTranspositionTestRequest(BaseModel, _CamelCaseConfig):
     key_methods: list[TranspositionScheme.ALL]
 
 
-class ApiTranspositionTestResponse(BaseModel, _CamelCaseConfig):
+class ApiTranspositionTestResponse(BaseModel, _ApiCamelCaseConfig):
     """Response model for transposition experiment tests."""
 
     key_is_same: bool
