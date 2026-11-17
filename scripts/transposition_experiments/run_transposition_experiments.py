@@ -90,7 +90,7 @@ def main() -> None:
 
     # Generate tests for all experiments.
     transposition_tests = get_all_transposition_tests(
-        experiment_configs=[experiment for experiment in experiments],
+        experiment_configs=experiments,
     )
     random.shuffle(transposition_tests)
 
