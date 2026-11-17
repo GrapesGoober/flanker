@@ -15,6 +15,7 @@ from flanker_core.models.components import (
     TerrainFeature,
     Transform,
 )
+from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.move_system import MoveSystem
 
@@ -172,6 +173,47 @@ def test_branches(fixture: Fixture) -> None:
         for probability, _ in branches:
             total_probability += probability
         assert total_probability == 1, "The total probability must be 1"
+
+
+def test_assault_branches_override(fixture: Fixture) -> None:
+    branches = AiBranchingService.get_assault_branches(
+        gs=fixture.gs,
+        unit_id=fixture.unit_move,
+        target_id=fixture.enemy_1,
+    )
+
+    assert branches, "The assault action must generate branches"
+    total_probability = 0
+
+    # First, build the branches into a list of signatures for easier testing
+    branch_signatures: list[
+        tuple[float, tuple[AssaultOutcomes, FireOutcomes | None, FireOutcomes]]
+    ] = []
+    for probability, branch in branches:
+        assault_controls = branch.get_component(fixture.unit_move, AssaultControls)
+        enemy_1_fire = branch.get_component(fixture.enemy_1, FireControls)
+        enemy_2_fire = branch.get_component(fixture.enemy_2, FireControls)
+        assert assault_controls.override is not None
+        assert enemy_2_fire.override is not None
+        assert enemy_1_fire.override is not None
+        branch_signatures.append(
+            (
+                probability,
+                (
+                    assault_controls.override,
+                    enemy_1_fire.override,
+                    enemy_2_fire.override,
+                ),
+            )
+        )
+        total_probability += probability
+    assert total_probability == 1, "The total probability must be 1"
+
+    # Then, test that all signatures are correct
+    assert (
+        0.045,
+        (AssaultOutcomes.SUCCESS, FireOutcomes.MISS, FireOutcomes.MISS),
+    ) in branch_signatures
 
 
 def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:
