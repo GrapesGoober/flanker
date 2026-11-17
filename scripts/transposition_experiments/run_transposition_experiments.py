@@ -9,7 +9,7 @@ from multiprocessing.pool import Pool, ThreadPool
 from multiprocessing.synchronize import Lock as LockType
 from pathlib import Path
 from time import sleep
-from typing import Any, Iterable
+from typing import Any, Literal
 
 import requests
 from flanker_ai.ai_system import AiSystem
@@ -30,6 +30,8 @@ from procedural_state_generator import (
 from transposition_experiment_models import (
     ApiTranspositionTestRequest,
     ApiTranspositionTestResponse,
+    ApiTreePayoffRequest,
+    ApiTreePayoffResponse,
     InputStatePair,
     InputStatePairConfig,
     StatePopulatingMethod,
@@ -123,6 +125,7 @@ def get_input_sequences(
             map_state=map_states[map_name],
             state_method=state_method,
             ai_config=experiment_set.game_tree_method,
+            target=experiment_set.target,
         )
         for (state_method_name, state_method), map_name in product(
             experiment_set.state_populating_methods.items(),
@@ -155,8 +158,8 @@ def get_input_state_pair(
         case StatePopulatingMethod.Perturbation():
             state_b = get_perturbed_state(state_a, size=config.state_method.size)
 
-    tree_a_value: float = get_tree_action_value(state_a)
-    tree_b_value: float = get_tree_action_value(state_b)
+    tree_a_value: float = get_tree_payoff_value(state_a, config.target)
+    tree_b_value: float = get_tree_payoff_value(state_b, config.target)
 
     log_message(f"  Input pair {config.name} done...")
 
@@ -272,16 +275,9 @@ def run_transposition_test(
                 tree_b_payoff=test_run_config.tree_b_payoff,
             )
         case target_url:
-            component_types = list(get_component_types())
             test_request = ApiTranspositionTestRequest(
-                state_a=Serializer.serialize(
-                    entities=test_run_config.state_a.dump(),
-                    component_types=component_types,
-                ),
-                state_b=Serializer.serialize(
-                    entities=test_run_config.state_b.dump(),
-                    component_types=component_types,
-                ),
+                state_a=deserialize_state(test_run_config.state_a),
+                state_b=deserialize_state(test_run_config.state_b),
                 key_methods=test_run_config.key_methods,
             )
             response: requests.Response | None = None
@@ -310,24 +306,55 @@ def run_transposition_test(
     return test_run_config.experiment_name, test_result
 
 
-def get_tree_action_value(
+def get_tree_payoff_value(
     gs: GameState,
+    target: Literal["local"] | str,
 ) -> float:
-    gs = deepcopy(gs)
-    initiative = ActionSystem.get_initiative(gs)
-    result = AiSystem.perform_action(gs, initiative)
-    if result is None:
-        raise RuntimeError("AI can't perform action!")
-    if result.policy_log is None:
-        raise RuntimeError("Expects a search policy log from AI.")
-    return result.policy_log.action_value
+
+    match target:
+        case "local":
+            gs = deepcopy(gs)
+            initiative = ActionSystem.get_initiative(gs)
+            result = AiSystem.perform_action(gs, initiative)
+            if result is None:
+                raise RuntimeError("AI can't perform action!")
+            if result.policy_log is None:
+                raise RuntimeError("Expects a search policy log from AI.")
+            return result.policy_log.action_value
+        case _:
+            request_model = ApiTreePayoffRequest(
+                state=deserialize_state(gs),
+            )
+            response: requests.Response | None = None
+            while True:  # Keep retrying requests if it fails
+                try:
+                    response = requests.post(
+                        f"{target}/api/rpc/experiment/get-tree-payoff",
+                        json=request_model.model_dump(),
+                    )
+                    response.raise_for_status()
+                    break
+                except requests.RequestException as e:
+                    log_message(f"Request had error {e}")
+                    log_message(f"Rerunning get-tree-payoff in 30 seconds")
+                    sleep(30)
+            api_result = ApiTreePayoffResponse.model_validate_json(response.text)
+            return api_result.payoff_value
 
 
-def get_component_types() -> Iterable[type]:
-    for _, cls in vars(components).items():
-        if isclass(cls) and is_dataclass(cls):
-            yield cls
-    yield AiConfigComponent
+def deserialize_state(
+    gs: GameState,
+) -> str:
+    component_types = [
+        component_type
+        for _, component_type in vars(components).items()
+        if isclass(component_type) and is_dataclass(component_type)
+    ]
+    component_types.append(AiConfigComponent)
+    return Serializer.serialize(
+        entities=gs.dump(),
+        component_types=component_types,
+    )
 
 
 def add_ai_configs(

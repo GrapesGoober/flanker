@@ -55,6 +55,7 @@ class InputStatePairConfig:
     map_state: GameState
     state_method: StatePopulatingMethod.ALL
     ai_config: SearchPolicyConfig
+    target: Literal["local"] | str
 
 
 class TranspositionExperimentMetadata(BaseModel):
@@ -107,3 +108,15 @@ class ApiTranspositionTestResponse(BaseModel, _ApiCamelCaseConfig):
     """Response model for transposition experiment tests."""
 
     key_is_same: bool
+
+
+class ApiTreePayoffRequest(BaseModel, _ApiCamelCaseConfig):
+    """Request model for game-tree payoff value."""
+
+    state: str
+
+
+class ApiTreePayoffResponse(BaseModel, _ApiCamelCaseConfig):
+    """Response model for game-tree payoff value."""
+
+    payoff_value: float
