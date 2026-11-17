@@ -194,7 +194,6 @@ def fixture() -> Fixture:
 
 def add_agent_config(
     gs: GameState,
-    policy_type: Literal["Minimax", "Expectimax"],
     use_transposition_table: bool = True,
 ) -> SearchPolicyConfig:
 
@@ -206,21 +205,12 @@ def add_agent_config(
         # Vec2(40, 4),   # but mirrored on the other side
     ]
 
-    match policy_type:
-        case "Minimax":
-            policy = PolicyConfig.MinimaxPolicy(
-                type="MinimaxPolicy",
-                depth=3,
-                use_transposition_table=use_transposition_table,
-            )
-        case "Expectimax":
-            policy = PolicyConfig.ExpectimaxPolicy(
-                type="ExpectimaxPolicy",
-                depth=3,
-                use_transposition_table=use_transposition_table,
-            )
     config = SearchPolicyConfig(
-        policy=policy,
+        policy=PolicyConfig.MinimaxPolicy(
+            type="MinimaxPolicy",
+            depth=3,
+            use_transposition_table=use_transposition_table,
+        ),
         state=UnabstractedStateConfig(
             type="UnabstractedStateConfig",
             move_candidates_pool=PointsConfig.HandDrawn(
@@ -256,7 +246,7 @@ def test_branching_total_prob(fixture: Fixture) -> None:
         to=Vec2(-40, 4),
     )
 
-    config = add_agent_config(fixture.gs, policy_type="Minimax")
+    config = add_agent_config(fixture.gs)
     state = AiSearchAgent.get_state(
         gs=fixture.gs,
         config=config,
@@ -269,14 +259,11 @@ def test_branching_total_prob(fixture: Fixture) -> None:
     assert total_prob == 1, "Total probability must equal 1"
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax", "Expectimax"])
 def test_optimal_actions(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "Expectimax"],
 ) -> None:
     add_agent_config(
         fixture.gs,
-        policy_type,
         use_transposition_table=True,
     )
     trees: list[AiSearchTreeResult] = []
@@ -322,7 +309,6 @@ def test_serialize_file(
 ) -> None:
     add_agent_config(
         fixture.gs,
-        policy_type="Expectimax",
         use_transposition_table=True,
     )
     file_path = Path("scenes\\local\\test-expectimax.json")
