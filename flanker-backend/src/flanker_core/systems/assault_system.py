@@ -9,7 +9,7 @@ from flanker_core.systems.command_system import CommandSystem
 from flanker_core.systems.move_system import MoveSystem
 from flanker_core.systems.objective_system import ObjectiveSystem
 
-_ASSAULT_SUCCESS_PROBABILITIES = {
+ASSAULT_SUCCESS_PROBABILITIES = {
     CombatUnit.Status.ACTIVE: 0.5,
     CombatUnit.Status.PINNED: 0.7,
     CombatUnit.Status.SUPPRESSED: 0.95,
@@ -49,7 +49,7 @@ class AssaultSystem:
             return attacker_assault.override
 
         target_status = gs.get_component(target_id, CombatUnit).status
-        threshold = _ASSAULT_SUCCESS_PROBABILITIES[target_status]
+        threshold = ASSAULT_SUCCESS_PROBABILITIES[target_status]
 
         if attacker_roll <= threshold:
             return AssaultOutcomes.SUCCESS

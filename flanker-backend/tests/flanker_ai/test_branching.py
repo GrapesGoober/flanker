@@ -148,19 +148,30 @@ def test_one_interrupt(fixture: Fixture) -> None:
 
 def test_branches(fixture: Fixture) -> None:
 
-    move_action = MoveAction(
-        unit_id=fixture.unit_move,
-        to=Vec2(20, -10),
-    )
+    possible_actions = [
+        MoveAction(
+            unit_id=fixture.unit_move,
+            to=Vec2(20, -10),
+        ),
+        AssaultAction(
+            unit_id=fixture.unit_move,
+            target_id=fixture.enemy_1,
+        ),
+        AssaultAction(
+            unit_id=fixture.unit_move,
+            target_id=fixture.enemy_2,
+        ),
+    ]
 
-    branches = AiBranchingService.get_action_branches(
-        gs=fixture.gs,
-        action=move_action,
-    )
-    total_probability = 0
-    for probability, _ in branches:
-        total_probability += probability
-    assert total_probability == 1, "The total probability must be 1"
+    for action in possible_actions:
+        branches = AiBranchingService.get_action_branches(
+            gs=fixture.gs,
+            action=action,
+        )
+        total_probability = 0
+        for probability, _ in branches:
+            total_probability += probability
+        assert total_probability == 1, "The total probability must be 1"
 
 
 def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:
