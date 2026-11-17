@@ -138,7 +138,7 @@ def get_accuracy_tally(
         true_negatives=0,
     )
     for result in results:
-        tree_results_match = result.action_a_value == result.action_b_value
+        tree_results_match = result.tree_a_payoff == result.tree_b_payoff
         if result.key_is_same:
             if tree_results_match:
                 tally.true_positives += 1

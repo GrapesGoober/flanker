@@ -11,8 +11,8 @@ from pydantic.alias_generators import to_camel
 
 class TranspositionTestResult(BaseModel):
     key_is_same: bool
-    action_a_value: float
-    action_b_value: float
+    tree_a_payoff: float
+    tree_b_payoff: float
 
 
 class StatePopulatingMethod:
@@ -42,17 +42,19 @@ class TranspositionExperimentSetConfig(BaseModel):
 
 
 @dataclass
-class TranspositionTestInputStatePair:
-    state_a: GameState
-    state_b: GameState
-
-
-@dataclass
-class TranspositionTestEvaluatedInputStatePair:
+class InputStatePair:
     state_a: GameState
     state_b: GameState
     tree_a_payoff: float
     tree_b_payoff: float
+
+
+@dataclass
+class InputStatePairConfig:
+    name: str
+    map_state: GameState
+    state_method: StatePopulatingMethod.ALL
+    ai_config: SearchPolicyConfig
 
 
 class TranspositionExperimentMetadata(BaseModel):
@@ -68,7 +70,7 @@ class TranspositionExperimentMetadata(BaseModel):
 
 @dataclass
 class TranspositionExperiment:
-    state_sequence: list[TranspositionTestInputStatePair]
+    state_sequence: list[InputStatePair]
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
     metadata: TranspositionExperimentMetadata
@@ -79,6 +81,8 @@ class TranspositionTestRun:
     experiment_name: str
     state_a: GameState
     state_b: GameState
+    tree_a_payoff: float
+    tree_b_payoff: float
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
 

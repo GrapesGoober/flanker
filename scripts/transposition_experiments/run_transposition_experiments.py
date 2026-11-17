@@ -30,11 +30,12 @@ from procedural_state_generator import (
 from transposition_experiment_models import (
     ApiTranspositionTestRequest,
     ApiTranspositionTestResponse,
+    InputStatePair,
+    InputStatePairConfig,
     StatePopulatingMethod,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
-    TranspositionTestInputStatePair,
     TranspositionTestResult,
     TranspositionTestRun,
 )
@@ -78,11 +79,17 @@ def main() -> None:
     results_root_path.mkdir(parents=True, exist_ok=True)
 
     # Generate all the input sequences once, to reuse across experiments.
-    input_sequences_by_name = get_input_sequences(experiment_set)
-    # TODO: have game-tree evaluate these input sequences as precompute.
-    # The individual tests shouldn't do this step.
+    with pool_type(
+        processes=experiment_set.max_workers,
+        initializer=configure_logging,
+        initargs=(str(log_file_path), log_lock),
+    ) as pool:
+        input_sequences_by_name = get_input_sequences(
+            experiment_set=experiment_set,
+            pool=pool,
+        )
 
-    # Get init each experiment permutations
+    # Init each experiment permutations
     experiments = get_transposition_experiments(
         experiment_set=experiment_set,
         input_sequences_by_name=input_sequences_by_name,
@@ -126,24 +133,68 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
 
 def get_input_sequences(
     experiment_set: TranspositionExperimentSetConfig,
-) -> dict[str, list[TranspositionTestInputStatePair]]:
-    return {
-        f"{state_method_name}-{map_name}": get_state_sequence(
-            map_name=map_name,
-            method=method,
-            target_n_tests=experiment_set.target_n_tests,
+    pool: Pool | ThreadPool,
+) -> dict[str, list[InputStatePair]]:
+    map_states: dict[str, GameState] = {
+        map_name: get_game_state(
+            scene_names=[map_name],
+        )
+        for map_name in experiment_set.maps
+    }
+    input_configs: list[InputStatePairConfig] = [
+        InputStatePairConfig(
+            name=f"{state_method_name}-{map_name}",
+            map_state=map_states[map_name],
+            state_method=state_method,
             ai_config=experiment_set.game_tree_method,
         )
-        for (state_method_name, method), map_name in product(
+        for (state_method_name, state_method), map_name in product(
             experiment_set.state_populating_methods.items(),
             experiment_set.maps,
         )
-    }
+        for _ in range(experiment_set.target_n_tests)
+    ]
+    input_sequences_by_name: dict[str, list[InputStatePair]] = {}
+    results = pool.imap_unordered(
+        get_input_state_pair,
+        input_configs,
+    )
+    for name, input_pair in results:
+        input_sequences_by_name.setdefault(name, [])
+        input_sequences_by_name[name].append(input_pair)
+    return input_sequences_by_name
+
+
+def get_input_state_pair(
+    config: InputStatePairConfig,
+) -> tuple[str, InputStatePair]:
+    log_message(f"Generating state for {config.name}")
+    add_ai_configs(config.map_state, config.ai_config)
+    state_a = get_state_from_map(config.map_state, initiative="random")
+
+    match config.state_method:
+        case StatePopulatingMethod.Random():
+            initiative = ActionSystem.get_initiative(state_a)
+            state_b = get_state_from_map(config.map_state, initiative=initiative)
+        case StatePopulatingMethod.Perturbation():
+            state_b = get_perturbed_state(state_a, size=config.state_method.size)
+
+    tree_a_value: float = get_tree_action_value(state_a)
+    tree_b_value: float = get_tree_action_value(state_b)
+
+    log_message(f"  Input pair {config.name} done...")
+
+    return config.name, InputStatePair(
+        state_a=state_a,
+        state_b=state_b,
+        tree_a_payoff=tree_a_value,
+        tree_b_payoff=tree_b_value,
+    )
 
 
 def get_transposition_experiments(
     experiment_set: TranspositionExperimentSetConfig,
-    input_sequences_by_name: dict[str, list[TranspositionTestInputStatePair]],
+    input_sequences_by_name: dict[str, list[InputStatePair]],
 ) -> list[TranspositionExperiment]:
     """
     Returns all permutations of experiments given the experiment set config.
@@ -185,40 +236,14 @@ def get_all_transposition_tests(
             experiment_name=experiment_config.metadata.name,
             state_a=input_state_pair.state_a,
             state_b=input_state_pair.state_b,
+            tree_a_payoff=input_state_pair.tree_a_payoff,
+            tree_b_payoff=input_state_pair.tree_b_payoff,
             key_methods=experiment_config.key_methods,
             target=experiment_config.target,
         )
         for experiment_config in experiment_configs
         for input_state_pair in experiment_config.state_sequence
     ]
-
-
-def get_state_sequence(
-    map_name: str,
-    method: StatePopulatingMethod.ALL,
-    target_n_tests: int,
-    ai_config: SearchPolicyConfig,
-) -> list[TranspositionTestInputStatePair]:
-    state_sequences: list[TranspositionTestInputStatePair] = []
-    for _ in range(target_n_tests):
-        map = get_game_state([map_name])
-        add_ai_configs(map, ai_config)
-        state_a = get_state_from_map(map, initiative="random")
-
-        match method:
-            case StatePopulatingMethod.Random():
-                initiative = ActionSystem.get_initiative(state_a)
-                state_b = get_state_from_map(map, initiative=initiative)
-            case StatePopulatingMethod.Perturbation():
-                state_b = get_perturbed_state(state_a, size=method.size)
-
-        state_sequences.append(
-            TranspositionTestInputStatePair(
-                state_a=state_a,
-                state_b=state_b,
-            )
-        )
-    return state_sequences
 
 
 def run_transposition_test(
@@ -236,13 +261,11 @@ def run_transposition_test(
                 gs=test_run_config.state_b,
                 transposition_schemes=test_run_config.key_methods,
             )
-            action_a_value: float = get_tree_action_value(test_run_config.state_a)
-            action_b_value: float = get_tree_action_value(test_run_config.state_b)
             key_is_same = key_a == key_b
             test_result = TranspositionTestResult(
                 key_is_same=key_is_same,
-                action_a_value=action_a_value,
-                action_b_value=action_b_value,
+                tree_a_payoff=test_run_config.tree_a_payoff,
+                tree_b_payoff=test_run_config.tree_b_payoff,
             )
         case target_url:
             component_types = list(get_component_types())
@@ -275,8 +298,8 @@ def run_transposition_test(
             api_result = ApiTranspositionTestResponse.model_validate_json(response.text)
             test_result = TranspositionTestResult(
                 key_is_same=api_result.key_is_same,
-                action_a_value=api_result.action_a_value,
-                action_b_value=api_result.action_b_value,
+                tree_a_payoff=test_run_config.tree_a_payoff,
+                tree_b_payoff=test_run_config.tree_b_payoff,
             )
 
     log_message(f"    {test_run_config.experiment_name} done, recording...")
