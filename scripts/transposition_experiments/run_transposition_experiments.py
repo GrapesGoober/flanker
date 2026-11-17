@@ -34,6 +34,7 @@ from transposition_experiment_models import (
     ApiTreePayoffResponse,
     InputStatePair,
     InputStatePairConfig,
+    InputStatePairRecord,
     StatePopulatingMethod,
     TranspositionExperiment,
     TranspositionExperimentMetadata,
@@ -61,7 +62,7 @@ def main() -> None:
     # Safety check if there are other data still there. Should be a clean run.
     raise_if_results_exists(results_root_path)
 
-    # Generate all the input sequences once, to reuse across experiments.
+    # Get all the input sequences once, to reuse across experiments.
     with get_pool(
         experiment_set=experiment_set,
         log_file_path=log_file_path,
@@ -71,6 +72,22 @@ def main() -> None:
             experiment_set=experiment_set,
             pool=pool,
         )
+    for sequence_name, sequence in input_sequences_by_name.items():
+        file_path = results_root_path / f"inputs-{sequence_name}.jsonl"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        if file_path.is_file():
+            return
+        with file_path.open("w") as sequence_file:
+            sequence_file.writelines(
+                InputStatePairRecord(
+                    state_a=deserialize_state(input_states.state_a),
+                    state_b=deserialize_state(input_states.state_b),
+                    tree_a_payoff=input_states.tree_a_payoff,
+                    tree_b_payoff=input_states.tree_b_payoff,
+                ).model_dump_json(indent=0)
+                + "\n"  # Mildly infuriating missing newline
+                for input_states in sequence
+            )
 
     # Init each experiment permutations
     experiments = get_transposition_experiments(

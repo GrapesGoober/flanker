@@ -49,6 +49,13 @@ class InputStatePair:
     tree_b_payoff: float
 
 
+class InputStatePairRecord(BaseModel):
+    state_a: str
+    state_b: str
+    tree_a_payoff: float
+    tree_b_payoff: float
+
+
 @dataclass
 class InputStatePairConfig:
     name: str
