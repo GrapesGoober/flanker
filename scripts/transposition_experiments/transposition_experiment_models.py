@@ -41,6 +41,20 @@ class TranspositionExperimentSetConfig(BaseModel):
     target: Literal["local"] | str
 
 
+@dataclass
+class TranspositionTestInputStatePair:
+    state_a: GameState
+    state_b: GameState
+
+
+@dataclass
+class TranspositionTestEvaluatedInputStatePair:
+    state_a: GameState
+    state_b: GameState
+    tree_a_payoff: float
+    tree_b_payoff: float
+
+
 class TranspositionExperimentMetadata(BaseModel):
     name: str
     state_populating_method_name: str
@@ -54,7 +68,7 @@ class TranspositionExperimentMetadata(BaseModel):
 
 @dataclass
 class TranspositionExperiment:
-    state_sequence: list[tuple[GameState, GameState]]
+    state_sequence: list[TranspositionTestInputStatePair]
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
     metadata: TranspositionExperimentMetadata

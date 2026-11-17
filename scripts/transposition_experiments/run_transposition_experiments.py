@@ -34,6 +34,7 @@ from transposition_experiment_models import (
     TranspositionExperiment,
     TranspositionExperimentMetadata,
     TranspositionExperimentSetConfig,
+    TranspositionTestInputStatePair,
     TranspositionTestResult,
     TranspositionTestRun,
 )
@@ -76,9 +77,15 @@ def main() -> None:
         )
     results_root_path.mkdir(parents=True, exist_ok=True)
 
+    # Generate all the input sequences once, to reuse across experiments.
+    input_sequences_by_name = get_input_sequences(experiment_set)
+    # TODO: have game-tree evaluate these input sequences as precompute.
+    # The individual tests shouldn't do this step.
+
     # Get init each experiment permutations
     experiments = get_transposition_experiments(
         experiment_set=experiment_set,
+        input_sequences_by_name=input_sequences_by_name,
     )
     for experiment in experiments:
         file_path = results_root_path / f"{experiment.metadata.name}-metadata.json"
@@ -117,39 +124,38 @@ def get_config(config_path: str) -> TranspositionExperimentSetConfig:
         return TranspositionExperimentSetConfig.model_validate_json(f.read())
 
 
-def get_transposition_experiments(
+def get_input_sequences(
     experiment_set: TranspositionExperimentSetConfig,
-) -> list[TranspositionExperiment]:
-    """
-    Returns all permutations of experiments given the experiment set config.
-    """
-
-    # Ensure that the experiments with same state methods
-    # use the same states sequence. Ensures consistency between experiments.
-    state_sequence_per_map_and_method: dict[
-        tuple[str, str], list[tuple[GameState, GameState]]
-    ] = {
-        (map_name, method_name): get_state_sequence(
+) -> dict[str, list[TranspositionTestInputStatePair]]:
+    return {
+        f"{state_method_name}-{map_name}": get_state_sequence(
             map_name=map_name,
             method=method,
             target_n_tests=experiment_set.target_n_tests,
             ai_config=experiment_set.game_tree_method,
         )
-        for (method_name, method), map_name in product(
+        for (state_method_name, method), map_name in product(
             experiment_set.state_populating_methods.items(),
             experiment_set.maps,
         )
     }
 
+
+def get_transposition_experiments(
+    experiment_set: TranspositionExperimentSetConfig,
+    input_sequences_by_name: dict[str, list[TranspositionTestInputStatePair]],
+) -> list[TranspositionExperiment]:
+    """
+    Returns all permutations of experiments given the experiment set config.
+    """
+
     return [  # Oh jeez, this is so disgusting. I should clean this up.
         TranspositionExperiment(
-            state_sequence=state_sequence_per_map_and_method[
-                map_name, state_method_name
-            ],
+            state_sequence=input_sequences_by_name[f"{state_method_name}-{map_name}"],
             key_methods=key_methods,
             target=experiment_set.target,
             metadata=TranspositionExperimentMetadata(
-                name=f"{state_method_name}-{key_methods_name}-{map_name}",
+                name=f"{key_methods_name}-{state_method_name}-{map_name}",
                 state_populating_method_name=state_method_name,
                 state_populating_method=state_method,
                 key_method_name=key_methods_name,
@@ -177,13 +183,13 @@ def get_all_transposition_tests(
     return [
         TranspositionTestRun(
             experiment_name=experiment_config.metadata.name,
-            state_a=state_a,
-            state_b=state_b,
+            state_a=input_state_pair.state_a,
+            state_b=input_state_pair.state_b,
             key_methods=experiment_config.key_methods,
             target=experiment_config.target,
         )
         for experiment_config in experiment_configs
-        for state_a, state_b in experiment_config.state_sequence
+        for input_state_pair in experiment_config.state_sequence
     ]
 
 
@@ -192,8 +198,8 @@ def get_state_sequence(
     method: StatePopulatingMethod.ALL,
     target_n_tests: int,
     ai_config: SearchPolicyConfig,
-) -> list[tuple[GameState, GameState]]:
-    state_sequences: list[tuple[GameState, GameState]] = []
+) -> list[TranspositionTestInputStatePair]:
+    state_sequences: list[TranspositionTestInputStatePair] = []
     for _ in range(target_n_tests):
         map = get_game_state([map_name])
         add_ai_configs(map, ai_config)
@@ -206,7 +212,12 @@ def get_state_sequence(
             case StatePopulatingMethod.Perturbation():
                 state_b = get_perturbed_state(state_a, size=method.size)
 
-        state_sequences.append((state_a, state_b))
+        state_sequences.append(
+            TranspositionTestInputStatePair(
+                state_a=state_a,
+                state_b=state_b,
+            )
+        )
     return state_sequences
 
 

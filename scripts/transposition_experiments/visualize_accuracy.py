@@ -15,7 +15,8 @@ from transposition_experiment_models import (
 class AccuracyTally:
 
     key_method_name: str
-    input_states_name: str
+    map_name: str
+    state_populating_method_name: str
     true_positives: int
     false_positives: int
     false_negatives: int
@@ -24,13 +25,11 @@ class AccuracyTally:
     def to_row(self) -> dict[str, str | int]:
         return {
             "Key Method": self.key_method_name,
-            "Input States": self.input_states_name,
+            "Input States": f"{self.state_populating_method_name}-{self.map_name}",
             "TP": self.true_positives,
             "TN": self.true_negatives,
             "FP": self.false_positives,
             "FN": self.false_negatives,
-            "P": self.true_positives + self.false_negatives,
-            "N": self.false_positives + self.true_negatives,
         }
 
 
@@ -67,7 +66,11 @@ def get_formatted_table(
         )
         tally_records.append(tally)
     tally_records.sort(
-        key=lambda record: (record.key_method_name, record.input_states_name)
+        key=lambda record: (
+            record.key_method_name,
+            record.state_populating_method_name,
+            record.map_name,
+        )
     )
     return pd.DataFrame([record.to_row() for record in tally_records])
 
@@ -103,7 +106,7 @@ def get_experiment_names(
     """
 
     return [
-        f"{state_method_name}-{key_methods_name}-{map_name}"
+        f"{key_methods_name}-{state_method_name}-{map_name}"
         for (
             (state_method_name, _),
             (key_methods_name, _),
@@ -127,7 +130,8 @@ def get_accuracy_tally(
 
     tally = AccuracyTally(
         key_method_name=metadata.key_method_name,
-        input_states_name=f"{metadata.map_name}-{metadata.state_populating_method_name}",
+        map_name=metadata.map_name,
+        state_populating_method_name=metadata.state_populating_method_name,
         true_positives=0,
         false_positives=0,
         false_negatives=0,
