@@ -1,19 +1,14 @@
 from dataclasses import dataclass
+from itertools import product
 from pathlib import Path
 from typing import Iterable
 
-import matplotlib
 import pandas as pd
-from plotnine import (
-    aes,
-    facet_wrap,
-    geom_text,
-    geom_tile,
-    ggplot,
-    labs,
-    theme_matplotlib,
+from transposition_experiment_models import (
+    TranspositionExperimentMetadata,
+    TranspositionExperimentSetConfig,
+    TranspositionTestResult,
 )
-from transposition_experiment_models import TranspositionTestResult
 
 
 @dataclass
@@ -34,83 +29,96 @@ class AccuracyTally:
 
 
 def main() -> None:
-    results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
-    result_files = sorted(results_root_path.glob("*.jsonl"))
-    if not result_files:
-        raise FileNotFoundError(
-            f"No transposition result files found in {results_root_path}"
-        )
-
-    tally_records: list[dict[str, str]] = []
-    for result_file in result_files:
-        tally = get_accuracy_tally(get_experiment_results(result_file))
-        experiment_name = result_file.stem
-        tally_records += [
-            {
-                "experiment": experiment_name,
-                "key_prediction": "Keys same",
-                "tree_result": "Values same",
-                "count": f"TP: {tally.true_positives}",
-            },
-            {
-                "experiment": experiment_name,
-                "key_prediction": "Keys same",
-                "tree_result": "Values differ",
-                "count": f"FP: {tally.false_positives}",
-            },
-            {
-                "experiment": experiment_name,
-                "key_prediction": "Keys differ",
-                "tree_result": "Values same",
-                "count": f"FN: {tally.false_negatives}",
-            },
-            {
-                "experiment": experiment_name,
-                "key_prediction": "Keys differ",
-                "tree_result": "Values differ",
-                "count": f"TN: {tally.true_negatives}",
-            },
-            {
-                "experiment": experiment_name,
-                "key_prediction": "Tree outcome total",
-                "tree_result": "Values same",
-                "count": (f"Total: " f"{tally.true_positives + tally.false_negatives}"),
-            },
-            {
-                "experiment": experiment_name,
-                "key_prediction": "Tree outcome total",
-                "tree_result": "Values differ",
-                "count": (f"Total: " f"{tally.false_positives + tally.true_negatives}"),
-            },
-        ]
-
-    df = pd.DataFrame(tally_records)
-    matplotlib.use("tkagg")
-    plot = (
-        ggplot(
-            df,
-            aes(x="tree_result", y="key_prediction"),
-        )
-        + geom_tile(fill="white", color="black")
-        + geom_text(aes(label="count"))
-        + facet_wrap("~experiment")
-        + labs(
-            x="Tree results",
-            y="Transposition keys",
-        )
-        + theme_matplotlib()
+    experiment_set = get_config(
+        config_path="./scripts/configs/transposition-experiment-config.json",
     )
-    plot.show()
-    plot.save("scripts/outputs/visualize-transposition-accuracy.png")
+    results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
+    experiment_names = get_experiment_names(experiment_set)
+    df = get_formatted_table(
+        results_root_path,
+        experiment_names,
+    )
+    latex_table = df.to_latex(index=False)
+    for rule in ("\\toprule", "\\midrule", "\\bottomrule"):
+        latex_table = latex_table.replace(rule, "\\hline")
+    Path("scripts/outputs/confusion-matrix.tex").write_text(
+        latex_table,
+        encoding="utf-8",
+    )
+
+
+def get_formatted_table(
+    results_root_path: Path,
+    experiment_names: list[str],
+) -> pd.DataFrame:
+    tally_records: list[dict[str, str | int]] = []
+    for experiment_name in experiment_names:
+        metadata_path = results_root_path / f"{experiment_name}-metadata.json"
+        results_path = results_root_path / f"{experiment_name}.jsonl"
+        metadata = get_experiment_metadata(metadata_path)
+        tally = get_accuracy_tally(get_experiment_results(results_path))
+        input_sequence_name = (
+            f"{metadata.map_name}-{metadata.state_populating_method_name}"
+        )
+        tally_records.append(
+            {
+                "Key Method": metadata.key_method_name,
+                "Input States": input_sequence_name,
+                "TP": tally.true_positives,
+                "TN": tally.true_negatives,
+                "FP": tally.false_positives,
+                "FN": tally.false_negatives,
+                "P": (tally.true_positives + tally.false_negatives),
+                "N": (tally.false_positives + tally.true_negatives),
+            }
+        )
+    tally_records.sort(key=lambda row: f"{row['Key Method']}{row['Input States']}")
+
+    return pd.DataFrame(tally_records)
 
 
 def get_experiment_results(
-    result_file: Path,
+    result_path: Path,
 ) -> Iterable[TranspositionTestResult]:
-    with result_file.open("r", encoding="utf-8") as file:
+    with result_path.open("r", encoding="utf-8") as file:
         for line in file:
             if line.strip():
                 yield TranspositionTestResult.model_validate_json(line)
+
+
+def get_experiment_metadata(
+    metadata_path: Path,
+) -> TranspositionExperimentMetadata:
+    with metadata_path.open("r", encoding="utf-8") as file:
+        return TranspositionExperimentMetadata.model_validate_json(
+            file.read(),
+        )
+
+
+def get_config(config_path: str) -> TranspositionExperimentSetConfig:
+    with open(config_path, "r") as f:
+        return TranspositionExperimentSetConfig.model_validate_json(f.read())
+
+
+def get_experiment_names(
+    experiment_set: TranspositionExperimentSetConfig,
+) -> list[str]:
+    """
+    Returns all permutations of experiments given the experiment set config.
+    """
+
+    return [
+        f"{state_method_name}-{key_methods_name}-{map_name}"
+        for (
+            (state_method_name, _),
+            (key_methods_name, _),
+            map_name,
+        ) in product(
+            experiment_set.state_populating_methods.items(),
+            experiment_set.transposition_key_methods.items(),
+            experiment_set.maps,
+        )
+    ]
 
 
 def get_accuracy_tally(

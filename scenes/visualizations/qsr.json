@@ -1,0 +1,92 @@
+{
+  "entities": {
+    "e0eb9407-b6ee-4014-bb88-8d0ef8edeaf8": {
+      "InitiativeState": { "faction": "BLUE" },
+      "EliminationWinCondition": {
+        "target_faction": "RED",
+        "winning_faction": "BLUE",
+        "units_to_eliminate": 1,
+        "units_eliminated_counter": 0
+      }
+    },
+    "e7ca1ee2-0167-46c4-92e1-ebd2b014b339": {
+      "MapBoundary": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 200.0, "y": 0.0 },
+          { "x": 200.0, "y": 200.0 },
+          { "x": 0.0, "y": 200.0 }
+        ]
+      }
+    },
+    "f3824f52-4780-4b2f-9979-60be46cdb40b": {
+      "AiConfigComponent": {
+        "config": { "policy": { "type": "RandomHeuristicPolicy" } },
+        "faction": "BLUE"
+      }
+    },
+    "7d4437e8-e5cb-4465-aa39-fb8143b29c49": {
+      "AiConfigComponent": {
+        "config": { "policy": { "type": "RandomHeuristicPolicy" } },
+        "faction": "RED"
+      }
+    },
+    "719e0c13-a53e-463c-a362-a9f340b7fd39": {
+      "Transform": { "position": { "x": 133.0, "y": 77.0 }, "degrees": 3.0 },
+      "TerrainFeature": {
+        "vertices": [
+          { "x": 0.0, "y": 0.0 },
+          { "x": 38.70556538267155, "y": 14.074751048244195 },
+          { "x": 47.28236680269535, "y": 24.410896349298525 },
+          { "x": 47.942120758081785, "y": 34.30720568009522 },
+          { "x": 40.24499127857325, "y": 43.76367904063429 },
+          { "x": 7.697129479508561, "y": 42.22425314473257 },
+          { "x": -29.469010007261275, "y": 29.029174037003642 },
+          { "x": -34.74704165035284, "y": 16.273930899532346 },
+          { "x": -30.568599932905343, "y": 4.3983597025763 },
+          { "x": -18.693028735949312, "y": -2.639015821545783 }
+        ],
+        "is_closed_loop": true,
+        "flag": 3
+      },
+      "TerrainTypeTag": { "type": "FOREST" }
+    },
+    "401bd421-bad7-49ca-98c3-e657d3aef6d7": {
+      "Transform": {
+        "position": { "x": 139.0, "y": 47.354291847144175 },
+        "degrees": 0.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": { "move_type": "FOOT" },
+      "FireControls": { "fov_degrees": null, "override": null },
+      "AssaultControls": { "override": null }
+    },
+    "14749f28-fe1d-4175-8c98-c828626c5723": {
+      "Transform": {
+        "position": { "x": 53.407747116841854, "y": 47.789567128792235 },
+        "degrees": 0.0
+      },
+      "CombatUnit": { "faction": "BLUE", "status": "ACTIVE" },
+      "MoveControls": { "move_type": "FOOT" },
+      "FireControls": { "fov_degrees": null, "override": null },
+      "AssaultControls": { "override": null }
+    },
+    "8e2a87f6-4595-494d-9d3c-df453da6c483": {
+      "Transform": {
+        "position": { "x": 50.79609542695348, "y": 152.25563472432714 },
+        "degrees": 0.0
+      },
+      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "MoveControls": { "move_type": "FOOT" },
+      "FireControls": { "fov_degrees": null, "override": null },
+      "AssaultControls": { "override": null }
+    },
+    "c992fd07-0ca9-4f5e-9415-b52ccfcf4a30": {
+      "Transform": { "position": { "x": 131.0, "y": 152.0 }, "degrees": 0.0 },
+      "CombatUnit": { "faction": "RED", "status": "ACTIVE" },
+      "MoveControls": { "move_type": "FOOT" },
+      "FireControls": { "fov_degrees": null, "override": null },
+      "AssaultControls": { "override": null }
+    }
+  }
+}

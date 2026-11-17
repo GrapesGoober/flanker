@@ -8,12 +8,14 @@
 		height?: string;
 		width?: string;
 		initialZoom?: number;
+		drawGridLines?: boolean;
 	};
 	let {
 		svgSnippet,
 		height = '90vh',
 		width = '100%',
-		initialZoom = 2
+		initialZoom = 2,
+		drawGridLines = $bindable(true)
 	}: Props = $props();
 
 	const componentId = $props.id();
@@ -50,12 +52,7 @@
 	});
 </script>
 
-<svg
-	bind:this={mapLayer}
-	class="map-box"
-	style:height
-	style:width
->
+<svg bind:this={mapLayer} class="map-box" style:height style:width>
 	<defs>
 		<pattern
 			bind:this={gridLayer}
@@ -74,12 +71,14 @@
 	<g bind:this={zoomLayer}>
 		{@render svgSnippet()}
 	</g>
-	<rect
-		class="grid-layer"
-		width="100%"
-		height="100%"
-		fill={`url(#${gridPatternId})`}
-	/>
+	{#if drawGridLines}
+		<rect
+			class="grid-layer"
+			width="100%"
+			height="100%"
+			fill={`url(#${gridPatternId})`}
+		/>
+	{/if}
 </svg>
 
 <style lang="less">
