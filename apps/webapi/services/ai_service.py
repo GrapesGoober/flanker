@@ -129,21 +129,13 @@ class AiService:
             gs=state_b_gs,
             transposition_schemes=body.key_methods,
         )
-        action_a_value: float = AiService.get_tree_action_value(
-            gs=state_a_gs,
-        )
-        action_b_value: float = AiService.get_tree_action_value(
-            gs=state_b_gs,
-        )
         key_is_same = key_a == key_b
         return TranspositionTestResponse(
             key_is_same=key_is_same,
-            action_a_value=action_a_value,
-            action_b_value=action_b_value,
         )
 
     @staticmethod
-    def get_tree_action_value(
+    def get_tree_payoff_value(
         gs: GameState,
     ) -> float:
         initiative = ActionSystem.get_initiative(gs)

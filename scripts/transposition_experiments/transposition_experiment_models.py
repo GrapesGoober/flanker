@@ -107,5 +107,3 @@ class ApiTranspositionTestResponse(BaseModel, _ApiCamelCaseConfig):
     """Response model for transposition experiment tests."""
 
     key_is_same: bool
-    action_a_value: float
-    action_b_value: float
