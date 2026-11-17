@@ -105,23 +105,23 @@ class ExpectimaxPolicy[TAction]:
             outcomes: list[ExpectimaxTreeOutcome[TAction]] = []
             for probability, branch in branches:
 
-                outcome_node: ExpectimaxTreeNode[TAction] | None = None
+                child_node: ExpectimaxTreeNode[TAction] | None = None
                 if log_tree_to_append is not None:
-                    outcome_node = ExpectimaxTreeNode(state=branch, children=[])
+                    child_node = ExpectimaxTreeNode(state=branch, children=[])
 
                 score = ExpectimaxPolicy[TAction]._get_payoff_score(
                     state=branch,
                     new_branch_depth=depth_remaining - 1,
                     counter=counter,
                     transposition_table=transposition_table,
-                    log_tree_to_append=log_tree_to_append,
+                    log_tree_to_append=child_node,
                 )
                 expected_score += score * probability
-                if outcome_node is not None:
+                if child_node is not None:
                     outcomes.append(
                         ExpectimaxTreeOutcome(
                             probability=probability,
-                            node=outcome_node,
+                            node=child_node,
                             score=score,
                         )
                     )
