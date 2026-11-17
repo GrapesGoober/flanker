@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from itertools import product
+from math import isclose
 from pathlib import Path
 from typing import Iterable
 
@@ -140,7 +141,7 @@ def get_accuracy_tally(
         true_negatives=0,
     )
     for result in results:
-        tree_results_match = result.tree_a_payoff == result.tree_b_payoff
+        tree_results_match = isclose(result.tree_a_payoff, result.tree_b_payoff)
         if result.key_is_same:
             if tree_results_match:
                 tally.true_positives += 1
