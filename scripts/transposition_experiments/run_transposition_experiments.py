@@ -72,22 +72,10 @@ def main() -> None:
             experiment_set=experiment_set,
             pool=pool,
         )
-    for sequence_name, sequence in input_sequences_by_name.items():
-        file_path = results_root_path / f"inputs-{sequence_name}.jsonl"
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        if file_path.is_file():
-            return
-        with file_path.open("w") as sequence_file:
-            sequence_file.writelines(
-                InputStatePairRecord(
-                    state_a=deserialize_state(input_states.state_a),
-                    state_b=deserialize_state(input_states.state_b),
-                    tree_a_payoff=input_states.tree_a_payoff,
-                    tree_b_payoff=input_states.tree_b_payoff,
-                ).model_dump_json(indent=0)
-                + "\n"  # Mildly infuriating missing newline
-                for input_states in sequence
-            )
+    save_sequences_to_file(
+        input_sequences_by_name=input_sequences_by_name,
+        results_root_path=results_root_path,
+    )
 
     # Init each experiment permutations
     experiments = get_transposition_experiments(
@@ -124,6 +112,29 @@ def main() -> None:
 def get_config(config_path: str) -> TranspositionExperimentSetConfig:
     with open(config_path, "r") as f:
         return TranspositionExperimentSetConfig.model_validate_json(f.read())
+
+
+def save_sequences_to_file(
+    input_sequences_by_name: dict[str, list[InputStatePair]],
+    results_root_path: Path,
+) -> None:
+
+    for sequence_name, sequence in input_sequences_by_name.items():
+        file_path = results_root_path / f"inputs-{sequence_name}.jsonl"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        if file_path.is_file():
+            return
+        with file_path.open("w") as sequence_file:
+            sequence_file.writelines(
+                InputStatePairRecord(
+                    state_a=deserialize_state(input_states.state_a),
+                    state_b=deserialize_state(input_states.state_b),
+                    tree_a_payoff=input_states.tree_a_payoff,
+                    tree_b_payoff=input_states.tree_b_payoff,
+                ).model_dump_json(indent=0)
+                + "\n"  # Mildly infuriating missing newline
+                for input_states in sequence
+            )
 
 
 def get_input_sequences(
