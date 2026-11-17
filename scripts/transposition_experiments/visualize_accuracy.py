@@ -30,6 +30,8 @@ class AccuracyTally:
             "TN": self.true_negatives,
             "FP": self.false_positives,
             "FN": self.false_negatives,
+            "P": self.true_positives + self.false_negatives,
+            "N": self.true_negatives + self.false_positives,
         }
 
 
