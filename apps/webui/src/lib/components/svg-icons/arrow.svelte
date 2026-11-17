@@ -26,7 +26,7 @@
 	const textIsFlipped = $derived(Math.abs(angle) > 90);
 </script>
 
-<svg>
+<svg overflow="visible">
 	<g
 		transform={`translate(${props.start.x} ${props.start.y}) rotate(${angle})`}
 	>
