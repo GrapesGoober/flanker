@@ -49,15 +49,6 @@ def main() -> None:
     experiment_set = get_config(
         config_path="./scripts/configs/transposition-experiment-config.json",
     )
-
-    # Supports local running or if parallelize in cloud use threads for IO.
-    pool_type: type[Pool] | type[ThreadPool]
-    match experiment_set.target:
-        case "local":
-            pool_type = Pool
-        case _:
-            pool_type = ThreadPool
-
     results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
 
     # Configs parallel-safe logs
@@ -65,24 +56,14 @@ def main() -> None:
     log_lock: LockType = Lock()
     configure_logging(str(log_file_path), log_lock)
 
-    # Safety check if there are other data still there.
-    # Should be a clean run.
-    result_files = [
-        file
-        for pattern in ("*.jsonl", "*.json")
-        for file in results_root_path.glob(pattern)
-    ]
-    if result_files:
-        raise FileExistsError(
-            f"Results folder not empty: {', '.join(file.stem for file in result_files)}"
-        )
-    results_root_path.mkdir(parents=True, exist_ok=True)
+    # Safety check if there are other data still there. Should be a clean run.
+    raise_if_results_exists(results_root_path)
 
     # Generate all the input sequences once, to reuse across experiments.
-    with pool_type(
-        processes=experiment_set.max_workers,
-        initializer=configure_logging,
-        initargs=(str(log_file_path), log_lock),
+    with get_pool(
+        experiment_set=experiment_set,
+        log_file_path=log_file_path,
+        log_lock=log_lock,
     ) as pool:
         input_sequences_by_name = get_input_sequences(
             experiment_set=experiment_set,
@@ -94,13 +75,10 @@ def main() -> None:
         experiment_set=experiment_set,
         input_sequences_by_name=input_sequences_by_name,
     )
-    for experiment in experiments:
-        file_path = results_root_path / f"{experiment.metadata.name}-metadata.json"
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        if file_path.is_file():
-            return
-        with file_path.open("w") as metadata_file:
-            metadata_file.write(experiment.metadata.model_dump_json(indent=2))
+    init_experiment_metadata_files(
+        experiments=experiments,
+        results_root_path=results_root_path,
+    )
 
     # Generate tests for all experiments.
     transposition_tests = get_all_transposition_tests(
@@ -109,10 +87,8 @@ def main() -> None:
     random.shuffle(transposition_tests)
 
     # Run all the tests.
-    with pool_type(
-        processes=experiment_set.max_workers,
-        initializer=configure_logging,
-        initargs=(str(log_file_path), log_lock),
+    with get_pool(
+        experiment_set=experiment_set, log_file_path=log_file_path, log_lock=log_lock
     ) as pool:
         results = pool.imap_unordered(
             run_transposition_test,
@@ -226,6 +202,34 @@ def get_transposition_experiments(
             experiment_set.maps,
         )
     ]
+
+
+def raise_if_results_exists(
+    results_root_path: Path,
+) -> None:
+    result_files = [
+        file
+        for pattern in ("*.jsonl", "*.json")
+        for file in results_root_path.glob(pattern)
+    ]
+    if result_files:
+        raise FileExistsError(f"Results folder not empty: {', '.join(
+                (file.stem for file in result_files),
+            )}")
+    results_root_path.mkdir(parents=True, exist_ok=True)
+
+
+def init_experiment_metadata_files(
+    experiments: list[TranspositionExperiment],
+    results_root_path: Path,
+) -> None:
+    for experiment in experiments:
+        file_path = results_root_path / f"{experiment.metadata.name}-metadata.json"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        if file_path.is_file():
+            return
+        with file_path.open("w") as metadata_file:
+            metadata_file.write(experiment.metadata.model_dump_json(indent=2))
 
 
 def get_all_transposition_tests(
@@ -394,6 +398,27 @@ def record_transposition_test_result(
     with result_path.open("a") as results_file:
         results_file.write(result.model_dump_json())
         results_file.write("\n")
+
+
+def get_pool(
+    experiment_set: TranspositionExperimentSetConfig,
+    log_file_path: Path,
+    log_lock: LockType,
+) -> Pool | ThreadPool:
+
+    # Supports local running or if parallelize in cloud use threads for IO.
+    pool_type: type[Pool] | type[ThreadPool]
+    match experiment_set.target:
+        case "local":
+            pool_type = Pool
+        case _:
+            pool_type = ThreadPool
+
+    return pool_type(
+        processes=experiment_set.max_workers,
+        initializer=configure_logging,
+        initargs=(str(log_file_path), log_lock),
+    )
 
 
 if __name__ == "__main__":
