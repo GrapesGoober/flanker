@@ -331,7 +331,7 @@ def test_serialize_file(
         for _, component in vars(components).items()
         if isclass(component) and is_dataclass(component)
     ]
-    component_types.append(TerrainTypeTag)
+    component_types += [TerrainTypeTag, AiConfigComponent]
     with file_path.open("w") as f:
         f.write(
             Serializer.serialize(
