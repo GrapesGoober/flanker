@@ -62,6 +62,8 @@ class AiBranchingService:
                 unit_id: outcome for unit_id, outcome in zip(unit_ids, outcome_combo)
             }
             permutations.append((probability, event))
+
+        permutations = [(prob, event) for prob, event in permutations if prob != 0]
         return permutations
 
     @staticmethod
