@@ -209,11 +209,45 @@ def test_assault_branches_override(fixture: Fixture) -> None:
         total_probability += probability
     assert total_probability == 1, "The total probability must be 1"
 
-    # Then, test that all signatures are correct
-    assert (
-        0.045,
-        (AssaultOutcomes.SUCCESS, FireOutcomes.MISS, FireOutcomes.MISS),
-    ) in branch_signatures
+    # Then, test that all signatures are correct.
+    # There are 2 outcomes: success or fail, 50% each.
+    for assaut_outcome in [AssaultOutcomes.SUCCESS, AssaultOutcomes.FAIL]:
+        assert (
+            0.045,
+            (assaut_outcome, FireOutcomes.MISS, FireOutcomes.MISS),
+        ) in branch_signatures
+        assert (
+            0.06,
+            (assaut_outcome, FireOutcomes.MISS, FireOutcomes.PIN),
+        ) in branch_signatures
+        assert (
+            0.06,
+            (assaut_outcome, FireOutcomes.PIN, FireOutcomes.MISS),
+        ) in branch_signatures
+        assert (
+            0.08000000000000002,  # Ugh, floating point
+            (assaut_outcome, FireOutcomes.PIN, FireOutcomes.PIN),
+        ) in branch_signatures
+        assert (
+            0.045,
+            (assaut_outcome, FireOutcomes.MISS, FireOutcomes.SUPPRESS),
+        ) in branch_signatures
+        assert (
+            0.045,
+            (assaut_outcome, FireOutcomes.SUPPRESS, FireOutcomes.MISS),
+        ) in branch_signatures
+        assert (
+            0.045,
+            (assaut_outcome, FireOutcomes.SUPPRESS, FireOutcomes.SUPPRESS),
+        ) in branch_signatures
+        assert (
+            0.06,
+            (assaut_outcome, FireOutcomes.SUPPRESS, FireOutcomes.PIN),
+        ) in branch_signatures
+        assert (
+            0.06,
+            (assaut_outcome, FireOutcomes.PIN, FireOutcomes.SUPPRESS),
+        ) in branch_signatures
 
 
 def test_single_reactive_fire_is_pinned(fixture: Fixture) -> None:
