@@ -11,8 +11,8 @@ from pydantic.alias_generators import to_camel
 
 class TranspositionTestResult(BaseModel):
     key_is_same: bool
-    action_a_value: float
-    action_b_value: float
+    tree_a_payoff: float
+    tree_b_payoff: float
 
 
 class StatePopulatingMethod:
@@ -41,6 +41,30 @@ class TranspositionExperimentSetConfig(BaseModel):
     target: Literal["local"] | str
 
 
+@dataclass
+class InputStatePair:
+    state_a: GameState
+    state_b: GameState
+    tree_a_payoff: float
+    tree_b_payoff: float
+
+
+class InputStatePairRecord(BaseModel):
+    state_a: str
+    state_b: str
+    tree_a_payoff: float
+    tree_b_payoff: float
+
+
+@dataclass
+class InputStatePairConfig:
+    name: str
+    map_state: GameState
+    state_method: StatePopulatingMethod.ALL
+    ai_config: SearchPolicyConfig
+    target: Literal["local"] | str
+
+
 class TranspositionExperimentMetadata(BaseModel):
     name: str
     state_populating_method_name: str
@@ -54,7 +78,7 @@ class TranspositionExperimentMetadata(BaseModel):
 
 @dataclass
 class TranspositionExperiment:
-    state_sequence: list[tuple[GameState, GameState]]
+    state_sequence: list[InputStatePair]
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
     metadata: TranspositionExperimentMetadata
@@ -65,6 +89,8 @@ class TranspositionTestRun:
     experiment_name: str
     state_a: GameState
     state_b: GameState
+    tree_a_payoff: float
+    tree_b_payoff: float
     key_methods: list[TranspositionScheme.ALL]
     target: Literal["local"] | str
 
@@ -89,5 +115,15 @@ class ApiTranspositionTestResponse(BaseModel, _ApiCamelCaseConfig):
     """Response model for transposition experiment tests."""
 
     key_is_same: bool
-    action_a_value: float
-    action_b_value: float
+
+
+class ApiTreePayoffRequest(BaseModel, _ApiCamelCaseConfig):
+    """Request model for game-tree payoff value."""
+
+    state: str
+
+
+class ApiTreePayoffResponse(BaseModel, _ApiCamelCaseConfig):
+    """Response model for game-tree payoff value."""
+
+    payoff_value: float

@@ -23,5 +23,15 @@ class TranspositionTestResponse(BaseModel, CamelCaseConfig):
     """Response model for transposition experiment tests."""
 
     key_is_same: bool
-    action_a_value: float
-    action_b_value: float
+
+
+class TreePayoffRequest(BaseModel, CamelCaseConfig):
+    """Request model for game-tree payoff value."""
+
+    state: str
+
+
+class TreePayoffResponse(BaseModel, CamelCaseConfig):
+    """Response model for game-tree payoff value."""
+
+    payoff_value: float

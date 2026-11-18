@@ -26,6 +26,7 @@ from flanker_core.models.components import (
 from flanker_core.models.outcomes import AssaultOutcomes, FireOutcomes, InvalidAction
 from flanker_core.models.vec2 import Vec2
 from flanker_core.systems.action_system import ActionSystem
+from flanker_core.systems.assault_system import ASSAULT_SUCCESS_PROBABILITIES
 from flanker_core.systems.fire_system import FIRE_OUTCOME_PROBABILITIES
 from flanker_core.systems.move_system import MoveSystem
 
@@ -61,6 +62,8 @@ class AiBranchingService:
                 unit_id: outcome for unit_id, outcome in zip(unit_ids, outcome_combo)
             }
             permutations.append((probability, event))
+
+        permutations = [(prob, event) for prob, event in permutations if prob != 0]
         return permutations
 
     @staticmethod
@@ -217,19 +220,31 @@ class AiBranchingService:
         target_id: UUID,
     ) -> list[tuple[float, GameState]]:
         target_transform = gs.get_component(target_id, Transform)
-        branches = AiBranchingService.get_reactive_fire_branches(
-            gs=gs,
-            unit_id=unit_id,
-            move_to=target_transform.position,
-        )
-        for _, new_state in branches:
-            assault_controls = new_state.get_component(unit_id, AssaultControls)
-            target_unit = new_state.get_component(target_id, CombatUnit)
-            if target_unit.status == CombatUnit.Status.SUPPRESSED:
-                assault_controls.override = AssaultOutcomes.SUCCESS
-            else:
-                assault_controls.override = AssaultOutcomes.FAIL
-        return branches
+        target_unit = gs.get_component(target_id, CombatUnit)
+
+        # First, config assault into two separate SUCCESS or FAIL outcomes
+        success_probability = ASSAULT_SUCCESS_PROBABILITIES[target_unit.status]
+        fail_probability = 1 - success_probability
+        assault_overrides = [
+            (success_probability, AssaultOutcomes.SUCCESS),
+            (fail_probability, AssaultOutcomes.FAIL),
+        ]
+
+        # Then, configures each assault outcomes with fire branches
+        branching_states: list[tuple[float, GameState]] = []
+        for assault_probability, override in assault_overrides:
+            fire_branches = AiBranchingService.get_reactive_fire_branches(
+                gs=gs,
+                unit_id=unit_id,
+                move_to=target_transform.position,
+            )
+            for fire_probability, new_state in fire_branches:
+                assault_controls = new_state.get_component(unit_id, AssaultControls)
+                assault_controls.override = override
+                branching_states.append(
+                    (assault_probability * fire_probability, new_state)
+                )
+        return branching_states
 
     @staticmethod
     def get_one_assault_branch(

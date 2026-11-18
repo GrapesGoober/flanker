@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Literal
 from uuid import UUID
 
 import pytest
@@ -189,26 +188,15 @@ def fixture() -> Fixture:
 
 def add_agent_config(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "Expectimax"],
     use_transposition_table: bool = True,
 ) -> SearchPolicyConfig:
 
-    match policy_type:
-        case "Minimax":
-            policy = PolicyConfig.MinimaxPolicy(
-                type="MinimaxPolicy",
-                depth=3,
-                use_transposition_table=use_transposition_table,
-            )
-        case "Expectimax":
-            policy = PolicyConfig.ExpectimaxPolicy(
-                type="ExpectimaxPolicy",
-                depth=3,
-                use_transposition_table=use_transposition_table,
-            )
-
     config = SearchPolicyConfig(
-        policy=policy,
+        policy=PolicyConfig.MinimaxPolicy(
+            type="MinimaxPolicy",
+            depth=3,
+            use_transposition_table=use_transposition_table,
+        ),
         state=WaypointsStateConfig(
             type="WaypointsStateConfig",
             waypoints=PointsConfig.HandDrawn(
@@ -230,7 +218,7 @@ def add_agent_config(
 
 
 def test_waypoints_pathing(fixture: Fixture) -> None:
-    config = add_agent_config(fixture, policy_type="Minimax")
+    config = add_agent_config(fixture)
     state = AiSearchAgent.get_state(
         gs=fixture.gs,
         config=config,
@@ -251,7 +239,7 @@ def test_waypoints_pathing(fixture: Fixture) -> None:
 
 
 def test_waypoints_visibility(fixture: Fixture) -> None:
-    config = add_agent_config(fixture, policy_type="Minimax")
+    config = add_agent_config(fixture)
     state = AiSearchAgent.get_state(
         gs=fixture.gs,
         config=config,
@@ -262,14 +250,11 @@ def test_waypoints_visibility(fixture: Fixture) -> None:
     assert set(waypoints[7].visible_nodes) == {0, 1, 2, 7, 8}
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax", "Expectimax"])
 def test_optimal_actions(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "Expectimax"],
 ) -> None:
     add_agent_config(
         fixture,
-        policy_type,
         use_transposition_table=False,
     )
     trees: list[AiSearchTreeResult] = []

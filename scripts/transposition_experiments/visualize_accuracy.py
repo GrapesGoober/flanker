@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from itertools import product
+from math import isclose
 from pathlib import Path
 from typing import Iterable
 
@@ -13,19 +14,26 @@ from transposition_experiment_models import (
 
 @dataclass
 class AccuracyTally:
-    true_positives: int = 0
-    false_positives: int = 0
-    false_negatives: int = 0
-    true_negatives: int = 0
 
-    @property
-    def total_tests(self) -> int:
-        return (
-            self.true_positives
-            + self.false_positives
-            + self.false_negatives
-            + self.true_negatives
-        )
+    key_method_name: str
+    map_name: str
+    state_populating_method_name: str
+    true_positives: int
+    false_positives: int
+    false_negatives: int
+    true_negatives: int
+
+    def to_row(self) -> dict[str, str | int]:
+        return {
+            "Key Method": self.key_method_name,
+            "Input States": f"{self.state_populating_method_name}-{self.map_name}",
+            "TP": self.true_positives,
+            "TN": self.true_negatives,
+            "FP": self.false_positives,
+            "FN": self.false_negatives,
+            "P": self.true_positives + self.false_negatives,
+            "N": self.true_negatives + self.false_positives,
+        }
 
 
 def main() -> None:
@@ -51,30 +59,23 @@ def get_formatted_table(
     results_root_path: Path,
     experiment_names: list[str],
 ) -> pd.DataFrame:
-    tally_records: list[dict[str, str | int]] = []
+    tally_records: list[AccuracyTally] = []
     for experiment_name in experiment_names:
         metadata_path = results_root_path / f"{experiment_name}-metadata.json"
         results_path = results_root_path / f"{experiment_name}.jsonl"
-        metadata = get_experiment_metadata(metadata_path)
-        tally = get_accuracy_tally(get_experiment_results(results_path))
-        input_sequence_name = (
-            f"{metadata.map_name}-{metadata.state_populating_method_name}"
+        tally = get_accuracy_tally(
+            results=get_experiment_results(results_path),
+            metadata=get_experiment_metadata(metadata_path),
         )
-        tally_records.append(
-            {
-                "Key Method": metadata.key_method_name,
-                "Input States": input_sequence_name,
-                "TP": tally.true_positives,
-                "TN": tally.true_negatives,
-                "FP": tally.false_positives,
-                "FN": tally.false_negatives,
-                "P": (tally.true_positives + tally.false_negatives),
-                "N": (tally.false_positives + tally.true_negatives),
-            }
+        tally_records.append(tally)
+    tally_records.sort(
+        key=lambda record: (
+            record.key_method_name,
+            record.state_populating_method_name,
+            record.map_name,
         )
-    tally_records.sort(key=lambda row: f"{row['Key Method']}{row['Input States']}")
-
-    return pd.DataFrame(tally_records)
+    )
+    return pd.DataFrame([record.to_row() for record in tally_records])
 
 
 def get_experiment_results(
@@ -108,7 +109,7 @@ def get_experiment_names(
     """
 
     return [
-        f"{state_method_name}-{key_methods_name}-{map_name}"
+        f"{key_methods_name}-{state_method_name}-{map_name}"
         for (
             (state_method_name, _),
             (key_methods_name, _),
@@ -123,15 +124,24 @@ def get_experiment_names(
 
 def get_accuracy_tally(
     results: Iterable[TranspositionTestResult],
+    metadata: TranspositionExperimentMetadata,
 ) -> AccuracyTally:
     """
     Counts the true/false positives/negatives of the test results
     of the same experiment.
     """
 
-    tally = AccuracyTally()
+    tally = AccuracyTally(
+        key_method_name=metadata.key_method_name,
+        map_name=metadata.map_name,
+        state_populating_method_name=metadata.state_populating_method_name,
+        true_positives=0,
+        false_positives=0,
+        false_negatives=0,
+        true_negatives=0,
+    )
     for result in results:
-        tree_results_match = result.action_a_value == result.action_b_value
+        tree_results_match = isclose(result.tree_a_payoff, result.tree_b_payoff)
         if result.key_is_same:
             if tree_results_match:
                 tally.true_positives += 1

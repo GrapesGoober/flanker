@@ -11,7 +11,7 @@
 	let props: Props = $props();
 </script>
 
-<svg>
+<svg overflow="visible">
 	<Arrow
 		start={props.start}
 		end={props.end}

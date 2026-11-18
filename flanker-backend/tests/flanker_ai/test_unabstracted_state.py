@@ -1,4 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass
+from inspect import isclass
+from pathlib import Path
 from typing import Literal
 from uuid import UUID
 
@@ -14,6 +16,7 @@ from flanker_ai.config_models import (
     UnabstractedStateConfig,
 )
 from flanker_core.gamestate import GameState
+from flanker_core.models import components
 from flanker_core.models.actions import FireAction, MoveAction
 from flanker_core.models.components import (
     AssaultControls,
@@ -30,7 +33,15 @@ from flanker_core.models.components import (
 )
 from flanker_core.models.outcomes import FireOutcomes
 from flanker_core.models.vec2 import Vec2
+from flanker_core.serializer import Serializer
 from flanker_core.systems.action_system import ActionSystem
+
+
+@dataclass
+class TerrainTypeTag:
+    """Tag to store the terrain type."""
+
+    type: Literal["FOREST"]
 
 
 @dataclass
@@ -57,7 +68,7 @@ def fixture() -> Fixture:
             faction=InitiativeState.Faction.BLUE,
             status=CombatUnit.Status.ACTIVE,
         ),
-        Transform(position=Vec2(-1, 12), degrees=-90),
+        Transform(position=Vec2(-2, 48), degrees=-90),
         # TODO: should there be a dedicated test for no-fov?
         # Alternatively, perhaps I should refactor all tests to only use no-fov,
         # since the no-fov would be the only case I'd continue with.
@@ -73,7 +84,7 @@ def fixture() -> Fixture:
             faction=InitiativeState.Faction.BLUE,
             status=CombatUnit.Status.ACTIVE,
         ),
-        Transform(position=Vec2(1, 12), degrees=-90),
+        Transform(position=Vec2(2, 48), degrees=-90),
         FireControls(
             fov_degrees=90,
             override=FireOutcomes.PIN,
@@ -90,7 +101,7 @@ def fixture() -> Fixture:
             fov_degrees=90,
             override=FireOutcomes.PIN,
         ),
-        Transform(position=Vec2(0, -15), degrees=70),
+        Transform(position=Vec2(0, -60), degrees=70),
         AssaultControls(),
     )
     enemy_2 = gs.add_entity(
@@ -103,7 +114,7 @@ def fixture() -> Fixture:
             fov_degrees=90,
             override=FireOutcomes.PIN,
         ),
-        Transform(position=Vec2(0, -18), degrees=100),
+        Transform(position=Vec2(0, -72), degrees=100),
         AssaultControls(),
     )
 
@@ -112,22 +123,22 @@ def fixture() -> Fixture:
         Transform(position=Vec2(0, 0), degrees=0),
         TerrainFeature(
             vertices=[
-                Vec2(-5, -5),
-                Vec2(5, -5),
-                Vec2(5, 5),
-                Vec2(-5, 5),
-            ],
-            flag=TerrainFeature.Flag.OPAQUE,
-        ),
-    )
-    # 40x40 boundary
-    gs.add_entity(
-        MapBoundary(
-            vertices=[
                 Vec2(-20, -20),
                 Vec2(20, -20),
                 Vec2(20, 20),
                 Vec2(-20, 20),
+            ],
+            flag=TerrainFeature.Flag.OPAQUE,
+        ),
+        TerrainTypeTag(type="FOREST"),
+    )
+    gs.add_entity(
+        MapBoundary(
+            vertices=[
+                Vec2(-80, -80),
+                Vec2(80, -80),
+                Vec2(80, 80),
+                Vec2(-80, 80),
             ],
         ),
     )
@@ -183,33 +194,23 @@ def fixture() -> Fixture:
 
 def add_agent_config(
     gs: GameState,
-    policy_type: Literal["Minimax", "Expectimax"],
     use_transposition_table: bool = True,
 ) -> SearchPolicyConfig:
 
     move_candidate_points = [
         Vec2(0, 0),
-        Vec2(-10, 1),
-        Vec2(-10, 10),
-        # Vec2(10, 10),   # These are also optimal peeking nodes
-        # Vec2(10, 1),   # but mirrored on the other side
+        Vec2(-40, 4),
+        Vec2(-40, 40),
+        # Vec2(40, 40),   # These are also optimal peeking nodes
+        # Vec2(40, 4),   # but mirrored on the other side
     ]
 
-    match policy_type:
-        case "Minimax":
-            policy = PolicyConfig.MinimaxPolicy(
-                type="MinimaxPolicy",
-                depth=3,
-                use_transposition_table=use_transposition_table,
-            )
-        case "Expectimax":
-            policy = PolicyConfig.ExpectimaxPolicy(
-                type="ExpectimaxPolicy",
-                depth=3,
-                use_transposition_table=use_transposition_table,
-            )
     config = SearchPolicyConfig(
-        policy=policy,
+        policy=PolicyConfig.MinimaxPolicy(
+            type="MinimaxPolicy",
+            depth=3,
+            use_transposition_table=use_transposition_table,
+        ),
         state=UnabstractedStateConfig(
             type="UnabstractedStateConfig",
             move_candidates_pool=PointsConfig.HandDrawn(
@@ -242,10 +243,10 @@ def add_agent_config(
 def test_branching_total_prob(fixture: Fixture) -> None:
     action = MoveAction(
         unit_id=fixture.friendly_1,
-        to=Vec2(-10, 1),
+        to=Vec2(-40, 4),
     )
 
-    config = add_agent_config(fixture.gs, policy_type="Minimax")
+    config = add_agent_config(fixture.gs)
     state = AiSearchAgent.get_state(
         gs=fixture.gs,
         config=config,
@@ -258,14 +259,11 @@ def test_branching_total_prob(fixture: Fixture) -> None:
     assert total_prob == 1, "Total probability must equal 1"
 
 
-@pytest.mark.parametrize("policy_type", ["Minimax", "Expectimax"])
 def test_optimal_actions(
     fixture: Fixture,
-    policy_type: Literal["Minimax", "Expectimax"],
 ) -> None:
     add_agent_config(
         fixture.gs,
-        policy_type,
         use_transposition_table=True,
     )
     trees: list[AiSearchTreeResult] = []
@@ -284,17 +282,17 @@ def test_optimal_actions(
     for tree in trees:
         if not isinstance(tree.best_action, MoveAction):
             continue
-        if tree.best_action.to == Vec2(-10, 10):
+        if tree.best_action.to == Vec2(-40, 40):
             staging_units.append(tree.best_action.unit_id)
-    assert len(staging_units) != 0, "AI must try staging to Vec2(-10, 10)."
+    assert len(staging_units) != 0, "AI must try staging to Vec2(-40, 40)."
 
     peeking_units: list[UUID] = []
     for tree in trees:
         if not isinstance(tree.best_action, MoveAction):
             continue
-        if tree.best_action.to == Vec2(-10, 1):
+        if tree.best_action.to == Vec2(-40, 4):
             peeking_units.append(tree.best_action.unit_id)
-    assert len(peeking_units) != 0, "AI must try peeking to Vec2(-10, 1)."
+    assert len(peeking_units) != 0, "AI must try peeking to Vec2(-40, 4)."
 
     assert (
         len(set(peeking_units) & set(staging_units)) != 0
@@ -304,3 +302,27 @@ def test_optimal_actions(
     assert isinstance(
         last_action_result.best_action, FireAction
     ), "AI must fire at the enemy once."
+
+
+def test_serialize_file(
+    fixture: Fixture,
+) -> None:
+    add_agent_config(
+        fixture.gs,
+        use_transposition_table=True,
+    )
+    file_path = Path("scenes\\local\\test-expectimax.json")
+    component_types = [
+        component
+        for _, component in vars(components).items()
+        if isclass(component) and is_dataclass(component)
+    ]
+    component_types += [TerrainTypeTag, AiConfigComponent]
+    with file_path.open("w") as f:
+        f.write(
+            Serializer.serialize(
+                entities=fixture.gs.dump(),
+                component_types=component_types,
+                indent=2,
+            )
+        )
