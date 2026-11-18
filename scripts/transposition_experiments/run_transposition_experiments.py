@@ -309,6 +309,7 @@ def run_transposition_test(
                 key_methods=test_run_config.key_methods,
             )
             response: requests.Response | None = None
+            delay_seconds = 30
             while True:  # Keep retrying requests if it fails
                 try:
                     response = requests.post(
@@ -322,7 +323,8 @@ def run_transposition_test(
                     log_message(
                         f"Rerunning {test_run_config.experiment_name} in 30 seconds"
                     )
-                    sleep(30)
+                    sleep(delay_seconds)
+                    delay_seconds *= 2
             api_result = ApiTranspositionTestResponse.model_validate_json(response.text)
             test_result = TranspositionTestResult(
                 key_is_same=api_result.key_is_same,
@@ -354,6 +356,7 @@ def get_tree_payoff_value(
                 state=deserialize_state(gs),
             )
             response: requests.Response | None = None
+            delay_seconds = 30
             while True:  # Keep retrying requests if it fails
                 try:
                     response = requests.post(
@@ -365,7 +368,8 @@ def get_tree_payoff_value(
                 except requests.RequestException as e:
                     log_message(f"Request had error {e}")
                     log_message(f"Rerunning get-tree-payoff in 30 seconds")
-                    sleep(30)
+                    sleep(delay_seconds)
+                    delay_seconds *= 2
             api_result = ApiTreePayoffResponse.model_validate_json(response.text)
             return api_result.payoff_value
 
