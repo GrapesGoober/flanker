@@ -222,7 +222,7 @@ class AiBranchingService:
         target_transform = gs.get_component(target_id, Transform)
         target_unit = gs.get_component(target_id, CombatUnit)
 
-        # First, config assault into two separate SUCCESS or FAIL branches
+        # First, config assault into two separate SUCCESS or FAIL outcomes
         success_probability = ASSAULT_SUCCESS_PROBABILITIES[target_unit.status]
         fail_probability = 1 - success_probability
         assault_overrides = [
@@ -230,7 +230,7 @@ class AiBranchingService:
             (fail_probability, AssaultOutcomes.FAIL),
         ]
 
-        # Then, configures each assault branches with fire branches
+        # Then, configures each assault outcomes with fire branches
         branching_states: list[tuple[float, GameState]] = []
         for assault_probability, override in assault_overrides:
             fire_branches = AiBranchingService.get_reactive_fire_branches(
@@ -242,7 +242,6 @@ class AiBranchingService:
                 assault_controls = new_state.get_component(unit_id, AssaultControls)
                 assault_controls.override = override
                 branching_states.append(
-                    # (assault_probability * fire_probability, new_state)
                     (assault_probability * fire_probability, new_state)
                 )
         return branching_states
