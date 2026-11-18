@@ -321,7 +321,8 @@ def run_transposition_test(
                 except requests.RequestException as e:
                     log_message(f"Request had error {e}")
                     log_message(
-                        f"Rerunning {test_run_config.experiment_name} in 30 seconds"
+                        f"Rerunning {test_run_config.experiment_name} \
+                            in {delay_seconds} seconds",
                     )
                     sleep(delay_seconds)
                     delay_seconds *= 2
@@ -367,7 +368,7 @@ def get_tree_payoff_value(
                     break
                 except requests.RequestException as e:
                     log_message(f"Request had error {e}")
-                    log_message(f"Rerunning get-tree-payoff in 30 seconds")
+                    log_message(f"Rerunning get-tree-payoff in {delay_seconds} seconds")
                     sleep(delay_seconds)
                     delay_seconds *= 2
             api_result = ApiTreePayoffResponse.model_validate_json(response.text)
