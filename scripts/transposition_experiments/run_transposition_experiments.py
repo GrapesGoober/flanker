@@ -131,7 +131,7 @@ def save_sequences_to_file(
                     state_b=deserialize_state(input_states.state_b),
                     tree_a_payoff=input_states.tree_a_payoff,
                     tree_b_payoff=input_states.tree_b_payoff,
-                ).model_dump_json(indent=0)
+                ).model_dump_json(indent=None)
                 + "\n"  # Mildly infuriating missing newline
                 for input_states in sequence
             )
