@@ -131,7 +131,7 @@ def save_sequences_to_file(
                     state_b=deserialize_state(input_states.state_b),
                     tree_a_payoff=input_states.tree_a_payoff,
                     tree_b_payoff=input_states.tree_b_payoff,
-                ).model_dump_json(indent=0)
+                ).model_dump_json(indent=None)
                 + "\n"  # Mildly infuriating missing newline
                 for input_states in sequence
             )
@@ -309,6 +309,7 @@ def run_transposition_test(
                 key_methods=test_run_config.key_methods,
             )
             response: requests.Response | None = None
+            delay_seconds = 30
             while True:  # Keep retrying requests if it fails
                 try:
                     response = requests.post(
@@ -320,9 +321,11 @@ def run_transposition_test(
                 except requests.RequestException as e:
                     log_message(f"Request had error {e}")
                     log_message(
-                        f"Rerunning {test_run_config.experiment_name} in 30 seconds"
+                        f"Rerunning {test_run_config.experiment_name} \
+                            in {delay_seconds} seconds",
                     )
-                    sleep(30)
+                    sleep(delay_seconds)
+                    delay_seconds *= 2
             api_result = ApiTranspositionTestResponse.model_validate_json(response.text)
             test_result = TranspositionTestResult(
                 key_is_same=api_result.key_is_same,
@@ -354,6 +357,7 @@ def get_tree_payoff_value(
                 state=deserialize_state(gs),
             )
             response: requests.Response | None = None
+            delay_seconds = 30
             while True:  # Keep retrying requests if it fails
                 try:
                     response = requests.post(
@@ -364,8 +368,9 @@ def get_tree_payoff_value(
                     break
                 except requests.RequestException as e:
                     log_message(f"Request had error {e}")
-                    log_message(f"Rerunning get-tree-payoff in 30 seconds")
-                    sleep(30)
+                    log_message(f"Rerunning get-tree-payoff in {delay_seconds} seconds")
+                    sleep(delay_seconds)
+                    delay_seconds *= 2
             api_result = ApiTreePayoffResponse.model_validate_json(response.text)
             return api_result.payoff_value
 

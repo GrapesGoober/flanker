@@ -196,8 +196,10 @@ class MinimaxPolicy[TAction]:
                     transposition_table=transposition_table,
                     log_tree_to_append=log_tree_to_append,
                 )
-                transposition_table[state_key] = _TranspositionEntry(
-                    score=score,
-                    depth_remaining=new_branch_depth,
-                )
+                # Avoid caching leaf nodes, that wastes space with little value.
+                if new_branch_depth >= 1:
+                    transposition_table[state_key] = _TranspositionEntry(
+                        score=score,
+                        depth_remaining=new_branch_depth,
+                    )
         return score
