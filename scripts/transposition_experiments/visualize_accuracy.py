@@ -141,7 +141,12 @@ def get_accuracy_tally(
         true_negatives=0,
     )
     for result in results:
-        tree_results_match = isclose(result.tree_a_payoff, result.tree_b_payoff)
+        tree_results_match = isclose(
+            result.tree_a_payoff,
+            result.tree_b_payoff,
+            rel_tol=1e-2,
+        )
+
         if result.key_is_same:
             if tree_results_match:
                 tally.true_positives += 1
