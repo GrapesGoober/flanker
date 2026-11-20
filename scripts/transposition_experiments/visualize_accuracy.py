@@ -22,11 +22,16 @@ class AccuracyTally:
     false_positives: int
     false_negatives: int
     true_negatives: int
+    is_total: bool = False
 
     def to_row(self) -> dict[str, str | int]:
         return {
             "Key Method": self.key_method_name,
-            "Input States": f"{self.state_populating_method_name}-{self.map_name}",
+            "Input Sequence": (
+                "Total"
+                if self.is_total
+                else f"{self.state_populating_method_name}-{self.map_name}"
+            ),
             "TP": self.true_positives,
             "TN": self.true_negatives,
             "FP": self.false_positives,
@@ -92,12 +97,13 @@ def get_totals_per_method(
             tally.key_method_name,
             AccuracyTally(
                 key_method_name=tally.key_method_name,
-                map_name="Total",
-                state_populating_method_name="Total",
+                map_name="",
+                state_populating_method_name="",
                 true_positives=0,
                 false_positives=0,
                 false_negatives=0,
                 true_negatives=0,
+                is_total=True,
             ),
         )
         total = totals_by_method[tally.key_method_name]
