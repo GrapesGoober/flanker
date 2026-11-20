@@ -42,10 +42,12 @@ def main() -> None:
     )
     results_root_path = Path("./scripts/outputs/transposition-experiment-results/")
     experiment_names = get_experiment_names(experiment_set)
-    df = get_formatted_table(
+    tallies = get_formatted_table(
         results_root_path,
         experiment_names,
     )
+    totals = get_totals_per_method(tallies)
+    df = pd.DataFrame([record.to_row() for record in tallies + totals])
     latex_table = df.to_latex(index=False)
     for rule in ("\\toprule", "\\midrule", "\\bottomrule"):
         latex_table = latex_table.replace(rule, "\\hline")
@@ -58,7 +60,7 @@ def main() -> None:
 def get_formatted_table(
     results_root_path: Path,
     experiment_names: list[str],
-) -> pd.DataFrame:
+) -> list[AccuracyTally]:
     tally_records: list[AccuracyTally] = []
     for experiment_name in experiment_names:
         metadata_path = results_root_path / f"{experiment_name}-metadata.json"
@@ -75,7 +77,35 @@ def get_formatted_table(
             record.map_name,
         )
     )
-    return pd.DataFrame([record.to_row() for record in tally_records])
+    return tally_records
+
+
+def get_totals_per_method(
+    tallies: list[AccuracyTally],
+) -> list[AccuracyTally]:
+    """
+    Aggregates the total TP, TN, FP, FN values per each unique key methods.
+    """
+    totals_by_method: dict[str, AccuracyTally] = {}
+    for tally in tallies:
+        totals_by_method.setdefault(
+            tally.key_method_name,
+            AccuracyTally(
+                key_method_name=tally.key_method_name,
+                map_name="Total",
+                state_populating_method_name="Total",
+                true_positives=0,
+                false_positives=0,
+                false_negatives=0,
+                true_negatives=0,
+            ),
+        )
+        total = totals_by_method[tally.key_method_name]
+        total.true_positives += tally.true_positives
+        total.false_positives += tally.false_positives
+        total.false_negatives += tally.false_negatives
+        total.true_negatives += tally.true_negatives
+    return list(totals_by_method.values())
 
 
 def get_experiment_results(
